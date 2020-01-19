@@ -373,7 +373,7 @@ unset CFLAGS CXXFLAGS CPPFLAGS LDFLAGS
 make pinebook_pro-rk3399_defconfig
 make CROSS_COMPILE=aarch64-linux-gnu- BL31=../arm-trusted-firmware/build/rk3399/release/bl31/bl31.elf
 
-cp idloader.img u-boot.itb "${basedir}"/root/boot/
+cp idbloader.img u-boot.itb "${basedir}"/root/boot/
 dd if=idbloader.img of=${loopdevice} seek=64 conv=notrunc
 dd if=u-boot.itb of=${loopdevice} seek=16384 conv=notrunc
 
