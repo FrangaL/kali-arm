@@ -367,11 +367,11 @@ git clone https://git.eno.space/pbp-uboot.git
 cd arm-trusted-firmware
 git checkout 22d12c4148c373932a7a81e5d1c59a767e143ac2
 unset CFLAGS CXXFLAGS CPPFLAGS LDFLAGS
-make PLAT=rk3399
+make CROSS_COMPILE=aarch64-linux-gnu- PLAT=rk3399
 cd ../pbp-uboot
 unset CFLAGS CXXFLAGS CPPFLAGS LDFLAGS
 make pinebook_pro-rk3399_defconfig
-make BL31=../arm-trusted-firmware/build/rk3399/release/bl31/bl31.elf
+make CROSS_COMPILE=aarch64-linux-gnu- BL31=../arm-trusted-firmware/build/rk3399/release/bl31/bl31.elf
 
 cp idloader.img u-boot.itb "${basedir}"/root/boot/
 dd if=idbloader.img of=${loopdevice} seek=64 conv=notrunc
