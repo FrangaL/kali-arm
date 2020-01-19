@@ -299,46 +299,55 @@ cp "${basedir}"/../kernel-configs/pinebook-pro-5.5.config .config
 cp "${basedir}"/../kernel-configs/pinebook-pro-5.5.config ../default-config
 cd "${basedir}"
 
-#create extlinux.conf
-mkdir -p "${basedir}"/kali-${architecture}/boot/extlinux/
-cat << __EOF__ > "${basedir}"/kali-${architecture}/boot/extlinux/extlinux.conf
-LABEL Gentoo
-KERNEL /Image
-FDT /rk3399-pinebook-pro.dtb
-APPEND initrd=/initramfs console=tty1 rootwait root=/dev/mmcblk0p2 rootfstype=ext4 video=eDP-1:1920x1080@60
+cat << '__EOF__' > "${basedir}"/kali-${architecture}/boot/boot.txt
+# MAC address (use spaces instead of colons)
+setenv macaddr da 19 c8 7a 6d f4
+
+part uuid ${devtype} ${devnum}:${bootpart} uuid
+setenv bootargs console=ttyS2,1500000 root=PARTUUID=${uuid} rw rootwait
+setenv fdtfile rk3399-pinebook-pro.dtb
+
+if load ${devtype} ${devnum}:${bootpart} ${kernel_addr_r} /boot/Image; then
+  if load ${devtype} ${devnum}:${bootpart} ${fdt_addr_r} /boot/${fdtfile}; then
+    fdt addr ${fdt_addr_r}
+    fdt resize
+    fdt set /ethernet@fe300000 local-mac-address "[${macaddr}]"
+    if load ${devtype} ${devnum}:${bootpart} ${ramdisk_addr_r} /boot/initramfs-linux.img; then
+      # This upstream Uboot doesn't support compresses cpio initrd, use kernel option to
+      # load initramfs
+      setenv bootargs ${bootargs} initrd=${ramdisk_addr_r},20M ramdisk_size=10M
+    fi;
+    booti ${kernel_addr_r} - ${fdt_addr_r};
+  fi;
+fi
 __EOF__
+cd "${basedir}"/kali-${architecture}/boot
+mkimage -A arm -O linux -T script -C none -n "U-Boot boot script" -d boot.txt boot.scr
+cd "${basedir}"
 
 cp "${basedir}"/../misc/zram "${basedir}"/kali-${architecture}/etc/init.d/zram
 chmod 755 "${basedir}"/kali-${architecture}/etc/init.d/zram
 
 sed -i -e 's/^#PermitRootLogin.*/PermitRootLogin yes/' "${basedir}"/kali-${architecture}/etc/ssh/sshd_config
 
-# Ensure we don't have root=/dev/sda3 in the extlinux.conf which comes from running u-boot-menu in a cross chroot.
-sed -i -e 's/append.*/append root=\/dev\/mmcblk0p1 rootfstype=ext4 console=ttyS0,115200 console=tty1 consoleblank=0 rw rootwait/g' "${basedir}"/kali-${architecture}/boot/extlinux/extlinux.conf
-
 echo "Creating image file for ${imagename}.img"
 dd if=/dev/zero of="${basedir}"/${imagename}.img bs=1M count=${size}
 parted ${imagename}.img --script -- mklabel msdos
-parted ${imagename}.img --script -- mkpart primary ext4 2048s 264191s
-parted ${imagename}.img --script -- mkpart primary ext4 264192s 100%
+parted ${imagename}.img --script -- mkpart primary ext4 2048s 100%
 
 # Set the partition variables
 loopdevice=`losetup -f --show "${basedir}"/${imagename}.img`
 device=`kpartx -va ${loopdevice} | sed 's/.*\(loop[0-9]\+\)p.*/\1/g' | head -1`
-sleep 5
+sleep
 device="/dev/mapper/${device}"
-bootp=${device}p1
-rootp=${device}p2
+rootp=${device}p1
 
 # Create file systems
-mkfs.ext4 ${bootp}
 mkfs.ext4 ${rootp}
 
 # Create the dirs for the partitions and mount them
 mkdir -p "${basedir}"/root
 mount ${rootp} "${basedir}"/root
-mkdir -p "${basedir}"/root/boot
-mount ${bootp} "${basedir}"/root/boot
 
 # We do this down here to get rid of the build system's resolv.conf after running through the build.
 cat << EOF > kali-${architecture}/etc/resolv.conf
@@ -351,10 +360,25 @@ rsync -HPavz -q "${basedir}"/kali-${architecture}/ "${basedir}"/root/
 # Do some wiggle work because we need to prep the u-boot bits for writing to the
 # sdcard.
 # Somewhat adapted from the u-boot-install-sunxi64 script
+mkdir "${basedir}"/uboot
+cd "${basedir}"/uboot
+git clone https://github.com/ARM-software/arm-trusted-firmware.git\#commit=22d12c4148c373932a7a81e5d1c59a767e143ac2
+git clone https://git.eno.space/pbp-uboot.git
+cd arm-trusted-firmware
+unset CFLAGS CXXFLAGS CPPFLAGS LDFLAGS
+make PLAT=rk3399
+cd ../pbp-uboot
+unset CFLAGS CXXFLAGS CPPFLAGS LDFLAGS
+make pinebook_pro-rk3399_defconfig
+make BL31=../arm-trusted-firmware/build/rk3399/release/bl31/bl31.elf
+
+cp idloader.img u-boot.itb "${basedir}"/root/boot/
+dd if=idbloader.img of=${loopdevice} seek=64 conv=notrunc
+dd if=u-boot.itb of=${loopdevice} seek=16384 conv=notrunc
+
 
 # Unmount partitions
 sync
-umount ${bootp}
 umount ${rootp}
 
 kpartx -dv ${loopdevice}
