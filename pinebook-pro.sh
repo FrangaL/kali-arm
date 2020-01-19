@@ -362,9 +362,10 @@ rsync -HPavz -q "${basedir}"/kali-${architecture}/ "${basedir}"/root/
 # Somewhat adapted from the u-boot-install-sunxi64 script
 mkdir "${basedir}"/uboot
 cd "${basedir}"/uboot
-git clone https://github.com/ARM-software/arm-trusted-firmware.git\#commit=22d12c4148c373932a7a81e5d1c59a767e143ac2
+git clone https://github.com/ARM-software/arm-trusted-firmware.git
 git clone https://git.eno.space/pbp-uboot.git
 cd arm-trusted-firmware
+git checkout 22d12c4148c373932a7a81e5d1c59a767e143ac2
 unset CFLAGS CXXFLAGS CPPFLAGS LDFLAGS
 make PLAT=rk3399
 cd ../pbp-uboot
