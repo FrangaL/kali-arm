@@ -280,7 +280,7 @@ cd "${basedir}"/kali-${architecture}/usr/src
 # Let's clone git, and use the usual name...
 #wget 'https://gitlab.manjaro.org/tsys/linux-pinebook-pro/-/archive/v5.5-rc5/linux-pinebook-pro-v5.5-rc5.tar.bz2'
 #tar -xf linux-pinebook-pro-v5.5-rc5.tar.bz2
-git clone https://gitlab.manjaro.org/tsys/linux-pinebook-pro --depth 1 -b v5.5-rc7-panfrost-fixes
+git clone https://gitlab.manjaro.org/tsys/linux-pinebook-pro --depth 1 -b v5.5-rc7-panfrost-fixes linux
 cd linux
 touch .scmversion
 patch -p1 --no-backup-if-mismatch < "${basedir}"/../patches/pinebook-pro/0001-allow-performance-Kconfig-options.patch
