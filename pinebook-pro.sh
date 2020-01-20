@@ -277,12 +277,15 @@ cd "${basedir}"
 
 # Time to build the kernel
 cd "${basedir}"/kali-${architecture}/usr/src
-wget 'https://gitlab.manjaro.org/tsys/linux-pinebook-pro/-/archive/v5.5-rc5/linux-pinebook-pro-v5.5-rc5.tar.bz2'
-tar -xf linux-pinebook-pro-v5.5-rc5.tar.bz2
-cd linux-pinebook-pro-v5.5-rc5
-#patch -p1 --no-backup-if-mismatch < "${basedir}"/../patches/pinebook-pro/0001-allow-performance-Kconfig-options.patch
+# Let's clone git, and use the usual name...
+#wget 'https://gitlab.manjaro.org/tsys/linux-pinebook-pro/-/archive/v5.5-rc5/linux-pinebook-pro-v5.5-rc5.tar.bz2'
+#tar -xf linux-pinebook-pro-v5.5-rc5.tar.bz2
+git clone https://gitlab.manjaro.org/tsys/linux-pinebook-pro --depth 1 -b v5.5-rc7-panfrost-fixes
+cd linux
+touch .scmversion
+patch -p1 --no-backup-if-mismatch < "${basedir}"/../patches/pinebook-pro/0001-allow-performance-Kconfig-options.patch
 patch -p1 --no-backup-if-mismatch < "${basedir}"/../patches/pinebook-pro/0001-net-smsc95xx-Allow-mac-address-to-be-set-as-a-parame.patch
-#patch -p1 --no-backup-if-mismatch < "${basedir}"/../patches/pinebook-pro/0001-raid6-add-Kconfig-option-to-skip-raid6-benchmarking.patch
+patch -p1 --no-backup-if-mismatch < "${basedir}"/../patches/pinebook-pro/0001-raid6-add-Kconfig-option-to-skip-raid6-benchmarking.patch
 patch -p1 --no-backup-if-mismatch < "${basedir}"/../patches/pinebook-pro/kali-wifi-injection.patch
 cp "${basedir}"/../kernel-configs/pinebook-pro-5.5.config .config
 make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- oldconfig
@@ -304,7 +307,7 @@ cat << '__EOF__' > "${basedir}"/kali-${architecture}/boot/boot.txt
 setenv macaddr da 19 c8 7a 6d f4
 
 part uuid ${devtype} ${devnum}:${bootpart} uuid
-setenv bootargs console=ttyS2,1500000 root=PARTUUID=${uuid} rw rootwait
+setenv bootargs console=ttyS2,1500000 root=PARTUUID=${uuid} rw rootwait video=eDP-1:1920x1080@60
 setenv fdtfile rk3399-pinebook-pro.dtb
 
 if load ${devtype} ${devnum}:${bootpart} ${kernel_addr_r} /boot/Image; then
