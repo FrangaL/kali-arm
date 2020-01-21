@@ -360,25 +360,11 @@ EOF
 echo "Rsyncing rootfs into image file"
 rsync -HPavz -q "${basedir}"/kali-${architecture}/ "${basedir}"/root/
 
-# Do some wiggle work because we need to prep the u-boot bits for writing to the
-# sdcard.
-# Somewhat adapted from the u-boot-install-sunxi64 script
-mkdir "${basedir}"/uboot
-cd "${basedir}"/uboot
-git clone https://github.com/ARM-software/arm-trusted-firmware.git
-git clone https://git.eno.space/pbp-uboot.git
-cd arm-trusted-firmware
-git checkout 22d12c4148c373932a7a81e5d1c59a767e143ac2
-unset CFLAGS CXXFLAGS CPPFLAGS LDFLAGS
-make CROSS_COMPILE=aarch64-linux-gnu- PLAT=rk3399
-cd ../pbp-uboot
-unset CFLAGS CXXFLAGS CPPFLAGS LDFLAGS
-make pinebook_pro-rk3399_defconfig
-make CROSS_COMPILE=aarch64-linux-gnu- BL31=../arm-trusted-firmware/build/rk3399/release/bl31/bl31.elf
-
-cp idbloader.img u-boot.itb "${basedir}"/root/boot/
-dd if=idbloader.img of=${loopdevice} seek=64 conv=notrunc
-dd if=u-boot.itb of=${loopdevice} seek=16384 conv=notrunc
+# Nick the u-boot from Manjaro ARM to see if my compilation was somehow
+# screwing things up.
+cp "${basedir}"/../misc/pbp/idbloader.img "${basedir}"/../misc/pbp/u-boot.itb "${basedir}"/root/boot/
+dd if="${basedir}"/../misc/pbp/idbloader.img of=${loopdevice} seek=64 conv=notrunc
+dd if="${basedir}"/../misc/pbp/u-boot.itb of=${loopdevice} seek=16384 conv=notrunc
 
 
 # Unmount partitions
