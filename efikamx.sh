@@ -141,10 +141,10 @@ sed -i -e 's/KERNEL\!=\"eth\*|/KERNEL\!=\"/' /lib/udev/rules.d/75-persistent-net
 rm -f /etc/udev/rules.d/70-persistent-net.rules
 # This looks weird, but we do it twice because every so often, there's a failure to download from the mirror
 # So to workaround it, we attempt to install them twice.
-apt-get --yes --allow-change-held-packages install ${packages} || apt-get --yes --fix-broken install
-apt-get --yes --allow-change-held-packages install ${packages} || apt-get --yes --fix-broken install
-apt-get --yes --allow-change-held-packages install ${desktop} ${tools} || apt-get --yes --fix-broken install
-apt-get --yes --allow-change-held-packages install ${desktop} ${tools} || apt-get --yes --fix-broken install
+apt-get --yes --allow-change-held-packages -o dpkg::options::=--force-confnew install ${packages} || apt-get --yes --fix-broken install
+apt-get --yes --allow-change-held-packages -o dpkg::options::=--force-confnew install ${packages} || apt-get --yes --fix-broken install
+apt-get --yes --allow-change-held-packages -o dpkg::options::=--force-confnew install ${desktop} ${tools} || apt-get --yes --fix-broken install
+apt-get --yes --allow-change-held-packages -o dpkg::options::=--force-confnew install ${desktop} ${tools} || apt-get --yes --fix-broken install
 
 # Copy bashrc
 cp  /etc/skel/.bashrc /root/.bashrc

@@ -229,16 +229,16 @@ echo "root:toor" | chpasswd
 export DEBIAN_FRONTEND=noninteractive
 # This looks weird, but we do it twice because every so often, there's a failure to download from the mirror
 # So to workaround it, we attempt to install them twice.
-apt-get --yes --allow-change-held-packages install ${packages} || apt-get --yes --fix-broken install
-apt-get --yes --allow-change-held-packages install ${packages} || apt-get --yes --fix-broken install
-apt-get --yes --allow-change-held-packages install ${desktop} ${tools} || apt-get --yes --fix-broken install
-apt-get --yes --allow-change-held-packages install ${desktop} ${tools} || apt-get --yes --fix-broken install
+apt-get --yes --allow-change-held-packages -o dpkg::options::=--force-confnew install ${packages} || apt-get --yes --fix-broken install
+apt-get --yes --allow-change-held-packages -o dpkg::options::=--force-confnew install ${packages} || apt-get --yes --fix-broken install
+apt-get --yes --allow-change-held-packages -o dpkg::options::=--force-confnew install ${desktop} ${tools} || apt-get --yes --fix-broken install
+apt-get --yes --allow-change-held-packages -o dpkg::options::=--force-confnew install ${desktop} ${tools} || apt-get --yes --fix-broken install
 
 # Install the kernel packages
 echo "deb http://http.re4son-kernel.com/re4son kali-pi main" > /etc/apt/sources.list.d/re4son.list
 wget -O - https://re4son-kernel.com/keys/http/archive-key.asc | apt-key add -
 apt-get update
-apt-get install --yes --allow-change-held-packages kalipi-kernel kalipi-bootloader kalipi-re4son-firmware kalipi-kernel-headers
+apt-get install --yes --allow-change-held-packages -o dpkg::options::=--force-confnew kalipi-kernel kalipi-bootloader kalipi-re4son-firmware kalipi-kernel-headers
 
 apt-get --yes --allow-change-held-packages autoremove
 # libinput seems to fail hard on RaspberryPi devices, so we make sure it's not

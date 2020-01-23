@@ -227,10 +227,10 @@ apt-get -y install git-core binutils ca-certificates initramfs-tools u-boot-tool
 apt-get -y install locales console-common less nano git
 echo "root:toor" | chpasswd
 export DEBIAN_FRONTEND=noninteractive
-apt-get --yes --allow-change-held-packages install ${packages} || apt-get --yes --fix-broken install
-apt-get --yes --allow-change-held-packages install ${packages} || apt-get --yes --fix-broken install
-apt-get --yes --allow-change-held-packages install ${desktop} ${extras} ${tools} || apt-get --yes --fix-broken install
-apt-get --yes --allow-change-held-packages install ${desktop} ${extras} ${tools} || apt-get --yes --fix-broken install
+apt-get --yes --allow-change-held-packages -o dpkg::options::=--force-confnew install ${packages} || apt-get --yes --fix-broken install
+apt-get --yes --allow-change-held-packages -o dpkg::options::=--force-confnew install ${packages} || apt-get --yes --fix-broken install
+apt-get --yes --allow-change-held-packages -o dpkg::options::=--force-confnew install ${desktop} ${extras} ${tools} || apt-get --yes --fix-broken install
+apt-get --yes --allow-change-held-packages -o dpkg::options::=--force-confnew install ${desktop} ${extras} ${tools} || apt-get --yes --fix-broken install
 
 apt-get --yes --allow-change-held-packages autoremove
 # libinput seems to fail hard on RaspberryPi devices, so we make sure it's not
@@ -242,7 +242,7 @@ apt-get --yes --allow-change-held-packages purge xserver-xorg-input-libinput
 echo "deb http://http.re4son-kernel.com/re4son kali-pi main" > /etc/apt/sources.list.d/re4son.list
 wget -O - https://re4son-kernel.com/keys/http/archive-key.asc | apt-key add -
 apt-get update
-apt-get install --yes --allow-change-held-packages kalipi-kernel kalipi-bootloader kalipi-re4son-firmware kalipi-kernel-headers
+apt-get install --yes --allow-change-held-packages -o dpkg::options::=--force-confnew kalipi-kernel kalipi-bootloader kalipi-re4son-firmware kalipi-kernel-headers
 
 # Because copying in authorized_keys is hard for people to do, let's make the
 # image insecure and enable root login with a password.

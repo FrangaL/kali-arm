@@ -220,12 +220,12 @@ apt-get -y install locales console-common less nano git
 echo "root:toor" | chpasswd
 rm -f /etc/udev/rules.d/70-persistent-net.rules
 export DEBIAN_FRONTEND=noninteractive
-apt-get --yes --allow-change-held-packages install ${packages} || apt-get --yes --fix-broken install
-apt-get --yes --allow-change-held-packages install ${packages} || apt-get --yes --fix-broken install
-apt-get --yes --allow-change-held-packages install ${desktop} ${extras} ${tools} || apt-get --yes --fix-broken install
-apt-get --yes --allow-change-held-packages install ${desktop} ${extras} ${tools} || apt-get --yes --fix-broken install
-apt-get --yes --allow-change-held-packages dist-upgrade
-apt-get --yes --allow-change-held-packages autoremove
+apt-get --yes --allow-change-held-packages -o dpkg::options::=--force-confnew install ${packages} || apt-get --yes --fix-broken install
+apt-get --yes --allow-change-held-packages -o dpkg::options::=--force-confnew install ${packages} || apt-get --yes --fix-broken install
+apt-get --yes --allow-change-held-packages -o dpkg::options::=--force-confnew install ${desktop} ${extras} ${tools} || apt-get --yes --fix-broken install
+apt-get --yes --allow-change-held-packages -o dpkg::options::=--force-confnew install ${desktop} ${extras} ${tools} || apt-get --yes --fix-broken install
+apt-get --yes --allow-change-held-packages -o dpkg::options::=--force-confnew dist-upgrade
+apt-get --yes --allow-change-held-packages -o dpkg::options::=--force-confnew autoremove
 
 # Install the kernel packages
 dpkg -i /root/raspberrypi-kernel_${rpikernelver}_armhf.deb /root/raspberrypi-kernel-headers_${rpikernelver}_armhf.deb

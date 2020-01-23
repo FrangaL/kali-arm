@@ -19,8 +19,8 @@ basedir=`pwd`/pinebook-pro-$1
 hostname=${2:-kali}
 # Custom image file name variable - MUST NOT include .img at the end.
 imagename=${3:-kali-linux-$1-pinebook-pro}
-# Size of image in megabytes (Default is 14000=14GB)
-size=14000
+# Size of image in megabytes (Default is 7000=7GB)
+size=7000
 # Suite to use.
 # Valid options are:
 # kali-rolling, kali-dev, kali-bleeding-edge, kali-dev-only, kali-experimental, kali-last-snapshot
@@ -181,12 +181,12 @@ rm -f /etc/udev/rules.d/70-persistent-net.rules
 export DEBIAN_FRONTEND=noninteractive
 # This looks weird, but we do it twice because every so often, there's a failure to download from the mirror
 # So to workaround it, we attempt to install them twice.
-apt-get --yes --allow-change-held-packages install ${packages} || apt-get --yes --fix-broken install
-apt-get --yes --allow-change-held-packages install ${packages} || apt-get --yes --fix-broken install
-apt-get --yes --allow-change-held-packages install ${desktop} ${extras} ${tools} || apt-get --yes --fix-broken install
-apt-get --yes --allow-change-held-packages install ${desktop} ${extras} ${tools} || apt-get --yes --fix-broken install
-apt-get --yes --allow-change-held-packages dist-upgrade
-apt-get --yes --allow-change-held-packages  autoremove
+apt-get --yes --allow-change-held-packages -o dpkg::options::=--force-confnew install ${packages} || apt-get --yes --fix-broken install
+apt-get --yes --allow-change-held-packages -o dpkg::options::=--force-confnew install ${packages} || apt-get --yes --fix-broken install
+apt-get --yes --allow-change-held-packages -o dpkg::options::=--force-confnew install ${desktop} ${extras} ${tools} || apt-get --yes --fix-broken install
+apt-get --yes --allow-change-held-packages -o dpkg::options::=--force-confnew install ${desktop} ${extras} ${tools} || apt-get --yes --fix-broken install
+apt-get --yes --allow-change-held-packages -o dpkg::options::=--force-confnew dist-upgrade
+apt-get --yes --allow-change-held-packages -o dpkg::options::=--force-confnew autoremove
 
 # Regenerated the shared-mime-info database on the first boot
 # since it fails to do so properly in a chroot.

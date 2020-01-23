@@ -213,16 +213,16 @@ rm -f /etc/udev/rules.d/70-persistent-net.rules
 export DEBIAN_FRONTEND=noninteractive
 # This looks weird, but we do it twice because every so often, there's a failure to download from the mirror
 # So to workaround it, we attempt to install them twice.
-apt-get --yes --allow-change-held-packages install ${packages} || apt-get --yes --fix-broken install
-apt-get --yes --allow-change-held-packages install ${packages} || apt-get --yes --fix-broken install
-apt-get --yes --allow-change-held-packages install ${desktop} ${extras} ${tools} || apt-get --yes --fix-broken install
-apt-get --yes --allow-change-held-packages install ${desktop} ${extras} ${tools} || apt-get --yes --fix-broken install
-apt-get --yes --allow-change-held-packages dist-upgrade
-apt-get --yes --allow-change-held-packages autoremove
+apt-get --yes --allow-change-held-packages -o dpkg::options::=--force-confnew install ${packages} || apt-get --yes --fix-broken install
+apt-get --yes --allow-change-held-packages -o dpkg::options::=--force-confnew install ${packages} || apt-get --yes --fix-broken install
+apt-get --yes --allow-change-held-packages -o dpkg::options::=--force-confnew install ${desktop} ${extras} ${tools} || apt-get --yes --fix-broken install
+apt-get --yes --allow-change-held-packages -o dpkg::options::=--force-confnew install ${desktop} ${extras} ${tools} || apt-get --yes --fix-broken install
+apt-get --yes --allow-change-held-packages -o dpkg::options::=--force-confnew dist-upgrade
+apt-get --yes --allow-change-held-packages -o dpkg::options::=--force-confnew autoremove
 
 # Install the kernel here.  This is due to needing to fake being an arm device for flash-kernel to work properly.
 cd /root && gcc -Wall -shared -o libfakeuname.so fakeuname.c
-LD_PRELOAD=/root/libfakeuname.so apt-get --yes --allow-change-held-packages install linux-image-armmp u-boot-tegra
+LD_PRELOAD=/root/libfakeuname.so apt-get --yes --allow-change-held-packages -o dpkg::options::=--force-confnew install linux-image-armmp u-boot-tegra
 cd /
 
 # Resize FS on first run (hopefully)
