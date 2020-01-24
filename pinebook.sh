@@ -162,6 +162,8 @@ Before=regenerate_ssh_host_keys.service
 Type=oneshot
 ExecStart=/bin/sh -c "cd /usr/src/rtl8723cs && dkms install ."
 ExecStartPost=/bin/systemctl disable pinebook-wifi-dkms.service
+[Install]
+WantedBy=multi-user.target
 EOF
 chmod 644 kali-${architecture}/usr/lib/systemd/system/pinebook-wifi-dkms.service
 
