@@ -340,6 +340,7 @@ sed -i -e 's/^#PermitRootLogin.*/PermitRootLogin yes/' "${basedir}"/kali-${archi
 mkdir -p "${basedir}"/kali-${architecture}/etc/initramfs-tools/
 echo -e "drm\nrockchipdrm\npanel-simple\npwm_bl" >> "${basedir}"/kali-${architecture}/etc/initramfs-tools/modules
 cat << _EOF_ > "${basedir}"/kali-${architecture}/make-initrd
+#!/bin/bash
 mkinitramfs -o /boot/initramfs-linux.img 5.5.0-rc7-MANJARO-ARM
 rm /make-initrd
 _EOF_
