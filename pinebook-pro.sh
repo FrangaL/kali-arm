@@ -299,8 +299,9 @@ cp arch/arm64/boot/dts/rockchip/rk3399-pinebook-pro.dtb "${basedir}"/kali-${arch
 make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- mrproper
 # And copy the config back in again (and copy it to /usr/src to keep a backup
 # around)
-cp "${basedir}"/../kernel-configs/pinebook-pro-5.5.config .config
-cp "${basedir}"/../kernel-configs/pinebook-pro-5.5.config ../default-config
+make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- pinebook_pro_defconfig
+#cp "${basedir}"/../kernel-configs/pinebook-pro-5.5.config .config
+#cp "${basedir}"/../kernel-configs/pinebook-pro-5.5.config ../default-config
 cd "${basedir}"
 
 cat << '__EOF__' > "${basedir}"/kali-${architecture}/boot/boot.txt
@@ -333,6 +334,17 @@ cp "${basedir}"/../misc/zram "${basedir}"/kali-${architecture}/etc/init.d/zram
 chmod 755 "${basedir}"/kali-${architecture}/etc/init.d/zram
 
 sed -i -e 's/^#PermitRootLogin.*/PermitRootLogin yes/' "${basedir}"/kali-${architecture}/etc/ssh/sshd_config
+
+# Create the initrd now that we have the kernel and modules installed.
+
+mkdir -p "${basedir}"/kali-${architecture}/etc/initramfs-tools/
+echo -e "drm\nrockchipdrm\npanel-simple\npwm_bl" >> "${basedir}"/kali-${architecture}/etc/initramfs-tools/modules
+cat << _EOF_ > "${basedir}"/kali-${architecture}/make-initrd
+mkinitramfs -o /boot/initramfs-linux.img $(ls /lib/modules/)
+rm /make-initrd
+_EOF_
+chmod +x "${basedir}"/kali-${architecture}/make-initrd
+LANG=C systemd-nspawn -M ${machine} -D kali-${architecture} /make-initrd
 
 echo "Creating image file for ${imagename}.img"
 dd if=/dev/zero of="${basedir}"/${imagename}.img bs=1M count=${size}
