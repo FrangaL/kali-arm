@@ -242,17 +242,27 @@ deb http://http.kali.org/kali kali-rolling main non-free contrib
 deb-src http://http.kali.org/kali kali-rolling main non-free contrib
 EOF
 
+# Don't actually need this... the touchpad feels fine without it.
 mkdir -p "${basedir}"/kali-${architecture}/etc/X11/xorg.conf.d/
-cat << EOF > "${basedir}"/kali-${architecture}/etc/X11/xorg.conf.d/50-pine64-pinebook.touchpad.conf
-Section "InputClass"
-    Identifier "HAILUCK CO.,LTD USB KEYBOARD"
-    MatchIsPointer "1"
-    MatchDevicePath "/dev/input/event*"
-
-    Option "AccelerationProfile" "2"
-    Option "AdaptiveDeceleration" "1"
+#cat << EOF > "${basedir}"/kali-${architecture}/etc/X11/xorg.conf.d/50-pine64-pinebook.touchpad.conf
+#Section "InputClass"
+#    Identifier "HAILUCK CO.,LTD USB KEYBOARD"
+#    MatchIsPointer "1"
+#    MatchDevicePath "/dev/input/event*"
+#
+#    Option "AccelerationProfile" "2"
+#    Option "AdaptiveDeceleration" "1"
     #Option "ConstantDeceleration" "2.5" # Pinebook 14
-    Option "ConstantDeceleration" "1.2" # Pinebook 11
+#    Option "ConstantDeceleration" "1.2" # Pinebook 11
+#EndSection
+#EOF
+
+# Mesa needs to be updated for panfrost fixes, so force fbdev until it comes.
+cat << EOF > "${basedir}"/kali-${architecture}/etc/X11/xorg.conf.d/50-force-fbdev.conf
+Section "Device"  
+  Identifier "myfb"
+  Driver "fbdev"
+  Option "fbdev" "/dev/fb0"
 EndSection
 EOF
 
