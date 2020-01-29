@@ -340,10 +340,10 @@ sed -i -e 's/^#PermitRootLogin.*/PermitRootLogin yes/' "${basedir}"/kali-${archi
 mkdir -p "${basedir}"/kali-${architecture}/etc/initramfs-tools/
 echo -e "drm\nrockchipdrm\npanel-simple\npwm_bl" >> "${basedir}"/kali-${architecture}/etc/initramfs-tools/modules
 cat << _EOF_ > "${basedir}"/kali-${architecture}/make-initrd
-mkinitramfs -o /boot/initramfs-linux.img $(ls /lib/modules/)
+mkinitramfs -o /boot/initramfs-linux.img 5.5.0-rc7-MANJARO-ARM
 rm /make-initrd
 _EOF_
-chmod +x "${basedir}"/kali-${architecture}/make-initrd
+chmod 755 "${basedir}"/kali-${architecture}/make-initrd
 LANG=C systemd-nspawn -M ${machine} -D kali-${architecture} /make-initrd
 
 echo "Creating image file for ${imagename}.img"
