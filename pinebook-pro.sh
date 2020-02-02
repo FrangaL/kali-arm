@@ -242,20 +242,22 @@ deb http://http.kali.org/kali kali-rolling main non-free contrib
 deb-src http://http.kali.org/kali kali-rolling main non-free contrib
 EOF
 
-# Don't actually need this... the touchpad feels fine without it.
 mkdir -p "${basedir}"/kali-${architecture}/etc/X11/xorg.conf.d/
-#cat << EOF > "${basedir}"/kali-${architecture}/etc/X11/xorg.conf.d/50-pine64-pinebook.touchpad.conf
-#Section "InputClass"
-#    Identifier "HAILUCK CO.,LTD USB KEYBOARD"
-#    MatchIsPointer "1"
-#    MatchDevicePath "/dev/input/event*"
-#
-#    Option "AccelerationProfile" "2"
-#    Option "AdaptiveDeceleration" "1"
-    #Option "ConstantDeceleration" "2.5" # Pinebook 14
-#    Option "ConstantDeceleration" "1.2" # Pinebook 11
-#EndSection
-#EOF
+cat << EOF > "${basedir}"/kali-${architecture}/etc/X11/xorg.conf.d/50-pine64-pinebook-pro.touchpad.conf
+Section "InputClass"
+  Identifier      "libinput for HAILUCK CO.,LTD USB KEYBOARD Touchpad"
+  MatchIsTouchpad "on"
+  MatchUSBID      "258a:001e"
+  MatchDevicePath "/dev/input/event2"
+
+  Option  "AccelProfile"  "adaptive"
+  Option  "AccelSpeed"    "0.8"
+  Option  "ScrollMethod"  "twofinger"
+  Option  "Tapping"  "on"
+  Option  "NaturalScrolling" "true"
+  Option  "ClickMethod" "clickfinger"
+EndSection
+EOF
 
 # Mesa needs to be updated for panfrost fixes, so force fbdev until it comes.
 cat << EOF > "${basedir}"/kali-${architecture}/etc/X11/xorg.conf.d/50-force-fbdev.conf
@@ -290,7 +292,7 @@ cd "${basedir}"/kali-${architecture}/usr/src
 # Let's clone git, and use the usual name...
 #wget 'https://gitlab.manjaro.org/tsys/linux-pinebook-pro/-/archive/v5.5-rc5/linux-pinebook-pro-v5.5-rc5.tar.bz2'
 #tar -xf linux-pinebook-pro-v5.5-rc5.tar.bz2
-git clone https://gitlab.manjaro.org/tsys/linux-pinebook-pro --depth 1 -b v5.5-rc7-panfrost-fixes linux
+git clone https://gitlab.manjaro.org/tsys/linux-pinebook-pro --depth 1 -b v5.5 linux
 cd linux
 touch .scmversion
 patch -p1 --no-backup-if-mismatch < "${basedir}"/../patches/pinebook-pro/0001-allow-performance-Kconfig-options.patch
