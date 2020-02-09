@@ -248,7 +248,7 @@ Section "InputClass"
   Identifier      "libinput for HAILUCK CO.,LTD USB KEYBOARD Touchpad"
   MatchIsTouchpad "on"
   MatchUSBID      "258a:001e"
-  MatchDevicePath "/dev/input/event2"
+  MatchDevicePath "/dev/input/event*"
 
   Option  "AccelProfile"  "adaptive"
   Option  "AccelSpeed"    "0.8"
