@@ -223,6 +223,7 @@ apt download fontconfig
 # We use _EOF_ so that the third-stage script doesn't end prematurely.
 cat << '_EOF_' > /etc/default/u-boot
 U_BOOT_PARAMETERS="console=ttyS0,115200 console=tty1 root=/dev/mmcblk0p1 rootwait panic=10 rw rootfstype=ext4 net.ifnames=0"
+U_BOOT_MENU="Kali Linux"
 _EOF_
 
 rm -f /usr/sbin/policy-rc.d
