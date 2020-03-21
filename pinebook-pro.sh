@@ -295,9 +295,9 @@ cd "${basedir}"/kali-${architecture}/usr/src
 git clone https://gitlab.manjaro.org/tsys/linux-pinebook-pro --depth 1 linux
 cd linux
 touch .scmversion
-patch -p1 --no-backup-if-mismatch < "${basedir}"/../patches/pinebook-pro/0001-allow-performance-Kconfig-options.patch
+#patch -p1 --no-backup-if-mismatch < "${basedir}"/../patches/pinebook-pro/0001-allow-performance-Kconfig-options.patch
 patch -p1 --no-backup-if-mismatch < "${basedir}"/../patches/pinebook-pro/0001-net-smsc95xx-Allow-mac-address-to-be-set-as-a-parame.patch
-patch -p1 --no-backup-if-mismatch < "${basedir}"/../patches/pinebook-pro/0001-raid6-add-Kconfig-option-to-skip-raid6-benchmarking.patch
+#patch -p1 --no-backup-if-mismatch < "${basedir}"/../patches/pinebook-pro/0001-raid6-add-Kconfig-option-to-skip-raid6-benchmarking.patch
 patch -p1 --no-backup-if-mismatch < "${basedir}"/../patches/pinebook-pro/kali-wifi-injection.patch
 cp "${basedir}"/../kernel-configs/pinebook-pro-5.6.config .config
 #make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- pinebook_pro_defconfig
