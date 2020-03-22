@@ -866,6 +866,7 @@ MACHINE_TYPE=`uname -m`
 if [ ${MACHINE_TYPE} == 'x86_64' ]; then
 echo "Compressing ${imagename}.img"
 xz -z "${basedir}"/${imagename}.img
+mv "${basedir}"/${imagename}.img.xz "${basedir}"/../${imagename}.img.xz
 fi
 
 # Clean up all the temporary build stuff and remove the directories.
