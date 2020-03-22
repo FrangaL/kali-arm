@@ -865,8 +865,7 @@ losetup -d ${loopdevice}
 MACHINE_TYPE=`uname -m`
 if [ ${MACHINE_TYPE} == 'x86_64' ]; then
 echo "Compressing ${imagename}.img"
-xz -z "${basedir}"/${imagename}.img "${basedir}"/../${imagename}.img.xz
-rm "${basedir}"/${imagename}.img
+xz -z "${basedir}"/${imagename}.img
 fi
 
 # Clean up all the temporary build stuff and remove the directories.
