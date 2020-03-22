@@ -331,7 +331,7 @@ cd "${basedir}"/kali-${architecture}/lib/modules/${kernver}/
 rm build
 rm source
 ln -s /usr/src/linux build
-ln -s /usr/src/linux build
+ln -s /usr/src/linux source
 cd "${basedir}"
 
 cat << '__EOF__' > "${basedir}"/kali-${architecture}/boot/boot.txt
