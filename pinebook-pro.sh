@@ -384,6 +384,7 @@ dd if="${basedir}"/../misc/pbp/u-boot.itb of=${loopdevice} seek=16384 conv=notru
 # Unmount partitions
 sync
 umount ${rootp}
+fsck -a ${rootp}
 
 kpartx -dv ${loopdevice}
 losetup -d ${loopdevice}
