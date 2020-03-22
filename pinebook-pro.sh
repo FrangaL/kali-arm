@@ -52,8 +52,8 @@ unset CROSS_COMPILE
 # image, keep that in mind.
 
 arm="abootimg cgpt fake-hwclock ntpdate u-boot-tools vboot-utils vboot-kernel-utils"
-base="apt-utils dkms e2fsprogs ifupdown initramfs-tools kali-defaults parted sudo usbutils firmware-linux firmware-atheros firmware-libertas firmware-realtek"
-desktop="kali-menu fonts-croscore fonts-crosextra-caladea fonts-crosextra-carlito kali-desktop-xfce kali-root-login lightdm network-manager network-manager-gnome xfce4 xserver-xorg-video-fbdev"
+base="alsa-utils apt-utils dkms e2fsprogs ifupdown initramfs-tools kali-defaults parted sudo usbutils firmware-linux firmware-atheros firmware-libertas firmware-realtek"
+desktop="kali-menu kali-desktop-xfce kali-root-login xserver-xorg-video-fbdev"
 tools="aircrack-ng ethtool hydra john libnfc-bin mfoc nmap passing-the-hash sqlmap usbutils winexe wireshark"
 services="apache2 openssh-server"
 extras="firefox-esr xfce4-terminal wpasupplicant"
@@ -196,6 +196,9 @@ systemctl enable smi-hack
 systemctl enable regenerate_ssh_host_keys
 systemctl enable ssh
 
+# And enable bluetooth
+systemctl enable bluetooth
+
 # Copy bashrc
 cp  /etc/skel/.bashrc /root/.bashrc
 
@@ -203,6 +206,9 @@ cd /root
 apt download ca-certificates
 apt download libgdk-pixbuf2.0-0
 apt download fontconfig
+
+# Enable suspend2idle
+sed -i s/"#SuspendState=mem standby freeze"/"SuspendState=freeze"/g /etc/systemd/sleep.conf
 
 rm -f /usr/sbin/policy-rc.d
 rm -f /usr/sbin/invoke-rc.d
@@ -239,7 +245,7 @@ echo 'T1:12345:respawn:/sbin/agetty 115200 ttymxc0 vt100' >> \
 
 cat << EOF > "${basedir}"/kali-${architecture}/etc/apt/sources.list
 deb http://http.kali.org/kali kali-rolling main non-free contrib
-deb-src http://http.kali.org/kali kali-rolling main non-free contrib
+#deb-src http://http.kali.org/kali kali-rolling main non-free contrib
 EOF
 
 mkdir -p "${basedir}"/kali-${architecture}/etc/X11/xorg.conf.d/
@@ -292,8 +298,9 @@ cd "${basedir}"/kali-${architecture}/usr/src
 # Let's clone git, and use the usual name...
 #wget 'https://gitlab.manjaro.org/tsys/linux-pinebook-pro/-/archive/v5.5-rc5/linux-pinebook-pro-v5.5-rc5.tar.bz2'
 #tar -xf linux-pinebook-pro-v5.5-rc5.tar.bz2
-git clone https://gitlab.manjaro.org/tsys/linux-pinebook-pro --depth 1 linux
+git clone https://gitlab.manjaro.org/tsys/linux-pinebook-pro.git --depth 1 linux
 cd linux
+git checkout -b 2863ca167 2863ca1671e6e106528ceb942df48e14ee1c2006
 touch .scmversion
 #patch -p1 --no-backup-if-mismatch < "${basedir}"/../patches/pinebook-pro/0001-allow-performance-Kconfig-options.patch
 patch -p1 --no-backup-if-mismatch < "${basedir}"/../patches/pinebook-pro/0001-net-smsc95xx-Allow-mac-address-to-be-set-as-a-parame.patch
@@ -314,6 +321,17 @@ make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- mrproper
 #make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- pinebook_pro_defconfig
 cp "${basedir}"/../kernel-configs/pinebook-pro-5.5.config .config
 cp "${basedir}"/../kernel-configs/pinebook-pro-5.5.config ../default-config
+cd "${basedir}"
+
+# Fix up the symlink for building external modules
+# kernver is used to we don't need to keep track of what the current compiled
+# version is
+kernver=$(ls "${basedir}"/kali-${architecture}/lib/modules)
+cd "${basedir}"/kali-${architecture}/lib/modules/${kernver}/
+rm build
+rm source
+ln -s /usr/src/linux build
+ln -s /usr/src/linux build
 cd "${basedir}"
 
 cat << '__EOF__' > "${basedir}"/kali-${architecture}/boot/boot.txt
@@ -346,6 +364,460 @@ cp "${basedir}"/../misc/zram "${basedir}"/kali-${architecture}/etc/init.d/zram
 chmod 755 "${basedir}"/kali-${architecture}/etc/init.d/zram
 
 sed -i -e 's/^#PermitRootLogin.*/PermitRootLogin yes/' "${basedir}"/kali-${architecture}/etc/ssh/sshd_config
+
+# Enable brightness up/down and sleep hotkeys
+mkdir -p "${basedir}"/kali-${architecture}/etc/udev/hwdb.d/
+cat << 'EOF' > "${basedir}"/kali-${architecture}/etc/udev/hwdb.d/10-usb-kbd.hwdb
+evdev:input:b0003v258Ap001E*
+  KEYBOARD_KEY_700a5=brightnessdown
+  KEYBOARD_KEY_700a6=brightnessup
+  KEYBOARD_KEY_70066=sleep
+EOF
+
+# Alsa settings for the soundcard
+mkdir -p "${basedir}"/kali-${architecture}/var/lib/alsa/
+cat << 'EOF' > "${basedir}"/kali-${architecture}/var/lib/alsa/asound.state
+state.rockchipes8316c {
+        control.1 {
+                iface CARD
+                name 'Headphones Jack'
+                value false
+                comment {
+                        access read
+                        type BOOLEAN
+                        count 1
+                }
+        }
+        control.2 {
+                iface MIXER
+                name 'Headphone Playback Volume'
+                value.0 2
+                value.1 2
+                comment {
+                        access 'read write'
+                        type INTEGER
+                        count 2
+                        range '0 - 3'
+                        dbmin -4800
+                        dbmax 0
+                        dbvalue.0 -1200
+                        dbvalue.1 -1200
+                }
+        }
+        control.3 {
+                iface MIXER
+                name 'Headphone Mixer Volume'
+                value.0 11
+                value.1 11
+                comment {
+                        access 'read write'
+                        type INTEGER
+                        count 2
+                        range '0 - 11'
+                        dbmin -1200
+                        dbmax 0
+                        dbvalue.0 0
+                        dbvalue.1 0
+                }
+        }
+        control.4 {
+                iface MIXER
+                name 'Playback Polarity'
+                value 'R Invert'
+                comment {
+                        access 'read write'
+                        type ENUMERATED
+                        count 1
+                        item.0 Normal
+                        item.1 'R Invert'
+                        item.2 'L Invert'
+                        item.3 'L + R Invert'
+                }
+        }
+        control.5 {
+                iface MIXER
+                name 'DAC Playback Volume'
+                value.0 192
+                value.1 192
+                comment {
+                        access 'read write'
+                        type INTEGER
+                        count 2
+                        range '0 - 192'
+                        dbmin -9999999
+                        dbmax 0
+                        dbvalue.0 0
+                        dbvalue.1 0
+                }
+        }
+        control.6 {
+                iface MIXER
+                name 'DAC Soft Ramp Switch'
+                value false
+                comment {
+                        access 'read write'
+                        type BOOLEAN
+                        count 1
+                }
+        }
+        control.7 {
+                iface MIXER
+                name 'DAC Soft Ramp Rate'
+                value 4
+                comment {
+                        access 'read write'
+                        type INTEGER
+                        count 1
+                        range '0 - 4'
+                }
+        }
+        control.8 {
+                iface MIXER
+                name 'DAC Notch Filter Switch'
+                value false
+                comment {
+                        access 'read write'
+                        type BOOLEAN
+                        count 1
+                }
+        }
+        control.9 {
+                iface MIXER
+                name 'DAC Double Fs Switch'
+                value false
+                comment {
+                        access 'read write'
+                        type BOOLEAN
+                        count 1
+                }
+        }
+        control.10 {
+                iface MIXER
+                name 'DAC Stereo Enhancement'
+                value 5
+                comment {
+                        access 'read write'
+                        type INTEGER
+                        count 1
+                        range '0 - 7'
+                }
+        }
+        control.11 {
+                iface MIXER
+                name 'DAC Mono Mix Switch'
+                value false
+                comment {
+                        access 'read write'
+                        type BOOLEAN
+                        count 1
+                }
+        }
+        control.12 {
+                iface MIXER
+                name 'Capture Polarity'
+                value Normal
+                comment {
+                        access 'read write'
+                        type ENUMERATED
+                        count 1
+                        item.0 Normal
+                        item.1 Invert
+                }
+        }
+        control.13 {
+                iface MIXER
+                name 'Mic Boost Switch'
+                value true
+                comment {
+                        access 'read write'
+                        type BOOLEAN
+                        count 1
+                }
+        }
+        control.14 {
+                iface MIXER
+                name 'ADC Capture Volume'
+                value 192
+                comment {
+                        access 'read write'
+                        type INTEGER
+                        count 1
+                        range '0 - 192'
+                        dbmin -9999999
+                        dbmax 0
+                        dbvalue.0 0
+                }
+        }
+        control.15 {
+                iface MIXER
+                name 'ADC PGA Gain Volume'
+                value 0
+                comment {
+                        access 'read write'
+                        type INTEGER
+                        count 1
+                        range '0 - 10'
+                }
+        }
+        control.16 {
+                iface MIXER
+                name 'ADC Soft Ramp Switch'
+                value false
+                comment {
+                        access 'read write'
+                        type BOOLEAN
+                        count 1
+                }
+        }
+        control.17 {
+                iface MIXER
+                name 'ADC Double Fs Switch'
+                value false
+                comment {
+                        access 'read write'
+                        type BOOLEAN
+                        count 1
+                }
+        }
+        control.18 {
+                iface MIXER
+                name 'ALC Capture Switch'
+                value false
+                comment {
+                        access 'read write'
+                        type BOOLEAN
+                        count 1
+                }
+        }
+        control.19 {
+                iface MIXER
+                name 'ALC Capture Max Volume'
+                value 28
+                comment {
+                        access 'read write'
+                        type INTEGER
+                        count 1
+                        range '0 - 28'
+                        dbmin -650
+                        dbmax 3550
+                        dbvalue.0 3550
+                }
+        }
+        control.20 {
+                iface MIXER
+                name 'ALC Capture Min Volume'
+                value 0
+                comment {
+                        access 'read write'
+                        type INTEGER
+                        count 1
+                        range '0 - 28'
+                        dbmin -1200
+                        dbmax 3000
+                        dbvalue.0 -1200
+                }
+        }
+        control.21 {
+                iface MIXER
+                name 'ALC Capture Target Volume'
+                value 11
+                comment {
+                        access 'read write'
+                        type INTEGER
+                        count 1
+                        range '0 - 10'
+                        dbmin -1650
+                        dbmax -150
+                        dbvalue.0 0
+                }
+        }
+        control.22 {
+                iface MIXER
+                name 'ALC Capture Hold Time'
+                value 0
+                comment {
+                        access 'read write'
+                        type INTEGER
+                        count 1
+                        range '0 - 10'
+                }
+        }
+        control.23 {
+                iface MIXER
+                name 'ALC Capture Decay Time'
+                value 3
+                comment {
+                        access 'read write'
+                        type INTEGER
+                        count 1
+                        range '0 - 10'
+                }
+        }
+        control.24 {
+                iface MIXER
+                name 'ALC Capture Attack Time'
+                value 2
+                comment {
+                        access 'read write'
+                        type INTEGER
+                        count 1
+                        range '0 - 10'
+                }
+        }
+        control.25 {
+                iface MIXER
+                name 'ALC Capture Noise Gate Switch'
+                value false
+                comment {
+                        access 'read write'
+                        type BOOLEAN
+                        count 1
+                }
+        }
+        control.26 {
+                iface MIXER
+                name 'ALC Capture Noise Gate Threshold'
+                value 0
+                comment {
+                        access 'read write'
+                        type INTEGER
+                        count 1
+                        range '0 - 31'
+                }
+        }
+        control.27 {
+                iface MIXER
+                name 'ALC Capture Noise Gate Type'
+                value 'Constant PGA Gain'
+                comment {
+                        access 'read write'
+                        type ENUMERATED
+                        count 1
+                        item.0 'Constant PGA Gain'
+                        item.1 'Mute ADC Output'
+                }
+        }
+        control.28 {
+                iface MIXER
+                name 'Speaker Switch'
+                value true
+                comment {
+                        access 'read write'
+                        type BOOLEAN
+                        count 1
+                }
+        }
+        control.29 {
+                iface MIXER
+                name 'Differential Mux'
+                value lin1-rin1
+                comment {
+                        access 'read write'
+                        type ENUMERATED
+                        count 1
+                        item.0 lin1-rin1
+                        item.1 lin2-rin2
+                        item.2 'lin1-rin1 with 20db Boost'
+                        item.3 'lin2-rin2 with 20db Boost'
+                }
+        }
+        control.30 {
+                iface MIXER
+                name 'Digital Mic Mux'
+                value 'dmic disable'
+                comment {
+                        access 'read write'
+                        type ENUMERATED
+                        count 1
+                        item.0 'dmic disable'
+                        item.1 'dmic data at high level'
+                        item.2 'dmic data at low level'
+                }
+        }
+        control.31 {
+                iface MIXER
+                name 'DAC Source Mux'
+                value 'LDATA TO LDAC, RDATA TO RDAC'
+                comment {
+                        access 'read write'
+                        type ENUMERATED
+                        count 1
+                        item.0 'LDATA TO LDAC, RDATA TO RDAC'
+                        item.1 'LDATA TO LDAC, LDATA TO RDAC'
+                        item.2 'RDATA TO LDAC, RDATA TO RDAC'
+                        item.3 'RDATA TO LDAC, LDATA TO RDAC'
+                }
+        }
+        control.32 {
+                iface MIXER
+                name 'Left Headphone Mux'
+                value lin1-rin1
+                comment {
+                        access 'read write'
+                        type ENUMERATED
+                        count 1
+                        item.0 lin1-rin1
+                        item.1 lin2-rin2
+                        item.2 'lin-rin with Boost'
+                        item.3 'lin-rin with Boost and PGA'
+                }
+        }
+        control.33 {
+                iface MIXER
+                name 'Right Headphone Mux'
+                value lin1-rin1
+                comment {
+                        access 'read write'
+                        type ENUMERATED
+                        count 1
+                        item.0 lin1-rin1
+                        item.1 lin2-rin2
+                        item.2 'lin-rin with Boost'
+                        item.3 'lin-rin with Boost and PGA'
+                }
+        }
+        control.34 {
+                iface MIXER
+                name 'Left Headphone Mixer LLIN Switch'
+                value false
+                comment {
+                        access 'read write'
+                        type BOOLEAN
+                        count 1
+                }
+        }
+        control.35 {
+                iface MIXER
+                name 'Left Headphone Mixer Left DAC Switch'
+                value true
+                comment {
+                        access 'read write'
+                        type BOOLEAN
+                        count 1
+                }
+        }
+        control.36 {
+                iface MIXER
+                name 'Right Headphone Mixer RLIN Switch'
+                value false
+                comment {
+                        access 'read write'
+                        type BOOLEAN
+                        count 1
+                }
+        }
+        control.37 {
+                iface MIXER
+                name 'Right Headphone Mixer Right DAC Switch'
+                value true
+                comment {
+                        access 'read write'
+                        type BOOLEAN
+                        count 1
+                }
+        }
+}
+EOF
 
 echo "Creating image file for ${imagename}.img"
 dd if=/dev/zero of="${basedir}"/${imagename}.img bs=1M count=${size}
