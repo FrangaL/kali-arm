@@ -29,12 +29,13 @@ suite=kali-rolling
 # Generate a random machine name to be used.
 machine=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 16 | head -n 1)
 
-arm="abootimg cgpt fake-hwclock ntpdate u-boot-tools vboot-utils vboot-kernel-utils"
-base="apt-transport-https apt-utils console-setup e2fsprogs firmware-linux firmware-realtek firmware-atheros firmware-libertas ifupdown initramfs-tools iw kali-defaults man-db mlocate netcat-traditional net-tools parted pciutils psmisc rfkill screen snmpd snmp sudo tftp tmux unrar usbutils vim wget zerofree"
-desktop="kali-menu fonts-croscore fonts-crosextra-caladea fonts-crosextra-carlito kali-desktop-xfce kali-root-login lightdm network-manager network-manager-gnome xfce4 xserver-xorg-video-fbdev xserver-xorg-input-evdev xserver-xorg-input-synaptics"
-tools="aircrack-ng crunch cewl dnsrecon dnsutils ethtool exploitdb hydra john libnfc-bin medusa metasploit-framework mfoc ncrack nmap passing-the-hash proxychains recon-ng sqlmap tcpdump theharvester tor tshark usbutils whois windows-binaries winexe wpscan wireshark"
-services="apache2 atftpd openssh-server openvpn tightvncserver"
-extras="bluez bluez-firmware firefox-esr i2c-tools python3-configobj python3-pip python3-requests python3-rpi.gpio python3-smbus triggerhappy wpasupplicant xfce4-terminal xfonts-terminus"
+# kali-linux-arm
+arm="kali-linux-arm ntpdate"
+base="apt-transport-https apt-utils console-setup e2fsprogs ifupdown initramfs-tools iw man-db mlocate netcat-traditional net-tools parted pciutils psmisc rfkill screen tmux unrar usbutils wget zerofree"
+desktop="kali-desktop-xfce kali-root-login xserver-xorg-video-fbdev xserver-xorg-input-evdev xserver-xorg-input-synaptics"
+tools="wireshark"
+services="apache2 atftpd"
+extras="bluez bluez-firmware i2c-tools python3-configobj python3-pip python3-requests python3-rpi.gpio python3-smbus triggerhappy"
 
 packages="${arm} ${base} ${services}"
 
@@ -111,37 +112,6 @@ WantedBy=multi-user.target
 EOF
 chmod 644 kali-${architecture}/usr/lib/systemd/system/regenerate_ssh_host_keys.service
 
-cat << EOF > kali-${architecture}/usr/lib/systemd/system/smi-hack.service
-[Unit]
-Description=shared-mime-info update hack
-Before=regenerate_ssh_host_keys.service
-[Service]
-Type=oneshot
-Environment=DEBIAN_FRONTEND=noninteractive
-ExecStart=/bin/sh -c "rm -rf /etc/ssl/certs/*.pem && dpkg -i /root/*.deb"
-ExecStart=/bin/sh -c "dpkg-reconfigure shared-mime-info"
-ExecStart=/bin/sh -c "dpkg-reconfigure xfonts-base"
-ExecStart=/bin/sh -c "rm -f /root/*.deb"
-ExecStartPost=/bin/systemctl disable smi-hack
-
-[Install]
-WantedBy=multi-user.target
-EOF
-chmod 644 kali-${architecture}/usr/lib/systemd/system/smi-hack.service
-
-cat << EOF > "${basedir}"/kali-${architecture}/usr/lib/systemd/system/rpiwiggle.service
-[Unit]
-Description=Resize filesystem
-After=regenerate_ssh_host_keys.service
-[Service]
-Type=oneshot
-ExecStart=/root/scripts/rpi-wiggle.sh
-ExecStartPost=/bin/systemctl disable rpiwiggle
-
-[Install]
-WantedBy=multi-user.target
-EOF
-chmod 644 "${basedir}"/kali-${architecture}/usr/lib/systemd/system/rpiwiggle.service
 
 cat << EOF > "${basedir}"/kali-${architecture}/usr/lib/systemd/system/enable-ssh.service
 [Unit]
@@ -249,11 +219,6 @@ apt-get install --yes --allow-change-held-packages -o dpkg::options::=--force-co
 echo "Making the image insecure"
 sed -i -e 's/^#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
 
-# Regenerated the shared-mime-info database on the first boot
-# since it fails to do so properly in a chroot.
-systemctl enable smi-hack
-
-systemctl enable rpiwiggle
 # Generate SSH host keys on first run
 systemctl enable regenerate_ssh_host_keys
 
@@ -266,6 +231,10 @@ systemctl enable copy-user-wpasupplicant
 # Enable... enabling ssh by putting ssh or ssh.txt file in /boot
 systemctl enable enable-ssh
 
+# Set default to multi-user for non-graphical login.  User will login as
+# root:toor and then the first login setup will run
+systemctl set-default multi-user
+
 # Copy over the default bashrc
 cp  /etc/skel/.bashrc /root/.bashrc
 
@@ -273,11 +242,6 @@ cd /root
 apt download ca-certificates
 apt download libgdk-pixbuf2.0-0
 apt download fontconfig
-
-# Try and make the console a bit nicer
-# Set the terminus font for a bit nicer display.
-sed -i -e 's/FONTFACE=.*/FONTFACE="Terminus"/' /etc/default/console-setup
-sed -i -e 's/FONTSIZE=.*/FONTSIZE="6x12"/' /etc/default/console-setup
 
 # Fix startup time from 5 minutes to 15 secs on raise interface wlan0
 sed -i 's/^TimeoutStartSec=5min/TimeoutStartSec=15/g' "/lib/systemd/system/networking.service"
@@ -294,11 +258,6 @@ rm -f cleanup
 EOF
 
 chmod 755 "${basedir}"/kali-${architecture}/third-stage
-
-# rpi-wiggle
-mkdir -p "${basedir}"/kali-${architecture}/root/scripts
-wget https://raw.githubusercontent.com/steev/rpiwiggle/master/rpi-wiggle -O kali-${architecture}/root/scripts/rpi-wiggle.sh
-chmod 755 "${basedir}"/kali-${architecture}/root/scripts/rpi-wiggle.sh
 
 export MALLOC_CHECK_=0 # workaround for LP: #520465
 export LC_ALL=C
@@ -327,51 +286,11 @@ echo "T0:23:respawn:/sbin/agetty -L ttyAMA0 115200 vt100" >> "${basedir}"/kali-$
 
 # Kernel section. If you want to use a custom kernel, or configuration, replace
 # them in this section.
-#git clone --depth 1 https://github.com/re4son/re4son-raspberrypi-linux -b rpi-4.14.80-re4son "${basedir}"/kali-${architecture}/usr/src/kernel
-#cd "${basedir}"/kali-${architecture}/usr/src/kernel
-#git rev-parse HEAD > "${basedir}"/kali-${architecture}/usr/src/kernel-at-commit
-# Fix sdcards not working.
-# Comment out for now - manually applying seems to want to reverse it so lets not do that.
-#patch -p1 --no-backup-if-mismatch < "${basedir}"/../patches/issue-4973.patch
-#touch .scmversion
-#export ARCH=arm64
-#export CROSS_COMPILE=aarch64-linux-gnu-
-#cp "${basedir}"/../kernel-configs/rpi3-64bit.config "${basedir}"/kali-${architecture}/usr/src/kernel/.config
-#make -j $(grep -c processor /proc/cpuinfo)
-#make modules_install INSTALL_MOD_PATH="${basedir}"/kali-${architecture}/
-#git clone --depth 1 https://github.com/raspberrypi/firmware.git rpi-firmware
-#cp -rf rpi-firmware/boot/* "${basedir}"/kali-${architecture}/boot/
-#rm -rf rpi-firmware
-# ARGH.  Device tree support requires we run this *sigh*
-#perl scripts/mkknlimg --dtok arch/arm64/boot/Image "${basedir}"/kali-${architecture}/boot/kernel8.img
-#cp arch/arm64/boot/Image ${basedir}/bootp/kernel8.img
-#cp arch/arm64/boot/dts/broadcom/*.dtb "${basedir}"/kali-${architecture}/boot/
-#mkdir -p "${basedir}"/kali-${architecture}/boot/overlays/
-#cp arch/arm/boot/dts/overlays/*.dtbo "${basedir}"/kali-${architecture}/boot/overlays/
-#make mrproper
-#cp "${basedir}"/../kernel-configs/rpi3-64bit.config "${basedir}"/kali-${architecture}/usr/src/kernel/.config
-#cp "${basedir}"/../kernel-configs/rpi3-64bit.config "${basedir}"/kali-${architecture}/usr/src/rpi3-64bit.config
-# Don't make prepare or make modules_prepare because it ends up building amd64 binaries
-# and external modules fail.
 cd ${basedir}
-
-# Fix up the symlink for building external modules
-# kernver is used so we don't need to keep track of what the current compiled
-# version is
-#kernver=$(ls "${basedir}"/kali-${architecture}/lib/modules/)
-#cd "${basedir}"/kali-${architecture}/lib/modules/$kernver
-#rm build
-#rm source
-#ln -s /usr/src/kernel build
-#ln -s /usr/src/kernel source
-#cd ${basedir}
-
-
-cd "${basedir}"
 
 cat << EOF > "${basedir}"/kali-${architecture}/etc/apt/sources.list
 deb http://http.kali.org/kali kali-rolling main non-free contrib
-deb-src http://http.kali.org/kali kali-rolling main non-free contrib
+#deb-src http://http.kali.org/kali kali-rolling main non-free contrib
 EOF
 
 # Create cmdline.txt file
