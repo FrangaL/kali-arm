@@ -298,9 +298,9 @@ cd "${basedir}"/kali-${architecture}/usr/src
 # Let's clone git, and use the usual name...
 #wget 'https://gitlab.manjaro.org/tsys/linux-pinebook-pro/-/archive/v5.5-rc5/linux-pinebook-pro-v5.5-rc5.tar.bz2'
 #tar -xf linux-pinebook-pro-v5.5-rc5.tar.bz2
-git clone https://gitlab.manjaro.org/tsys/linux-pinebook-pro.git --depth 1 linux
+git clone https://gitlab.manjaro.org/tsys/linux-pinebook-pro.git --depth 1 linux -b v5.6
 cd linux
-git checkout -b 2863ca167 2863ca1671e6e106528ceb942df48e14ee1c2006
+#git checkout -b 2863ca167 2863ca1671e6e106528ceb942df48e14ee1c2006
 touch .scmversion
 #patch -p1 --no-backup-if-mismatch < "${basedir}"/../patches/pinebook-pro/0001-allow-performance-Kconfig-options.patch
 patch -p1 --no-backup-if-mismatch < "${basedir}"/../patches/pinebook-pro/0001-net-smsc95xx-Allow-mac-address-to-be-set-as-a-parame.patch
