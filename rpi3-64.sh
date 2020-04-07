@@ -245,6 +245,10 @@ apt download fontconfig
 
 apt-get install --yes --download-only kali-linux-default
 
+# Often times, people install scripts tools that modify rc.local so
+# lets mark it as executable so that it always gets run.
+chmod +x /etc/rc.local
+
 # Fix startup time from 5 minutes to 15 secs on raise interface wlan0
 sed -i 's/^TimeoutStartSec=5min/TimeoutStartSec=15/g' "/lib/systemd/system/networking.service"
 rm -f /usr/sbin/policy-rc.d
