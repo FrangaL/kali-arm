@@ -251,8 +251,6 @@ rm -f /usr/sbin/policy-rc.d
 rm -f /usr/sbin/invoke-rc.d
 dpkg-divert --remove --rename /usr/sbin/invoke-rc.d
 rm -rf /root/.bash_history
-apt-get update
-apt-get clean
 rm -f /0
 rm -f /hs_err*
 rm -f cleanup
