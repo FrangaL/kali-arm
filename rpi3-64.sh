@@ -17,8 +17,8 @@ basedir=`pwd`/rpi3-nexmon-64-$1
 hostname=${2:-kali}
 # Custom image file name variable - MUST NOT include .img at the end.
 imagename=${3:-kali-linux-$1-rpi3-nexmon-64}
-# Size of image in megabytes (Default is 7000=7GB)
-size=7000
+# Size of image in megabytes (Default is 14000=14GB)
+size=14000
 # Suite to use.
 # Valid options are:
 # kali-rolling, kali-dev, kali-bleeding-edge, kali-dev-only, kali-experimental, kali-last-snapshot
@@ -243,6 +243,8 @@ apt download ca-certificates
 apt download libgdk-pixbuf2.0-0
 apt download fontconfig
 
+apt-get --download-only --yes kali-linux-default
+
 # Fix startup time from 5 minutes to 15 secs on raise interface wlan0
 sed -i 's/^TimeoutStartSec=5min/TimeoutStartSec=15/g' "/lib/systemd/system/networking.service"
 rm -f /usr/sbin/policy-rc.d
@@ -317,7 +319,8 @@ cat << EOF >> "${basedir}"/kali-${architecture}/boot/config.txt
 # Boot from microsd card with it, then reboot.
 # Don't forget to comment this back out after using, especially if you plan to use
 # sdcard with multiple machines!
-# NOTE: This ONLY works with the Raspberry Pi 3+
+# NOTE: This ONLY works with the Raspberry Pi 3 (4 is still unsupported
+# currently)
 #program_usb_boot_mode=1
 EOF
 
@@ -366,8 +369,8 @@ let RAW_SIZE=(${RAW_SIZE_MB}*1000*1000)/${BLOCK_SIZE}
 echo "Creating image file ${imagename}.img"
 dd if=/dev/zero of="${basedir}"/${imagename}.img bs=${BLOCK_SIZE} count=0 seek=${RAW_SIZE}
 parted ${imagename}.img --script -- mklabel msdos
-parted ${imagename}.img --script -- mkpart primary fat32 0 128
-parted ${imagename}.img --script -- mkpart primary ext4 128 -1
+parted ${imagename}.img --script -- mkpart primary fat32 0 256
+parted ${imagename}.img --script -- mkpart primary ext4 25 -1
 
 # Set the partition variables
 loopdevice=`losetup -f --show "${basedir}"/${imagename}.img`
