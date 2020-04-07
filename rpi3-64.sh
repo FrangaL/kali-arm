@@ -182,6 +182,13 @@ cp "${basedir}"/../misc/pi-bluetooth/btuart "${basedir}"/kali-${architecture}/us
 # Ensure btuart is executable
 chmod 755 "${basedir}"/kali-${architecture}/usr/bin/btuart
 
+# Non-root-user script
+mkdir -p "${basedir}"/kali-${architecture}/usr/share/kali-arm-oem-install
+cp "${basedir}"/../non-root/* "${basedir}"/kali-${architecture}/usr/share/kali-arm-oem-install
+# Resizefs needs to go into the path
+cp "${basedir}"/../non-root/resize-fs "${basedir}"/kali-${architecture}/usr/local/bin/resize-fs
+chmod +x "${basedir}"/kali-${architecture}/usr/local/bin/resize-fs
+
 cat << EOF > "${basedir}"/kali-${architecture}/third-stage
 #!/bin/bash
 set -e
@@ -234,6 +241,7 @@ systemctl enable enable-ssh
 # Set default to multi-user for non-graphical login.  User will login as
 # root:toor and then the first login setup will run
 systemctl set-default multi-user
+cp /usr/share/kali-arm-oem-install/bash_profile /root/.bash_profile
 
 # Copy over the default bashrc
 cp  /etc/skel/.bashrc /root/.bashrc
