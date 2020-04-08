@@ -375,8 +375,8 @@ let RAW_SIZE=(${RAW_SIZE_MB}*1000*1000)/${BLOCK_SIZE}
 echo "Creating image file ${imagename}.img"
 dd if=/dev/zero of="${basedir}"/${imagename}.img bs=${BLOCK_SIZE} count=0 seek=${RAW_SIZE}
 parted ${imagename}.img --script -- mklabel msdos
-parted ${imagename}.img --script -- mkpart primary fat32 0 256
-parted ${imagename}.img --script -- mkpart primary ext4 256 -1
+parted ${imagename}.img -a optimal --script -- mkpart primary fat32 '0%' 256M
+parted ${imagename}.img -a optimal --script -- mkpart primary ext4 256M -1
 
 # Set the partition variables
 loopdevice=`losetup -f --show "${basedir}"/${imagename}.img`
