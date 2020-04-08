@@ -31,7 +31,7 @@ machine=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 16 | head -n 1)
 
 # kali-linux-arm
 arm="kali-linux-arm ntpdate"
-base="apt-transport-https apt-utils console-setup e2fsprogs ifupdown initramfs-tools inxi iw man-db mlocate netcat-traditional net-tools parted pciutils psmisc rfkill screen tmux unrar usbutils wget zerofree"
+base="apt-transport-https apt-utils console-setup dialog e2fsprogs ifupdown initramfs-tools inxi iw man-db mlocate netcat-traditional net-tools parted pciutils psmisc rfkill screen tmux unrar usbutils wget zerofree"
 desktop="kali-desktop-xfce kali-root-login xserver-xorg-video-fbdev xserver-xorg-input-evdev xserver-xorg-input-synaptics"
 tools="wireshark"
 services="apache2 atftpd"
