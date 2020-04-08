@@ -40,9 +40,10 @@ create_oem_install() {
     msg "Setting timezone to $TIMEZONE..."
     timedatectl set-timezone $TIMEZONE 1> /dev/null 2>&1
     timedatectl set-ntp true 1> /dev/null 2>&1
+    dpkg-reconfigure --frontend noninteractive tzdata 1> /dev/null 2>&1
     msg "Generating $LOCALE locale..."
     sed -i s/"#$LOCALE"/"$LOCALE"/g /etc/locale.gen 1> /dev/null 2>&1
-    locale-gen 1> /dev/null 2>&1
+    #locale-gen 1> /dev/null 2>&1
     localectl set-locale $LOCALE 1> /dev/null 2>&1
     if [[ "$SYSTEM" != "Pinebook" ]]; then
     msg "Setting keymap to $KEYMAP..."
