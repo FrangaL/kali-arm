@@ -45,10 +45,10 @@ create_oem_install() {
     sed -i s/"#$LOCALE"/"$LOCALE"/g /etc/locale.gen 1> /dev/null 2>&1
     #locale-gen 1> /dev/null 2>&1
     localectl set-locale $LOCALE 1> /dev/null 2>&1
-    if [[ "$SYSTEM" != "Pinebook" ]]; then
-    msg "Setting keymap to $KEYMAP..."
-    localectl set-keymap $KEYMAP 1> /dev/null 2>&1
-    fi
+    #if [[ "$SYSTEM" != "Pinebook" ]]; then
+    #msg "Setting keymap to $KEYMAP..."
+    #localectl set-keymap $KEYMAP 1> /dev/null 2>&1
+    #fi
     msg "Setting hostname to $HOSTNAME..."
     hostnamectl set-hostname $HOSTNAME 1> /dev/null 2>&1
     msg "Resizing partition..."
@@ -65,28 +65,28 @@ create_oem_install() {
 
 # Using Dialog to ask for user input for variables
 #if [ ! -z "$LOCALE" ]
-if [[ "$SYSTEM" != "Pinebook" ]]; then
-if [[ "$SYSTEMPRO" = "Pro" ]]; then
-KEYMAP=$(dialog --clear --title "Finish Kali ARM Install" \
-	--menu "Is your Pinebook Pro with ISO (uk) or ANSI (us) layout?:" 20 75 10 \
-	"uk"       "ISO Layout" \
-	"us"       "ANSI Layout" \
-	3>&1 1>&2 2>&3 3>&-) 
-else
-let i=0
-W=()
-while read -r line; do
-    let i=$i+1
-    W+=($line "")
-done < <( localectl list-keymaps )
-KEYMAP=$(dialog --clear --title "Finish Kali ARM Install" \
-	--menu "Choose your keyboard layout!" 20 60 15 \
-        "${W[@]}" 3>&1 1>&2 2>&3 3>&- \
-	)
-fi
-fi
+#if [[ "$SYSTEM" != "Pinebook" ]]; then
+#if [[ "$SYSTEMPRO" = "Pro" ]]; then
+#KEYMAP=$(dialog --clear --title "Finish Kali ARM Install" \
+#	--menu "Is your Pinebook Pro with ISO (uk) or ANSI (us) layout?:" 20 75 10 \
+#	"uk"       "ISO Layout" \
+#	"us"       "ANSI Layout" \
+#	3>&1 1>&2 2>&3 3>&-) 
+#else
+#let i=0
+#W=()
+#while read -r line; do
+#    let i=$i+1
+#    W+=($line "")
+#done < <( localectl list-keymaps )
+#KEYMAP=$(dialog --clear --title "Finish Kali ARM Install" \
+#	--menu "Choose your keyboard layout!" 20 60 15 \
+#        "${W[@]}" 3>&1 1>&2 2>&3 3>&- \
+#	)
+#fi
+#fi
 # Set the layout for the OEM setup
-loadkeys "$KEYMAP"
+#loadkeys "$KEYMAP"
 
 USER=$(dialog --clear --title "Finish Kali ARM Install" \
 	--inputbox "Enter username:
