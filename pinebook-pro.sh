@@ -19,8 +19,8 @@ basedir=`pwd`/pinebook-pro-$1
 hostname=${2:-kali}
 # Custom image file name variable - MUST NOT include .img at the end.
 imagename=${3:-kali-linux-$1-pinebook-pro}
-# Size of image in megabytes (Default is 7000=7GB)
-size=7000
+# Size of image in megabytes (Default is 14000=14GB)
+size=14000
 # Suite to use.
 # Valid options are:
 # kali-rolling, kali-dev, kali-bleeding-edge, kali-dev-only, kali-experimental, kali-last-snapshot
@@ -260,7 +260,7 @@ Section "InputClass"
   Option  "AccelSpeed"    "0.8"
   Option  "ScrollMethod"  "twofinger"
   Option  "Tapping"  "on"
-  Option  "NaturalScrolling" "true"
+  Option  "NaturalScrolling" "false"
   Option  "ClickMethod" "clickfinger"
 EndSection
 EOF
@@ -302,12 +302,9 @@ git clone https://gitlab.manjaro.org/tsys/linux-pinebook-pro.git --depth 1 linux
 cd linux
 #git checkout -b 2863ca167 2863ca1671e6e106528ceb942df48e14ee1c2006
 touch .scmversion
-#patch -p1 --no-backup-if-mismatch < "${basedir}"/../patches/pinebook-pro/0001-allow-performance-Kconfig-options.patch
 patch -p1 --no-backup-if-mismatch < "${basedir}"/../patches/pinebook-pro/0001-net-smsc95xx-Allow-mac-address-to-be-set-as-a-parame.patch
-#patch -p1 --no-backup-if-mismatch < "${basedir}"/../patches/pinebook-pro/0001-raid6-add-Kconfig-option-to-skip-raid6-benchmarking.patch
 patch -p1 --no-backup-if-mismatch < "${basedir}"/../patches/pinebook-pro/kali-wifi-injection.patch
 cp "${basedir}"/../kernel-configs/pinebook-pro-5.6.config .config
-#make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- pinebook_pro_defconfig
 make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- oldconfig
 make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- -j$(nproc)
 make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- INSTALL_MOD_PATH="${basedir}"/kali-${architecture} modules_install
@@ -318,7 +315,6 @@ cp arch/arm64/boot/dts/rockchip/rk3399-pinebook-pro.dtb "${basedir}"/kali-${arch
 make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- mrproper
 # And copy the config back in again (and copy it to /usr/src to keep a backup
 # around)
-#make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- pinebook_pro_defconfig
 cp "${basedir}"/../kernel-configs/pinebook-pro-5.6.config .config
 cp "${basedir}"/../kernel-configs/pinebook-pro-5.6.config ../default-config
 cd "${basedir}"
@@ -365,13 +361,19 @@ chmod 755 "${basedir}"/kali-${architecture}/etc/init.d/zram
 
 sed -i -e 's/^#PermitRootLogin.*/PermitRootLogin yes/' "${basedir}"/kali-${architecture}/etc/ssh/sshd_config
 
-# Enable brightness up/down and sleep hotkeys
+# Enable brightness up/down and sleep hotkeys and attempt to improve
+# touchpad performance
 mkdir -p "${basedir}"/kali-${architecture}/etc/udev/hwdb.d/
 cat << 'EOF' > "${basedir}"/kali-${architecture}/etc/udev/hwdb.d/10-usb-kbd.hwdb
 evdev:input:b0003v258Ap001E*
   KEYBOARD_KEY_700a5=brightnessdown
   KEYBOARD_KEY_700a6=brightnessup
   KEYBOARD_KEY_70066=sleep
+  # Supposed to improve performance of touchpad
+  EVDEV_ABS_00=::15
+  EVDEV_ABS_01=::15
+  EVDEV_ABS_35=::15
+  EVDEV_ABS_36=::15
 EOF
 
 # Alsa settings for the soundcard
