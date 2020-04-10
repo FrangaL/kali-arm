@@ -51,7 +51,7 @@ unset CROSS_COMPILE
 # script will throw an error, but will still continue on, and create an unusable
 # image, keep that in mind.
 
-arm="abootimg cgpt fake-hwclock ntpdate u-boot-tools vboot-utils vboot-kernel-utils"
+arm="abootimg bc bison cgpt fake-hwclock libssl-dev ntpdate u-boot-tools vboot-utils vboot-kernel-utils"
 base="alsa-utils apt-utils dkms e2fsprogs ifupdown initramfs-tools kali-defaults parted sudo usbutils firmware-linux firmware-atheros firmware-libertas firmware-realtek"
 desktop="kali-menu kali-desktop-xfce kali-root-login xserver-xorg-video-fbdev"
 tools="aircrack-ng ethtool hydra john libnfc-bin mfoc nmap passing-the-hash sqlmap usbutils winexe wireshark"
@@ -319,8 +319,8 @@ make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- mrproper
 # And copy the config back in again (and copy it to /usr/src to keep a backup
 # around)
 #make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- pinebook_pro_defconfig
-cp "${basedir}"/../kernel-configs/pinebook-pro-5.5.config .config
-cp "${basedir}"/../kernel-configs/pinebook-pro-5.5.config ../default-config
+cp "${basedir}"/../kernel-configs/pinebook-pro-5.6.config .config
+cp "${basedir}"/../kernel-configs/pinebook-pro-5.6.config ../default-config
 cd "${basedir}"
 
 # Fix up the symlink for building external modules
