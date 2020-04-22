@@ -147,7 +147,7 @@ ExecStart=/bin/sh -c "rm -rf /etc/ssl/certs/*.pem && dpkg -i /root/*.deb"
 ExecStart=/bin/sh -c "dpkg-reconfigure shared-mime-info"
 ExecStart=/bin/sh -c "dpkg-reconfigure xfonts-base"
 ExecStart=/bin/sh -c "rm -f /root/*.deb"
-ExecStart=/bin/sh -c 'apt-get --yes -o dpkg::options::="--force-confnew" -o dpkg::options::="--force-overwrite" install kali-linux-default
+ExecStart=/bin/sh -c 'apt-get --yes -o dpkg::options::="--force-confnew" -o dpkg::options::="--force-overwrite" install kali-linux-default'
 ExecStartPost=/bin/systemctl disable smi-hack
 
 [Install]
