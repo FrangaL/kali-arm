@@ -218,7 +218,7 @@ cd /root
 apt download ca-certificates
 apt download libgdk-pixbuf2.0-0
 apt download fontconfig
-apt --yes --download-only kali-linux-default
+apt --yes --download-only install kali-linux-default
 
 # We replace the u-boot menu defaults here so we can make sure the build system doesn't poison it.
 # We use _EOF_ so that the third-stage script doesn't end prematurely.
