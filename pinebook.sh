@@ -19,8 +19,8 @@ basedir=`pwd`/pinebook-$1
 hostname=${2:-kali}
 # Custom image file name variable - MUST NOT include .img at the end.
 imagename=${3:-kali-linux-$1-pinebook}
-# Size of image in megabytes (Default is 7000=7GB)
-size=7000
+# Size of image in megabytes (Default is 14000=14GB)
+size=14000
 # Suite to use.
 # Valid options are:
 # kali-rolling, kali-dev, kali-bleeding-edge, kali-dev-only, kali-experimental, kali-last-snapshot
@@ -51,12 +51,12 @@ unset CROSS_COMPILE
 # script will throw an error, but will still continue on, and create an unusable
 # image, keep that in mind.
 
-arm="abootimg cgpt fake-hwclock ntpdate u-boot-tools vboot-utils vboot-kernel-utils"
-base="apt-utils dkms e2fsprogs ifupdown initramfs-tools kali-defaults parted sudo usbutils firmware-linux firmware-atheros firmware-libertas firmware-realtek arm-trusted-firmware linux-headers-arm64 linux-image-arm64 u-boot-sunxi u-boot-menu"
-desktop="kali-menu fonts-croscore fonts-crosextra-caladea fonts-crosextra-carlito kali-desktop-xfce kali-root-login lightdm network-manager network-manager-gnome xfce4 xserver-xorg-video-fbdev"
-tools="aircrack-ng ethtool hydra john libnfc-bin mfoc nmap passing-the-hash sqlmap usbutils winexe wireshark"
-services="apache2 openssh-server"
-extras="firefox-esr xfce4-terminal wpasupplicant"
+arm="kali-linux-arm ntpdate"
+base="apt-transport-https apt-utils arm-trusted-firmware console-setup dialog dkms e2fsprogs ifupdown initramfs-tools inxi iw linux-headers-arm64 linux-image-arm64 man-db mlocate netcat-traditional net-tools parted pciutils psmisc rfkill screen tmux u-boot-sunxi u-boot-menu unrar usbutils wget zerofree"
+desktop="kali-desktop-xfce kali-root-login xserver-xorg-video-fbdev xserver-xorg-input-evdev xserver-xorg-input-synaptics"
+tools="wireshark"
+services="apache2 atftpd"
+extras="alsa-utils bluez bluez-firmware triggerhappy"
 
 packages="${arm} ${base} ${services}"
 architecture="arm64"
@@ -147,6 +147,7 @@ ExecStart=/bin/sh -c "rm -rf /etc/ssl/certs/*.pem && dpkg -i /root/*.deb"
 ExecStart=/bin/sh -c "dpkg-reconfigure shared-mime-info"
 ExecStart=/bin/sh -c "dpkg-reconfigure xfonts-base"
 ExecStart=/bin/sh -c "rm -f /root/*.deb"
+ExecStart=/bin/sh -c 'apt-get --yes -o dpkg::options::="--force-confnew" -o dpkg::options::="--force-overwrite" install kali-linux-default
 ExecStartPost=/bin/systemctl disable smi-hack
 
 [Install]
@@ -182,7 +183,6 @@ echo -e "#!/bin/sh\nexit 101" > /usr/sbin/policy-rc.d
 chmod 755 /usr/sbin/policy-rc.d
 
 apt-get update
-apt-get --yes --allow-change-held-packages install locales-all
 
 debconf-set-selections /debconf.set
 rm -f /debconf.set
@@ -218,6 +218,7 @@ cd /root
 apt download ca-certificates
 apt download libgdk-pixbuf2.0-0
 apt download fontconfig
+apt --yes --download-only kali-linux-default
 
 # We replace the u-boot menu defaults here so we can make sure the build system doesn't poison it.
 # We use _EOF_ so that the third-stage script doesn't end prematurely.
@@ -240,7 +241,6 @@ cat << EOF > kali-${architecture}/cleanup
 #!/bin/bash
 rm -rf /root/.bash_history
 apt-get update
-apt-get clean
 rm -f /0
 rm -f /hs_err*
 rm -f cleanup
@@ -310,7 +310,7 @@ cd "${basedir}"/kali-${architecture}/usr/src/
 git clone https://github.com/icenowy/rtl8723cs
 cat << EOF > "${basedir}"/kali-${architecture}/usr/src/rtl8723cs/dkms.conf
 PACKAGE_NAME="rtl8723cs"
-PACKAGE_VERSION="2018.11.07"
+PACKAGE_VERSION="2020.02.27"
 
 AUTOINSTALL="yes"
 
