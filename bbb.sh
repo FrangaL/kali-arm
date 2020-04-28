@@ -17,8 +17,8 @@ basedir=`pwd`/beaglebone-black-$1
 hostname=${2:-kali}
 # Custom image file name variable - MUST NOT include .img at the end.
 imagename=${3:-kali-linux-$1-bbb}
-# Size of image in megabytes (Default is 7000=7GB)
-size=7000
+# Size of image in megabytes (Default is 14000=14GB)
+size=14000
 # Suite to use.
 # Valid options are:
 # kali-rolling, kali-dev, kali-bleeding-edge, kali-dev-only, kali-experimental, kali-last-snapshot
@@ -38,12 +38,12 @@ machine=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 16 | head -n 1)
 # script will throw an error, but will still continue on, and create an unusable
 # image, keep that in mind.
 
-arm="abootimg cgpt fake-hwclock ntpdate u-boot-tools vboot-utils vboot-kernel-utils"
-base="apt-utils kali-defaults e2fsprogs ifupdown initramfs-tools kali-defaults kali-menu parted sudo usbutils firmware-linux firmware-realtek firmware-atheros firmware-libertas"
-desktop="kali-menu fonts-croscore fonts-crosextra-caladea fonts-crosextra-carlito kali-desktop-xfce kali-root-login lightdm network-manager network-manager-gnome xfce4 xserver-xorg-video-fbdev"
-tools="aircrack-ng ethtool hydra john libnfc-bin mfoc nmap passing-the-hash sqlmap usbutils winexe wireshark"
-services="apache2 openssh-server"
-extras="firefox-esr udhcpd xfce4-terminal wpasupplicant"
+arm="kali-linux-arm ntpdate"
+base="apt-utils console-setup dialog e2fsprogs ifupdown initramfs-tools inxi man-db netcat-traditional net-tools parted pciutils psmisc rfkill screen tmux"
+desktop="kali-desktop-xfce kali-root-login xserver-xorg-video-fbdev"
+tools="wireshark"
+services="apache2 atftpd"
+extras="alsa-utils bluez bluez-firmware triggerhappy udhcpd"
 
 packages="${arm} ${base} ${services}"
 architecture="armhf"
@@ -140,6 +140,7 @@ ExecStart=/bin/sh -c "rm -rf /etc/ssl/certs/*.pem && dpkg -i /root/*.deb"
 ExecStart=/bin/sh -c "dpkg-reconfigure shared-mime-info"
 ExecStart=/bin/sh -c "dpkg-reconfigure xfonts-base"
 ExecStart=/bin/sh -c "rm -f /root/*.deb"
+ExecStart=/bin/sh -c "apt-get --yes -o dpkg::options::="-force-confnew" -o dpkg::options::="--force-overwrite" install kali-linux-default
 ExecStartPost=/bin/systemctl disable smi-hack
 
 [Install]
@@ -211,6 +212,8 @@ apt download ca-certificates
 apt download libgdk-pixbuf2.0-0
 apt download fontconfig
 
+apt-get --yes --download-only install kali-linux-default
+
 rm -f /usr/sbin/policy-rc.d
 rm -f /usr/sbin/invoke-rc.d
 dpkg-divert --remove --rename /usr/sbin/invoke-rc.d
@@ -225,7 +228,6 @@ cat << EOF > kali-${architecture}/cleanup
 #!/bin/bash
 rm -rf /root/.bash_history
 apt-get update
-apt-get clean
 rm -f /0
 rm -f /hs_err*
 rm -f cleanup
