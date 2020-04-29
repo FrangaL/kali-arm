@@ -43,12 +43,12 @@ machine=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 16 | head -n 1)
 # script will throw an error, but will still continue on, and create an unusable
 # image, keep that in mind.
 
-arm="abootimg cgpt fake-hwclock ntpdate vboot-utils vboot-kernel-utils u-boot-tools"
-base="apt-transport-https apt-utils console-setup e2fsprogs firmware-linux firmware-realtek firmware-atheros firmware-libertas ifupdown initramfs-tools iw kali-defaults man-db mlocate netcat-traditional net-tools network-manager parted psmisc rfkill screen snmpd snmp sudo tftp tmux unrar usbutils vim wget zerofree"
-#desktop="fonts-croscore fonts-crosextra-caladea fonts-crosextra-carlito kali-desktop-xfce kali-root-login lightdm network-manager network-manager-gnome xfce4 xserver-xorg-video-fbdev xserver-xorg-input-evdev xserver-xorg-input-synaptics"
-tools="aircrack-ng cewl crunch dnsrecon dnsutils ethtool exploitdb hydra john libnfc-bin medusa metasploit-framework mfoc ncrack nmap passing-the-hash proxychains recon-ng sqlmap tcpdump theharvester tor tshark usbutils whois windows-binaries winexe wpscan"
-services="apache2 atftpd openssh-server openvpn tightvncserver"
-extras="alsa-utils bluez bluez-firmware i2c-tools lua5.1 python3-configobj python3-pip python3-requests python3-rpi.gpio python3-smbus triggerhappy whiptail wpasupplicant"
+arm="kali-linux-arm ntpdate"
+base="apt-transport-https apt-utils bash-completion console-setup dialog e2fsprogs ifupdown initramfs-tools inxi iw man-db mlocate netcat-traditional net-tools parted pciutils psmisc rfkill screen tmux unrar usbutils vim wget whiptail zerofree"
+desktop="kali-desktop-xfce kali-root-login xserver-xorg-video-fbdev xfonts-terminus xinput"
+tools="wireshark"
+services="apache2 atftpd"
+extras="alsa-utils bc bison bluez bluez-firmware i2c-tools libnss-systemd libssl-dev lua5.1 python3-configobj python3-pip python3-requests python3-rpi.gpio python3-smbus triggerhappy wpasupplicant"
 
 packages="${arm} ${base} ${services}"
 architecture="armel"
@@ -166,6 +166,8 @@ ExecStart=/bin/sh -c "rm -rf /etc/ssl/certs/*.pem && dpkg -i /root/*.deb"
 ExecStart=/bin/sh -c "dpkg-reconfigure shared-mime-info"
 ExecStart=/bin/sh -c "dpkg-reconfigure xfonts-base"
 ExecStart=/bin/sh -c "rm -f /root/*.deb"
+ExecStart=/bin/sh -c 'apt-get --yes -o dpkg::options::="--force-confnew" -o dpkg::options::="--force-overwrite" install kali-linux-default'
+ExecStart=/bin/sh -c "apt-get clean"
 ExecStartPost=/bin/systemctl disable smi-hack
 
 [Install]
@@ -238,7 +240,7 @@ int uname(struct utsname *buf)
 {
  int ret;
  ret = syscall(SYS_uname, buf);
- strcpy(buf->release, "4.14.30-kali-v7+");
+ strcpy(buf->release, "4.19.93-kali-v6+");
  strcpy(buf->machine, "armv6j");
  return ret;
 }
@@ -327,11 +329,7 @@ cd /root
 apt download ca-certificates
 apt download libgdk-pixbuf2.0-0
 apt download fontconfig
-
-# libinput seems to fail hard on RaspberryPi devices, so we make sure it's not
-# installed here (and we have xserver-xorg-input-evdev and
-# xserver-xorg-input-synaptics packages installed above!)
-apt-get --yes --allow-change-held-packages purge xserver-xorg-input-libinput
+apt-get --yes --download-only install kali-linux-default
 
 # Fix startup time from 5 minutes to 15 secs on raise interface wlan0
 sed -i 's/^TimeoutStartSec=5min/TimeoutStartSec=15/g' "/lib/systemd/system/networking.service"
@@ -341,7 +339,6 @@ rm -f /usr/sbin/invoke-rc.d
 dpkg-divert --remove --rename /usr/sbin/invoke-rc.d
 rm -rf /root/.bash_history
 apt-get update
-apt-get clean
 rm -f /0
 rm -f /hs_err*
 EOF

@@ -30,11 +30,11 @@ suite=kali-rolling
 machine=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 16 | head -n 1)
 
 arm="kali-linux-arm ntpdate"
-base="apt-transport-https apt-utils console-setup dialog e2fsprogs ifupdown initramfs-tools inxi iw libssl-dev man-db mlocate netcat-traditional net-tools parted pciutils psmisc rfkill screen tmux unrar usbutils wget zerofree"
-desktop="kali-desktop-xfce kali-root-login xserver-xorg-video-fbdev xserver-xorg-input-evdev xserver-xorg-input-synaptics"
+base="apt-transport-https apt-utils bash-completion console-setup dialog e2fsprogs ifupdown initramfs-tools inxi iw man-db mlocate netcat-traditional net-tools parted pciutils psmisc rfkill screen tmux unrar usbutils wget whiptail zerofree"
+desktop="kali-desktop-xfce kali-root-login xserver-xorg-video-fbdev xfonts-terminus xinput"
 tools="wireshark"
 services="apache2 atftpd"
-extras="bluez bluez-firmware i2c-tools python3-configobj python3-pip python3-requests python3-rpi.gpio python3-smbus triggerhappy xfonts-terminus"
+extras="alsa-utils bc bison bluez bluez-firmware i2c-tools libnss-systemd libssl-dev python3-configobj python3-pip python3-requests python3-rpi.gpio python3-smbus triggerhappy"
 
 packages="${arm} ${base} ${services}"
 
@@ -137,8 +137,8 @@ ExecStart=/bin/sh -c "rm -rf /etc/ssl/certs/*.pem && dpkg -i /root/*.deb"
 ExecStart=/bin/sh -c "dpkg-reconfigure shared-mime-info"
 ExecStart=/bin/sh -c "dpkg-reconfigure xfonts-base"
 ExecStart=/bin/sh -c "rm -f /root/*.deb"
-ExecStart=/bin/sh -c "apt-get --yes -o dpkg::options::="--force-confnew" -o dpkg::options::="--force-overwrite" install kali-linux-default"
-ExecStart=/bin/sh -c "apt-get --yes clean"
+ExecStart=/bin/sh -c 'apt-get --yes -o dpkg::options::="--force-confnew" -o dpkg::options::="--force-overwrite" install kali-linux-default'
+ExecStart=/bin/sh -c "apt-get clean"
 ExecStartPost=/bin/systemctl disable smi-hack
 
 [Install]

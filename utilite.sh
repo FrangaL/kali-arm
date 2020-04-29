@@ -20,8 +20,8 @@ basedir=`pwd`/utilite-$1
 hostname=${2:-kali}
 # Custom image file name variable - MUST NOT include .img at the end.
 imagename=${3:-kali-linux-$1-utilite}
-# Size of image in megabytes (Default is 7000=7GB)
-size=7000
+# Size of image in megabytes (Default is 14000=14GB)
+size=14000
 # Suite to use.
 # Valid options are:
 # kali-rolling, kali-dev, kali-bleeding-edge, kali-dev-only, kali-experimental, kali-last-snapshot
@@ -52,12 +52,12 @@ unset CROSS_COMPILE
 # script will throw an error, but will still continue on, and create an unusable
 # image, keep that in mind.
 
-arm="abootimg cgpt fake-hwclock ntpdate u-boot-tools vboot-utils vboot-kernel-utils"
-base="apt-transport-https apt-utils console-setup e2fsprogs firmware-linux firmware-realtek firmware-atheros firmware-libertas ifupdown initramfs-tools iw kali-defaults man-db mlocate netcat-traditional net-tools parted psmisc rfkill screen snmpd snmp sudo tftp tmux unrar usbutils vim wget zerofree"
-desktop="kali-menu fonts-croscore fonts-crosextra-caladea fonts-crosextra-carlito kali-desktop-xfce kali-root-login lightdm network-manager network-manager-gnome xfce4 xserver-xorg-video-fbdev xserver-xorg-input-evdev xserver-xorg-input-synaptics"
-tools="aircrack-ng crunch cewl dnsrecon dnsutils ethtool exploitdb hydra john libnfc-bin medusa metasploit-framework mfoc ncrack nmap passing-the-hash proxychains recon-ng sqlmap tcpdump theharvester tor tshark usbutils whois windows-binaries winexe wpscan wireshark"
-services="apache2 atftpd openssh-server openvpn tightvncserver"
-extras="bluez bluez-firmware firefox-esr i2c-tools triggerhappy wpasupplicant xfce4-terminal xfonts-terminus"
+arm="kali-linux-arm ntpdate"
+base="apt-transport-https apt-utils bash-completion console-setup dialog e2fsprogs ifupdown initramfs-tools inxi iw man-db mlocate netcat-traditional net-tools parted pciutils psmisc rfkill screen tmux unrar usbutils vim wget whiptail zerofree"
+desktop="kali-desktop-xfce kali-root-login xserver-xorg-video-fbdev xfonts-terminus xinput"
+tools="wireshark"
+services="apache2 atftpd"
+extras="alsa-utils bc bison bluez bluez-firmware libnss-systemd libssl-dev triggerhappy"
 
 
 packages="${arm} ${base} ${services}"
@@ -150,6 +150,8 @@ ExecStart=/bin/sh -c "rm -rf /etc/ssl/certs/*.pem && dpkg -i /root/*.deb"
 ExecStart=/bin/sh -c "dpkg-reconfigure shared-mime-info"
 ExecStart=/bin/sh -c "dpkg-reconfigure xfonts-base"
 ExecStart=/bin/sh -c "rm -f /root/*.deb"
+ExecStart=/bin/sh -c 'apt-get --yes -o dpkg::options::="--force-confnew" -o dpkg::options::="--force-overwrite" install kali-linux-default'
+ExecStart=/bin/sh -c "apt-get clean"
 ExecStartPost=/bin/systemctl disable smi-hack
 
 [Install]
@@ -219,6 +221,7 @@ cd /root
 apt download ca-certificates
 apt download libgdk-pixbuf2.0-0
 apt download fontconfig
+apt-get --yes --download-only install kali-linux-default
 
 # Fix startup time from 5 minutes to 15 secs on raise interface wlan0
 sed -i 's/^TimeoutStartSec=5min/TimeoutStartSec=15/g' "/usr/lib/systemd/system/networking.service"
@@ -237,8 +240,6 @@ cat << EOF > kali-${architecture}/cleanup
 #!/bin/bash
 rm -rf /root/.bash_history
 apt-get update
-apt-get clean
-apt-get --download-only install ca-certificates
 rm -f /0
 rm -f /hs_err*
 rm -f cleanup

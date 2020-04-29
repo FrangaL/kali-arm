@@ -52,11 +52,11 @@ unset CROSS_COMPILE
 # image, keep that in mind.
 
 arm="kali-linux-arm ntpdate"
-base="apt-transport-https apt-utils arm-trusted-firmware console-setup dialog dkms e2fsprogs ifupdown initramfs-tools inxi iw linux-headers-arm64 linux-image-arm64 man-db mlocate netcat-traditional net-tools parted pciutils psmisc rfkill screen tmux u-boot-sunxi u-boot-menu unrar usbutils wget zerofree"
-desktop="kali-desktop-xfce kali-root-login xserver-xorg-video-fbdev xserver-xorg-input-evdev xserver-xorg-input-synaptics"
+base="apt-transport-https apt-utils arm-trusted-firmware bash-completion console-setup dialog dkms e2fsprogs ifupdown initramfs-tools inxi iw linux-headers-arm64 linux-image-arm64 man-db mlocate netcat-traditional net-tools parted pciutils psmisc rfkill screen tmux u-boot-sunxi u-boot-menu unrar usbutils vim wget whiptail zerofree"
+desktop="kali-desktop-xfce kali-root-login xserver-xorg-video-fbdev xserver-xorg-input-evdev xserver-xorg-input-synaptics xfonts-terminus xinput"
 tools="wireshark"
 services="apache2 atftpd"
-extras="alsa-utils bluez bluez-firmware triggerhappy"
+extras="alsa-utils bc bison bluez bluez-firmware libnss-systemd libssl-dev triggerhappy"
 
 packages="${arm} ${base} ${services}"
 architecture="arm64"
@@ -148,6 +148,7 @@ ExecStart=/bin/sh -c "dpkg-reconfigure shared-mime-info"
 ExecStart=/bin/sh -c "dpkg-reconfigure xfonts-base"
 ExecStart=/bin/sh -c "rm -f /root/*.deb"
 ExecStart=/bin/sh -c 'apt-get --yes -o dpkg::options::="--force-confnew" -o dpkg::options::="--force-overwrite" install kali-linux-default'
+ExecStart=/bin/sh -c "apt-get clean"
 ExecStartPost=/bin/systemctl disable smi-hack
 
 [Install]
@@ -162,6 +163,7 @@ Before=regenerate_ssh_host_keys.service
 [Service]
 Type=oneshot
 ExecStart=/bin/sh -c "cd /usr/src/rtl8723cs && dkms install ."
+ExecStart=/bin/sh -c "modprobe 8723cs"
 ExecStartPost=/bin/systemctl disable pinebook-wifi-dkms.service
 [Install]
 WantedBy=multi-user.target

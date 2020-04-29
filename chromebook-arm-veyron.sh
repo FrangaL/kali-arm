@@ -50,11 +50,11 @@ unset CROSS_COMPILE
 # image, keep that in mind.
 
 arm="kali-linux-arm ntpdate"
-base="apt-transport-https apt-utils console-setup dialog e2fsprogs ifupdown initramfs-tools inxi man-db mlocate netcat-traditional net-tools parted pciutils psmisc rfkill screen tmux unrar usbutils vim wget zerofree"
-desktop="kali-desktop-xfce kali-root-login xserver-xorg-video-fbdev xserver-xorg-input-synaptics"
+base="apt-transport-https apt-utils bash-completion console-setup dialog e2fsprogs ifupdown initramfs-tools inxi iw man-db mlocate netcat-traditional net-tools parted pciutils psmisc rfkill screen tmux unrar usbutils vim wget zerofree"
+desktop="kali-desktop-xfce kali-root-login xserver-xorg-video-fbdev xserver-xorg-input-synaptics xfonts-terminus xinput"
 tools="wireshark"
 services="apache2 atftpd"
-extras="alsa-utils bluez bluez-firmware florence triggerhappy xfonts-terminus xinput wpasupplicant"
+extras="alsa-utils bc bison bluez bluez-firmware florence libnss-systemd libssl-dev triggerhappy"
 
 packages="${arm} ${base} ${services}"
 architecture="armhf"
@@ -146,8 +146,8 @@ ExecStart=/bin/sh -c "rm -rf /etc/ssl/certs/*.pem && dpkg -i /root/*.deb"
 ExecStart=/bin/sh -c "dpkg-reconfigure shared-mime-info"
 ExecStart=/bin/sh -c "dpkg-reconfigure xfonts-base"
 ExecStart=/bin/sh -c "rm -f /root/*.deb"
-ExecStart=/bin/sh -c "apt-get --yes -o dpkg::options::="-force-confnew" -o dpkg::options::="--force-overwrite" install kali-linux-default
-ExecStart=/bin/sh -c "apt-get --yes clean"
+ExecStart=/bin/sh -c 'apt-get --yes -o dpkg::options::="-force-confnew" -o dpkg::options::="--force-overwrite" install kali-linux-default'
+ExecStart=/bin/sh -c "apt-get clean"
 ExecStartPost=/bin/systemctl disable smi-hack
 
 [Install]

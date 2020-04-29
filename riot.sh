@@ -20,8 +20,8 @@ basedir=`pwd`/riot-$1
 hostname=${2:-kali}
 # Custom image file name variable - MUST NOT include .img at the end.
 imagename=${3:-kali-linux-$1-riot}
-# Size of image in megabytes (Default is 7000=7GB)
-size=7000
+# Size of image in megabytes (Default is 14000=14GB)
+size=14000
 # Suite to use.
 # Valid options are:
 # kali-rolling, kali-dev, kali-bleeding-edge, kali-dev-only, kali-experimental, kali-last-snapshot
@@ -54,12 +54,12 @@ unset CROSS_COMPILE
 # Don't add the kernel here.  It depends on flash-kernel which in turn will fail
 # when building on amd64, instead we fake a uname/architecture further down and
 # actually install the kernel package after compiling it.
-arm="abootimg cgpt fake-hwclock ntpdate u-boot-tools vboot-utils vboot-kernel-utils"
-base="apt-utils kali-defaults e2fsprogs ifupdown initramfs-tools kali-defaults kali-menu parted sudo usbutils firmware-linux firmware-atheros firmware-libertas firmware-realtek"
-desktop="kali-menu fonts-croscore fonts-crosextra-caladea fonts-crosextra-carlito kali-desktop-xfce kali-root-login lightdm network-manager network-manager-gnome xfce4 xserver-xorg-video-fbdev"
-tools="aircrack-ng ethtool hydra john libnfc-bin mfoc nmap passing-the-hash sqlmap usbutils winexe wireshark"
-services="apache2 openssh-server"
-extras="firefox-esr xfce4-terminal wpasupplicant gcc"
+arm="kali-linux-arm ntpdate"
+base="apt-transport-https apt-utils bash-completion console-setup dialog e2fsprogs ifupdown initramfs-tools inxi iw man-db mlocate netcat-traditional net-tools parted pciutils psmisc rfkill screen tmux unrar usbutils vim wget whiptail zerofree"
+desktop="kali-desktop-xfce kali-root-login xserver-xorg-video-fbdev xfonts-terminus xinput"
+tools="wireshark"
+services="apache2 atftpd"
+extras="alsa-utils bc bison bluez bluez-firmware libnss-systemd libssl-dev triggerhappy"
 
 packages="${arm} ${base} ${services}"
 architecture="armhf"
@@ -151,6 +151,8 @@ ExecStart=/bin/sh -c "rm -rf /etc/ssl/certs/*.pem && dpkg -i /root/*.deb"
 ExecStart=/bin/sh -c "dpkg-reconfigure shared-mime-info"
 ExecStart=/bin/sh -c "dpkg-reconfigure xfonts-base"
 ExecStart=/bin/sh -c "rm -f /root/*.deb"
+ExecStart=/bin/sh -c 'apt-get --yes -o dpkg::options::="--force-confnew" -o dpkg::options::="--force-overwrite" install kali-linux-default'
+ExecStart=/bin/sh -c "apt-get clean"
 ExecStartPost=/bin/systemctl disable smi-hack
 
 [Install]
@@ -174,7 +176,7 @@ int uname(struct utsname *buf)
 {
  int ret;
  ret = syscall(SYS_uname, buf);
- strcpy(buf->release, "4.16.0-kali2-armmp");
+ strcpy(buf->release, "5.5.0-kali2-armmp");
  strcpy(buf->machine, "armv7l");
  return ret;
 }

@@ -19,8 +19,8 @@ basedir=`pwd`/nanopineoplus2-$1
 hostname=${2:-kali}
 # Custom image file name variable - MUST NOT include .img at the end.
 imagename=${3:-kali-linux-$1-nanopineoplus2}
-# Size of image in megabytes (Default is 4000=4G)
-size=4000
+# Size of image in megabytes (Default is 14000=14G)
+size=14000
 
 # Generate a random machine name to be used.
 machine=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 16 | head -n 1)
@@ -45,12 +45,12 @@ unset CROSS_COMPILE
 # script will throw an error, but will still continue on, and create an unusable
 # image, keep that in mind.
 
-arm="abootimg cgpt fake-hwclock ntpdate u-boot-tools vboot-utils vboot-kernel-utils"
-base="apt-transport-https apt-utils console-setup dialog e2fsprogs firmware-linux firmware-realtek firmware-atheros firmware-libertas ifupdown initramfs-tools iw kali-defaults man-db mlocate netcat-traditional net-tools parted psmisc rfkill screen snmpd snmp sudo tftp tmux unrar usbutils vim wget whiptail zerofree"
-#desktop="kali-menu fonts-croscore fonts-crosextra-caladea fonts-crosextra-carlito kali-desktop-xfce kali-root-login lightdm network-manager network-manager-gnome xfce4 xserver-xorg-video-fbdev xfce4-terminal firefox-esr"
-tools="aircrack-ng crunch cewl dnsrecon dnsutils ethtool exploitdb hydra john libnfc-bin medusa metasploit-framework mfoc ncrack nmap passing-the-hash proxychains recon-ng sqlmap tcpdump theharvester tor tshark usbutils whois windows-binaries winexe wpscan"
-services="apache2 atftpd haveged openssh-server openvpn"
-extras="bluetooth libnss-systemd network-manager psmisc wpasupplicant xfonts-terminus"
+arm="kali-linux-arm ntpdate"
+base="apt-transport-https apt-utils bash-completion console-setup dialog e2fsprogs ifupdown initramfs-tools inxi iw man-db mlocate netcat-traditional net-tools parted psmisc rfkill screen tmux unrar usbutils vim wget whiptail zerofree"
+#desktop="kali-desktop-xfce kali-root-login xserver-xorg-video-fbdev xfonts-terminus xinput"
+tools="wireshark"
+services="apache2 atftpd haveged"
+extras="alsa-utils bc bison bluez bluez-firmware libssl-dev triggerhappy"
 
 packages="${arm} ${base} ${services}"
 architecture="arm64"
@@ -143,6 +143,8 @@ ExecStart=/bin/sh -c "rm -rf /etc/ssl/certs/*.pem && dpkg -i /root/*.deb"
 ExecStart=/bin/sh -c "dpkg-reconfigure shared-mime-info"
 ExecStart=/bin/sh -c "dpkg-reconfigure xfonts-base"
 ExecStart=/bin/sh -c "rm -f /root/*.deb"
+ExecStart=/bin/sh -c 'apt-get --yes -o dpkg::options::="--force-confnew" -o dpkg::options::="--force-overwrite" install kali-linux-default'
+ExecStart=/bin/sh -c "apt-get clean"
 ExecStartPost=/bin/systemctl disable smi-hack
 
 [Install]
@@ -298,6 +300,8 @@ apt download ca-certificates
 apt download libgdk-pixbuf2.0-0
 apt download fontconfig
 
+apt-get --yes --download-only install kali-linux-default
+
 # Enable bluetooth - we do this way because we haven't written a systemd service
 # file for it yet.
 update-rc.d brcm_patchram_plus defaults
@@ -327,7 +331,6 @@ cat << EOF > kali-${architecture}/cleanup
 #!/bin/bash
 rm -rf /root/.bash_history
 apt-get update
-apt-get clean
 rm -f /0
 rm -f /hs_err*
 rm -f cleanup
