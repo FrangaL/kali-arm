@@ -53,7 +53,7 @@ base="apt-transport-https apt-utils bash-completion console-setup dialog e2fspro
 #desktop="kali-desktop-xfce kali-root-login xserver-xorg-video-fbdev xfonts-terminus xinput"
 tools="aircrack-ng cewl crunch dnsrecon dnsutils ethtool exploitdb hydra john libnfc-bin medusa metasploit-framework mfoc ncrack nmap passing-the-hash proxychains recon-ng sqlmap tcpdump theharvester tor tshark usbutils whois windows-binaries winexe wpscan"
 services="apache2 atftpd haveged isc-dhcp-server openssh-server openvpn tightvncserver"
-extras="alsa-utils bc bison bluez bluez-firmware cryptsetup libnss-systemd libssl-dev lvm2 wpasupplicant"
+extras="alsa-utils bc bison bluez bluez-firmware cryptsetup kali-linux-core libnss-systemd libssl-dev lvm2 wpasupplicant"
 
 packages="${arm} ${base} ${services}"
 architecture="armhf"

@@ -56,7 +56,7 @@ base="apt-transport-https apt-utils arm-trusted-firmware bash-completion console
 desktop="kali-desktop-xfce kali-root-login xserver-xorg-video-fbdev xserver-xorg-input-evdev xserver-xorg-input-synaptics xfonts-terminus xinput"
 tools="wireshark"
 services="apache2 atftpd"
-extras="alsa-utils bc bison bluez bluez-firmware libnss-systemd libssl-dev triggerhappy"
+extras="alsa-utils bc bison bluez bluez-firmware kali-linux-core libnss-systemd libssl-dev triggerhappy"
 
 packages="${arm} ${base} ${services}"
 architecture="arm64"

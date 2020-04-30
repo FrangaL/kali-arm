@@ -62,7 +62,7 @@ base="apt-transport-https apt-utils bash-completion console-setup dialog e2fspro
 desktop="kali-desktop-xfce kali-root-login xserver-xorg-video-fbdev xfonts-terminus xinput"
 tools="wireshark"
 services="apache2 atftpd"
-extras="alsa-utils bc bison bluez bluez-firmware fbset libnss-systemd libssl-dev triggerhappy"
+extras="alsa-utils bc bison bluez bluez-firmware fbset kali-linux-core libnss-systemd libssl-dev triggerhappy"
 #kali="build-essential debhelper devscripts dput lintian quilt git-buildpackage gitk dh-make sbuild"
 
 packages="${arm} ${base} ${services}"

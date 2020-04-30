@@ -43,7 +43,7 @@ base="apt-utils bash-completion console-setup dialog e2fsprogs ifupdown initramf
 desktop="kali-desktop-xfce kali-root-login xserver-xorg-video-fbdev xfonts-terminus xinput"
 tools="wireshark"
 services="apache2 atftpd"
-extras="alsa-utils bc bison bluez bluez-firmware libnss-systemd libssl-dev triggerhappy udhcpd"
+extras="alsa-utils bc bison bluez bluez-firmware kali-linux-core libnss-systemd libssl-dev triggerhappy udhcpd"
 
 packages="${arm} ${base} ${services}"
 architecture="armhf"

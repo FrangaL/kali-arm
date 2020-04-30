@@ -53,10 +53,10 @@ unset CROSS_COMPILE
 
 arm="kali-linux-arm ntpdate"
 base="apt-transport-https apt-utils bash-completion console-setup dialog dkms e2fsprogs ifupdown initramfs-tools inxi iw man-db mlocate netcat-traditional net-tools parted pciutils psmisc rfkill screen tmux unrar usbutils vim wget whiptail zerofree"
-desktop="kali-menu kali-desktop-xfce kali-root-login xserver-xorg-video-fbdev"
+desktop="kali-desktop-xfce kali-root-login xserver-xorg-video-fbdev"
 tools="wireshark"
 services="apache2 atftpd"
-extras="alsa-utils bc bison bluez bluez-firmware libnss-systemd libssl-dev triggerhappy"
+extras="alsa-utils bc bison bluez bluez-firmware kali-linux-core libnss-systemd libssl-dev triggerhappy"
 
 packages="${arm} ${base} ${services}"
 architecture="arm64"

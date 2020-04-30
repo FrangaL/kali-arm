@@ -50,7 +50,7 @@ base="apt-transport-https apt-utils bash-completion console-setup dialog e2fspro
 #desktop="kali-desktop-xfce kali-root-login xserver-xorg-video-fbdev xfonts-terminus xinput"
 tools="wireshark"
 services="apache2 atftpd haveged"
-extras="alsa-utils bc bison bluez bluez-firmware libssl-dev triggerhappy"
+extras="alsa-utils bc bison bluez bluez-firmware kali-linux-core libssl-dev triggerhappy"
 
 packages="${arm} ${base} ${services}"
 architecture="arm64"
