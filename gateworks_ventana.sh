@@ -172,7 +172,6 @@ chmod 755 /usr/sbin/policy-rc.d
 export DEBIAN_FRONTEND=noninteractive
 
 apt-get update
-apt-get --yes --allow-change-held-packages install locales-all
 
 debconf-set-selections /debconf.set
 rm -f /debconf.set

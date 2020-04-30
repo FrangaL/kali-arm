@@ -220,7 +220,6 @@ cp /bin/true /usr/sbin/invoke-rc.d
 echo -e "#!/bin/sh\nexit 101" > /usr/sbin/policy-rc.d
 chmod 755 /usr/sbin/policy-rc.d
 apt-get update
-apt-get --yes --allow-change-held-packages install locales-all
 debconf-set-selections /debconf.set
 rm -f /debconf.set
 apt-get -y install git-core binutils ca-certificates initramfs-tools u-boot-tools

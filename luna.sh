@@ -158,7 +158,6 @@ echo -e "#!/bin/sh\nexit 101" > /usr/sbin/policy-rc.d
 chmod 755 /usr/sbin/policy-rc.d
 
 apt-get update
-apt-get install --yes --allow-change-held-packages locales-all
 
 debconf-set-selections /debconf.set
 rm -f /debconf.set
