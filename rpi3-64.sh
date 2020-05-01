@@ -112,6 +112,39 @@ WantedBy=multi-user.target
 EOF
 chmod 644 kali-${architecture}/usr/lib/systemd/system/regenerate_ssh_host_keys.service
 
+cat << EOF > kali-${architecture}/usr/lib/systemd/system/rpiwiggle.service
+[Unit]
+Description=Resize filesystem
+After=regenerate_ssh_host_keys.service
+[Service]
+Type=oneshot
+ExecStart=/root/scripts/rpi-wiggle.sh
+ExecStartPost=/bin/systemctl disable rpiwiggle
+
+[Install]
+WantedBy=multi-user.target
+EOF
+chmod 644 kali-${architecture}/usr/lib/systemd/system/rpiwiggle.service
+
+cat << EOF > kali-${architecture}/usr/lib/systemd/system/smi-hack.service
+[Unit]
+Description=shared-mime-info update hack
+Before=regenerate_ssh_host_keys.service
+[Service]
+Type=oneshot
+Environment=DEBIAN_FRONTEND=noninteractive
+ExecStart=/bin/sh -c "rm -rf /etc/ssl/certs/*.pem && dpkg -i /root/*.deb"
+ExecStart=/bin/sh -c "dpkg-reconfigure shared-mime-info"
+ExecStart=/bin/sh -c "dpkg-reconfigure xfonts-base"
+ExecStart=/bin/sh -c "rm -f /root/*.deb"
+ExecStart=/bin/sh -c 'apt-get --yes -o dpkg::options::="--force-confnew" -o dpkg::options::="--force-overwrite install kali-linux-default'
+ExecStart=/bin/sh -c "apt-get clean"
+ExecStartPost=/bin/systemctl disable smi-hack
+
+[Install]
+WantedBy=multi-user.target
+EOF
+chmod 644 kali-${architecture}/usr/lib/systemd/system/smi-hack.service
 
 cat << EOF > "${basedir}"/kali-${architecture}/usr/lib/systemd/system/enable-ssh.service
 [Unit]
@@ -221,6 +254,13 @@ apt-get install --yes --allow-change-held-packages -o dpkg::options::=--force-co
 echo "Making the image insecure"
 sed -i -e 's/^#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
 
+# Regenerated the shared-mime-info database on the first boot
+# since it fails to do so properly in a chroot
+systemctl enable smi-hack
+
+# Resize filesystem on first boot
+systemctl enable rpiwiggle
+
 # Generate SSH host keys on first run
 systemctl enable regenerate_ssh_host_keys
 
@@ -235,8 +275,8 @@ systemctl enable enable-ssh
 
 # Set default to multi-user for non-graphical login.  User will login as
 # root:toor and then the first login setup will run
-systemctl set-default multi-user
-cp /usr/share/kali-arm-oem-install/bash_profile /root/.bash_profile
+#systemctl set-default multi-user
+#cp /usr/share/kali-arm-oem-install/bash_profile /root/.bash_profile
 
 # Copy over the default bashrc
 cp  /etc/skel/.bashrc /root/.bashrc
@@ -261,6 +301,11 @@ rm -f cleanup
 EOF
 
 chmod 755 "${basedir}"/kali-${architecture}/third-stage
+
+# rpi-wiggle
+mkdir -p "${basedir}"/kali-${architecture}/root/scripts
+wget https://raw.githubusercontent.com/steev/rpiwiggle/master/rpi-wiggle -O kali-${architecture}/root/scripts/rpi-wiggle.sh
+chmod 755 "${basedir}"/kali-${architecture}/root/scripts/rpi-wiggle.sh
 
 export MALLOC_CHECK_=0 # workaround for LP: #520465
 export LC_ALL=C
