@@ -116,14 +116,16 @@ chmod 644 kali-${architecture}/usr/lib/systemd/system/regenerate_ssh_host_keys.s
 cat << EOF > kali-${architecture}/usr/lib/systemd/system/rpiwiggle.service
 [Unit]
 Description=Resize filesystem
-After=regenerate_ssh_host_keys.service
+Before=regenerate_ssh_host_keys.service
+After=sysinit.target local-fs.target
 [Service]
 Type=oneshot
 ExecStart=/root/scripts/rpi-wiggle.sh
 ExecStartPost=/bin/systemctl disable rpiwiggle
+TimeoutStartSec=3min
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=basic.target
 EOF
 chmod 644 kali-${architecture}/usr/lib/systemd/system/rpiwiggle.service
 
@@ -131,6 +133,7 @@ cat << EOF > kali-${architecture}/usr/lib/systemd/system/smi-hack.service
 [Unit]
 Description=shared-mime-info update hack
 Before=regenerate_ssh_host_keys.service
+PartOf=graphical-session-pre.target
 [Service]
 Type=oneshot
 Environment=DEBIAN_FRONTEND=noninteractive
