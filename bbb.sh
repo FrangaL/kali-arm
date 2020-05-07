@@ -179,8 +179,21 @@ rm -f /debconf.set
 apt-get update
 apt-get -y install git-core binutils ca-certificates initramfs-tools u-boot-tools
 apt-get -y install locales console-common less nano git
-echo "root:toor" | chpasswd
-rm -f /etc/udev/rules.d/70-persistent-net.rules
+
+# Create kali user with kali password... but first, we need to manually make some groups because they don't yet exist...
+# This mirrors what we have on a pre-installed VM, until the script works properly to allow end users to set up their own... user.
+# However we leave off floppy, because who a) still uses them, and b) attaches them to an SBC!?
+# And since a lot of these have serial devices of some sort, dialout is added as well.
+# scanner, lpadmin and bluetooth have to be added manually because they don't
+# yet exist in /etc/group at this point.
+groupadd -r -g 118 bluetooth
+groupadd -r -g 113 lpadmin
+groupadd -r -g 122 scanner
+groupadd -g 1000 kali
+
+useradd -m -u 1000 -g 1000 -G sudo,audio,bluetooth,cdrom,dialout,dip,lpadmin,netdev,plugdev,scanner,video,kali -s /bin/bash kali
+echo "kali:kali" | chpasswd
+
 export DEBIAN_FRONTEND=noninteractive
 # This looks weird, but we do it twice because every so often, there's a failure to download from the mirror
 # So to workaround it, we attempt to install them twice.
