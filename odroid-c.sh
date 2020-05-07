@@ -380,7 +380,7 @@ if test "\${hpd}" = "0"; then setenv hdmi_hpd "disablehpd=true"; fi
 if test "\${cec}" = "1"; then setenv hdmi_cec "hdmitx=cecf"; fi
 
 # Boot Arguments
-setenv bootargs "root=/dev/mmcblk0p2 rootfstype=ext4 quiet rootwait rw \${condev} no_console_suspend vdaccfg=0xa000 logo=osd1,loaded,0x7900000,720p,full dmfc=3 cvbsmode=576cvbs hdmimode=\${m} m_bpp=\${m_bpp} vout=\${vout_mode} \${disableuhs} \${hdmi_hpd} \${hdmi_cec} \${enabledac} net.ifnames=0"
+setenv bootargs "root=/dev/mmcblk0p2 rootfstype=ext3 quiet rootwait rw \${condev} no_console_suspend vdaccfg=0xa000 logo=osd1,loaded,0x7900000,720p,full dmfc=3 cvbsmode=576cvbs hdmimode=\${m} m_bpp=\${m_bpp} vout=\${vout_mode} \${disableuhs} \${hdmi_hpd} \${hdmi_cec} \${enabledac} net.ifnames=0"
 
 # Booting
 fatload mmc 0:1 0x21000000 uImage
@@ -533,7 +533,7 @@ echo "Creating image file for ODROID-C1"
 dd if=/dev/zero of="${basedir}"/${imagename}.img bs=1M count=${size}
 parted ${imagename}.img --script -- mklabel msdos
 parted ${imagename}.img --script -- mkpart primary fat32 3072s 264191s
-parted ${imagename}.img --script -- mkpart primary ext4 264192s 100%
+parted ${imagename}.img --script -- mkpart primary ext3 264192s 100%
 
 # Set the partition variables
 loopdevice=`losetup -f --show "${basedir}"/${imagename}.img`
@@ -545,7 +545,7 @@ rootp=${device}p2
 
 # Create file systems
 mkfs.vfat ${bootp}
-mkfs.ext4 -O ^64bit -O ^flex_bg -O ^metadata_csum ${rootp}
+mkfs.ext3 -O ^64bit -O ^flex_bg -O ^metadata_csum ${rootp}
 
 # Create the dirs for the partitions and mount them
 mkdir -p "${basedir}"/root

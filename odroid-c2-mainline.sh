@@ -416,7 +416,7 @@ setenv fdt_high "0xffffffff"
 setenv kernel_filename Image
 setenv fdt_filename meson-gxbb-odroidc2.dtb
 if test "${devtype}" = "mmc"; then part uuid ${devtype} ${devnum}:2 rootpartuuid; fi
-setenv bootargs "root=PARTUUID=${rootpartuuid} rootfstype=ext4 rootwait rw net.ifnames=0 ipv6.disable=1"
+setenv bootargs "root=PARTUUID=${rootpartuuid} rootfstype=ext3 rootwait rw net.ifnames=0 ipv6.disable=1"
 # Without an initramfs
 setenv bootcmd "load ${devtype} ${devnum}:${partition} '${loadaddr}' '${kernel_filename}'; load ${devtype} ${devnum}:${partition} '${dtb_loadaddr}' '${fdt_filename}'; booti '${loadaddr}' - '${dtb_loadaddr}'"
 # With an initramfs
@@ -439,8 +439,8 @@ let RAW_SIZE=(${RAW_SIZE_MB}*1000*1000)/${BLOCK_SIZE}
 echo "Creating image file ${imagename}.img"
 dd if=/dev/zero of="${basedir}"/${imagename}.img bs=${BLOCK_SIZE} count=0 seek=${RAW_SIZE}
 parted ${imagename}.img --script -- mklabel msdos
-parted ${imagename}.img --script -- mkpart primary ext4 4096s 264191s
-parted ${imagename}.img --script -- mkpart primary ext4 264192s 100%
+parted ${imagename}.img --script -- mkpart primary ext3 4096s 264191s
+parted ${imagename}.img --script -- mkpart primary ext3 264192s 100%
 
 # Set the partition variables
 loopdevice=`losetup -f --show "${basedir}"/${imagename}.img`
@@ -451,8 +451,8 @@ bootp=${device}p1
 rootp=${device}p2
 
 # Create file systems
-mkfs.ext4 -L boot ${bootp}
-mkfs.ext4 -L rootfs ${rootp}
+mkfs.ext3 -L boot ${bootp}
+mkfs.ext3 -L rootfs ${rootp}
 
 # Create the dirs for the partitions and mount them
 mkdir -p "${basedir}"/root

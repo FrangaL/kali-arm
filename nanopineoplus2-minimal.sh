@@ -477,7 +477,7 @@ fdt set ethernet0 local-mac-address \${mac_node}
 fdt set mmc\${boot_mmc} boot_device <1>
 
 setenv fbcon map:0
-setenv bootargs console=ttyS0,115200 earlyprintk root=/dev/mmcblk0p2 rootfstype=ext4 rw rootwait fsck.repair=\${fsck.repair} panic=10 \${extra} fbcon=\${fbcon} ipv6.disable=1
+setenv bootargs console=ttyS0,115200 earlyprintk root=/dev/mmcblk0p2 rootfstype=ext3 rw rootwait fsck.repair=\${fsck.repair} panic=10 \${extra} fbcon=\${fbcon} ipv6.disable=1
 #booti \${kernel_addr} \${ramdisk_addr}:500000 \${dtb_addr}
 booti \${kernel_addr} - \${dtb_addr}
 EOF
@@ -497,8 +497,8 @@ echo "the above is how big the sdcard needs to be"
 echo "Creating image file for NanoPi NEO Plus2"
 dd if=/dev/zero of=${basedir}/${imagename}.img bs=1M count=${size}
 parted ${imagename}.img --script -- mklabel msdos
-parted ${imagename}.img --script -- mkpart primary ext4 4096s 264191s
-parted ${imagename}.img --script -- mkpart primary ext4 264192s 100%
+parted ${imagename}.img --script -- mkpart primary ext3 4096s 264191s
+parted ${imagename}.img --script -- mkpart primary ext3 264192s 100%
 
 # Set the partition variables
 loopdevice=`losetup -f --show ${basedir}/${imagename}.img`
@@ -510,7 +510,7 @@ rootp=${device}p2
 
 # Create file systems
 mkfs.vfat ${bootp}
-mkfs.ext4 -O ^64bit -O ^flex_bg -O ^metadata_csum ${rootp}
+mkfs.ext3 -O ^64bit -O ^flex_bg -O ^metadata_csum ${rootp}
 
 # Create the dirs for the partitions and mount them
 mkdir -p ${basedir}/root

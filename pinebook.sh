@@ -241,7 +241,7 @@ apt --yes --download-only install kali-linux-default
 # We replace the u-boot menu defaults here so we can make sure the build system doesn't poison it.
 # We use _EOF_ so that the third-stage script doesn't end prematurely.
 cat << '_EOF_' > /etc/default/u-boot
-U_BOOT_PARAMETERS="console=ttyS0,115200 console=tty1 root=/dev/mmcblk0p1 rootwait panic=10 rw rootfstype=ext4 net.ifnames=0"
+U_BOOT_PARAMETERS="console=ttyS0,115200 console=tty1 root=/dev/mmcblk0p1 rootwait panic=10 rw rootfstype=ext3 net.ifnames=0"
 U_BOOT_MENU_LABEL="Kali Linux"
 _EOF_
 
@@ -350,12 +350,12 @@ chmod 755 "${basedir}"/kali-${architecture}/etc/init.d/zram
 sed -i -e 's/^#PermitRootLogin.*/PermitRootLogin yes/' "${basedir}"/kali-${architecture}/etc/ssh/sshd_config
 
 # Ensure we don't have root=/dev/sda3 in the extlinux.conf which comes from running u-boot-menu in a cross chroot.
-sed -i -e 's/append.*/append root=\/dev\/mmcblk0p1 rootfstype=ext4 console=ttyS0,115200 console=tty1 consoleblank=0 rw rootwait/g' "${basedir}"/kali-${architecture}/boot/extlinux/extlinux.conf
+sed -i -e 's/append.*/append root=\/dev\/mmcblk0p1 rootfstype=ext3 console=ttyS0,115200 console=tty1 consoleblank=0 rw rootwait/g' "${basedir}"/kali-${architecture}/boot/extlinux/extlinux.conf
 
 echo "Creating image file for ${imagename}.img"
 dd if=/dev/zero of="${basedir}"/${imagename}.img bs=1M count=${size}
 parted ${imagename}.img --script -- mklabel msdos
-parted ${imagename}.img --script -- mkpart primary ext4 2048s 100%
+parted ${imagename}.img --script -- mkpart primary ext3 2048s 100%
 
 # Set the partition variables
 loopdevice=`losetup -f --show "${basedir}"/${imagename}.img`
@@ -365,7 +365,7 @@ device="/dev/mapper/${device}"
 rootp=${device}p1
 
 # Create file systems
-mkfs.ext4 ${rootp}
+mkfs.ext3 ${rootp}
 
 # Create the dirs for the partitions and mount them
 mkdir -p "${basedir}"/root

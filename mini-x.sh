@@ -212,7 +212,7 @@ apt download fontconfig
 # We replace the u-boot menu defaults here so we can make sure the build system doesn't poison it.
 # We use _EOF_ so that the third-stage script doesn't end prematurely.
 cat << '_EOF_' > /etc/default/u-boot
-U_BOOT_PARAMETERS="console=ttyS0,115200 console=tty1 root=/dev/mmcblk0p1 rootwait panic=10 rw rootfstype=ext4 net.ifnames=0"
+U_BOOT_PARAMETERS="console=ttyS0,115200 console=tty1 root=/dev/mmcblk0p1 rootwait panic=10 rw rootfstype=ext3 net.ifnames=0"
 _EOF_
 
 rm -f /usr/sbin/policy-rc.d
@@ -262,13 +262,13 @@ sed -i -e 's/^#PermitRootLogin.*/PermitRootLogin yes/' "${basedir}"/kali-${archi
 # Build system will insert it's root filesystem into the extlinux.conf file so
 # we sed it out, this only affects build time, not upgrading the kernel on the
 # device itself.
-sed -i -e 's/append.*/append console=ttyS0,115200 console=tty1 root=\/dev\/mmcblk0p1 rootwait panic=10 rw rootfstype=ext4 net.ifnames=0/g' "${basedir}"/kali-${architecture}/boot/extlinux/extlinux.conf
+sed -i -e 's/append.*/append console=ttyS0,115200 console=tty1 root=\/dev\/mmcblk0p1 rootwait panic=10 rw rootfstype=ext3 net.ifnames=0/g' "${basedir}"/kali-${architecture}/boot/extlinux/extlinux.conf
 
 # Create the disk and partition it
 echo "Creating image file ${imagename}.img"
 dd if=/dev/zero of="${basedir}"/${imagename}.img bs=1M count=${size}
 parted ${imagename}.img --script -- mklabel msdos
-parted ${imagename}.img --script -- mkpart primary ext4 2048s 100%
+parted ${imagename}.img --script -- mkpart primary ext3 2048s 100%
 
 # Set the partition variables
 loopdevice=`losetup -f --show "${basedir}"/${imagename}.img`
@@ -278,7 +278,7 @@ device="/dev/mapper/${device}"
 rootp=${device}p1
 
 # Create file systems
-mkfs.ext4 -O ^64bit -O ^flex_bg -O ^metadata_csum ${rootp}
+mkfs.ext3 -O ^64bit -O ^flex_bg -O ^metadata_csum ${rootp}
 
 # Create the dirs for the partitions and mount them
 mkdir -p "${basedir}"/root

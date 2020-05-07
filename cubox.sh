@@ -298,21 +298,21 @@ setenv unit_no 0
 setenv root_device ?
 
 if itest.s \${device_name} -eq usb; then
-  itest.s \$root_device -eq ? && ext4ls usb 0:1 /dev && setenv root_device /dev/sda1 && setenv unit_no 0
-  itest.s \$root_device -eq ? && ext4ls usb 1:1 /dev && setenv root_device /dev/sda1 && setenv unit_no 1
+  itest.s \$root_device -eq ? && ext3ls usb 0:1 /dev && setenv root_device /dev/sda1 && setenv unit_no 0
+  itest.s \$root_device -eq ? && ext3ls usb 1:1 /dev && setenv root_device /dev/sda1 && setenv unit_no 1
 fi
 
 if itest.s \${device_name} -eq mmc; then
-  itest.s \$root_device -eq ? && ext4ls mmc 0:2 /dev && setenv root_device /dev/mmcblk0p2
-  itest.s \$root_device -eq ? && ext4ls mmc 0:1 /dev && setenv root_device /dev/mmcblk0p1
+  itest.s \$root_device -eq ? && ext3ls mmc 0:2 /dev && setenv root_device /dev/mmcblk0p2
+  itest.s \$root_device -eq ? && ext3ls mmc 0:1 /dev && setenv root_device /dev/mmcblk0p1
 fi
 
 if itest.s \${device_name} -eq ide; then
-  itest.s \$root_device -eq ? && ext4ls ide 0:1 /dev && setenv root_device /dev/sda1
+  itest.s \$root_device -eq ? && ext3ls ide 0:1 /dev && setenv root_device /dev/sda1
 fi
 
 if itest.s \$root_device -ne ?; then
-  setenv bootargs "console=ttyS0,115200n8 vmalloc=448M video=dovefb:lcd0:1920x1080-32@60-edid clcd.lcd0_enable=1 clcd.lcd1_enable=0 root=\${root_device} rootfstype=ext4 rw net.ifnames=0"
+  setenv bootargs "console=ttyS0,115200n8 vmalloc=448M video=dovefb:lcd0:1920x1080-32@60-edid clcd.lcd0_enable=1 clcd.lcd1_enable=0 root=\${root_device} rootfstype=ext3 rw net.ifnames=0"
   setenv loadimage "\${fstype}load \${device_name} \${unit_no}:\${partition} 0x00200000 \${directory}\${image_name}"
   \$loadimage && bootm 0x00200000
 
@@ -335,7 +335,7 @@ sed -i -e 's/^#PermitRootLogin.*/PermitRootLogin yes/' "${basedir}"/kali-${archi
 echo "Creating image file ${imagename}.img"
 dd if=/dev/zero of="${basedir}"/${imagename}.img bs=1M count=${size}
 parted ${imagename}.img --script -- mklabel msdos
-parted ${imagename}.img --script -- mkpart primary ext4 0 100%
+parted ${imagename}.img --script -- mkpart primary ext3 0 100%
 
 # Set the partition variables
 loopdevice=`losetup -f --show "${basedir}"/${imagename}.img`
@@ -345,7 +345,7 @@ device="/dev/mapper/${device}"
 rootp=${device}p1
 
 # Create file systems
-mkfs.ext4 -O ^64bit -O ^flex_bg -O ^metadata_csum -O ^64bit ${rootp}
+mkfs.ext3 -O ^64bit -O ^flex_bg -O ^metadata_csum -O ^64bit ${rootp}
 
 # Create the dirs for the partitions and mount them
 mkdir -p "${basedir}"/root

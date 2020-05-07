@@ -331,7 +331,7 @@ cd "${basedir}"
 # Create a file to set up our u-boot environment
 cat << EOF > "${basedir}"/kali-${architecture}/boot/boot.txt
 setenv mmcdev 2
-setenv bootargs 'earlyprintk console=ttymxc3,115200 console=tty1 root=/dev/mmcblk0p2 rootfstype=ext4 rw rootwait net.ifnames=0'
+setenv bootargs 'earlyprintk console=ttymxc3,115200 console=tty1 root=/dev/mmcblk0p2 rootfstype=ext3 rw rootwait net.ifnames=0'
 setenv loadaddr  0x10800000
 setenv fdtaddr   0x15000000
 setenv bootm_low 0x15000000
@@ -366,7 +366,7 @@ echo "Creating image file ${imagename}.img"
 dd if=/dev/zero of="${basedir}"/${imagename}.img bs=1M count=${size}
 parted ${imagename}.img --script -- mklabel msdos
 parted ${imagename}.img --script -- mkpart primary fat32 2048s 264191s
-parted ${imagename}.img --script -- mkpart primary ext4 264192s 100%
+parted ${imagename}.img --script -- mkpart primary ext3 264192s 100%
 
 # Set the partition variables
 loopdevice=`losetup -f --show "${basedir}"/${imagename}.img`
@@ -378,9 +378,9 @@ rootp=${device}p2
 
 # Create file systems
 mkfs.vfat ${bootp}
-# The utilite uses an older kernel, and newer mkfs tools add extras to ext4, so
+# The utilite uses an older kernel, and newer mkfs tools add extras to ext3, so
 # we disable them otherwise there will be a kernel panic at boot.
-mkfs.ext4 -O ^64bit -O ^flex_bg -O ^metadata_csum ${rootp}
+mkfs.ext3 -O ^64bit -O ^flex_bg -O ^metadata_csum ${rootp}
 
 # Create the dirs for the partitions and mount them
 mkdir -p "${basedir}"/root

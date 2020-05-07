@@ -295,7 +295,7 @@ cd "${basedir}"
 # Create boot.txt file
 cat << EOF > "${basedir}"/kali-${architecture}/boot/boot.cmd
 setenv bootm_boot_mode sec
-setenv bootargs console=ttyS0,115200 root=/dev/mmcblk0p2 rootwait panic=10 \${extra} rw rootfstype=ext4 net.ifnames=0
+setenv bootargs console=ttyS0,115200 root=/dev/mmcblk0p2 rootwait panic=10 \${extra} rw rootfstype=ext3 net.ifnames=0
 fatload mmc 0 0x43000000 script.bin
 fatload mmc 0 0x48000000 uImage
 bootm 0x48000000
@@ -313,7 +313,7 @@ sed -i -e 's/^#PermitRootLogin.*/PermitRootLogin yes/' "${basedir}"/kali-${archi
 dd if=/dev/zero of="${basedir}"/${imagename}.img bs=1M count=${size}
 parted ${imagename}.img --script -- mklabel msdos
 parted ${imagename}.img --script -- mkpart primary fat32 2048s 264191s
-parted ${imagename}.img --script -- mkpart primary ext4 264192s 100%
+parted ${imagename}.img --script -- mkpart primary ext3 264192s 100%
 
 # Set the partition variables
 loopdevice=`losetup -f --show "${basedir}"/${imagename}.img`
@@ -325,7 +325,7 @@ rootp=${device}p2
 
 # Create file systems
 mkfs.vfat ${bootp}
-mkfs.ext4 -O ^64bit -O ^flex_bg -O ^metadata_csum ${rootp}
+mkfs.ext3 -O ^64bit -O ^flex_bg -O ^metadata_csum ${rootp}
 
 # Create the dirs for the partitions and mount them
 mkdir -p "${basedir}"/root

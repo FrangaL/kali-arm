@@ -318,7 +318,7 @@ setenv macaddr "00:1e:06:61:7a:39"
 #------------------------------------------------------------------------------------------------------
 # Basic Ubuntu Setup. Don't touch unless you know what you are doing.
 # --------------------------------
-setenv bootrootfs "console=tty1 console=ttySAC2,115200n8 root=/dev/mmcblk0p2 rootwait rootfstype=ext4 net.ifnames=0 rw"
+setenv bootrootfs "console=tty1 console=ttySAC2,115200n8 root=/dev/mmcblk0p2 rootwait rootfstype=ext3 net.ifnames=0 rw"
 
 # boot commands
 # Uncomment the following if you use an initrd
@@ -369,7 +369,7 @@ echo "Creating image file ${imagename}.img"
 dd if=/dev/zero of="${basedir}"/${imagename}.img bs=1M count=${size}
 parted ${imagename}.img --script -- mklabel msdos
 parted ${imagename}.img --script -- mkpart primary fat32 3072s 264191s
-parted ${imagename}.img --script -- mkpart primary ext4 264192s 100%
+parted ${imagename}.img --script -- mkpart primary ext3 264192s 100%
 
 # Set the partition variables
 loopdevice=`losetup -f --show "${basedir}"/${imagename}.img`
@@ -381,7 +381,7 @@ rootp=${device}p2
 
 # Create file systems
 mkfs.vfat ${bootp}
-mkfs.ext4 -O ^64bit -O ^flex_bg -O ^metadata_csum ${rootp}
+mkfs.ext3 -O ^64bit -O ^flex_bg -O ^metadata_csum ${rootp}
 
 # Create the dirs for the partitions and mount them
 mkdir -p "${basedir}"/root

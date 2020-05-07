@@ -327,7 +327,7 @@ loadinitrd=load mmc \${mmcdev}:\${mmcpart} \${initrd_addr} \${initrd_file}; sete
 loadfdt=load mmc \${mmcdev}:\${mmcpart} \${fdtaddr} \${fdtfile}
 console=ttyO0,115200n8
 mmcroot=/dev/mmcblk0p2
-mmcrootfstype=ext4
+mmcrootfstype=ext3
 mmcargs=setenv bootargs console=\${console} root=\${mmcroot} rootfstype=\${mmcrootfstype} \${optargs}
 uenvcmd=run loadimage; run loadfdt; run mmcargs; bootz \${loadaddr} - \${fdtaddr}
 EOF
@@ -351,7 +351,7 @@ echo "Creating image file ${imagename}.img"
 dd if=/dev/zero of="${basedir}"/${imagename}.img bs=1M count=${size}
 parted ${imagename}.img --script -- mklabel msdos
 parted ${imagename}.img --script -- mkpart primary fat32 2048s 264191s
-parted ${imagename}.img --script -- mkpart primary ext4 264192s 100%
+parted ${imagename}.img --script -- mkpart primary ext3 264192s 100%
 parted ${imagename}.img --script -- set 1 boot on
 
 # Set the partition variables
@@ -364,7 +364,7 @@ rootp=${device}p2
 
 # Create file systems
 mkfs.vfat -F 16 ${bootp}
-mkfs.ext4 -O ^64bit -O ^flex_bg -O ^metadata_csum ${rootp}
+mkfs.ext3 -O ^64bit -O ^flex_bg -O ^metadata_csum ${rootp}
 
 # Create the dirs for the partitions and mount them
 mkdir -p "${basedir}"/root

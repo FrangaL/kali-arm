@@ -318,7 +318,7 @@ cd "${basedir}"
 
 #loadkernel=load \${dtype} \${disk}:1 \${loadaddr} zImage
 
-#bargs=setenv bootargs console=ttymxc1,115200n8 rootwait root=PARTUUID=\${btpart} net.ifnames=0 rootfstype=ext4
+#bargs=setenv bootargs console=ttymxc1,115200n8 rootwait root=PARTUUID=\${btpart} net.ifnames=0 rootfstype=ext3
 
 #loadfdt=load \${dtype} \${disk}:1 0x11000000 \${fdt_file}
 
@@ -335,7 +335,7 @@ echo "Creating image file ${imagename}.img"
 dd if=/dev/zero of="${basedir}"/${imagename}.img bs=1M count=${size}
 parted ${imagename}.img --script -- mklabel msdos
 parted ${imagename}.img --script -- mkpart primary fat32 2048s 264191s
-parted ${imagename}.img --script -- mkpart primary ext4 264192s 100%
+parted ${imagename}.img --script -- mkpart primary ext3 264192s 100%
 
 # Set the partition variables
 loopdevice=`losetup -f --show "${basedir}"/${imagename}.img`
@@ -347,7 +347,7 @@ rootp=${device}p2
 
 # Create file systems
 mkfs.vfat ${bootp}
-mkfs.ext4 ${rootp}
+mkfs.ext3 ${rootp}
 
 # Create the dirs for the partitions and mount them
 mkdir -p "${basedir}"/root

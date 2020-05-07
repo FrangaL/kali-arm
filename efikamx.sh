@@ -227,7 +227,7 @@ cd "${basedir}"
 cat << EOF > "${basedir}"/kali-${architecture}/boot/boot.script
 setenv ramdisk uInitrd;
 setenv kernel uImage;
-setenv bootargs console=tty1 root=/dev/mmcblk0p2 rootwait rootfstype=ext4 rw quiet;
+setenv bootargs console=tty1 root=/dev/mmcblk0p2 rootwait rootfstype=ext3 rw quiet;
 \${loadcmd} \${ramdiskaddr} \${ramdisk};
 if imi \${ramdiskaddr}; then; else
 setenv bootargs \${bootargs} noinitrd;
@@ -249,7 +249,7 @@ echo "Creating image file for ${imagename}.img"
 dd if=/dev/zero of="${basedir}"/${imagename}.img bs=1M count=${size}
 parted ${imagename}.img --script -- mklabel msdos
 parted ${imagename}.img --script -- mkpart primary ext2 4096s 266239s
-parted ${imagename}.img --script -- mkpart primary ext4 266240s 100%
+parted ${imagename}.img --script -- mkpart primary ext3 266240s 100%
 
 # Set the partition variables
 loopdevice=`losetup -f --show "${basedir}"/${imagename}.img`
@@ -260,7 +260,7 @@ rootp=${device}p2
 
 # Create file systems
 mkfs.ext2 ${bootp}
-mkfs.ext4 ${rootp}
+mkfs.ext3 ${rootp}
 
 # Create the dirs for the partitions and mount them
 mkdir -p "${basedir}"/root

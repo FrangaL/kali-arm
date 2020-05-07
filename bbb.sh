@@ -316,7 +316,7 @@ loadfdt=load mmc \${mmcdev}:\${mmcpart} \${fdtaddr} /dtbs/\${fdtfile}
 
 console=ttyO0,115200n8
 mmcroot=/dev/mmcblk0p2 rw net.ifnames=0
-mmcrootfstype=ext4 rootwait fixrtc
+mmcrootfstype=ext3 rootwait fixrtc
 
 ##To disable HDMI/eMMC...
 #optargs=capemgr.disable_partno=BB-BONELT-HDMI,BB-BONELT-HDMIN,BB-BONE-EMMC-2G
@@ -398,7 +398,7 @@ echo "Creating image file for ${imagename}.img"
 dd if=/dev/zero of="${basedir}"/${imagename}.img bs=1M count=${size}
 parted ${imagename}.img --script -- mklabel msdos
 parted ${imagename}.img --script -- mkpart primary fat32 2048s 264191s
-parted ${imagename}.img --script -- mkpart primary ext4 264192s 100%
+parted ${imagename}.img --script -- mkpart primary ext3 264192s 100%
 
 # Set the partition variables
 loopdevice=`losetup -f --show "${basedir}"/${imagename}.img`
@@ -410,7 +410,7 @@ rootp=${device}p2
 
 # Create file systems
 mkfs.vfat -F 16 ${bootp}
-mkfs.ext4 -O ^64bit -O ^flex_bg -O ^metadata_csum ${rootp}
+mkfs.ext3 -O ^64bit -O ^flex_bg -O ^metadata_csum ${rootp}
 
 # Create the dirs for the partitions and mount them
 mkdir -p "${basedir}"/root

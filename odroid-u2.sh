@@ -337,7 +337,7 @@ cat << EOF > "${basedir}"/kali-${architecture}/boot/boot.txt
 setenv initrd_high "0xffffffff"
 setenv fdt_high "0xffffffff"
 setenv bootcmd "fatload mmc 0:1 0x40008000 zImage; fatload mmc 0:1 0x42000000 uInitrd; bootm 0x40008000 0x42000000"
-setenv bootargs "console=tty1 console=ttySAC1,115200n8 root=/dev/mmcblk0p2 rootwait mem=2047M rw rootfstype=ext4 net.ifnames=0"
+setenv bootargs "console=tty1 console=ttySAC1,115200n8 root=/dev/mmcblk0p2 rootwait mem=2047M rw rootfstype=ext3 net.ifnames=0"
 boot
 EOF
 
@@ -356,7 +356,7 @@ echo "Creating image file for ${imagename}.img"
 dd if=/dev/zero of="${basedir}"/${imagename}.img bs=1M count=${size}
 parted ${imagename}.img --script -- mklabel msdos
 parted ${imagename}.img --script -- mkpart primary fat32 2048s 264191s
-parted ${imagename}.img --script -- mkpart primary ext4 264192s 100%
+parted ${imagename}.img --script -- mkpart primary ext3 264192s 100%
 
 # Set the partition variables
 loopdevice=`losetup -f --show "${basedir}"/${imagename}.img`
@@ -368,8 +368,8 @@ rootp=${device}p2
 
 # Create file systems
 mkfs.vfat ${bootp}
-# Disable 64bit on ext4 because the u-boot from 2010 is too old.
-mkfs.ext4 -O ^64bit -O ^flex_bg -O ^metadata_csum ${rootp}
+# Disable 64bit on ext3 because the u-boot from 2010 is too old.
+mkfs.ext3 -O ^64bit -O ^flex_bg -O ^metadata_csum ${rootp}
 
 # Create the dirs for the partitions and mount them
 mkdir -p "${basedir}"/root

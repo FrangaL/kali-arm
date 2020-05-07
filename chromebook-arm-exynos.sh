@@ -488,7 +488,7 @@ cd "${basedir}"/kali-${architecture}/usr/src/kernel/arch/arm/boot
 mkimage -D "-I dts -O dtb -p 2048" -f kernel-exynos.its exynos-kernel
 
 # microSD Card
-echo 'noinitrd console=tty1 quiet root=PARTUUID=%U/PARTNROFF=1 rootwait rw lsm.module_locking=0 net.ifnames=0 rootfstype=ext4' > cmdline
+echo 'noinitrd console=tty1 quiet root=PARTUUID=%U/PARTNROFF=1 rootwait rw lsm.module_locking=0 net.ifnames=0 rootfstype=ext3' > cmdline
 
 # Pulled from ChromeOS, this is exactly what they do because there's no
 # bootloader in the kernel partition on ARM.
@@ -628,7 +628,7 @@ device="/dev/mapper/${device}"
 bootp=${device}p1
 rootp=${device}p2
 
-mkfs.ext4 -O ^flex_bg -O ^metadata_csum -L rootfs ${rootp}
+mkfs.ext3 -O ^flex_bg -O ^metadata_csum -L rootfs ${rootp}
 
 mkdir -p "${basedir}"/root
 mount ${rootp} "${basedir}"/root

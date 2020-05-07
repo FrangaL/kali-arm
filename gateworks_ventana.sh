@@ -224,7 +224,7 @@ apt-get --yes --download-only install kali-linux-default
 # We replace the u-boot menu defaults here so we can make sure the build system doesn't poison it.
 # We use _EOF_ so that the third-stage script doesn't end prematurely.
 cat << '_EOF_' > /etc/default/u-boot
-U_BOOT_PARAMETERS="console=ttyS0,115200 console=tty1 root=/dev/mmcblk0p1 rootwait panic=10 rw rootfstype=ext4 net.ifnames=0"
+U_BOOT_PARAMETERS="console=ttyS0,115200 console=tty1 root=/dev/mmcblk0p1 rootwait panic=10 rw rootfstype=ext3 net.ifnames=0"
 _EOF_
 
 rm -f /usr/sbin/policy-rc.d
@@ -335,7 +335,7 @@ sed -i -e 's/^#PermitRootLogin.*/PermitRootLogin yes/' "${basedir}"/kali-${archi
 
 # Not using extlinux.conf just yet...
 # Ensure we don't have root=/dev/sda3 in the extlinux.conf which comes from running u-boot-menu in a cross chroot.
-#sed -i -e 's/append.*/append root=\/dev\/mmcblk0p1 rootfstype=ext4 video=mxcfb0:dev=hdmi,1920x1080M@60,if=RGB24,bpp=32 console=ttymxc0,115200n8 console=tty1 consoleblank=0 rw rootwait/g' "${basedir}"/kali-${architecture}/boot/extlinux/extlinux.conf
+#sed -i -e 's/append.*/append root=\/dev\/mmcblk0p1 rootfstype=ext3 video=mxcfb0:dev=hdmi,1920x1080M@60,if=RGB24,bpp=32 console=ttymxc0,115200n8 console=tty1 consoleblank=0 rw rootwait/g' "${basedir}"/kali-${architecture}/boot/extlinux/extlinux.conf
 
 # Create the boot script that is expected for the ventana machine
 cat << '__EOF__' > "${basedir}"/kali-${architecture}/boot/6x_bootscript-ventana.script
@@ -469,17 +469,17 @@ if itest.s "x${dtype}" == "xnand" ; then
   setenv fsload "ubifsload"
 elif itest.s "x${dtype}" == "xmmc" ; then
   echo "Booting from MMC..."
-  setenv root "root=/dev/mmcblk0p1 rw rootfstype=ext4 rootwait init=/lib/systemd/systemd"
-  setenv fsload "ext4load $dtype 0:1"
+  setenv root "root=/dev/mmcblk0p1 rw rootfstype=ext3 rootwait init=/lib/systemd/systemd"
+  setenv fsload "ext3load $dtype 0:1"
   setenv rd_addr # ramdisk not needed for IMX6 MMC
 elif itest.s "x${dtype}" == "xusb" ; then
   echo "Booting from USB Mass Storage..."
   setenv root "root=/dev/sda1 rootwait"
-  setenv fsload "ext4load $dtype 0:1"
+  setenv fsload "ext3load $dtype 0:1"
 elif itest.s "x${dtype}" == "xsata" ; then
   echo "Booting from SATA..."
   setenv root "root=/dev/sda1 rootwait"
-  setenv fsload "ext4load $dtype 0:1"
+  setenv fsload "ext3load $dtype 0:1"
   setenv rd_addr # ramdisk not needed for IMX6 AHCI SATA
 fi
 
@@ -524,7 +524,7 @@ mkimage -A arm -T script -C none -d "${basedir}"/kali-${architecture}/boot/6x_bo
 echo "Creating image file for ${imagename}.img"
 dd if=/dev/zero of="${basedir}"/${imagename}.img bs=1M count=${size}
 parted ${imagename}.img --script -- mklabel msdos
-parted ${imagename}.img --script -- mkpart primary ext4 2048s 100%
+parted ${imagename}.img --script -- mkpart primary ext3 2048s 100%
 
 # Set the partition variables
 loopdevice=`losetup -f --show "${basedir}"/${imagename}.img`
@@ -534,7 +534,7 @@ device="/dev/mapper/${device}"
 rootp=${device}p1
 
 # Create file systems
-mkfs.ext4 -O ^64bit -O ^flex_bg -O ^metadata_csum ${rootp}
+mkfs.ext3 -O ^64bit -O ^flex_bg -O ^metadata_csum ${rootp}
 
 # Create the dirs for the partitions and mount them
 mkdir -p "${basedir}"/root

@@ -309,7 +309,7 @@ systemctl enable fake-hwclock
 
 # Create cmdline.txt file
 mkdir -p /boot
-echo "dwc_otg.lpm_enable=0 console=serial0,115200 console=tty1 root=/dev/mmcblk0p2 rootfstype=ext4 elevator=deadline fsck.repair=yes rootwait" > /boot/cmdline.txt
+echo "dwc_otg.lpm_enable=0 console=serial0,115200 console=tty1 root=/dev/mmcblk0p2 rootfstype=ext3 elevator=deadline fsck.repair=yes rootwait" > /boot/cmdline.txt
 
 # Install P4wnP1 A.L.O.A.
 cd /root/P4wnP1
@@ -478,7 +478,7 @@ cat << EOF > "${basedir}"/kali-${architecture}/etc/fstab
 # <file system> <mount point>   <type>  <options>       <dump>  <pass>
 proc            /proc           proc    defaults          0       0
 /dev/mmcblk0p1  /boot           vfat    defaults          0       2
-/dev/mmcblk0p2  /               ext4    defaults,noatime  0       1
+/dev/mmcblk0p2  /               ext3    defaults,noatime  0       1
 EOF
 
 
@@ -530,7 +530,7 @@ echo "Creating image file ${imagename}.img"
 dd if=/dev/zero of="${basedir}"/${imagename}.img bs=1M count=${size}
 parted ${imagename}.img --script -- mklabel msdos
 parted ${imagename}.img --script -- mkpart primary fat32 0 128
-parted ${imagename}.img --script -- mkpart primary ext4 128 -1
+parted ${imagename}.img --script -- mkpart primary ext3 128 -1
 
 # Set the partition variables
 loopdevice=`losetup -f --show "${basedir}"/${imagename}.img`
@@ -542,7 +542,7 @@ rootp=${device}p2
 
 # Create file systems
 mkfs.vfat ${bootp}
-mkfs.ext4 ${rootp}
+mkfs.ext3 ${rootp}
 
 # Create the dirs for the partitions and mount them
 mkdir -p "${basedir}"/root

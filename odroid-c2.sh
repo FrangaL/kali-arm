@@ -685,7 +685,7 @@ echo "Creating image file ${imagename}.img"
 dd if=/dev/zero of="${basedir}"/${imagename}.img bs=1M count=${size}
 parted ${imagename}.img --script -- mklabel msdos
 parted ${imagename}.img --script -- mkpart primary fat32 2048s 264191s
-parted ${imagename}.img --script -- mkpart primary ext4 264192s 100%
+parted ${imagename}.img --script -- mkpart primary ext3 264192s 100%
 
 # Set the partition variables
 loopdevice=`losetup -f --show "${basedir}"/${imagename}.img`
@@ -697,7 +697,7 @@ rootp=${device}p2
 
 # Create file systems
 mkfs.vfat -F 32 -n boot ${bootp}
-mkfs.ext4 -O ^flex_bg -O ^metadata_csum -L rootfs ${rootp}
+mkfs.ext3 -O ^flex_bg -O ^metadata_csum -L rootfs ${rootp}
 
 # Create the dirs for the partitions and mount them
 mkdir -p "${basedir}"/root
