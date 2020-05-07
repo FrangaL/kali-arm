@@ -308,7 +308,7 @@ apt download fontconfig
 # kali-last-snapshot, we need either to keep k-l-s in sources.list or we need to
 # do this.
 echo "deb http://http.kali.org/kali kali-rolling main contrib non-free" > /etc/apt/sources.list
-echo "#deb-src http://http.kali.org/kali kali-rolling main contrib non-free" > /etc/apt/sources.list
+echo "#deb-src http://http.kali.org/kali kali-rolling main contrib non-free" >> /etc/apt/sources.list
 apt-get update
 apt-get install --yes --download-only kali-linux-default
 
