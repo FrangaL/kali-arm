@@ -213,6 +213,12 @@ apt download ca-certificates
 apt download libgdk-pixbuf2.0-0
 apt download fontconfig
 
+# This is a bit annoying, but since we build releases against
+# kali-last-snapshot, we need either to keep k-l-s in sources.list or we need to
+# do this.
+echo "deb http://http.kali.org/kali kali-rolling main contrib non-free" > /etc/apt/sources.list
+echo "#deb-src http://http.kali.org/kali kali-rolling main contrib non-free" >> /etc/apt/sources.list
+apt-get update
 apt-get --yes --download-only install kali-linux-default
 
 # We replace the u-boot menu defaults here so we can make sure the build system doesn't poison it.
