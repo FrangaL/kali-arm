@@ -52,7 +52,7 @@ unset CROSS_COMPILE
 arm="kali-linux-arm ntpdate"
 base="apt-utils bash-completion console-setup dialog dkms e2fsprogs ifupdown initramfs-tools inxi iw linux-image-armmp man-db mlocate netcat-traditional net-tools parted pciutils psmisc rfkill screen tmux u-boot-menu u-boot-sunxi unrar usbutils vim wget whiptail zerofree"
 desktop="kali-desktop-xfce kali-root-login xserver-xorg-video-fbdev xfonts-terminus xinput"
-tools="wireshark"
+tools="kali-tools-top10 wireshark"
 services="apache2 atftpd"
 extras="alsa-utils bc bison bluez bluez-firmware kali-linux-core libnss-systemd libssl-dev triggerhappy"
 
@@ -148,8 +148,6 @@ ExecStart=/bin/sh -c "rm -rf /etc/ssl/certs/*.pem && dpkg -i /root/*.deb"
 ExecStart=/bin/sh -c "dpkg-reconfigure shared-mime-info"
 ExecStart=/bin/sh -c "dpkg-reconfigure xfonts-base"
 ExecStart=/bin/sh -c "rm -f /root/*.deb"
-ExecStart=/bin/sh -c 'apt-get --yes -o dpkg::options::="--force-confnew" -o dpkg::options::="--force-overwrite install kali-linux-default'
-ExecStart=/bin/sh -c "apt-get clean"
 ExecStartPost=/bin/systemctl disable smi-hack
 
 [Install]
@@ -214,14 +212,6 @@ cd /root
 apt download ca-certificates
 apt download libgdk-pixbuf2.0-0
 apt download fontconfig
-
-# This is a bit annoying, but since we build releases against
-# kali-last-snapshot, we need either to keep k-l-s in sources.list or we need to
-# do this.
-echo "deb http://http.kali.org/kali kali-rolling main contrib non-free" > /etc/apt/sources.list
-echo "#deb-src http://http.kali.org/kali kali-rolling main contrib non-free" >> /etc/apt/sources.list
-apt-get update
-apt-get --yes --download-only install kali-linux-default
 
 # Fix startup time from 5 minutes to 25 secs on raising interfaces
 sed -i 's/^TimeoutStartSec=5min/TimeoutStartSec=25/g' "/usr/lib/systemd/system/networking.service"
