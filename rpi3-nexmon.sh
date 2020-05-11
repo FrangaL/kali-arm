@@ -429,7 +429,7 @@ mkdir -p "${basedir}"/root/boot
 mount ${bootp} "${basedir}"/root/boot
 
 echo "Rsyncing rootfs into image file"
-rsync -HPavz --verbose "${basedir}"/kali-${architecture}/ "${basedir}"/root/
+rsync -HPavz "${basedir}"/kali-${architecture}/ "${basedir}"/root/
 
 # We do this down here to get rid of the build system's resolv.conf after running through the build.
 cat << EOF > "${basedir}"/root/etc/resolv.conf
