@@ -180,7 +180,7 @@ chmod 644 kali-${architecture}/usr/lib/systemd/system/copy-user-wpasupplicant.se
 cat << EOF > "${basedir}"/kali-${architecture}/debconf.set
 console-common console-data/keymap/policy select Select keymap from full list
 console-common console-data/keymap/full select en-latin1-nodeadkeys
-locales locales/to_be_generated multiselect en_US.UTF-8 UTF-8
+locales locales/to_be_generated en_US.UTF-8 UTF-8
 locales locales/default_environment_locale select en_US.UTF-8 UTF-8
 EOF
 
