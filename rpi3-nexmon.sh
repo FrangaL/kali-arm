@@ -231,6 +231,8 @@ rm -f /debconf.set
 apt-get -y install git-core binutils ca-certificates initramfs-tools u-boot-tools
 apt-get -y install locales console-common less nano git
 
+echo 'LANG=C.UTF-8' > /etc/default/locale
+
 # Create kali user with kali password... but first, we need to manually make some groups because they don't yet exist...
 # This mirrors what we have on a pre-installed VM, until the script works properly to allow end users to set up their own... user.
 # However we leave off floppy, because who a) still uses them, and b) attaches them to an SBC!?
