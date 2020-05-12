@@ -229,10 +229,10 @@ echo "Acquire::Retries \"10\";" >> /etc/apt/apt.conf.d/80-retries
 apt-get update
 debconf-set-selections /debconf.set
 rm -f /debconf.set
-apt-get -y install git-core binutils ca-certificates initramfs-tools u-boot-tools
-apt-get -y install locales console-common less nano git
 sed -i 's/^# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen
 dpkg-reconfigure --frontend=noninteractive locales
+apt-get -y install git-core binutils ca-certificates initramfs-tools u-boot-tools
+apt-get -y install locales console-common less nano git
 
 # Create kali user with kali password... but first, we need to manually make some groups because they don't yet exist...
 # This mirrors what we have on a pre-installed VM, until the script works properly to allow end users to set up their own... user.
