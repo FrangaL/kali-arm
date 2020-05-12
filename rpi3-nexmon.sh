@@ -229,11 +229,9 @@ echo "Acquire::Retries \"10\";" >> /etc/apt/apt.conf.d/80-retries
 apt-get update
 debconf-set-selections /debconf.set
 rm -f /debconf.set
-export LC_ALL="en_US.UTF-8"
 apt-get -y install git-core binutils ca-certificates initramfs-tools u-boot-tools
 apt-get -y install locales console-common less nano git
 sed -i 's/^# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen
-update-locale LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8
 dpkg-reconfigure --frontend=noninteractive locales
 
 # Create kali user with kali password... but first, we need to manually make some groups because they don't yet exist...
