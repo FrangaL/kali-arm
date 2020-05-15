@@ -247,10 +247,6 @@ apt-get --yes --allow-change-held-packages -o dpkg::options::=--force-confnew in
 apt-get --yes --allow-change-held-packages -o dpkg::options::=--force-confnew install ${extras} ${tools} || apt-get --yes --fix-broken install
 
 apt-get --yes --allow-change-held-packages autoremove
-# libinput seems to fail hard on RaspberryPi devices, so we make sure it's not
-# installed here (and we have xserver-xorg-input-evdev and
-# xserver-xorg-input-synaptics packages installed above!)
-apt-get --yes --allow-change-held-packages purge xserver-xorg-input-libinput
 
 # Install the kernel packages
 echo "deb http://http.re4son-kernel.com/re4son kali-pi main" > /etc/apt/sources.list.d/re4son.list

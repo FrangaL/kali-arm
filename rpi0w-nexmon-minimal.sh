@@ -340,11 +340,6 @@ apt download ca-certificates
 apt download libgdk-pixbuf2.0-0
 apt download fontconfig
 
-# libinput seems to fail hard on RaspberryPi devices, so we make sure it's not
-# installed here (and we have xserver-xorg-input-evdev and
-# xserver-xorg-input-synaptics packages installed above!)
-apt-get --yes --allow-change-held-packages purge xserver-xorg-input-libinput
-
 # Fix startup time from 5 minutes to 15 secs on raise interface wlan0
 sed -i 's/^TimeoutStartSec=5min/TimeoutStartSec=15/g' "/lib/systemd/system/networking.service"
 

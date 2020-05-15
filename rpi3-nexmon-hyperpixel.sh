@@ -258,11 +258,6 @@ dpkg -i /root/raspberrypi-kernel_${rpikernelver}_armhf.deb /root/raspberrypi-ker
 
 apt-get --yes --allow-change-held-packages autoremove
 
-# libinput seems to fail hard on RaspberryPi devices, so we make sure it's not
-# installed here (and we have xserver-xorg-input-evdev and
-# xserver-xorg-input-synaptics packages installed above!)
-apt-get --yes --allow-change-held-packages purge xserver-xorg-input-libinput
-
 # Because copying in authorized_keys is hard for people to do, let's make the
 # image insecure and enable root login with a password.
 echo "Making the image insecure"
