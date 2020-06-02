@@ -113,19 +113,37 @@ EOF
 
 chmod 644 kali-${architecture}/usr/lib/systemd/system/regenerate_ssh_host_keys.service
 
-cat << EOF > kali-${architecture}/usr/lib/systemd/system/rpiwiggle.service
+cat << 'EOF' > kali-${architecture}/usr/lib/systemd/system/rpi-resizerootfs.service
 [Unit]
-Description=Resize filesystem
-After=regenerate_ssh_host_keys.service
+Description=Resize root file system
+Before=local-fs-pre.target
+DefaultDependencies=no
+
 [Service]
 Type=oneshot
-ExecStart=/root/scripts/rpi-wiggle.sh
-ExecStartPost=/bin/systemctl disable rpiwiggle
+TimeoutSec=infinity
+ExecStart=/usr/sbin/rpi-resizerootfs
+ExecStart=/bin/systemctl --no-reload disable %n
 
 [Install]
-WantedBy=multi-user.target
+RequiredBy=local-fs-pre.target
 EOF
-chmod 644 kali-${architecture}/usr/lib/systemd/system/rpiwiggle.service
+chmod 644 kali-${architecture}/usr/lib/systemd/system/rpi-resizerootfs.service
+
+cat << 'EOM' > kali-${architecture}/usr/sbin/rpi-resizerootfs
+#!/bin/sh
+flock /dev/mmcblk0 sfdisk -f /dev/mmcblk0 -N 2 <<EOF
+,+
+EOF
+
+sleep 5
+udevadm settle
+sleep 5
+flock /dev/mmcblk0 partprobe /dev/mmcblk0
+mount -o remounte,rw /dev/mmcblk0p2
+resize2fs /dev/mmcblk0p2
+EOM
+chmod +x kali-${architecture}/usr/sbin/rpi-resizerootfs
 
 cat << EOF > kali-${architecture}/usr/lib/systemd/system/smi-hack.service
 [Unit]
@@ -273,7 +291,7 @@ sed -i -e 's/^#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/
 systemctl enable smi-hack
 
 # Resize filesystem on first boot
-systemctl enable rpiwiggle
+systemctl enable rpi-resizerootfs
 
 # Generate SSH host keys on first run
 systemctl enable regenerate_ssh_host_keys
@@ -314,11 +332,6 @@ rm -f cleanup
 EOF
 
 chmod 755 "${basedir}"/kali-${architecture}/third-stage
-
-# rpi-wiggle
-mkdir -p "${basedir}"/kali-${architecture}/root/scripts
-wget https://raw.githubusercontent.com/steev/rpiwiggle/master/rpi-wiggle -O kali-${architecture}/root/scripts/rpi-wiggle.sh
-chmod 755 "${basedir}"/kali-${architecture}/root/scripts/rpi-wiggle.sh
 
 export MALLOC_CHECK_=0 # workaround for LP: #520465
 export LC_ALL=C
