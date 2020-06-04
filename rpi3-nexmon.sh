@@ -120,7 +120,7 @@ Before=local-fs-pre.target
 DefaultDependencies=no
 
 [Service]
-Type=oneshot
+Type=forking
 TimeoutSec=infinity
 ExecStart=/usr/sbin/rpi-resizerootfs
 ExecStart=/bin/systemctl --no-reload disable %n
