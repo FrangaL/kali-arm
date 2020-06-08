@@ -113,21 +113,37 @@ WantedBy=multi-user.target
 EOF
 chmod 644 kali-${architecture}/usr/lib/systemd/system/regenerate_ssh_host_keys.service
 
-cat << EOF > kali-${architecture}/usr/lib/systemd/system/rpiwiggle.service
+cat << EOF > kali-${architecture}/usr/lib/systemd/system/rpi-resizerootfs.service
+EOF
 [Unit]
-Description=Resize filesystem
-Before=regenerate_ssh_host_keys.service
-After=sysinit.target local-fs.target
+Description=Resize root file system
+Before=local-fs-pre.target
+DefaultDependencies=no
+
 [Service]
 Type=oneshot
-ExecStart=/root/scripts/rpi-wiggle.sh
-ExecStartPost=/bin/systemctl disable rpiwiggle
-TimeoutStartSec=3min
+TimeoutSec=infinity
+ExecStart=/usr/sbin/rpi-resizerootfs
+ExecStart=/bin/systemctl --no-reload disable %n
 
 [Install]
-WantedBy=basic.target
+RequiredBy=local-fs-pre.target
+chmod 644 kali-${architecture}/usr/lib/systemd/system/rpi-resizerootfs.service
+
+cat << 'EOM' > kali-${architecture}/usr/sbin/rpi-resizerootfs
+#!/bin/sh
+flock /dev/mmcblk0 sfdisk -f /dev/mmcblk0 -N 2 <<EOF
+,+
 EOF
-chmod 644 kali-${architecture}/usr/lib/systemd/system/rpiwiggle.service
+
+sleep 5
+udevadm settle
+sleep 5
+flock /dev/mmcblk0 partprobe /dev/mmcblk0
+mount -o remount,rw /dev/mmcblk0p2
+resize2fs /dev/mmcblk0p2
+EOM
+chmod +x kali-${architecture}/usr/sbin/rpi-resizerootfs
 
 cat << EOF > kali-${architecture}/usr/lib/systemd/system/smi-hack.service
 [Unit]
@@ -217,13 +233,6 @@ cp "${basedir}"/../misc/pi-bluetooth/btuart "${basedir}"/kali-${architecture}/us
 # Ensure btuart is executable
 chmod 755 "${basedir}"/kali-${architecture}/usr/bin/btuart
 
-# Non-root-user script
-mkdir -p "${basedir}"/kali-${architecture}/usr/share/kali-arm-oem-install
-cp "${basedir}"/../non-root/* "${basedir}"/kali-${architecture}/usr/share/kali-arm-oem-install
-# Resizefs needs to go into the path
-cp "${basedir}"/../non-root/resize-fs "${basedir}"/kali-${architecture}/usr/local/bin/resize-fs
-chmod +x "${basedir}"/kali-${architecture}/usr/local/bin/resize-fs
-
 cat << EOF > "${basedir}"/kali-${architecture}/third-stage
 #!/bin/bash
 set -e
@@ -275,7 +284,7 @@ sed -i -e 's/^#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/
 systemctl enable smi-hack
 
 # Resize filesystem on first boot
-systemctl enable rpiwiggle
+systemctl enable rpi-resizerootfs
 
 # Generate SSH host keys on first run
 systemctl enable regenerate_ssh_host_keys

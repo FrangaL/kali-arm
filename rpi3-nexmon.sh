@@ -140,7 +140,7 @@ sleep 5
 udevadm settle
 sleep 5
 flock /dev/mmcblk0 partprobe /dev/mmcblk0
-mount -o remounte,rw /dev/mmcblk0p2
+mount -o remount,rw /dev/mmcblk0p2
 resize2fs /dev/mmcblk0p2
 EOM
 chmod +x kali-${architecture}/usr/sbin/rpi-resizerootfs
