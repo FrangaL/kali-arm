@@ -114,7 +114,6 @@ EOF
 chmod 644 kali-${architecture}/usr/lib/systemd/system/regenerate_ssh_host_keys.service
 
 cat << EOF > kali-${architecture}/usr/lib/systemd/system/rpi-resizerootfs.service
-EOF
 [Unit]
 Description=Resize root file system
 Before=local-fs-pre.target
@@ -128,6 +127,7 @@ ExecStart=/bin/systemctl --no-reload disable %n
 
 [Install]
 RequiredBy=local-fs-pre.target
+EOF
 chmod 644 kali-${architecture}/usr/lib/systemd/system/rpi-resizerootfs.service
 
 cat << 'EOM' > kali-${architecture}/usr/sbin/rpi-resizerootfs
