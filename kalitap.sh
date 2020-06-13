@@ -117,38 +117,7 @@ console-common console-data/keymap/full select en-latin1-nodeadkeys
 EOF
 
 mkdir -p kali-${architecture}/usr/lib/systemd/system/
-cat << 'EOF' > kali-${architecture}/usr/lib/systemd/system/regenerate_ssh_host_keys.service
-[Unit]
-Description=Regenerate SSH host keys
-Before=ssh.service
-[Service]
-Type=oneshot
-ExecStartPre=-/bin/dd if=/dev/hwrng of=/dev/urandom count=1 bs=4096
-ExecStartPre=-/bin/sh -c "/bin/rm -f -v /etc/ssh/ssh_host_*_key*"
-ExecStart=/usr/bin/ssh-keygen -A -v
-ExecStartPost=/bin/sh -c "for i in /etc/ssh/ssh_host_*_key*; do actualsize=$(wc -c <\"$i\") ;if [ $actualsize -eq 0 ]; then echo size is 0 bytes ; exit 1 ; fi ; done ; /bin/systemctl disable regenerate_ssh_host_keys"
-[Install]
-WantedBy=multi-user.target
-EOF
-chmod 644 kali-${architecture}/usr/lib/systemd/system/regenerate_ssh_host_keys.service
-
-cat << EOF > kali-${architecture}/usr/lib/systemd/system/smi-hack.service
-[Unit]
-Description=shared-mime-info update hack
-Before=regenerate_ssh_host_keys.service
-[Service]
-Type=oneshot
-Environment=DEBIAN_FRONTEND=noninteractive
-ExecStart=/bin/sh -c "rm -rf /etc/ssl/certs/*.pem && dpkg -i /root/*.deb"
-ExecStart=/bin/sh -c "dpkg-reconfigure shared-mime-info"
-ExecStart=/bin/sh -c "dpkg-reconfigure xfonts-base"
-ExecStart=/bin/sh -c "rm -f /root/*.deb"
-ExecStartPost=/bin/systemctl disable smi-hack
-
-[Install]
-WantedBy=multi-user.target
-EOF
-chmod 644 kali-${architecture}/usr/lib/systemd/system/smi-hack.service
+cp "${basedir}"/../bsp/services/all/*.service kali-${architecture}/usr/lib/systemd/system/
 
 cat << EOF > kali-${architecture}/third-stage
 #!/bin/bash

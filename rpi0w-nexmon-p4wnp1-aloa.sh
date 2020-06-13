@@ -232,12 +232,12 @@ chmod 644 "${basedir}"/kali-${architecture}/usr/lib/systemd/system/enable-ssh.se
 
 # Bluetooth enabling
 mkdir -p kali-${architecture}/usr/lib/udev/rules.d/
-cp "${basedir}"/../misc/pi-bluetooth/50-bluetooth-hci-auto-poweron.rules kali-${architecture}/usr/lib/udev/rules.d/50-bluetooth-hci-auto-poweron.rules
-cp "${basedir}"/../misc/pi-bluetooth/pi-bluetooth+re4son_2.2_all.deb kali-${architecture}/root/pi-bluetooth+re4son_2.2_all.deb
+cp "${basedir}"/../bsp/bluetooth/rpi/50-bluetooth-hci-auto-poweron.rules kali-${architecture}/usr/lib/udev/rules.d/50-bluetooth-hci-auto-poweron.rules
+cp "${basedir}"/../bsp/bluetooth/rpi/pi-bluetooth+re4son_2.2_all.deb kali-${architecture}/root/pi-bluetooth+re4son_2.2_all.deb
 
 # Copy a default config, with everything commented out so people find it when
 # they go to add something when they are following instructions on a website.
-cp "${basedir}"/../misc/config.txt "${basedir}"/kali-${architecture}/boot/config.txt
+cp "${basedir}"/../bsp/firmware/rpi/config.txt "${basedir}"/kali-${architecture}/boot/config.txt
 
 # move P4wnP1 in (change to release blob when ready)
 git clone  -b 'v0.1.0-alpha2' --single-branch --depth 1  https://github.com/mame82/P4wnP1_aloa "${basedir}"/kali-${architecture}/root/P4wnP1
@@ -461,7 +461,7 @@ cd "${basedir}"
 
 # Copy a default config, with everything commented out so people find it when
 # they go to add something when they are following instructions on a website.
-cp "${basedir}"/../misc/config.txt "${basedir}"/kali-${architecture}/boot/config.txt
+cp "${basedir}"/../bsp/firmware/rpi/config.txt "${basedir}"/kali-${architecture}/boot/config.txt
 
 cat << EOF >> "${basedir}"/kali-${architecture}/boot/config.txt
 dtoverlay=dwc2
@@ -511,12 +511,9 @@ wget https://raw.githubusercontent.com/RPi-Distro/firmware-nonfree/master/brcm/b
 wget https://raw.githubusercontent.com/RPi-Distro/firmware-nonfree/master/brcm/brcmfmac43430-sdio.bin -O "${basedir}"/kali-${architecture}/lib/firmware/brcm/brcmfmac43430-sdio.rpi.bin
 #cp "${basedir}"/kali-${architecture}/lib/firmware/brcm/brcmfmac43430-sdio.rpi.bin "${basedir}"/kali-${architecture}/lib/firmware/brcm/brcmfmac43430-sdio.bin
 
-cp "${basedir}"/../misc/brcm/BCM43430A1.hcd "${basedir}"/kali-${architecture}/lib/firmware/brcm/BCM43430A1.hcd
+cp "${basedir}"/../bsp/firmware/rpi/BCM43430A1.hcd "${basedir}"/kali-${architecture}/lib/firmware/brcm/BCM43430A1.hcd
 
 cd "${basedir}"
-
-cp "${basedir}"/../misc/zram "${basedir}"/kali-${architecture}/etc/init.d/zram
-chmod 755 "${basedir}"/kali-${architecture}/etc/init.d/zram
 
 sed -i -e 's/^#PermitRootLogin.*/PermitRootLogin yes/' "${basedir}"/kali-${architecture}/etc/ssh/sshd_config
 

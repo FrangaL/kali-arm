@@ -140,88 +140,13 @@ EOF
 chmod 755 kali-${architecture}/usr/bin/monstop
 
 mkdir -p kali-${architecture}/usr/lib/systemd/system/
-cat << 'EOF' > kali-${architecture}/usr/lib/systemd/system/regenerate_ssh_host_keys.service
-[Unit]
-Description=Regenerate SSH host keys
-Before=ssh.service
-[Service]
-Type=oneshot
-ExecStartPre=-/bin/dd if=/dev/hwrng of=/dev/urandom count=1 bs=4096
-ExecStartPre=-/bin/sh -c "/bin/rm -f -v /etc/ssh/ssh_host_*_key*"
-ExecStart=/usr/bin/ssh-keygen -A -v
-ExecStartPost=/bin/sh -c "for i in /etc/ssh/ssh_host_*_key*; do actualsize=$(wc -c <\"$i\") ;if [ $actualsize -eq 0 ]; then echo size is 0 bytes ; exit 1 ; fi ; done ; /bin/systemctl disable regenerate_ssh_host_keys"
-[Install]
-WantedBy=multi-user.target
-EOF
-chmod 644 kali-${architecture}/usr/lib/systemd/system/regenerate_ssh_host_keys.service
-
-cat << EOF > kali-${architecture}/usr/lib/systemd/system/smi-hack.service
-[Unit]
-Description=shared-mime-info update hack
-Before=regenerate_ssh_host_keys.service
-[Service]
-Type=oneshot
-Environment=DEBIAN_FRONTEND=noninteractive
-ExecStart=/bin/sh -c "rm -rf /etc/ssl/certs/*.pem && dpkg -i /root/*.deb"
-ExecStart=/bin/sh -c "dpkg-reconfigure shared-mime-info"
-ExecStart=/bin/sh -c "dpkg-reconfigure xfonts-base"
-ExecStart=/bin/sh -c "rm -f /root/*.deb"
-ExecStartPost=/bin/systemctl disable smi-hack
-
-[Install]
-WantedBy=multi-user.target
-EOF
-chmod 644 kali-${architecture}/usr/lib/systemd/system/smi-hack.service
-
-cat << EOF > kali-${architecture}/usr/lib/systemd/system/rpiwiggle.service
-[Unit]
-Description=Resize filesystem
-After=regenerate_ssh_host_keys.service
-[Service]
-Type=oneshot
-ExecStart=/root/scripts/rpi-wiggle.sh
-ExecStartPost=/bin/systemctl disable rpiwiggle
-[Install]
-WantedBy=multi-user.target
-EOF
-chmod 644 kali-${architecture}/usr/lib/systemd/system/rpiwiggle.service
-
-cat << EOF > "${basedir}"/kali-${architecture}/usr/lib/systemd/system/enable-ssh.service
-[Unit]
-Description=Turn on SSH if /boot/ssh is present
-ConditionPathExistsGlob=/boot/ssh{,.txt}
-After=regenerate_ssh_host_keys.service
-
-[Service]
-Type=oneshot
-ExecStart=/bin/sh -c "update-rc.d ssh enable && invoke-rc.d ssh start && rm -f /boot/ssh ; rm -f /boot/ssh.txt"
-
-[Install]
-WantedBy=multi-user.target
-EOF
-chmod 644 "${basedir}"/kali-${architecture}/usr/lib/systemd/system/enable-ssh.service
-
-cat << EOF > "${basedir}"/kali-${architecture}/usr/lib/systemd/system/copy-user-wpasupplicant.service
-[Unit]
-Description=Copy user wpa_supplicant.conf
-ConditionPathExists=/boot/wpa_supplicant.conf
-Before=dhcpcd.service
-
-[Service]
-Type=oneshot
-RemainAfterExit=yes
-ExecStart=/bin/mv /boot/wpa_supplicant.conf /etc/wpa_supplicant/wpa_supplicant.conf
-ExecStartPost=/bin/chmod 600 /etc/wpa_supplicant/wpa_supplicant.conf
-
-[Install]
-WantedBy=multi-user.target
-EOF
-chmod 644 "${basedir}"/kali-${architecture}/usr/lib/systemd/system/copy-user-wpasupplicant.service
+cp "${basedir}"/../bsp/services/all/*.service kali-${architecture}/usr/lib/systemd/system/
+cp "${basedir}"/../bsp/services/rpi/*.service kali-${architecture}/usr/lib/systemd/system/
 
 # Bluetooth enabling
 mkdir -p "${basedir}"/kali-${architecture}/etc/udev/rules.d/
-cp "${basedir}"/../misc/pi-bluetooth/50-bluetooth-hci-auto-poweron.rules kali-${architecture}/usr/lib/udev/rules.d/50-bluetooth-hci-auto-poweron.rules
-cp "${basedir}"/../misc/pi-bluetooth/pi-bluetooth+re4son_2.2_all.deb kali-${architecture}/root/pi-bluetooth+re4son_2.2_all.deb
+cp "${basedir}"/../bsp/bluetooth/rpi/50-bluetooth-hci-auto-poweron.rules kali-${architecture}/usr/lib/udev/rules.d/50-bluetooth-hci-auto-poweron.rules
+cp "${basedir}"/../bsp/bluetooth/rpi/pi-bluetooth+re4son_2.2_all.deb kali-${architecture}/root/pi-bluetooth+re4son_2.2_all.deb
 
 cat << 'EOF' > kali-${architecture}/root/fakeuname.c
 #define _GNU_SOURCE
@@ -408,13 +333,10 @@ chmod 755 "${basedir}"/kali-${architecture}/root/scripts/rpi-wiggle.sh
 
 # Copy a default config, with everything commented out so people find it when
 # they go to add something when they are following instructions on a website.
-cp "${basedir}"/../misc/config.txt "${basedir}"/kali-${architecture}/boot/config.txt
+cp "${basedir}"/../bsp/firmware/rpi/config.txt "${basedir}"/kali-${architecture}/boot/config.txt
 
 # Copy in the bluetooth firmware
-cp "${basedir}"/../misc/brcm/BCM43430A1.hcd "${basedir}"/kali-${architecture}/lib/firmware/brcm/BCM43430A1.hcd
-
-cp "${basedir}"/../misc/zram "${basedir}"/kali-${architecture}/etc/init.d/zram
-chmod 755 "${basedir}"/kali-${architecture}/etc/init.d/zram
+cp "${basedir}"/../bsp/firmware/rpi/BCM43430A1.hcd "${basedir}"/kali-${architecture}/lib/firmware/brcm/BCM43430A1.hcd
 
 sed -i -e 's/^#PermitRootLogin.*/PermitRootLogin yes/' "${basedir}"/kali-${architecture}/etc/ssh/sshd_config
 
