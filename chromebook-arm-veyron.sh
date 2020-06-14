@@ -400,7 +400,7 @@ echo -e '\n[keyfile]\nunmanaged-devices=interface-name:p2p0\n' >> "${basedir}"/k
 
 # Create these if they don't exist, to make sure we have proper audio with pulse
 mkdir -p "${basedir}"/kali-${architecture}/var/lib/alsa/
-cp "${basedir}/../bsp/audio/veyron/asound.state kali-${architecture}/var/lib/alsa/asound.state
+cp "${basedir}"/../bsp/audio/veyron/asound.state kali-${architecture}/var/lib/alsa/asound.state
 
 cat << EOF > "${basedir}"/kali-${architecture}/etc/pulse/default.pa
 #!/usr/bin/pulseaudio -nF

@@ -386,7 +386,7 @@ rsync -HPavz -q "${basedir}"/kali-${architecture}/ "${basedir}"/root/
 
 # Nick the u-boot from Manjaro ARM to see if my compilation was somehow
 # screwing things up.
-cp "${basedir}"/../bsp/bootloader/pinebook-pro/idbloader.img "${basedir}"/../misc/pbp/u-boot.itb "${basedir}"/root/boot/
+cp "${basedir}"/../bsp/bootloader/pinebook-pro/idbloader.img "${basedir}"/../bsp/bootloader/pinebook-pro/u-boot.itb "${basedir}"/root/boot/
 dd if="${basedir}"/../bsp/bootloader/pinebook-pro/idbloader.img of=${loopdevice} seek=64 conv=notrunc
 dd if="${basedir}"/../bsp/bootloader/pinebook-pro/u-boot.itb of=${loopdevice} seek=16384 conv=notrunc
 

@@ -111,6 +111,10 @@ resize2fs /dev/mmcblk0p2
 EOM
 chmod +x kali-${architecture}/usr/sbin/rpi-resizerootfs
 
+mkdir -p kali-${architecture}/usr/lib/systemd/system/
+cp "${basedir}"/../bsp/services/all/*.service kali-${architecture}/usr/lib/systemd/system/
+cp "${basedir}"/../bsp/services/rpi/*.service kali-${architecture}/usr/lib/systemd/system/
+
 cat << EOF > "${basedir}"/kali-${architecture}/debconf.set
 console-common console-data/keymap/policy select Select keymap from full list
 console-common console-data/keymap/full select en-latin1-nodeadkeys
