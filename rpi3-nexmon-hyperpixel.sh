@@ -385,10 +385,6 @@ rm -rf "${basedir}"/kali-${architecture}/root/{fakeuname.c,buildnexmon.sh,libfak
 
 cd "${basedir}"
 
-echo "Running du to see how big kali-${architecture} is"
-du -sh "${basedir}"/kali-${architecture}
-echo "the above is how big the sdcard needs to be"
-
 # Create the disk and partition it
 echo "Creating image file ${imagename}.img"
 dd if=/dev/zero of="${basedir}"/${imagename}.img bs=1M count=${size}

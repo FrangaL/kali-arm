@@ -611,10 +611,6 @@ chmod 755 "${basedir}"/kali-${architecture}/root/scripts/rpi-wiggle.sh
 
 sed -i -e 's/^#PermitRootLogin.*/PermitRootLogin yes/' "${basedir}"/kali-${architecture}/etc/ssh/sshd_config
 
-echo "Running du to see how big kali-${architecture} is"
-du -sh "${basedir}"/kali-${architecture}
-echo "the above is how big the sdcard needs to be"
-
 # Create the disk and partition it
 echo "Creating image file ${imagename}.img"
 dd if=/dev/zero of="${basedir}"/${imagename}.img bs=1M count=${size}

@@ -305,10 +305,6 @@ cd "${basedir}"
 wget https://raw.githubusercontent.com/Re4son/RPi-Tweaks/master/kalipi-tft-config/kalipi-tft-config -O "${basedir}"/kali-${architecture}/usr/bin/kalipi-tft-config
 chmod 755 "${basedir}"/kali-${architecture}/usr/bin/kalipi-tft-config
 
-echo "Running du to see how big kali-${architecture} is"
-du -sh "${basedir}"/kali-${architecture}
-echo "the above is how big the sdcard needs to be"
-
 # Some maths here... it's not magic, we just want the block size a certain way
 # so that partitions line up in a way that's more optimal.
 RAW_SIZE_MB=${size}
