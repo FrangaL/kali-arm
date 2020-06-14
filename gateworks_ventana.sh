@@ -340,7 +340,7 @@ cat << '__EOF__' > "${basedir}"/kali-${architecture}/boot/6x_bootscript-ventana.
 # if 'mem' is not set, it will be automatically allocated
 #
 
-echo "Gateworks Ubuntu Bootscript v1.20"
+echo "Gateworks Ubuntu Bootscript v1.23"
 
 # calculate load addresses based off of loadaddr as the base
 # and allow 128KB for FDT and 64MB for kernel
@@ -352,8 +352,9 @@ setexpr rd_addr $linux_addr + 0x4000000 # allow 64MB for kernel
 if test -z "${mem}" ; then
   # CMA used by etnaviv display driver and coda VPU driver
   # specific requirements depend on display res and encode/decode res
-  setenv mem "cma=64M"
-  echo "Detected ${mem_mb}MB DRAM: $mem"
+  # coherent_pool is used by various drivers such as ath10k
+  setenv mem "cma=64M coherent_pool=4M"
+  echo "Detected ${mem_mb}MB DRAM: $mem" 
 fi
 if itest.s "x${mem}" == "xNA" ; then
   echo "Leaving CMA alone..."
@@ -449,11 +450,16 @@ fi
 # setup root and load options based on dev type
 if itest.s "x${dtype}" == "xnand" ; then
   echo "Booting from NAND/ubifs..."
-  setenv root "root=ubi0:rootfs ubi.mtd=2 rootfstype=ubifs rw rootwait"
+  setenv root "root=ubi0:rootfs ubi.mtd=2 ubi.fm_autoconvert=1 rootfstype=ubifs rw rootwait"
   setenv fsload "ubifsload"
 elif itest.s "x${dtype}" == "xmmc" ; then
   echo "Booting from MMC..."
-  setenv root "root=/dev/mmcblk0p1 rw rootfstype=ext4 rootwait init=/lib/systemd/systemd"
+  part uuid mmc 0:1 uuid
+  if test -z "${uuid}" ; then
+     setenv root "root=/dev/mmcblk0p1 rootwait rw rootfstype=ext4"
+  else
+     setenv root "root=PARTUUID=${uuid} rootwait"
+  fi
   setenv fsload "ext4load $dtype 0:1"
   setenv rd_addr # ramdisk not needed for IMX6 MMC
 elif itest.s "x${dtype}" == "xusb" ; then
@@ -472,6 +478,7 @@ setenv bootargs "console=${console},${baudrate} ${root} ${video} ${extra}"
 
 # additional bootargs
 setenv bootargs "${bootargs} pci=nomsi" # MSI+legacy IRQs do not work on IMX6
+setenv bootargs "${bootargs} usbcore.autosuspend=-1" # IMX6DQ ERR004535
 
 # Gateworks kernels do not need ramdisk
 setenv rd_addr
