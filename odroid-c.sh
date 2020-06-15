@@ -124,6 +124,7 @@ EOF
 
 mkdir -p kali-${architecture}/usr/lib/systemd/system/
 cp "${basedir}"/../bsp/services/all/*.service kali-${architecture}/usr/lib/systemd/system/
+cp "${basedir}"/../bsp/services/odroid-c2/*.service kali-${architecture}/usr/lib/systemd/system/
 
 cat << EOF > kali-${architecture}/third-stage
 #!/bin/bash
@@ -360,20 +361,6 @@ if test "\${hdmioutput}" = "0"; then fdt rm /mesonfb; fi
 # If you're going to use an initrd, uncomment this line and comment out the bottom line.
 #bootm 0x21000000 0x22000000 0x21800000"
 bootm 0x21000000 - 0x21800000"
-EOF
-
-# Create systemd service to setup display.
-cat << EOF > "${basedir}"/kali-${architecture}/lib/systemd/system/amlogic.service
-[Unit]
-Description=AMlogic HDMI Initialization
-
-[Service]
-Type=oneshot
-RemainAfterExit=yes
-ExecStart=/usr/bin/amlogic.sh
-
-[Install]
-WantedBy=multi-user.target
 EOF
 
 # Create symlink to enable the service...
