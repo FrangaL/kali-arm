@@ -389,11 +389,6 @@ ln -s /usr/src/kernel build
 ln -s /usr/src/kernel source
 cd "${basedir}"
 
-# Bit of a hack to hide the emmc partitions from XFCE
-cat << EOF > "${basedir}"/kali-${architecture}/etc/udev/rules.d/99-hide-emmc-partitions.rules
-KERNEL=="mmcblk0*", ENV{UDISKS_IGNORE}="1"
-EOF
-
 # Disable uap0 and p2p0 interfaces in NetworkManager
 mkdir -p "${basedir}"/kali-${architecture}/etc/NetworkManager/
 echo -e '\n[keyfile]\nunmanaged-devices=interface-name:p2p0\n' >> "${basedir}"/kali-${architecture}/etc/NetworkManager/NetworkManager.conf
@@ -570,37 +565,16 @@ set-default-sink 0
 EOF
 
 # mali rules so users can access the mali0 driver...
-cat << EOF > "${basedir}"/kali-${architecture}/etc/udev/rules.d/50-mali.rules
-KERNEL=="mali0", MODE="0660", GROUP="video"
-EOF
-
-# Video rules aka media-rules package in ChromeOS
-cat << EOF > "${basedir}"/kali-${architecture}/etc/udev/rules.d/50-media.rules
-ATTR{name}=="s5p-mfc-dec", SYMLINK+="video-dec"
-ATTR{name}=="s5p-mfc-enc", SYMLINK+="video-enc"
-ATTR{name}=="s5p-jpeg-dec", SYMLINK+="jpeg-dec"
-ATTR{name}=="exynos-gsc.0*", SYMLINK+="image-proc0"
-ATTR{name}=="exynos-gsc.1*", SYMLINK+="image-proc1"
-ATTR{name}=="exynos-gsc.2*", SYMLINK+="image-proc2"
-ATTR{name}=="exynos-gsc.3*", SYMLINK+="image-proc3"
-ATTR{name}=="rk3288-vpu-dec", SYMLINK+="video-dec"
-ATTR{name}=="rk3288-vpu-enc", SYMLINK+="video-enc"
-ATTR{name}=="go2001-dec", SYMLINK+="video-dec"
-ATTR{name}=="go2001-enc", SYMLINK+="video-enc"
-ATTR{name}=="mt81xx-vcodec-dec", SYMLINK+="video-dec"
-ATTR{name}=="mt81xx-vcodec-enc", SYMLINK+="video-enc"
-ATTR{name}=="mt81xx-image-proc", SYMLINK+="image-proc0"
-EOF
-
+cp "${basedir}"/bsp/udev/50-mali.rules "${basedir}"/kali-${architecture}/etc/udev/rules.d/50-mali.rules
+cp "${basedir}"/bsp/udev/50-media.rules "${basedir}"/kali-${architecture}/etc/udev/rules.d/50-media.rules
 # EHCI is apparently quirky.
-cat << EOF > "${basedir}"/kali-${architecture}/etc/udev/rules.d/99-rk3288-ehci-persist.rules
-ACTION=="add|change", SUBSYSTEM=="usb", ENV{DEVTYPE}=="usb_device", ENV{ID_MODEL}!="EHCI_Host_Controller", DRIVERS=="ehci-platform", ATTR{power/persist}="1"
-EOF
-
+cp "${basedir}"/bsp/udev/99-rk3288-ehci-persist.rules "${basedir}"/kali-${architecture}/etc/udev/rules.d/99-rk3288-ehci-persist.rules
 # Avoid gpio charger wakeup system
-cat << EOF > "${basedir}"/kali-${architecture}/etc/udev/rules.d/99-rk3288-gpio-charger.rules
-ACTION=="add|change", SUBSYSTEM=="platform", ENV{DRIVER}=="gpio-charger", ATTR{power/wakeup}="disabled"
-EOF
+cp "${basedir}"/bsp/udev/99-rk3288-gpio-charger.rules "${basedir}"/kali-${architecture}/etc/udev/rules.d/99-rk3288-gpio-charger.rules
+# Rule used to kick start the bluetooth/wifi chip.
+cp "${basedir}"/bsp/udev/80-brcm-sdio-added.rules "${basedir}"/kali-${architecture}/etc/udev/rules.d/80-brcm-sdio-added.rules
+# Hide the eMMC partitions from udisks
+cp "${basedir}"/bsp/udev/99-hide-emmc-partitions.rules "${basedir}"/kali-${architecture}/etc/udev/rules.d/99-hide-emmc-partitions.rules
 
 # disable btdsio
 mkdir -p "${basedir}"/kali-${architecture}/etc/modprobe.d/
@@ -612,8 +586,7 @@ EOF
 mkdir -p "${basedir}"/kali-${architecture}/etc/X11/xorg.conf.d
 cp "${basedir}"/../bsp/xorg/10-synaptics-chromebook.conf "${basedir}"/kali-${architecture}/etc/X11/xorg.conf.d/
 
-# Copy the broadcom firmware files in (for now) - once sources are released,
-# will be able to do this without having a local copy.
+# Copy the broadcom firmware files in.
 mkdir -p "${basedir}"/kali-${architecture}/lib/firmware/brcm/
 cp "${basedir}"/../bsp/firmware/veyron/brcm* "${basedir}"/kali-${architecture}/lib/firmware/brcm/
 cp "${basedir}"/../bsp/firmware/veyron/BCM* "${basedir}"/kali-${architecture}/lib/firmware/brcm/
@@ -622,13 +595,8 @@ cp "${basedir}"/../bsp/firmware/veyron/elan* "${basedir}"/kali-${architecture}/l
 cp "${basedir}"/../bsp/firmware/veyron/max* "${basedir}"/kali-${architecture}/lib/firmware/
 cd "${basedir}"
 
-# We need to kick start the sdio chip to get bluetooth/wifi going.  This is ugly
-# but bear with me.
+# We need to kick start the sdio chip to get bluetooth/wifi going.
 cp "${basedir}"/../bsp/firmware/veyron/brcm_patchram_plus "${basedir}"/kali-${architecture}/usr/sbin/
-# And now we activate via udev rule
-cat << EOF > "${basedir}"/kali-${architecture}/etc/udev/rules.d/80-brcm-sdio-added.rules
-ACTION=="add", SUBSYSTEM=="sdio", ENV{SDIO_CLASS}=="02", ENV{SDIO_ID}=="02D0:4354", RUN+="/usr/sbin/brcm_patchram_plus -d --patchram /lib/firmware/brcm/BCM4354_003.001.012.0306.0659.hcd --no2bytes --enable_hci --enable_lpm --scopcm=1,2,0,1,1,0,0,0,0,0 --baudrate 3000000 --use_baudrate_for_download --tosleep=50000 /dev/ttyS0"
-EOF
 
 sed -i -e 's/^#PermitRootLogin.*/PermitRootLogin yes/' "${basedir}"/kali-${architecture}/etc/ssh/sshd_config
 
