@@ -228,12 +228,7 @@ deb-src http://http.kali.org/kali kali-rolling main non-free contrib
 EOF
 
 mkdir -p "${basedir}"/kali-${architecture}/etc/X11/xorg.conf.d/
-cat << EOF > "${basedir}"/kali-${architecture}/etc/X11/xorg.conf.d/20-fbdev.conf
-Section "Device"
-  Identifier    "Builtin Default fbdev Device 0"
-  Driver        "fbdev"
-EndSection
-EOF
+cp "${basedir}"/../bsp/xorg/20-fbdev.conf "${basedir}"/kali-${architecture}/etc/X11/xorg.conf.d/
 
 # Uncomment this if you use apt-cacher-ng otherwise git clones will fail.
 #unset http_proxy
