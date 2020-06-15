@@ -53,7 +53,7 @@ unset CROSS_COMPILE
 
 arm="kali-linux-arm ntpdate"
 base="apt-transport-https apt-utils bash-completion console-setup dialog dkms e2fsprogs ifupdown initramfs-tools inxi iw man-db mlocate netcat-traditional net-tools parted pciutils psmisc rfkill screen tmux unrar usbutils vim wget whiptail zerofree"
-desktop="kali-desktop-xfce kali-root-login xserver-xorg-video-fbdev"
+desktop="kali-desktop-xfce kali-root-login"
 tools="kali-tools-top10 wireshark"
 services="apache2 atftpd"
 extras="alsa-utils bc bison bluez bluez-firmware kali-linux-core libnss-systemd libssl-dev triggerhappy"
@@ -246,13 +246,13 @@ EndSection
 EOF
 
 # Mesa needs to be updated for panfrost fixes, so force fbdev until it comes.
-cat << EOF > "${basedir}"/kali-${architecture}/etc/X11/xorg.conf.d/50-force-fbdev.conf
-Section "Device"  
-  Identifier "myfb"
-  Driver "fbdev"
-  Option "fbdev" "/dev/fb0"
-EndSection
-EOF
+#cat << EOF > "${basedir}"/kali-${architecture}/etc/X11/xorg.conf.d/50-force-fbdev.conf
+#Section "Device"  
+#  Identifier "myfb"
+#  Driver "fbdev"
+#  Option "fbdev" "/dev/fb0"
+#EndSection
+#EOF
 
 # Uncomment this if you use apt-cacher-ng otherwise git clones will fail.
 #unset http_proxy
@@ -262,7 +262,6 @@ cd "${basedir}"
 # Pull in the wifi and bluetooth firmware from manjaro's git repository.
 git clone https://gitlab.manjaro.org/manjaro-arm/packages/community/ap6256-firmware.git
 cd ap6256-firmware
-rm PKGBUILD
 mkdir brcm
 cp BCM4345C5.hcd brcm/BCM.hcd
 cp BCM4345C5.hcd brcm/BCM4345C5.hcd
@@ -275,12 +274,8 @@ cd "${basedir}"
 
 # Time to build the kernel
 cd "${basedir}"/kali-${architecture}/usr/src
-# Let's clone git, and use the usual name...
-#wget 'https://gitlab.manjaro.org/tsys/linux-pinebook-pro/-/archive/v5.5-rc5/linux-pinebook-pro-v5.5-rc5.tar.bz2'
-#tar -xf linux-pinebook-pro-v5.5-rc5.tar.bz2
 git clone https://gitlab.manjaro.org/tsys/linux-pinebook-pro.git --depth 1 linux -b v5.6
 cd linux
-#git checkout -b 2863ca167 2863ca1671e6e106528ceb942df48e14ee1c2006
 touch .scmversion
 patch -p1 --no-backup-if-mismatch < "${basedir}"/../patches/pinebook-pro/0001-net-smsc95xx-Allow-mac-address-to-be-set-as-a-parame.patch
 patch -p1 --no-backup-if-mismatch < "${basedir}"/../patches/pinebook-pro/kali-wifi-injection.patch
@@ -398,7 +393,6 @@ umount ${rootp}
 
 kpartx -dv ${loopdevice}
 losetup -d ${loopdevice}
-
 
 # Don't pixz on 32bit, there isn't enough memory to compress the images.
 MACHINE_TYPE=`uname -m`
