@@ -233,18 +233,7 @@ deb-src http://http.kali.org/kali kali-rolling main non-free contrib
 EOF
 
 mkdir -p "${basedir}"/kali-${architecture}/etc/X11/xorg.conf.d/
-cat << EOF > "${basedir}"/kali-${architecture}/etc/X11/xorg.conf.d/50-pine64-pinebook.touchpad.conf
-Section "InputClass"
-    Identifier "HAILUCK CO.,LTD USB KEYBOARD"
-    MatchIsPointer "1"
-    MatchDevicePath "/dev/input/event*"
-
-    Option "AccelerationProfile" "2"
-    Option "AdaptiveDeceleration" "1"
-    #Option "ConstantDeceleration" "2.5" # Pinebook 14
-    Option "ConstantDeceleration" "1.2" # Pinebook 11
-EndSection
-EOF
+cp "${basedir}"/../bsp/xorg/50-pine64-pinebook.touchpad.conf "${basedir}"/kali-${architecture}/etc/X11/xorg.conf.d/
 
 # Set up some defaults for chromium, if the user ever installs it
 mkdir -p "${basedir}"/kali-${architecture}/etc/chromium/

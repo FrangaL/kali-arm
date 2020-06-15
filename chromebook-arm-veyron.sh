@@ -610,19 +610,7 @@ EOF
 
 # Touchpad configuration
 mkdir -p "${basedir}"/kali-${architecture}/etc/X11/xorg.conf.d
-cat << EOF > "${basedir}"/kali-${architecture}/etc/X11/xorg.conf.d/10-synaptics-chromebook.conf
-Section "InputClass"
-	Identifier		"touchpad"
-	MatchIsTouchpad		"on"
-	Driver			"synaptics"
-	Option			"TapButton1"	"1"
-	Option			"TapButton2"	"3"
-	Option			"TapButton3"	"2"
-	Option			"FingerLow"	"15"
-	Option			"FingerHigh"	"20"
-	Option			"FingerPress"	"256"
-EndSection
-EOF
+cp "${basedir}"/../bsp/xorg/10-synaptics-chromebook.conf "${basedir}"/kali-${architecture}/etc/X11/xorg.conf.d/
 
 # Copy the broadcom firmware files in (for now) - once sources are released,
 # will be able to do this without having a local copy.

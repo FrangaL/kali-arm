@@ -51,7 +51,7 @@ unset CROSS_COMPILE
 
 arm="kali-linux-arm ntpdate"
 base="apt-transport-https apt-utils bash-completion console-setup dialog e2fsprogs ifupdown initramfs-tools inxi iw man-db mlocate netcat-traditional net-tools parted pciutils psmisc rfkill screen tmux unrar usbutils vim wget whiptail zerofree"
-desktop="kali-desktop-xfce kali-root-login xserver-xorg-video-fbdev xfonts-terminus xinput"
+desktop="kali-desktop-xfce kali-root-login xserver-xorg-video-fbdev xserver-xorg-input-libinput xserver-xorg-input-synaptics xfonts-terminus xinput"
 tools="kali-tools-top10 wireshark"
 services="apache2 atftpd"
 extras="alsa-utils bc bison bluez bluez-firmware kali-linux-core libnss-systemd libssl-dev triggerhappy"
@@ -447,19 +447,7 @@ EOF
 
 # Touchpad configuration
 mkdir -p "${basedir}"/kali-${architecture}/etc/X11/xorg.conf.d
-cat << EOF > "${basedir}"/kali-${architecture}/etc/X11/xorg.conf.d/10-synaptics-chromebook.conf
-Section "InputClass"
-	Identifier		"touchpad"
-	MatchIsTouchpad		"on"
-	Driver			"synaptics"
-	Option			"TapButton1"	"1"
-	Option			"TapButton2"	"3"
-	Option			"TapButton3"	"2"
-	Option			"FingerLow"	"15"
-	Option			"FingerHigh"	"20"
-	Option			"FingerPress"	"256"
-EndSection
-EOF
+cp "${basedir}"/../bsp/xorg/10-synaptics-chromebook.conf "${basedir}"/kali-${architecture}/etc/X11/xorg.conf.d/
 
 # lp0 resume firmware...
 # Check https://chromium.googlesource.com/chromiumos/overlays/chromiumos-overlay/+/master/sys-kernel/tegra_lp0_resume/
