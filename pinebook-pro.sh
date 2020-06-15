@@ -229,21 +229,7 @@ deb http://http.kali.org/kali kali-rolling main non-free contrib
 EOF
 
 mkdir -p "${basedir}"/kali-${architecture}/etc/X11/xorg.conf.d/
-cat << EOF > "${basedir}"/kali-${architecture}/etc/X11/xorg.conf.d/50-pine64-pinebook-pro.touchpad.conf
-Section "InputClass"
-  Identifier      "libinput for HAILUCK CO.,LTD USB KEYBOARD Touchpad"
-  MatchIsTouchpad "on"
-  MatchUSBID      "258a:001e"
-  MatchDevicePath "/dev/input/event*"
-
-  Option  "AccelProfile"  "adaptive"
-  Option  "AccelSpeed"    "0.8"
-  Option  "ScrollMethod"  "twofinger"
-  Option  "Tapping"  "on"
-  Option  "NaturalScrolling" "false"
-  Option  "ClickMethod" "clickfinger"
-EndSection
-EOF
+cp "${basedir}"/../bsp/xorg/50-pine64-pinebook-pro.touchpad.conf "${basedir}"/kali-${architecture}/etc/X11/xorg.conf.d/
 
 # Mesa needs to be updated for panfrost fixes, so force fbdev until it comes.
 #cat << EOF > "${basedir}"/kali-${architecture}/etc/X11/xorg.conf.d/50-force-fbdev.conf
