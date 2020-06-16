@@ -1,0 +1,11 @@
+#!/bin/sh                                                                                                                                                                                                                                 
+flock /dev/mmcblk0 sfdisk -f /dev/mmcblk0 -N 2 <<EOF
+,+
+EOF
+ 
+sleep 5
+udevadm settle
+sleep 5
+flock /dev/mmcblk0 partprobe /dev/mmcblk0
+mount -o remount,rw /dev/mmcblk0p2
+resize2fs /dev/mmcblk0p2

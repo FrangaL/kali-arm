@@ -96,20 +96,6 @@ cat << EOF > kali-${architecture}/etc/resolv.conf
 nameserver 8.8.8.8
 EOF
 
-cat << 'EOM' > kali-${architecture}/usr/sbin/rpi-resizerootfs
-#!/bin/sh
-flock /dev/mmcblk0 sfdisk -f /dev/mmcblk0 -N 2 <<EOF
-,+
-EOF
-
-sleep 5
-udevadm settle
-sleep 5
-flock /dev/mmcblk0 partprobe /dev/mmcblk0
-mount -o remount,rw /dev/mmcblk0p2
-resize2fs /dev/mmcblk0p2
-EOM
-chmod +x kali-${architecture}/usr/sbin/rpi-resizerootfs
 
 mkdir -p kali-${architecture}/usr/lib/systemd/system/
 cp "${basedir}"/../bsp/services/all/*.service kali-${architecture}/usr/lib/systemd/system/
@@ -124,6 +110,7 @@ EOF
 mkdir -p "${basedir}"/kali-${architecture}/usr/bin/
 cp "${basedir}"/../bsp/scripts/monstart "${basedir}"/kali-${architecture}/usr/bin/
 cp "${basedir}"/../bsp/scripts/monstop "${basedir}"/kali-${architecture}/usr/bin/
+cp "${basedir}"/../bsp/scripts/rpi-resizerootfs kali-${architecture}/usr/sbin/
 
 # Bluetooth enabling
 mkdir -p "${basedir}"/kali-${architecture}/etc/udev/rules.d

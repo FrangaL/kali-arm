@@ -108,6 +108,7 @@ EOF
 mkdir -p "${basedir}"/kali-${architecture}/usr/bin/
 cp "${basedir}"/../bsp/scripts/monstart "${basedir}"/kali-${architecture}/usr/bin/
 cp "${basedir}"/../bsp/scripts/monstop "${basedir}"/kali-${architecture}/usr/bin/
+cp "${basedir}"/../bsp/scripts/rpi-resizerootfs kali-${architecture}/usr/sbin/
 
 # Bluetooth enabling
 mkdir -p "${basedir}"/kali-${architecture}/etc/udev/rules.d
@@ -169,7 +170,7 @@ sed -i -e 's/^#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/
 # since it fails to do so properly in a chroot.
 systemctl enable smi-hack
 
-systemctl enable rpiwiggle
+systemctl enable rpi-resizerootfs
 # Generate SSH host keys on first run
 systemctl enable regenerate_ssh_host_keys
 

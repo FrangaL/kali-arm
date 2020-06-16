@@ -138,6 +138,7 @@ EOF
 # Sometimes only a reboot works
 cp "${basedir}"/../bsp/scripts/monstart kali-${architecture}/usr/bin/
 cp "${basedir}"/../bsp/scripts/monstop kali-${architecture}/usr/bin/
+cp "${basedir}"/../bsp/scripts/rpi-resizerootfs kali-${architecture}/usr/sbin/
 
 mkdir -p kali-${architecture}/usr/lib/systemd/system/
 cp "${basedir}"/../bsp/services/all/*.service kali-${architecture}/usr/lib/systemd/system/
@@ -189,7 +190,7 @@ sed -i -e 's/^#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/
 systemctl enable smi-hack
 
 # Resize FS on first run (hopefully)
-systemctl enable rpiwiggle
+systemctl enable rpi-resizerootfs
 
 # Generate SSH host keys on first run
 systemctl enable regenerate_ssh_host_keys
