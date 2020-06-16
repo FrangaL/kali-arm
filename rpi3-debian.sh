@@ -105,26 +105,8 @@ console-common console-data/keymap/full select en-latin1-nodeadkeys
 EOF
 
 mkdir -p "${basedir}"/kali-${architecture}/usr/bin/
-cat << 'EOF' > "${basedir}"/kali-${architecture}/usr/bin/monstart
-#!/bin/bash
-interface=wlan0mon
-echo "Bring up monitor mode interface ${interface}"
-iw phy phy0 interface add ${interface} type monitor
-ifconfig ${interface} up
-if [ $? -eq 0 ]; then
-  echo "started monitor interface on ${interface}"
-fi
-EOF
-chmod 755 "${basedir}"/kali-${architecture}/usr/bin/monstart
-
-cat << 'EOF' > "${basedir}"/kali-${architecture}/usr/bin/monstop
-#!/bin/bash
-interface=wlan0mon
-ifconfig ${interface} down
-sleep 1
-iw dev ${interface} del
-EOF
-chmod 755 "${basedir}"/kali-${architecture}/usr/bin/monstop
+cp "${basedir}"/../bsp/scripts/monstart "${basedir}"/kali-${architecture}/usr/bin/
+cp "${basedir}"/../bsp/scripts/monstop "${basedir}"/kali-${architecture}/usr/bin/
 
 # Bluetooth enabling
 mkdir -p "${basedir}"/kali-${architecture}/etc/udev/rules.d

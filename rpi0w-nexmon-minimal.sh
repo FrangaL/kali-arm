@@ -119,25 +119,8 @@ console-common console-data/keymap/full select en-latin1-nodeadkeys
 EOF
 
 # Create monitor mode start/remove
-cat << 'EOF' > kali-${architecture}/usr/bin/monstart
-#!/bin/bash
-interface=wlan0mon
-echo "Bring up monitor mode interface ${interface}"
-iw phy phy0 interface add ${interface} type monitor
-ifconfig ${interface} up
-if [ $? -eq 0 ]; then
-  echo "started monitor interface on ${interface}"
-fi
-EOF
-chmod 755 kali-${architecture}/usr/bin/monstart
-
-cat << 'EOF' > kali-${architecture}/usr/bin/monstop
-interface=wlan0mon
-ifconfig ${interface} down
-sleep 1
-iw dev ${interface} del
-EOF
-chmod 755 kali-${architecture}/usr/bin/monstop
+cp "${basedir}"/../bsp/scripts/monstart kali-${architecture}/usr/bin/
+cp "${basedir}"/../bsp/scripts/monstop kali-${architecture}/usr/bin/
 
 mkdir -p kali-${architecture}/usr/lib/systemd/system/
 cp "${basedir}"/../bsp/services/all/*.service kali-${architecture}/usr/lib/systemd/system/

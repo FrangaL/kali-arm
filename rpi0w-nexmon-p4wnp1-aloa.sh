@@ -136,99 +136,12 @@ EOF
 # interface is removed). Afterwards the 'brcmfmac' module has to be removed and
 # loaded again (the driver push the firmware and restarts the fmac chip on init).
 # Sometimes only a reboot works
-cat << 'EOF' > kali-${architecture}/usr/bin/monstart
-#!/bin/bash
-interface=wlan0mon
-echo -n "Create monitor mode interface ${interface}... "
-iw phy phy0 interface add ${interface} type monitor 2> /dev/null 1> /dev/null
-if [ $? -eq 0 ]; then
-  echo "success"
-else
-  echo "failed, already created ?"
-fi
-
-echo -n "Trying to enable ${interface}... "
-ifconfig ${interface} up 2> /dev/null
-if [ $? -eq 0 ]; then
-  echo "success, ${interface} is up"
-  exit 0
-else
-  echo "failed"
-  exit 1
-fi
-EOF
-chmod 755 kali-${architecture}/usr/bin/monstart
-
-cat << EOF > kali-${architecture}/usr/bin/monstop
-#!/bin/bash
-interface=wlan0mon
-ifconfig ${interface} down
-sleep 1
-iw dev ${interface} del
-EOF
-chmod 755 kali-${architecture}/usr/bin/monstop
+cp "${basedir}"/../bsp/scripts/monstart kali-${architecture}/usr/bin/
+cp "${basedir}"/../bsp/scripts/monstop kali-${architecture}/usr/bin/
 
 mkdir -p kali-${architecture}/usr/lib/systemd/system/
-cat << 'EOF' > kali-${architecture}/usr/lib/systemd/system/regenerate_ssh_host_keys.service
-[Unit]
-Description=Regenerate SSH host keys
-Before=ssh.service
-[Service]
-Type=oneshot
-ExecStartPre=-/bin/dd if=/dev/hwrng of=/dev/urandom count=1 bs=4096
-ExecStartPre=-/bin/sh -c "/bin/rm -f -v /etc/ssh/ssh_host_*_key*"
-ExecStart=/usr/bin/ssh-keygen -A -v
-ExecStartPost=/bin/sh -c "for i in /etc/ssh/ssh_host_*_key*; do actualsize=$(wc -c <\"$i\") ;if [ $actualsize -eq 0 ]; then echo size is 0 bytes ; exit 1 ; fi ; done ; /bin/systemctl disable regenerate_ssh_host_keys"
-[Install]
-WantedBy=multi-user.target
-EOF
-chmod 644 kali-${architecture}/usr/lib/systemd/system/regenerate_ssh_host_keys.service
-
-cat << EOF > kali-${architecture}/usr/lib/systemd/system/smi-hack.service
-[Unit]
-Description=shared-mime-info update hack
-Before=regenerate_ssh_host_keys.service
-[Service]
-Type=oneshot
-Environment=DEBIAN_FRONTEND=noninteractive
-ExecStart=/bin/sh -c "rm -rf /etc/ssl/certs/*.pem && dpkg -i /root/*.deb"
-ExecStart=/bin/sh -c "dpkg-reconfigure shared-mime-info"
-ExecStart=/bin/sh -c "dpkg-reconfigure xfonts-base"
-ExecStart=/bin/sh -c "rm -f /root/*.deb"
-ExecStartPost=/bin/systemctl disable smi-hack
-
-[Install]
-WantedBy=multi-user.target
-EOF
-chmod 644 kali-${architecture}/usr/lib/systemd/system/smi-hack.service
-
-cat << EOF > kali-${architecture}/usr/lib/systemd/system/rpiwiggle.service
-[Unit]
-Description=Resize filesystem
-After=regenerate_ssh_host_keys.service
-[Service]
-Type=oneshot
-ExecStart=/root/scripts/rpi-wiggle.sh
-ExecStartPost=/bin/systemctl disable rpiwiggle
-[Install]
-WantedBy=multi-user.target
-EOF
-chmod 644 kali-${architecture}/usr/lib/systemd/system/rpiwiggle.service
-
-cat << EOF > "${basedir}"/kali-${architecture}/usr/lib/systemd/system/enable-ssh.service
-[Unit]
-Description=Turn on SSH if /boot/ssh is present
-ConditionPathExistsGlob=/boot/ssh{,.txt}
-After=regenerate_ssh_host_keys.service
-
-[Service]
-Type=oneshot
-ExecStart=/bin/sh -c "update-rc.d ssh enable && invoke-rc.d ssh start && rm -f /boot/ssh ; rm -f /boot/ssh.txt"
-
-[Install]
-WantedBy=multi-user.target
-EOF
-chmod 644 "${basedir}"/kali-${architecture}/usr/lib/systemd/system/enable-ssh.service
+cp "${basedir}"/../bsp/services/all/*.service kali-${architecture}/usr/lib/systemd/system/
+cp "${basedir}"/../bsp/services/rpi/*.service kali-${architecture}/usr/lib/systemd/system/
 
 # Bluetooth enabling
 mkdir -p kali-${architecture}/usr/lib/udev/rules.d/
