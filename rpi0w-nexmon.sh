@@ -22,8 +22,8 @@ TOPDIR=`pwd`
 hostname=${2:-kali}
 # Custom image file name variable - MUST NOT include .img at the end.
 imagename=${3:-kali-linux-$1-rpi0w-nexmon}
-# Size of image in megabytes (Default is 7000=7GB)
-size=7000
+# Size of image in megabytes (Default is 14000=14GB)
+size=14000
 # Suite to use.
 # Valid options are:
 # kali-rolling, kali-dev, kali-bleeding-edge, kali-dev-only, kali-experimental, kali-last-snapshot
