@@ -46,7 +46,7 @@ machine=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 16 | head -n 1)
 arm="kali-linux-arm ntpdate"
 base="apt-transport-https apt-utils bash-completion console-setup dialog e2fsprogs ifupdown initramfs-tools inxi iw man-db mlocate netcat-traditional net-tools parted pciutils psmisc rfkill screen tmux unrar usbutils vim wget whiptail zerofree"
 desktop="kali-desktop-xfce kali-root-login xserver-xorg-video-fbdev xfonts-terminus xinput"
-tools="kali-tools-top10 wireshark"
+tools="kali-linux-default"
 services="apache2 atftpd"
 extras="alsa-utils bc bison bluez bluez-firmware i2c-tools kali-linux-core libnss-systemd libssl-dev lua5.1 python3-configobj python3-pip python3-requests python3-rpi.gpio python3-smbus triggerhappy wpasupplicant"
 
@@ -188,6 +188,7 @@ apt-get --yes --allow-change-held-packages -o dpkg::options::=--force-confnew in
 apt-get --yes --allow-change-held-packages -o dpkg::options::=--force-confnew install ${packages} || apt-get --yes --fix-broken install
 apt-get --yes --allow-change-held-packages -o dpkg::options::=--force-confnew install ${desktop} ${extras} ${tools} || apt-get --yes --fix-broken install
 apt-get --yes --allow-change-held-packages -o dpkg::options::=--force-confnew install ${desktop} ${extras} ${tools} || apt-get --yes --fix-broken install
+apt-get --yes --allow-change-held-packages --autoremove install systemd-timesyncd || apt-get --yes --fix-broken install
 apt-get --yes --allow-change-held-packages -o dpkg::options::=--force-confnew dist-upgrade
 apt-get --yes --allow-change-held-packages -o dpkg::options::=--force-confnew autoremove
 
