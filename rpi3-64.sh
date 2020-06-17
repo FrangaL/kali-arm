@@ -112,6 +112,10 @@ cp "${basedir}"/../bsp/scripts/monstart "${basedir}"/kali-${architecture}/usr/bi
 cp "${basedir}"/../bsp/scripts/monstop "${basedir}"/kali-${architecture}/usr/bin/
 cp "${basedir}"/../bsp/scripts/rpi-resizerootfs kali-${architecture}/usr/sbin/
 
+cp "${basedir}"/../bsp/configs/raspi-userland.conf "${basedir}"/kali-${architecture}/etc/ld.so.conf.d/
+cp "${basedir}"/../bsp/configs/vc.sh "${basedir}"/kali-${architecture}/etc/profile.d/vc.sh
+cp "${basedir}"/../bsp/udev/99-vchiq-permissions.rules "${basedir}"/kali-${architecture}/etc/udev/rules.d/
+
 # Bluetooth enabling
 mkdir -p "${basedir}"/kali-${architecture}/etc/udev/rules.d
 cp "${basedir}"/../bsp/bluetooth/rpi/99-com.rules "${basedir}"/kali-${architecture}/etc/udev/rules.d/99-com.rules
@@ -155,6 +159,8 @@ apt-get --yes --allow-change-held-packages -o dpkg::options::=--force-confnew in
 apt-get --yes --allow-change-held-packages -o dpkg::options::=--force-confnew install ${desktop} ${extras} ${tools} || apt-get --yes --fix-broken install
 apt-get --yes --allow-change-held-packages -o dpkg::options::=--force-confnew install ${desktop} ${extras} ${tools} || apt-get --yes --fix-broken install
 apt-get --yes --allow-change-held-packages -o dpkg::options::=--force-confnew install kali-linux-default || apt-get --yes --fix-broken install
+# We want systemd-timesyncd not sntp which gets pulled in by something in kali-linux-default
+apt-get --yes --allow-change-held-packages --autoremove install systemd-timesyncd
 
 apt-get --yes --allow-change-held-packages autoremove
 
@@ -192,6 +198,15 @@ cd /root
 apt download ca-certificates
 apt download libgdk-pixbuf2.0-0
 apt download fontconfig
+
+# Attempt to build the raspi userland
+cd /root
+git clone https://github.com/raspberrypi/userland
+cd userland
+apt-get install --yes --allow-change-held-packages cmake
+./buildme --aarch64
+cd
+rm -rf /root/userland
 
 # Fix startup time from 5 minutes to 15 secs on raise interface wlan0
 sed -i 's/^TimeoutStartSec=5min/TimeoutStartSec=15/g' "/lib/systemd/system/networking.service"
