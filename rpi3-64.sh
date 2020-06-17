@@ -154,6 +154,7 @@ apt-get --yes --allow-change-held-packages -o dpkg::options::=--force-confnew in
 apt-get --yes --allow-change-held-packages -o dpkg::options::=--force-confnew install ${packages} || apt-get --yes --fix-broken install
 apt-get --yes --allow-change-held-packages -o dpkg::options::=--force-confnew install ${desktop} ${extras} ${tools} || apt-get --yes --fix-broken install
 apt-get --yes --allow-change-held-packages -o dpkg::options::=--force-confnew install ${desktop} ${extras} ${tools} || apt-get --yes --fix-broken install
+apt-get --yes --allow-change-held-packages -o dpkg::options::=--force-confnew install kali-linux-default || apt-get --yes --fix-broken install
 
 apt-get --yes --allow-change-held-packages autoremove
 
@@ -186,14 +187,6 @@ systemctl enable copy-user-wpasupplicant
 
 # Enable... enabling ssh by putting ssh or ssh.txt file in /boot
 systemctl enable enable-ssh
-
-# Set default to multi-user for non-graphical login.  User will login as
-# root:toor and then the first login setup will run
-#systemctl set-default multi-user
-#cp /usr/share/kali-arm-oem-install/bash_profile /root/.bash_profile
-
-# Copy over the default bashrc
-cp  /etc/skel/.bashrc /root/.bashrc
 
 cd /root
 apt download ca-certificates
