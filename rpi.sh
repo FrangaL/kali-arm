@@ -154,6 +154,7 @@ apt-get --yes --allow-change-held-packages -o dpkg::options::=--force-confnew in
 apt-get --yes --allow-change-held-packages -o dpkg::options::=--force-confnew install ${packages} || apt-get --yes --fix-broken install
 apt-get --yes --allow-change-held-packages -o dpkg::options::=--force-confnew install ${desktop} ${extras} ${tools} || apt-get --yes --fix-broken install
 apt-get --yes --allow-change-held-packages -o dpkg::options::=--force-confnew install ${desktop} ${extras} ${tools} || apt-get --yes --fix-broken install
+apt-get --yes --allow-change-held-packages -o dpkg::options::=--force-confnew install kali-linux-default || apt-get --yes --fix-broken install
 apt-get --yes --allow-change-held-packages -o dpkg::options::=--force-confnew dist-upgrade
 apt-get --yes --allow-change-held-packages -o dpkg::options::=--force-confnew autoremove
 
