@@ -132,6 +132,12 @@ mkdir -p kali-${architecture}/usr/lib/systemd/system/
 cp "${basedir}"/../bsp/services/all/*.service kali-${architecture}/usr/lib/systemd/system/
 cp "${basedir}"/../bsp/services/odroid-c2/*.service kali-${architecture}/usr/lib/systemd/system/
 
+# Disable RESUME (suspend/resume is currently broken anyway!) which speeds up boot massively.
+mkdir -p kali-${architecture}/etc/initramfs-tools/conf.d/
+cat << EOF > kali-${architecture}/etc/initramfs-tools/conf.d/resume
+RESUME=none
+EOF
+
 cat << EOF > kali-${architecture}/third-stage
 #!/bin/bash
 set -e
