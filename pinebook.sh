@@ -53,7 +53,7 @@ unset CROSS_COMPILE
 
 arm="kali-linux-arm ntpdate"
 base="apt-transport-https apt-utils arm-trusted-firmware bash-completion console-setup dialog dkms e2fsprogs ifupdown initramfs-tools inxi iw linux-headers-arm64 linux-image-arm64 man-db mlocate netcat-traditional net-tools parted pciutils psmisc rfkill screen tmux u-boot-sunxi u-boot-menu unrar usbutils vim wget whiptail zerofree"
-desktop="kali-desktop-xfce kali-root-login xserver-xorg-video-fbdev xserver-xorg-input-evdev xserver-xorg-input-synaptics xfonts-terminus xinput"
+desktop="kali-desktop-xfce kali-root-login xserver-xorg-input-evdev xserver-xorg-input-synaptics xfonts-terminus xinput"
 tools="kali-linux-default"
 services="apache2 atftpd"
 extras="alsa-utils bc bison bluez bluez-firmware kali-linux-core libnss-systemd libssl-dev triggerhappy"
