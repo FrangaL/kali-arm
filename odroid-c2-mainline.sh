@@ -57,7 +57,7 @@ unset CROSS_COMPILE
 # up in a weird state.
 # DO NOT REMOVE IT FROM THE PACKAGE LIST.
 
-arm="kali-inux-arm ntpdate"
+arm="kali-linux-arm ntpdate"
 base="apt-transport-https apt-utils bash-completion console-setup dialog e2fsprogs ifupdown initramfs-tools inxi iw  man-db mlocate netcat-traditional net-tools parted pciutils psmisc rfkill screen tmux unrar usbutils vim wget whiptail zerofree u-boot-amlogic u-boot-menu linux-image-arm64"
 desktop="kali-desktop-xfce kali-root-login xserver-xorg-video-fbdev xfonts-terminus xinput"
 tools="kali-linux-default"
