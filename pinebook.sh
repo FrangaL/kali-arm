@@ -292,7 +292,7 @@ sed -i -e 's/append.*/append root=\/dev\/mmcblk0p1 rootfstype=ext3 console=ttyS0
 echo "Creating image file for ${imagename}.img"
 dd if=/dev/zero of="${basedir}"/${imagename}.img bs=1M count=${size}
 parted ${imagename}.img --script -- mklabel msdos
-parted ${imagename}.img --script -- mkpart primary ext3 2048s 100%
+parted ${imagename}.img --script -- mkpart primary ext3 32MB 100%
 
 # Set the partition variables
 loopdevice=`losetup -f --show "${basedir}"/${imagename}.img`
