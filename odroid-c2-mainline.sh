@@ -309,26 +309,21 @@ let RAW_SIZE=(${RAW_SIZE_MB}*1000*1000)/${BLOCK_SIZE}
 echo "Creating image file ${imagename}.img"
 dd if=/dev/zero of="${basedir}"/${imagename}.img bs=${BLOCK_SIZE} count=0 seek=${RAW_SIZE}
 parted ${imagename}.img --script -- mklabel msdos
-parted ${imagename}.img --script -- mkpart primary ext3 32MB 256MB
-parted ${imagename}.img --script -- mkpart primary ext3 256MB 100%
+parted ${imagename}.img --script -- mkpart primary ext3 32MB 100%
 
 # Set the partition variables
 loopdevice=`losetup -f --show "${basedir}"/${imagename}.img`
 device=`kpartx -va ${loopdevice} | sed 's/.*\(loop[0-9]\+\)p.*/\1/g' | head -1`
 sleep 5
 device="/dev/mapper/${device}"
-bootp=${device}p1
-rootp=${device}p2
+rootp=${device}p1
 
 # Create file systems
-mkfs.ext3 -L boot ${bootp}
 mkfs.ext3 -L rootfs ${rootp}
 
 # Create the dirs for the partitions and mount them
 mkdir -p "${basedir}"/root
 mount ${rootp} "${basedir}"/root
-mkdir -p "${basedir}"/root/boot
-mount ${bootp} "${basedir}"/root/boot
 
 # We do this down here to get rid of the build system's resolv.conf after running through the build.
 cat << EOF > kali-${architecture}/etc/resolv.conf
@@ -347,7 +342,6 @@ rsync -HPavz -q "${basedir}"/kali-${architecture}/ "${basedir}"/root/
 # Unmount partitions
 # Sync before unmounting to ensure everything is written
 sync
-umount -l ${bootp}
 umount -l ${rootp}
 kpartx -dv ${loopdevice}
 
