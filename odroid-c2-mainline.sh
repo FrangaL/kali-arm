@@ -338,7 +338,7 @@ EOF
 #sed -i -e "s/root=\/dev\/mmcblk0p2/root=PARTUUID=$(blkid -s PARTUUID -o value ${rootp})/g" "${basedir}"/kali-${architecture}/boot/boot.cmd
 # Let's get the blkid of the rootpartition, and sed it out in the extlinux.conf file.
 # 0, means only replace the first instance.  This does mean that the second instance won't be replaced, but most people aren't going to use that(fingers crossed)
-sed -i -e '0,/root=.*/s//root=UUID=$(blkid -s UUID -o value ${rootp} ro quiet/g' "${basedir}"/kali-${architecture}/boot/extlinux/extlinux.conf
+sed -i -e "0,/root=.*/s//root=UUID=$(blkid -s UUID -o value ${rootp}) ro quiet/g" "${basedir}"/kali-${architecture}/boot/extlinux/extlinux.conf
 
 
 echo "Rsyncing rootfs into image file"
