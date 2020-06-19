@@ -1,4 +1,6 @@
 #!/bin/sh                                                                                                                                                                                                                                 
+# Code comes from Fran Rodriguez
+# https://github.com/FrangaL/rpi-img-builder
 flock /dev/mmcblk0 sfdisk -f /dev/mmcblk0 -N 2 <<EOF
 ,+
 EOF
