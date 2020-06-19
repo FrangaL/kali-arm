@@ -243,13 +243,7 @@ EOF
 # seems to cause a lot of jerkiness.  Using the fbdev driver is not
 # ideal but it's far less frustrating to work with.
 mkdir -p "${basedir}"/kali-${architecture}/etc/X11/xorg.conf.d
-cat << EOF > "${basedir}"/kali-${architecture}/etc/X11/xorg.conf.d/20-fbdev.conf
-Section "Device"
-    Identifier      "Meson drm driver"
-    Driver          "modesetting"
-    Option          "AccelMethod"   "none"
-EndSection
-EOF
+cp "${basedir}"/../bsp/xorg/20-meson.conf "${basedir}"/kali-${architecture}/etc/X11/xorg.conf.d/
 
 # 1366x768 is sort of broken on the ODROID-C2, not sure where the issue is, but
 # we can work around it by setting the resolution to 1360x768.
@@ -333,7 +327,8 @@ EOF
 #sed -i -e "s/root=\/dev\/mmcblk0p2/root=PARTUUID=$(blkid -s PARTUUID -o value ${rootp})/g" "${basedir}"/kali-${architecture}/boot/boot.cmd
 # Let's get the blkid of the rootpartition, and sed it out in the extlinux.conf file.
 # 0, means only replace the first instance.  This does mean that the second instance won't be replaced, but most people aren't going to use that(fingers crossed)
-sed -i -e "0,/root=.*/s//root=UUID=$(blkid -s UUID -o value ${rootp}) ro quiet/g" "${basedir}"/kali-${architecture}/boot/extlinux/extlinux.conf
+# We also set it to rw instead of ro, because for whatever reason, it's not remounting rw when the initramfs->rootfs switch happens
+sed -i -e "0,/root=.*/s//root=UUID=$(blkid -s UUID -o value ${rootp}) rw quiet/g" "${basedir}"/kali-${architecture}/boot/extlinux/extlinux.conf
 
 
 echo "Rsyncing rootfs into image file"
