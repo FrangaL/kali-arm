@@ -3,7 +3,7 @@
 # https://github.com/FrangaL/rpi-img-builder
 DISKPART="$(findmnt -n -o SOURCE /)"
 DISKNAME="/dev/$(lsblk -no pkname "$DISKPART")"
-flock ${DISKNAME} sfdisk -f ${DISKNAME} -N 2 <<EOF
+flock ${DISKNAME} sfdisk -f ${DISKNAME} -N ${DISKPART##*[!0-9]} <<EOF
 ,+
 EOF
  
