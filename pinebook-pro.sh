@@ -261,12 +261,14 @@ cd "${basedir}"
 
 # Time to build the kernel
 cd "${basedir}"/kali-${architecture}/usr/src
-git clone https://gitlab.manjaro.org/tsys/linux-pinebook-pro.git --depth 1 linux -b v5.6
+git clone https://gitlab.manjaro.org/tsys/linux-pinebook-pro.git --depth 1
 cd linux
 touch .scmversion
 patch -p1 --no-backup-if-mismatch < "${basedir}"/../patches/pinebook-pro/0001-net-smsc95xx-Allow-mac-address-to-be-set-as-a-parame.patch
+patch -p1 --no-backup-if-mismatch < "${basedir}"/../patches/pinebook-pro/0008-board-rockpi4-dts-upper-port-host.patch
+patch -p1 --no-backup-if-mismatch < "${basedir}"/../patches/pinebook-pro/0008-rk-hwacc-drm.patch
 patch -p1 --no-backup-if-mismatch < "${basedir}"/../patches/pinebook-pro/kali-wifi-injection.patch
-cp "${basedir}"/../kernel-configs/pinebook-pro-5.6.config .config
+cp "${basedir}"/../kernel-configs/pinebook-pro-5.7.config .config
 make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- oldconfig
 make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- -j$(nproc)
 make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- INSTALL_MOD_PATH="${basedir}"/kali-${architecture} modules_install
@@ -277,8 +279,8 @@ cp arch/arm64/boot/dts/rockchip/rk3399-pinebook-pro.dtb "${basedir}"/kali-${arch
 make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- mrproper
 # And copy the config back in again (and copy it to /usr/src to keep a backup
 # around)
-cp "${basedir}"/../kernel-configs/pinebook-pro-5.6.config .config
-cp "${basedir}"/../kernel-configs/pinebook-pro-5.6.config ../default-config
+cp "${basedir}"/../kernel-configs/pinebook-pro-5.7.config .config
+cp "${basedir}"/../kernel-configs/pinebook-pro-5.7.config ../default-config
 cd "${basedir}"
 
 # Fix up the symlink for building external modules
