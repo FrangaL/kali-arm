@@ -261,7 +261,7 @@ cd "${basedir}"
 
 # Time to build the kernel
 cd "${basedir}"/kali-${architecture}/usr/src
-git clone https://gitlab.manjaro.org/tsys/linux-pinebook-pro.git --depth 1
+git clone https://gitlab.manjaro.org/tsys/linux-pinebook-pro.git --depth 1 linux
 cd linux
 touch .scmversion
 patch -p1 --no-backup-if-mismatch < "${basedir}"/../patches/pinebook-pro/0001-net-smsc95xx-Allow-mac-address-to-be-set-as-a-parame.patch
