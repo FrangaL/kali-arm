@@ -286,8 +286,6 @@ cd ${basedir}
 
 sed -i -e 's/^#PermitRootLogin.*/PermitRootLogin yes/' "${basedir}"/kali-${architecture}/etc/ssh/sshd_config
 
-# Ensure we don't have root=/dev/sda3 in the extlinux.conf which comes from running u-boot-menu in a cross chroot.
-sed -i -e 's/append.*/append root=\/dev\/mmcblk0p1 rootfstype=ext3 console=ttyS0,115200 console=tty1 consoleblank=0 rw rootwait/g' "${basedir}"/kali-${architecture}/boot/extlinux/extlinux.conf
 
 echo "Creating image file for ${imagename}.img"
 dd if=/dev/zero of="${basedir}"/${imagename}.img bs=1M count=${size}
@@ -312,6 +310,10 @@ mount ${rootp} "${basedir}"/root
 cat << EOF > kali-${architecture}/etc/resolv.conf
 nameserver 8.8.8.8
 EOF
+
+# Ensure we don't have root=/dev/sda3 in the extlinux.conf which comes from running u-boot-menu in a cross chroot.
+# We do this down here because we don't know the UUID until after the image is created.
+sed -i -e 's/append.*/append root=UUID=$(blkid -s UUID -o value ${rootp}) rootfstype=ext3 console=ttyS0,115200 console=tty1 consoleblank=0 rw rootwait/g' "${basedir}"/kali-${architecture}/boot/extlinux/extlinux.conf
 
 echo "Rsyncing rootfs into image file"
 rsync -HPavz -q "${basedir}"/kali-${architecture}/ "${basedir}"/root/
