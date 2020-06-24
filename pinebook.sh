@@ -314,6 +314,11 @@ EOF
 # Ensure we don't have root=/dev/sda3 in the extlinux.conf which comes from running u-boot-menu in a cross chroot.
 # We do this down here because we don't know the UUID until after the image is created.
 sed -i -e "0,/root=.*/s//root=UUID=$(blkid -s UUID -o value ${rootp}) rootfstype=ext3 console=ttyS0,115200 console=tty1 consoleblank=0 rw quiet rootwait/g" "${basedir}"/kali-${architecture}/boot/extlinux/extlinux.conf
+# And we remove the "Debian GNU/Linux because we're Kali"
+sed -i -e "s/Debian GNU\/Linux/Kali Linux/g" "${basedir}"/kali-${architecture}/boot/extlinux/extlinux.conf
+
+# And echo it so we can make sure it's correct...
+cat "${basedir}"/kali-${architecture}/boot/extlinux/extlinux.conf
 
 echo "Rsyncing rootfs into image file"
 rsync -HPavz -q "${basedir}"/kali-${architecture}/ "${basedir}"/root/
