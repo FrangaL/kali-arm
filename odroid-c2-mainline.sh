@@ -330,6 +330,9 @@ EOF
 # We also set it to rw instead of ro, because for whatever reason, it's not remounting rw when the initramfs->rootfs switch happens
 sed -i -e "0,/root=.*/s//root=UUID=$(blkid -s UUID -o value ${rootp}) rw quiet/g" "${basedir}"/kali-${architecture}/boot/extlinux/extlinux.conf
 
+# Create an fstab so that we don't mount / read-only.
+UUID=$(blkid -s UUID -o value ${rootp})
+echo "UUID=$UUID /               ext3    errors=remount-ro 0       1" >> "${basedir}"/kali-${architecture}/etc/fstab
 
 echo "Rsyncing rootfs into image file"
 rsync -HPavz -q "${basedir}"/kali-${architecture}/ "${basedir}"/root/

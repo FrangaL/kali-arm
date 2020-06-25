@@ -268,6 +268,10 @@ cat << EOF > kali-${architecture}/etc/resolv.conf
 nameserver 8.8.8.8
 EOF
 
+# Create an fstab so that we don't mount / read-only.
+UUID=$(blkid -s UUID -o value ${rootp})
+echo "UUID=$UUID /               ext3    errors=remount-ro 0       1" >> "${basedir}"/kali-${architecture}/etc/fstab
+
 echo "Rsyncing rootfs to image file"
 rsync -HPavz -q "${basedir}"/kali-${architecture}/ "${basedir}"/root/
 

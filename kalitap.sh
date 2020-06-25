@@ -338,11 +338,14 @@ mount ${rootp} "${basedir}"/root
 mkdir -p "${basedir}"/root/boot
 mount ${bootp} "${basedir}"/root/boot
 
-
 # We do this down here to get rid of the build system's resolv.conf after running through the build.
 cat << EOF > kali-${architecture}/etc/resolv.conf
 nameserver 8.8.8.8
 EOF
+
+# Create an fstab so that we don't mount / read-only.
+UUID=$(blkid -s UUID -o value ${rootp})
+echo "UUID=$UUID /               ext3    errors=remount-ro 0       1" >> "${basedir}"/kali-${architecture}/etc/fstab
 
 echo "Rsyncing rootfs into image file"
 rsync -HPavz -q "${basedir}"/kali-${architecture}/ "${basedir}"/root/
