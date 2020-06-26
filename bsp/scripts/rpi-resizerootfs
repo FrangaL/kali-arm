@@ -1,4 +1,4 @@
-#!/bin/sh                                                                                                                                                                                                                                 
+#!/bin/sh
 # Code comes from Fran Rodriguez
 # https://github.com/FrangaL/rpi-img-builder
 DISKPART="$(findmnt -n -o SOURCE /)"
