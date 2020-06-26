@@ -351,12 +351,9 @@ umount -l ${rootp}
 kpartx -dv ${loopdevice}
 losetup -d ${loopdevice}
 
-MACHINE_TYPE=`uname -m`
-if [ ${MACHINE_TYPE} == 'x86_64' ]; then
+if [ $(arch) == 'x86_64' ]; then
 echo "Compressing ${imagename}.img"
-pixz "${basedir}"/${imagename}.img "${basedir}"/../${imagename}.img.xz
-unxz -t ${basedir}/../${imagename}.img.xz || rm ${basedir}/../${imagename}.img.xz &&  pixz ${basedir}/${imagename}.img ${basedir}/../${imagename}.img.xz && unxz -t ${basedir}/../${imagename}.img.xz
-rm "${basedir}"/${imagename}.img
+pixz -p $(nproc) ${basedir}/${imagename}.img ${basedir}/../${imagename}.img.xz
 fi
 
 # Clean up all the temporary build stuff and remove the directories.
