@@ -566,16 +566,16 @@ set-default-sink 0
 EOF
 
 # mali rules so users can access the mali0 driver...
-cp "${basedir}"/bsp/udev/50-mali.rules "${basedir}"/kali-${architecture}/etc/udev/rules.d/50-mali.rules
-cp "${basedir}"/bsp/udev/50-media.rules "${basedir}"/kali-${architecture}/etc/udev/rules.d/50-media.rules
+cp "${basedir}"/../bsp/udev/50-mali.rules "${basedir}"/kali-${architecture}/etc/udev/rules.d/50-mali.rules
+cp "${basedir}"/../bsp/udev/50-media.rules "${basedir}"/kali-${architecture}/etc/udev/rules.d/50-media.rules
 # EHCI is apparently quirky.
-cp "${basedir}"/bsp/udev/99-rk3288-ehci-persist.rules "${basedir}"/kali-${architecture}/etc/udev/rules.d/99-rk3288-ehci-persist.rules
+cp "${basedir}"/../bsp/udev/99-rk3288-ehci-persist.rules "${basedir}"/kali-${architecture}/etc/udev/rules.d/99-rk3288-ehci-persist.rules
 # Avoid gpio charger wakeup system
-cp "${basedir}"/bsp/udev/99-rk3288-gpio-charger.rules "${basedir}"/kali-${architecture}/etc/udev/rules.d/99-rk3288-gpio-charger.rules
+cp "${basedir}"/../bsp/udev/99-rk3288-gpio-charger.rules "${basedir}"/kali-${architecture}/etc/udev/rules.d/99-rk3288-gpio-charger.rules
 # Rule used to kick start the bluetooth/wifi chip.
-cp "${basedir}"/bsp/udev/80-brcm-sdio-added.rules "${basedir}"/kali-${architecture}/etc/udev/rules.d/80-brcm-sdio-added.rules
+cp "${basedir}"/../bsp/udev/80-brcm-sdio-added.rules "${basedir}"/kali-${architecture}/etc/udev/rules.d/80-brcm-sdio-added.rules
 # Hide the eMMC partitions from udisks
-cp "${basedir}"/bsp/udev/99-hide-emmc-partitions.rules "${basedir}"/kali-${architecture}/etc/udev/rules.d/99-hide-emmc-partitions.rules
+cp "${basedir}"/../bsp/udev/99-hide-emmc-partitions.rules "${basedir}"/kali-${architecture}/etc/udev/rules.d/99-hide-emmc-partitions.rules
 
 # disable btdsio
 mkdir -p "${basedir}"/kali-${architecture}/etc/modprobe.d/
