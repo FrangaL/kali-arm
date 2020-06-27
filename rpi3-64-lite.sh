@@ -42,9 +42,20 @@ architecture="arm64"
 # After generating the rootfs, we set the sources.list to the default settings.
 mirror=http.kali.org
 
-# Set this to use an http proxy, like apt-cacher-ng, and uncomment further down
-# to unset it.
-#export http_proxy="http://localhost:3142/"
+# Automatic configuration to use an http proxy, such as apt-cacher-ng.
+# You can turn off automatic settings by uncommenting apt_cacher=off.
+# By default the proxy settings are local, but you can define an external proxy.
+# apt_cacher=off
+# proxy_url="http://external.intranet.local"
+apt_cacher=${apt_cacher:-"$(lsof -i :3142|cut -d ' ' -f3 | uniq | sed '/^\s*$/d')"}
+if [ -n "$proxy_url" ]; then
+    export http_proxy=$proxy_url
+elif [ "$apt_cacher" = "apt-cacher-ng" ] ; then
+    if [ -z "$proxy_url" ]; then
+        proxy_url=${proxy_url:-"http://127.0.0.1:3142/"}
+        export http_proxy=$proxy_url
+    fi
+fi
 
 mkdir -p "${basedir}"
 echo "The basedir thinks it is: "${basedir}""
@@ -223,6 +234,11 @@ export DEBIAN_FRONTEND=noninteractive
 #mount -o bind /dev/ kali-$architecture/dev/
 #mount -o bind /dev/pts kali-$architecture/dev/pts
 
+# Enable the use of http proxy in third-stage in case it is enabled.
+if [ -n "$proxy_url" ]; then
+	echo "Acquire::http { Proxy \"$proxy_url\" };" > ${basedir}/kali-${architecture}/etc/apt/apt.conf.d/66proxy
+fi
+
 LANG=C systemd-nspawn -M ${machine} -D kali-${architecture} /third-stage
 if [[ $? > 0 ]]; then
   echo "Third stage failed"
@@ -237,8 +253,11 @@ rm -rf kali-${architecture}/third-stage
 # Enable login over serial
 echo "T0:23:respawn:/sbin/agetty -L ttyAMA0 115200 vt100" >> "${basedir}"/kali-${architecture}/etc/inittab
 
-# Uncomment this if you use apt-cacher-ng otherwise git clones will fail.
-#unset http_proxy
+# Disable the use of http proxy in case it is enabled.
+if [ -n "$proxy_url" ]; then
+	unset http_proxy
+	rm -rf ${basedir}/kali-${architecture}/etc/apt/apt.conf.d/66proxy
+fi
 
 cd "${basedir}"
 
