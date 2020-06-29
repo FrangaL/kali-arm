@@ -58,11 +58,12 @@ unset CROSS_COMPILE
 # DO NOT REMOVE IT FROM THE PACKAGE LIST.
 
 arm="kali-linux-arm ntpdate"
-base="apt-transport-https apt-utils bash-completion console-setup dialog e2fsprogs ifupdown initramfs-tools inxi iw man-db mlocate netcat-traditional net-tools parted pciutils psmisc rfkill tmux unrar usbutils vim wget whiptail zerofree"
+base="apt-transport-https apt-utils bash-completion console-setup dialog e2fsprogs ifupdown initramfs-tools inxi iw  man-db mlocate netcat-traditional net-tools parted pciutils psmisc rfkill screen tmux unrar usbutils vim wget whiptail zerofree u-boot-amlogic u-boot-menu linux-image-arm64"
 desktop="kali-desktop-xfce kali-root-login xserver-xorg-video-fbdev xfonts-terminus xinput"
 tools="kali-linux-default"
 services="apache2 atftpd"
 extras="alsa-utils bc bison bluez bluez-firmware fbset kali-linux-core libnss-systemd libssl-dev triggerhappy"
+#kali="build-essential debhelper devscripts dput lintian quilt git-buildpackage gitk dh-make sbuild"
 
 packages="${arm} ${base} ${services}"
 architecture="arm64"
@@ -131,6 +132,12 @@ mkdir -p kali-${architecture}/usr/lib/systemd/system/
 cp "${basedir}"/../bsp/services/all/*.service kali-${architecture}/usr/lib/systemd/system/
 cp "${basedir}"/../bsp/services/odroid-c2/*.service kali-${architecture}/usr/lib/systemd/system/
 
+# Disable RESUME (suspend/resume is currently broken anyway!) which speeds up boot massively.
+mkdir -p kali-${architecture}/etc/initramfs-tools/conf.d/
+cat << EOF > kali-${architecture}/etc/initramfs-tools/conf.d/resume
+RESUME=none
+EOF
+
 cat << EOF > kali-${architecture}/third-stage
 #!/bin/bash
 set -e
@@ -162,6 +169,8 @@ useradd -m -u 1000 -g 1000 -G sudo,audio,bluetooth,cdrom,dialout,dip,lpadmin,net
 echo "kali:kali" | chpasswd
 
 export DEBIAN_FRONTEND=noninteractive
+# This looks weird, but we do it twice because every so often, there's a failure to download from the mirror
+# So to workaround it, we attempt to install them twice.
 apt-get --yes --allow-change-held-packages -o dpkg::options::=--force-confnew install ${packages} || apt-get --yes --fix-broken install
 apt-get --yes --allow-change-held-packages -o dpkg::options::=--force-confnew install ${packages} || apt-get --yes --fix-broken install
 apt-get --yes --allow-change-held-packages -o dpkg::options::=--force-confnew install ${desktop} ${extras} ${tools} || apt-get --yes --fix-broken install
@@ -169,6 +178,9 @@ apt-get --yes --allow-change-held-packages -o dpkg::options::=--force-confnew in
 apt-get --yes --allow-change-held-packages --autoremove install systemd-timesyncd || apt-get --yes --fix-broken install
 apt-get --yes --allow-change-held-packages -o dpkg::options::=--force-confnew dist-upgrade
 apt-get --yes --allow-change-held-packages -o dpkg::options::=--force-confnew autoremove
+
+# Run u-boot-update to generate the extlinux.conf file - we will replace this later, via sed, to point to the correct root partition (hopefully?)
+u-boot-update
 
 # Because copying in authorized_keys is hard for people to do, let's make the
 # image insecure and enable root login with a password.
@@ -180,7 +192,7 @@ sed -i -e 's/^#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/
 systemctl enable smi-hack
 
 # Resize FS on first run (hopefully)
-systemctl enable rpiwiggle
+#systemctl enable rpiwiggle
 
 # Generate SSH host keys on first run
 systemctl enable regenerate_ssh_host_keys
@@ -204,392 +216,6 @@ chmod 755 kali-${architecture}/third-stage
 
 LANG=C systemd-nspawn -M ${machine} -D kali-${architecture} /third-stage
 
-#umount kali-${architecture}/proc/sys/fs/binfmt_misc
-#umount kali-${architecture}/dev/pts
-#umount kali-${architecture}/dev/
-#umount kali-${architecture}/proc
-
-cat << EOF > "${basedir}"/kali-${architecture}/etc/apt/sources.list
-deb http://http.kali.org/kali kali-rolling main non-free contrib
-deb-src http://http.kali.org/kali kali-rolling main non-free contrib
-EOF
-
-# Display is... interesting, thanks Amlogic.
-mkdir -p "${basedir}"/kali-${architecture}/usr/share/lightdm/lightdm.conf.d
-cat << EOF > "${basedir}"/kali-${architecture}/usr/share/lightdm/lightdm.conf.d/10-odroidc2.conf
-[SeatDefaults]
-display-setup-script=/usr/bin/aml_fix_display
-EOF
-
-cat << EOF > "${basedir}"/kali-${architecture}/usr/bin/aml_fix_display
-#!/bin/bash
-exit 0
-EOF
-chmod 755 "${basedir}"/kali-${architecture}/usr/bin/aml_fix_display
-
-# Create symlink to enable the service...
-ln -sf /lib/systemd/system/amlogic.service "${basedir}"/kali-${architecture}/etc/systemd/system/multi-user.target.wants/amlogic.service
-
-cat << EOF > "${basedir}"/kali-${architecture}/usr/bin/amlogic.sh
-#!/bin/sh
-
-for x in \$(cat /proc/cmdline); do
-        case \${x} in
-                m_bpp=*) export bpp=\${x#*=} ;;
-                hdmimode=*) export mode=\${x#*=} ;;
-        esac
-done
-
-HPD_STATE=/sys/class/amhdmitx/amhdmitx0/hpd_state
-DISP_CAP=/sys/class/amhdmitx/amhdmitx0/disp_cap
-DISP_MODE=/sys/class/display/mode
-
-echo \$mode > \$DISP_MODE
-
-common_display_setup() {
-        M="0 0 \$((\$X - 1)) \$((\$Y - 1))"
-        Y_VIRT=\$((\$Y * 2))
-        fbset -fb /dev/fb0 -g \$X \$Y \$X \$Y_VIRT \$bpp
-        echo \$mode > /sys/class/display/mode
-        echo 0 > /sys/class/graphics/fb0/free_scale
-        echo 1 > /sys/class/graphics/fb0/freescale_mode
-        echo \$M > /sys/class/graphics/fb0/free_scale_axis
-        echo \$M > /sys/class/graphics/fb0/window_axis
-
-        echo 0 > /sys/class/graphics/fb1/free_scale
-        echo 1 > /sys/class/graphics/fb1/freescale_mode
-        if [ "\$bpp" = "32" ]; then
-            echo d01068b4 0x7fc0 > /sys/kernel/debug/aml_reg/paddr
-        fi
-}
-
-case \$mode in
-        480*)
-            export X=720
-            export Y=480
-            ;;
-        576*)
-            export X=720
-            export Y=576
-            ;;
-        720p*)
-            export X=1280
-            export Y=720
-            ;;
-        1080*)
-            export X=1920
-            export Y=1080
-            ;;
-        2160p*)
-            export X=3840
-            export Y=2160
-            ;;
-        smpte24hz*)
-            export X=3840
-            export Y=2160
-            ;;
-        640x480p60hz*)
-            export X=640
-            export Y=480
-            ;;
-        800x480p60hz*)
-            export X=800
-            export Y=480
-            ;;
-        800x600p60hz*)
-            export X=800
-            export Y=600
-            ;;
-        1024x600p60hz*)
-            export X=1024
-            export Y=600
-            ;;
-        1024x768p60hz*)
-            export X=1024
-            export Y=768
-            ;;
-        1280x800p60hz*)
-            export X=1280
-            export Y=800
-            ;;
-        1280x1024p60hz*)
-            export X=1280
-            export Y=1024
-            ;;
-        1360x768p60hz*)
-            export X=1360
-            export Y=768
-            ;;
-        1366x768p60hz*)
-            export X=1366
-            export Y=768
-            ;;
-        1440x900p60hz*)
-            export X=1440
-            export Y=900
-            ;;
-        1600x900p60hz*)
-            export X=1600
-            export Y=900
-            ;;
-        1680x1050p60hz*)
-            export X=1680
-            export Y=1050
-            ;;
-        1920x1200p60hz*)
-            export X=1920
-            export Y=1200
-            ;;
-        2560x1080p60hz*)
-            export X=2560
-            export Y=1080
-            ;;
-        2560x1440p60hz*)
-            export X=2560
-            export Y=1440
-            ;;
-        2560x1600p60hz*)
-            export X=2560
-            export Y=1600
-            ;;
-esac
-
-common_display_setup
-
-# Console unblack
-echo 0 > /sys/class/graphics/fb0/blank
-echo 0 > /sys/class/graphics/fb1/blank
-EOF
-chmod 755 "${basedir}"/kali-${architecture}/usr/bin/amlogic.sh
-
-# And because we need to run c2_init in the initramfs and it calls fbset,
-# create a hook for adding /bin/fbset to the initrd as well.
-cat << EOF > "${basedir}"/kali-${architecture}/usr/share/initramfs-tools/hooks/fbset
-#!/bin/sh -e
-PREREQS=""
-case \$1 in
-            prereqs) echo "\${PREREQS}"; exit 0;;
-        esac
-        . /usr/share/initramfs-tools/hook-functions
-        copy_exec /bin/fbset /bin
-EOF
-chmod 755 "${basedir}"/kali-${architecture}/usr/share/initramfs-tools/hooks/fbset
-
-# Uncomment this if you use apt-cacher-ng otherwise git clones will fail.
-#unset http_proxy
-
-# Kernel section. If you want to use a custom kernel, or configuration, replace
-# them in this section.
-git clone --depth 1 https://github.com/hardkernel/linux -b odroidc2-v3.16.y "${basedir}"/kali-${architecture}/usr/src/kernel
-cd "${basedir}"/kali-${architecture}/usr/src/kernel
-touch .scmversion
-export ARCH=arm64
-export CROSS_COMPILE=aarch64-linux-gnu-
-patch -p1 --no-backup-if-mismatch < "${basedir}"/../patches/kali-wifi-injection-3.16.patch
-patch -p1 --no-backup-if-mismatch < "${basedir}"/../patches/0001-wireless-carl9170-Enable-sniffer-mode-promisc-flag-t.patch
-cp "${basedir}"/../kernel-configs/odroid-c2-3.16.config .config
-cp .config "${basedir}"/kali-${architecture}/usr/src/odroid-c2-3.16.config
-cd "${basedir}"/kali-${architecture}/usr/src/kernel/
-rm -rf "${basedir}"/kali-${architecture}/usr/src/kernel/.git
-make -j $(grep -c processor /proc/cpuinfo)
-make modules_install INSTALL_MOD_PATH="${basedir}"/kali-${architecture}
-cp arch/arm64/boot/Image "${basedir}"/kali-${architecture}/boot/
-cp arch/arm64/boot/dts/meson64_odroidc2.dtb "${basedir}"/kali-${architecture}/boot/
-cd "${basedir}"/kali-${architecture}/usr/src/kernel
-make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- mrproper
-cd "${basedir}"
-
-# Fix up the symlink for building external modules
-# kernver is used so we don't need to keep track of what the current compiled
-# version is
-kernver=$(ls "${basedir}"/kali-${architecture}/lib/modules/)
-cd "${basedir}"/kali-${architecture}/lib/modules/${kernver}
-rm build
-rm source
-ln -s /usr/src/kernel build
-ln -s /usr/src/kernel source
-cd "${basedir}"
-
-# Create a boot.ini file with possible options if people want to change them.
-# Currently on my only nearby 1080p, I get a display that's only 1024x768 in the
-# upper left corner, so default to 720p which seems to work great.
-cat << EOF > "${basedir}"/kali-${architecture}/boot/boot.ini
-ODROIDC2-UBOOT-CONFIG
-
-# Possible screen resolutions
-# Uncomment only a single Line! The line with setenv written.
-# At least one mode must be selected.
-
-# Custom modeline!
-# To use custom modeline you need to disable all the below resolutions
-# and setup your own!
-# For more information check our wiki:
-# http://odroid.com/dokuwiki/doku.php?id=en:c2_hdmi_autosetting
-# Example below:
-# setenv m "custombuilt"
-# setenv modeline "1920,1200,154000,74040,60,1920,1968,2000,2080,1200,1202,1208,1235,1,0,1"
-
-# 480 Lines (720x480)
-# setenv m "480i60hz" # Interlaced 60Hz
-# setenv m "480i_rpt" # Interlaced for Rear Projection Televisions 60Hz
-# setenv m "480p60hz" # 480 Progressive 60Hz
-# setenv m "480p_rpt" # 480 Progressive for Rear Projection Televisions 60Hz
-
-# 576 Lines (720x576)
-# setenv m "576i50hz" # Interlaced 50Hz
-# setenv m "576i_rpt" # Interlaced for Rear Projection Televisions 50Hz
-# setenv m "576p50hz" # Progressive 50Hz
-# setenv m "576p_rpt" # Progressive for Rear Projection Televisions 50Hz
-
-# 720 Lines (1280x720)
-# setenv m "720p50hz" # 50Hz
-# setenv m "720p60hz" # 60Hz
-
-# 1080 Lines (1920x1080)
-# setenv m "1080i60hz" # Interlaced 60Hz
-setenv m "1080p60hz" # Progressive 60Hz
-# setenv m "1080i50hz" # Interlaced 50Hz
-# setenv m "1080p50hz" # Progressive 50Hz
-# setenv m "1080p24hz" # Progressive 24Hz
-
-# 4K (3840x2160)
-# setenv m "2160p30hz"    # Progressive 30Hz
-# setenv m "2160p25hz"    # Progressive 25Hz
-# setenv m "2160p24hz"    # Progressive 24Hz
-# setenv m "smpte24hz"    # Progressive 24Hz SMPTE
-# setenv m "2160p50hz"    # Progressive 50Hz
-# setenv m "2160p60hz"    # Progressive 60Hz
-# setenv m "2160p50hz420" # Progressive 50Hz with YCbCr 4:2:0 (Requires TV/Monitor that supports it)
-# setenv m "2160p60hz420" # Progressive 60Hz with YCbCr 4:2:0 (Requires TV/Monitor that supports it)
-
-### VESA modes ###
-# setenv m "640x480p60hz"
-# setenv m "800x480p60hz"
-# setenv m "800x600p60hz"
-# setenv m "1024x600p60hz"
-# setenv m "1024x768p60hz"
-# setenv m "1280x800p60hz"
-# setenv m "1280x1024p60hz"
-# setenv m "1360x768p60hz"
-# setenv m "1440x900p60hz"
-# setenv m "1600x900p60hz"
-# setenv m "1680x1050p60hz"
-# setenv m "1600x1200p60hz"
-# setenv m "1920x1200p60hz"
-# setenv m "2560x1080p60hz"
-# setenv m "2560x1440p60hz"
-# setenv m "2560x1600p60hz"
-# setenv m "3440x1440p60hz"
-
-# HDMI BPP Mode
-setenv m_bpp "32"
-# setenv m_bpp "24"
-# setenv m_bpp "16"
-
-# HDMI DVI/VGA modes
-# Uncomment only a single Line! The line with setenv written.
-# At least one mode must be selected.
-# setenv vout "dvi"
-# setenv vout "vga"
-
-# HDMI HotPlug Detection control
-# Allows you to force HDMI thinking that the cable is connected.
-# true = HDMI will believe that cable is always connected
-# false = will let board/monitor negotiate the connection status
-setenv hpd "true"
-# setenv hpd "false"
-
-# Default Console Device Setting
-setenv condev "console=ttyS0,115200n8 console=tty0"   # on both
-
-# Meson Timer
-# 1 - Meson Timer
-# 0 - Arch Timer
-# Using meson_timer improves the video playback however it breaks KVM (virtualization).
-# Using arch timer allows KVM/Virtualization to work however you'll experience poor video
-setenv mesontimer "1"
-
-# Server Mode (aka. No Graphics)
-# Setting nographics to 1 will disable all video subsystem
-# This mode is ideal of server type usage. (Saves ~300Mb of RAM)
-setenv nographics "0"
-
-# CPU Frequency / Cores control
-###########################################
-### WARNING!!! WARNING!!! WARNING!!!
-# Before changing anything here please read the wiki entry:
-# http://odroid.com/dokuwiki/doku.php?id=en:c2_set_cpu_freq
-#
-# MAX CPU's
-# setenv maxcpus "1"
-# setenv maxcpus "2"
-# setenv maxcpus "3"
-setenv maxcpus "4"
-
-# MAX Frequency
-# setenv max_freq "2016"  # 2.016GHz
-# setenv max_freq "1944"  # 1.944GHz
-# setenv max_freq "1944"  # 1.944GHz
-# setenv max_freq "1920"  # 1.920GHz
-# setenv max_freq "1896"  # 1.896GHz
-# setenv max_freq "1752"  # 1.752GHz
-# setenv max_freq "1680"  # 1.680GHz
-# setenv max_freq "1656"  # 1.656GHz
-setenv max_freq "1536"  # 1.536GHz
-
-###########################################
-
-# Boot Arguments
-if test "\${m}" = "custombuilt"; then setenv cmode "modeline=\${modeline}"; fi
-
-setenv bootargs "root=/dev/mmcblk0p2 rootwait rw \${condev} no_console_suspend hdmimode=\${m} \${comde} m_bpp=\${m_bpp} vout=\${vout} fsck.repair=yes net.ifnames=0 elevator=noop disablehpd=\${hpd} max_freq=\${max_freq} maxcpus=\${maxcpus}"
-
-# Booting
-
-setenv loadaddr "0x11000000"
-setenv dtb_loadaddr "0x1000000"
-setenv initrd_loadaddr "0x13000000"
-
-fatload mmc 0:1 \${initrd_loadaddr} uInitrd
-fatload mmc 0:1 \${loadaddr} Image
-fatload mmc 0:1 \${dtb_loadaddr} meson64_odroidc2.dtb
-fdt addr \${dtb_loadaddr}
-
-if test "\${mesontimer}" = "0"; then fdt rm /meson_timer; fdt rm /cpus/cpu@0/timer; fdt rm /cpus/cpu@1/timer; fdt rm /cpus/cpu@2/timer; fdt rm /cpus/cpu@3/timer; fi
-if test "\${mesontimer}" = "1"; then fdt rm /timer; fi
-
-if test "\${nographics}" = "1"; then fdt rm /reserved-memory; fdt rm /aocec; fi
-if test "\${nographics}" = "1"; then fdt rm /meson-fb; fdt rm /amhdmitx; fdt rm /picdec; fdt rm /ppmgr; fi
-if test "\${nographics}" = "1"; then fdt rm /meson-vout; fdt rm /mesonstream; fdt rm /meson-fb; fi
-if test "\${nographics}" = "1"; then fdt rm /deinterlace; fdt rm /codec_mm; fi
-
-#booti \${loadaddr} \${initrd_loadaddr} \${dtb_loadaddr}
-booti \${loadaddr} - \${dtb_loadaddr}
-EOF
-
-cat << EOF > "${basedir}"/kali-${architecture}/boot/mkuinitrd
-#!/bin/bash
-if [ -a /boot/initrd.img-\$(uname -r) ] ; then
-    update-initramfs -u -k \$(uname -r)
-else
-    update-initramfs -c -k \$(uname -r)
-fi
-mkimage -A arm64 -O linux -T ramdisk -C none -a 0 -e 0 -n "uInitrd" -d /boot/initrd.img-\$(uname -r) /boot/uInitrd
-EOF
-
-cd "${basedir}"
-
-# Now, to get display working properly, we need an initramfs, so we can run the
-# c2_init.sh file before we launch X.
-cat << EOF > "${basedir}"/kali-${architecture}/create-initrd
-#!/bin/bash
-update-initramfs -c -k 3.16.82
-mkimage -A arm64 -O linux -T ramdisk -C none -a 0 -e 0 -n "uInitrd" -d /boot/initrd.img-3.16.82 /boot/uInitrd
-rm -f /create-initrd
-EOF
-chmod 755 "${basedir}"/kali-${architecture}/create-initrd
-LANG=C systemd-nspawn -M ${machine} -D "${basedir}"/kali-${architecture} /create-initrd
-
 cat << EOF > kali-${architecture}/cleanup
 #!/bin/bash
 rm -rf /root/.bash_history
@@ -603,7 +229,62 @@ chmod 755 kali-${architecture}/cleanup
 
 LANG=C systemd-nspawn -M ${machine} -D kali-${architecture} /cleanup
 
-sync
+#umount kali-${architecture}/proc/sys/fs/binfmt_misc
+#umount kali-${architecture}/dev/pts
+#umount kali-${architecture}/dev/
+#umount kali-${architecture}/proc
+
+cat << EOF > "${basedir}"/kali-${architecture}/etc/apt/sources.list
+deb http://http.kali.org/kali kali-rolling main non-free contrib
+deb-src http://http.kali.org/kali kali-rolling main non-free contrib
+EOF
+
+# For some reason the latest modesetting driver (part of xorg server)
+# seems to cause a lot of jerkiness.  Using the fbdev driver is not
+# ideal but it's far less frustrating to work with.
+mkdir -p "${basedir}"/kali-${architecture}/etc/X11/xorg.conf.d
+cp "${basedir}"/../bsp/xorg/20-meson.conf "${basedir}"/kali-${architecture}/etc/X11/xorg.conf.d/
+
+# 1366x768 is sort of broken on the ODROID-C2, not sure where the issue is, but
+# we can work around it by setting the resolution to 1360x768.
+# This requires 2 files, a script and then something for lightdm to use.
+# I do not have anything set up for the console though, so that's still broken for now.
+mkdir -p "${basedir}"/kali-${architecture}/usr/local/bin
+cat << 'EOF' > "${basedir}"/kali-${architecture}/usr/local/bin/xrandrscript.sh
+#!/usr/bin/env bash
+
+resolution=$(xdpyinfo | awk '/dimensions:/ { print $2; exit }')
+
+if [[ "$resolution" == "1366x768" ]]; then
+    xrandr --newmode "1360x768_60.00"   84.75  1360 1432 1568 1776  768 771 781 798 -hsync +vsync
+    xrandr --addmode HDMI-1 1360x768_60.00
+    xrandr --output HDMI-1 --mode  1360x768_60.00
+fi
+EOF
+chmod 755 "${basedir}"/kali-${architecture}/usr/local/bin/xrandrscript.sh
+
+mkdir -p "${basedir}"/kali-${architecture}/usr/share/lightdm/lightdm.conf.d/
+cat << EOF > "${basedir}"/kali-${architecture}/usr/share/lightdm/lightdm.conf.d/60-xrandrscript.conf
+[SeatDefaults]
+display-setup-script=/usr/local/bin/xrandrscript.sh
+session-setup-script=/usr/local/bin/xrandrscript.sh
+EOF
+
+# Make sure we can login as root on the serial console.
+# Mainline gives us a ttyAML0 which doesn't exist in there.
+
+cat << EOF >> "${basedir}"/kali-${architecture}/etc/securetty
+
+# Amlogic serial console
+ttyAML0
+ttyAML1
+ttyAML2
+EOF
+
+# Uncomment this if you use apt-cacher-ng otherwise git clones will fail.
+#unset http_proxy
+
+cd "${basedir}"
 
 # rpi-wiggle
 mkdir -p "${basedir}"/kali-${architecture}/root/scripts
@@ -612,35 +293,42 @@ chmod 755 "${basedir}"/kali-${architecture}/root/scripts/rpi-wiggle.sh
 
 sed -i -e 's/^#PermitRootLogin.*/PermitRootLogin yes/' "${basedir}"/kali-${architecture}/etc/ssh/sshd_config
 
+# Some maths here... it's not magic, we just want the block size a certain way
+# so that partitions line up in a way that's more optimal.
+RAW_SIZE_MB=${size}
+BLOCK_SIZE=1024
+let RAW_SIZE=(${RAW_SIZE_MB}*1000*1000)/${BLOCK_SIZE}
+
 # Create the disk and partition it
 echo "Creating image file ${imagename}.img"
-dd if=/dev/zero of="${basedir}"/${imagename}.img bs=1M count=${size}
+dd if=/dev/zero of="${basedir}"/${imagename}.img bs=${BLOCK_SIZE} count=0 seek=${RAW_SIZE}
 parted ${imagename}.img --script -- mklabel msdos
-parted ${imagename}.img --script -- mkpart primary fat32 2048s 264191s
-parted ${imagename}.img --script -- mkpart primary ext3 264192s 100%
+parted ${imagename}.img --script -- mkpart primary ext3 32MB 100%
 
 # Set the partition variables
 loopdevice=`losetup -f --show "${basedir}"/${imagename}.img`
 device=`kpartx -va ${loopdevice} | sed 's/.*\(loop[0-9]\+\)p.*/\1/g' | head -1`
 sleep 5
 device="/dev/mapper/${device}"
-bootp=${device}p1
-rootp=${device}p2
+rootp=${device}p1
 
 # Create file systems
-mkfs.vfat -F 32 -n boot ${bootp}
-mkfs.ext3 -O ^flex_bg -O ^metadata_csum -L rootfs ${rootp}
+mkfs.ext3 -L rootfs ${rootp}
 
 # Create the dirs for the partitions and mount them
 mkdir -p "${basedir}"/root
 mount ${rootp} "${basedir}"/root
-mkdir -p "${basedir}"/root/boot
-mount ${bootp} "${basedir}"/root/boot
 
 # We do this down here to get rid of the build system's resolv.conf after running through the build.
 cat << EOF > kali-${architecture}/etc/resolv.conf
 nameserver 8.8.8.8
 EOF
+
+#sed -i -e "s/root=\/dev\/mmcblk0p2/root=PARTUUID=$(blkid -s PARTUUID -o value ${rootp})/g" "${basedir}"/kali-${architecture}/boot/boot.cmd
+# Let's get the blkid of the rootpartition, and sed it out in the extlinux.conf file.
+# 0, means only replace the first instance.  This does mean that the second instance won't be replaced, but most people aren't going to use that(fingers crossed)
+# We also set it to rw instead of ro, because for whatever reason, it's not remounting rw when the initramfs->rootfs switch happens
+sed -i -e "0,/root=.*/s//root=UUID=$(blkid -s UUID -o value ${rootp}) rw quiet/g" "${basedir}"/kali-${architecture}/boot/extlinux/extlinux.conf
 
 # Create an fstab so that we don't mount / read-only.
 UUID=$(blkid -s UUID -o value ${rootp})
@@ -652,30 +340,61 @@ rsync -HPavz -q "${basedir}"/kali-${architecture}/ "${basedir}"/root/
 # Unmount partitions
 # Sync before unmounting to ensure everything is written
 sync
-umount -l ${bootp}
 umount -l ${rootp}
 kpartx -dv ${loopdevice}
 
-# Currently we use pre-built, because (again) Amlogic do some funky stuff.
-# The steps for building yourself can be found at:
-# http://odroid.com/dokuwiki/doku.php?id=en:c2_building_u-boot
-# Because it requires a different toolchain to be downloaded and used, we went
-# with the pre-built so as to save people bandwidth, but the steps are here.
+# We are gonna use as much open source as we can here, hopefully we end up with a nice
+# mainline u-boot and signed bootloader - unfortunately, due to the way this is packaged up
+# we have to clone two different u-boot repositories - the one from HardKernel which
+# has the bootloader binary blobs we need, and the denx mainline u-boot repository.
+# Let the fun begin.
 
-#wget https://releases.linaro.org/14.09/components/toolchain/binaries/gcc-linaro-aarch64-none-elf-4.9-2014.09_linux.tar.xz
-#mkdir -p /opt/toolchains
-#tar xvf gcc-linaro-aarch64-none-elf-4.9-2014.09_linux.tar.xz -C /opt/toolchains/
-#export PATH=/opt/toolchains/gcc-linaro-aarch64-none-elf-4.9-2014.09_linux/bin/:$PATH
-#git clone --depth 1 https://github.com/hardkernel/u-boot -b odroidc2-v2015.01
-#cd "${basedir}"/u-boot
-#make CROSS_COMPILE=aarch64-linux-gnu- odroidc2_config
-#make CROSS_COMPILE=aarch64-linux-gnu- -j $(grep -c processor /proc/cpuinfo)
+# Unset these because we're building on the host.
+unset ARCH
+unset CROSS_COMPILE
 
-mkdir -p "${basedir}"/u-boot
-cd "${basedir}"/u-boot
-git clone https://github.com/mdrjr/c2_uboot_binaries
-cd c2_uboot_binaries
-sh sd_fusing.sh ${loopdevice}
+mkdir -p "${basedir}"/bootloader
+cd "${basedir}"/bootloader
+git clone https://github.com/afaerber/meson-tools --depth 1
+git clone git://git.denx.de/u-boot --depth 1
+git clone https://github.com/hardkernel/u-boot -b odroidc2-v2015.01 u-boot-hk --depth 1
+
+# First things first, let's build the meson-tools, of which, we only really need amlbootsig
+cd "${basedir}"/bootloader/meson-tools/
+make
+# Now we need to build fip_create
+cd "${basedir}"/bootloader/u-boot-hk/tools/fip_create
+HOSTCC=cc HOSTLD=ld make
+
+cd "${basedir}"/bootloader/u-boot/
+make ARCH=arm CROSS_COMPILE=aarch64-linux-gnu- odroid-c2_defconfig
+make ARCH=arm CROSS_COMPILE=aarch64-linux-gnu-
+
+# Now the real fun... keeping track of file locations isn't fun, and i should probably move them to
+# one single directory, but since we're not keeping these things around afterwards, it's fine to
+# leave them where they are.
+# See:
+# https://forum.odroid.com/viewtopic.php?t=26833
+# https://github.com/nxmyoz/c2-overlay/blob/master/Readme.md
+# for the inspirations for it.  Specifically Adrian's posts got us closest.
+
+# This is funky, but in the end, it should do the right thing.
+cd "${basedir}"/bootloader/
+# Create the fip.bin
+./u-boot-hk/tools/fip_create/fip_create --bl30 ./u-boot-hk/fip/gxb/bl30.bin \
+--bl301 ./u-boot-hk/fip/gxb/bl301.bin --bl31 ./u-boot-hk/fip/gxb/bl31.bin \
+--bl33 u-boot/u-boot.bin fip.bin
+
+# Create the stage2 bootloader thingie?
+cat ./u-boot-hk/fip/gxb/bl2.package fip.bin > boot_new.bin
+# Now sign it, and call it u-boot.bin
+./meson-tools/amlbootsig boot_new.bin u-boot.bin
+# Now strip a portion of it off, and put it in the sd_fuse directory
+dd if=u-boot.bin of=./u-boot-hk/sd_fuse/u-boot.bin bs=512 skip=96
+# Finally, write it to the loopdevice so we have our bootloader on the card.
+cd ./u-boot-hk/sd_fuse
+./sd_fusing.sh ${loopdevice}
+sync
 cd "${basedir}"
 
 losetup -d ${loopdevice}
