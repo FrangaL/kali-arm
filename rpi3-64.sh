@@ -194,9 +194,9 @@ systemctl enable copy-user-wpasupplicant
 systemctl enable enable-ssh
 
 cd /root
-apt download ca-certificates
-apt download libgdk-pixbuf2.0-0
-apt download fontconfig
+apt download -o APT::Sandbox::User=root ca-certificates
+apt download -o APT::Sandbox::User=root libgdk-pixbuf2.0-0
+apt download -o APT::Sandbox::User=root fontconfig
 
 # Attempt to build the raspi userland
 cd /root
