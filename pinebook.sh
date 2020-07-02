@@ -288,7 +288,7 @@ sed -i -e 's/^#PermitRootLogin.*/PermitRootLogin yes/' "${basedir}"/kali-${archi
 
 
 echo "Creating image file for ${imagename}.img"
-dd if=/dev/zero of="${basedir}"/${imagename}.img bs=1M count=${size}
+dd if=/dev/zero of="${basedir}"/${imagename}.img bs=1MiB count=${size}
 parted ${imagename}.img --script -- mklabel msdos
 parted ${imagename}.img --script -- mkpart primary ext3 32MiB 100%
 
