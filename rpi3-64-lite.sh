@@ -284,16 +284,6 @@ EOF
 # they go to add something when they are following instructions on a website.
 cp "${basedir}"/../bsp/firmware/rpi/config.txt "${basedir}"/kali-${architecture}/boot/config.txt
 
-cat << EOF >> "${basedir}"/kali-${architecture}/boot/config.txt
-
-# If you would like to enable USB booting on your Pi, uncomment the following line.
-# Boot from microsd card with it, then reboot.
-# Don't forget to comment this back out after using, especially if you plan to use
-# sdcard with multiple machines!
-# NOTE: This ONLY works with the Raspberry Pi 3+
-#program_usb_boot_mode=1
-EOF
-
 # To boot 64bit, these lines *have* to be in config.txt
 cat << EOF >> "${basedir}"/kali-${architecture}/boot/config.txt
 # Tell firmware to go 64bit mode.
