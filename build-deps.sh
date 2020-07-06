@@ -23,7 +23,7 @@ vboot-utils u-boot-tools bc lzma lzop automake autoconf m4 dosfstools rsync \
 schedtool git dosfstools e2fsprogs device-tree-compiler libssl-dev \
 crossbuild-essential-armhf crossbuild-essential-armel crossbuild-essential-arm64 \
 systemd-container libgmp3-dev gawk qpdf make libfl-dev swig libpython2-dev \
-python3-dev gcc-arm-none-eabi cgroup-tools
+python3-dev gcc-arm-none-eabi cgroup-tools lsof
 
 
 echo "Waiting for other software manager to finish..."
