@@ -230,7 +230,7 @@ cd "${basedir}"
 # Kernel section.  If you want to use a custom kernel, or configuration, replace
 # them in this section.
 #git clone --depth 1 https://kernel.googlesource.com/pub/scm/linux/kernel/git/stable/linux.git -b linux-4.19.y "${basedir}"/kali-${architecture}/usr/src/kernel
-git clone --depth 1 https://chromium.googlesource.com/chromiumos/third_party/kernel.git -b chromiumos-4.19 "${basedir}"/kali-${architecture}/usr/src/kernel
+git clone --depth 1 https://chromium.googlesource.com/chromiumos/third_party/kernel.git -b chromeos-4.19 "${basedir}"/kali-${architecture}/usr/src/kernel
 cd "${basedir}"/kali-${architecture}/usr/src/kernel
 cp "${basedir}"/../kernel-configs/veyron-4.19-cros.config .config
 cp .config "${basedir}"/kali-${architecture}/usr/src/veyron.config
