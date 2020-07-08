@@ -62,7 +62,7 @@ architecture="armhf"
 # After generating the rootfs, we set the sources.list to the default settings.
 mirror=http.kali.org
 
-kernel_release="R71-11151.B-chromeos-3.14"
+kernel_release="R83-13020.B-chromeos-4.19"
 
 # Set this to use an http proxy, like apt-cacher-ng, and uncomment further down
 # to unset it.
@@ -229,13 +229,15 @@ cd "${basedir}"
 
 # Kernel section.  If you want to use a custom kernel, or configuration, replace
 # them in this section.
-git clone --depth 1 https://kernel.googlesource.com/pub/scm/linux/kernel/git/stable/linux.git -b linux-4.19.y "${basedir}"/kali-${architecture}/usr/src/kernel
-#git clone --depth 1 https://chromium.googlesource.com/chromiumos/third_party/kernel.git -b chromeos-4.19 "${basedir}"/kali-${architecture}/usr/src/kernel
+# Mainline kernel branch
+#git clone --depth 1 https://kernel.googlesource.com/pub/scm/linux/kernel/git/stable/linux.git -b linux-4.19.y "${basedir}"/kali-${architecture}/usr/src/kernel
+# ChromeOS kernel branch
+git clone --depth 1 https://chromium.googlesource.com/chromiumos/third_party/kernel.git -b release-${release} "${basedir}"/kali-${architecture}/usr/src/kernel
 cd "${basedir}"/kali-${architecture}/usr/src/kernel
 # Mainline kernel config
-cp "${basedir}"/../kernel-configs/veyron-4.19.config .config
+#cp "${basedir}"/../kernel-configs/veyron-4.19.config .config
 # (Currently not working) chromeos-based kernel config
-#cp "${basedir}"/../kernel-configs/veyron-4.19-cros.config .config
+cp "${basedir}"/../kernel-configs/veyron-4.19-cros.config .config
 cp .config "${basedir}"/kali-${architecture}/usr/src/veyron.config
 export ARCH=arm
 # Edit the CROSS_COMPILE variable as needed.
@@ -380,7 +382,7 @@ dd if=/dev/zero of=bootloader.bin bs=512 count=1
 vbutil_kernel --arch arm --pack "${basedir}"/kernel.bin --keyblock /usr/share/vboot/devkeys/kernel.keyblock --signprivate /usr/share/vboot/devkeys/kernel_data_key.vbprivk --version 1 --config cmdline --bootloader bootloader.bin --vmlinuz veyron-kernel
 cd "${basedir}"/kali-${architecture}/usr/src/kernel
 make mrproper
-cp "${basedir}"/../kernel-configs/veyron-4.19.config .config
+cp "${basedir}"/../kernel-configs/veyron-4.19-cros.config .config
 cd "${basedir}"
 
 # Fix up the symlink for building external modules
