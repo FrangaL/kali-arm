@@ -1,15 +1,48 @@
 #!/bin/bash -e
 
+# Check permisions script.
 if [[ $EUID -ne 0 ]]; then
   echo "This script must be run as root"
   exit 1
 fi
 
+# List of installed packages file.
+backup_packages=list-debs-$(date +"%H_%M_%m_%d_%Y")
+# Create a current list of installed packages.
+dpkg --get-selections > ${backup_packages}
+
+# Function create script to clean system packages.
+clean-system () {
+cat << EOF > clean_system${backup_packages//list-debs/}.sh
+#!/bin/bash -e
+
+clean_system () {
+  dpkg --clear-selections
+  dpkg --set-selections < ${backup_packages}
+  apt-get -y dselect-upgrade
+  apt-get -y remove --purge \$(dpkg -l | grep "^rc" | awk '{print \$2}')
+  ${del_arch_i386}
+}
+
+clear
+echo "Use this script under your responsibility"
+read -p "Are you sure you want to remove the packages from the build? [y/n]: " yn
+case \$yn in
+  [Yy]* ) clean_system;;
+  [Nn]* ) break;;
+      * ) echo "Please enter Y or N!";;
+esac
+EOF
+chmod 755 clean_system${backup_packages//list-debs/}.sh
+}
+trap clean-system ERR SIGTERM SIGINT
+
 compilers="crossbuild-essential-arm64 crossbuild-essential-armhf crossbuild-essential-armel gcc-arm-none-eabi"
+libpython2_dev="libexpat1-dev libpython2.7 libpython2.7-dev libpython2.7-minimal libpython2.7-stdlib"
 dependencies="gnupg flex bison gperf build-essential zip curl libncurses5-dev zlib1g-dev \
 parted kpartx debootstrap pixz qemu-user-static abootimg cgpt vboot-kernel-utils vboot-utils \
 u-boot-tools bc lzma lzop automake autoconf m4 dosfstools rsync schedtool git dosfstools e2fsprogs \
-device-tree-compiler libssl-dev systemd-container libgmp3-dev gawk qpdf make libfl-dev swig libpython2-dev \
+device-tree-compiler libssl-dev systemd-container libgmp3-dev gawk qpdf make libfl-dev swig ${libpython2_dev} \
 python3-dev cgroup-tools lsof jetring"
 
 deps="${dependencies} ${compilers}"
@@ -32,9 +65,9 @@ apt-wait () {
   fi
 }
 
+# Update list deb packages.
 apt-wait update
-backup_packages=list-debs-$(date +"%H_%M_%m_%d_%Y")
-dpkg --get-selections > ${backup_packages}
+# Install dependencies.
 apt-wait install_deps
 
 # Install kali-archive-keyring.
@@ -46,6 +79,7 @@ fi
 
 echo "Waiting for other software manager to finish..."
 
+# Install packages i386
 if [ $(arch) == 'x86_64' ]; then
   if [ -z $(dpkg --print-foreign-architectures|grep i386) ]; then
     dpkg --add-architecture i386
@@ -62,27 +96,8 @@ else
   apt-wait install
 fi
 
-cat << EOF > clean_system${backup_packages//list-debs/}.sh
-#!/bin/bash -e
-
-clean_system () {
-  dpkg --clear-selections
-  dpkg --set-selections < ${backup_packages}
-  apt-get -y dselect-upgrade
-  apt-get -y remove --purge \$(dpkg -l | grep "^rc" | awk '{print \$2}')
-  ${del_arch_i386}
-}
-
-clear
-echo "Use this script under your responsibility"
-read -p "Are you sure you want to remove the packages from the build? [y/n]: " yn
-case \$yn in
-  [Yy]* ) clean_system;;
-  [Nn]* ) break;;
-      * ) echo "Please enter Y or N!";;
-esac
-EOF
-chmod 755 clean_system${backup_packages//list-debs/}.sh
+# Create the script to clean the system.
+clean-system
 
 # Function of changing from version number to full number.
 versionToInt(){ local IFS=.;parts=($1);let val=1000000*parts[0]+1000*parts[1]+parts[2];echo $val;}
@@ -93,5 +108,6 @@ debootstrap_min=$(versionToInt 1.0.105)
 
 if [ ${debootstrap_ver} \< ${debootstrap_min} ]; then
   echo "Currently your version of debootstrap does not support the script."
+  echo "The minimum version of debootstrap is 1.0.105"
   exit 1
 fi
