@@ -29,7 +29,7 @@ echo "Use this script under your responsibility"
 read -p "Are you sure you want to remove the packages from the build? [y/n]: " yn
 case \$yn in
   [Yy]* ) clean_system;;
-  [Nn]* ) break;;
+  [Nn]* ) exit;;
       * ) echo "Please enter Y or N!";;
 esac
 EOF
@@ -41,7 +41,7 @@ compilers="crossbuild-essential-arm64 crossbuild-essential-armhf crossbuild-esse
 libpython2_dev="libexpat1-dev libpython2.7 libpython2.7-dev libpython2.7-minimal libpython2.7-stdlib"
 dependencies="gnupg flex bison gperf build-essential zip curl libncurses5-dev zlib1g-dev \
 parted kpartx debootstrap pixz qemu-user-static abootimg cgpt vboot-kernel-utils vboot-utils \
-u-boot-tools bc lzma lzop automake autoconf m4 dosfstools rsync schedtool git dosfstools e2fsprogs \
+u-boot-tools bc lzma lzop automake autoconf m4 rsync schedtool git dosfstools e2fsprogs \
 device-tree-compiler libssl-dev systemd-container libgmp3-dev gawk qpdf make libfl-dev swig ${libpython2_dev} \
 python3-dev cgroup-tools lsof jetring"
 
