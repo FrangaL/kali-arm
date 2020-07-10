@@ -19,7 +19,7 @@ free_space="300"
 # /boot partition in MiB
 bootsize="128"
 # If you have your own preferred mirrors, set them here.
-mirror="http://http.kali.org/kali"
+mirror="http://kali.download/kali"
 # Gitlab url Kali repository
 kaligit="https://gitlab.com/kalilinux"
 # Github raw url
@@ -45,7 +45,7 @@ if [ ! -e "bsp" ]; then
 fi
 
 # Base directory
-basedir=`pwd`/rpi3-nexmon-64-$1
+basedir=`pwd`/rpi3-nexmon-64-"$1"-lite
 # Working directory
 work_dir="${basedir}/kali-${architecture}"
 
@@ -62,7 +62,7 @@ else
 fi
 
 components="main,contrib,non-free"
-arm="abootimg cgpt fake-hwclock ntpdate u-boot-tools"
+arm="fake-hwclock ntpdate u-boot-tools"
 base="apt-transport-https apt-utils console-setup e2fsprogs firmware-linux firmware-realtek firmware-atheros firmware-libertas ifupdown initramfs-tools iw kali-defaults man-db mlocate netcat-traditional net-tools parted pciutils psmisc rfkill screen snmpd snmp sudo tftp tmux unrar usbutils vim wget zerofree"
 tools="aircrack-ng crunch cewl dnsrecon dnsutils ethtool exploitdb hydra john libnfc-bin medusa metasploit-framework mfoc ncrack nmap passing-the-hash proxychains recon-ng sqlmap tcpdump theharvester tor tshark usbutils whois windows-binaries winexe wpscan wireshark"
 services="apache2 atftpd openssh-server openvpn tightvncserver"
@@ -87,7 +87,7 @@ fi
 
 # create the rootfs - not much to modify here, except maybe throw in some more packages if you want.
 debootstrap --foreign --keyring=/usr/share/keyrings/kali-archive-keyring.gpg --include=kali-archive-keyring \
-  --components=${components} --include=${arm// /,} --arch ${architecture} ${suite} ${work_dir} ${mirror}
+  --components=${components} --include=${arm// /,} --arch ${architecture} ${suite} ${work_dir} http://http.kali.org/kali
 
 # systemd-nspawn enviroment
 systemd-nspawn_exec(){
@@ -171,19 +171,22 @@ groupadd -g 1000 kali
 useradd -m -u 1000 -g 1000 -G sudo,audio,bluetooth,cdrom,dialout,dip,lpadmin,netdev,plugdev,scanner,video,kali -s /bin/bash kali
 echo "kali:kali" | chpasswd
 
-apt-get install -y --allow-change-held-packages -o dpkg::options::=--force-confnew ${packages} || apt-get install -y --fix-broken
-apt-get install -y --allow-change-held-packages -o dpkg::options::=--force-confnew ${packages} || apt-get install -y --fix-broken
-apt-get install -y --allow-change-held-packages -o dpkg::options::=--force-confnew ${packages} ${extras} ${tools} || apt-get install -y --fix-broken
-apt-get install -y --allow-change-held-packages -o dpkg::options::=--force-confnew ${packages} ${extras} ${tools} || apt-get install -y --fix-broken
+aptops="--allow-change-held-packages -o dpkg::options::=--force-confnew"
+
+apt-get install -y \$aptops ${packages} || apt-get install -y --fix-broken
+apt-get install -y \$aptops ${packages} || apt-get install -y --fix-broken
+apt-get install -y \$aptops ${packages} ${extras} ${tools} || apt-get install -y --fix-broken
+apt-get install -y \$aptops ${packages} ${extras} ${tools} || apt-get install -y --fix-broken
 
 apt-get -y --allow-change-held-packages --purge autoremove
 
+# Linux console/Keyboard configuration
 echo 'console-common console-data/keymap/policy select Select keymap from full list' | debconf-set-selections
 echo 'console-common console-data/keymap/full select en-latin1-nodeadkeys' | debconf-set-selections
 
 # Copy all services
-cp -p /bsp/services/all/*.service /usr/lib/systemd/system/
-cp -p /bsp/services/rpi/*.service /usr/lib/systemd/system/
+cp -p /bsp/services/all/*.service /etc/systemd/system/
+cp -p /bsp/services/rpi/*.service /etc/systemd/system/
 
 # Re4son's rpi-tft configurator
 wget -q ${githubraw}/Re4son/RPi-Tweaks/master/kalipi-tft-config/kalipi-tft-config -O /usr/bin/kalipi-tft-config
@@ -193,28 +196,30 @@ chmod 755 /usr/bin/kalipi-tft-config
 install -m755 /bsp/scripts/monstart /usr/bin/
 install -m755 /bsp/scripts/monstop /usr/bin/
 
-# Script automatic resize rootfs on boot.
-install -m755 /bsp/scripts/rpi-resizerootfs /usr/sbin/
-
 # Install the kernel packages
 echo "deb http://http.re4son-kernel.com/re4son kali-pi main" > /etc/apt/sources.list.d/re4son.list
 wget -qO- https://re4son-kernel.com/keys/http/archive-key.asc | apt-key add - > /dev/null 2>&1
 apt-get update
-apt-get install -y --allow-change-held-packages -o dpkg::options::=--force-confnew kalipi-kernel kalipi-bootloader kalipi-re4son-firmware kalipi-kernel-headers
+apt-get install -y \$aptops kalipi-kernel kalipi-bootloader kalipi-re4son-firmware kalipi-kernel-headers
 
 # Regenerated the shared-mime-info database on the first boot
 # since it fails to do so properly in a chroot.
 systemctl enable smi-hack
 
+# Copy script rpi-resizerootfs
+install -m755 /bsp/scripts/rpi-resizerootfs /usr/sbin/
+
+# Enable rpi-resizerootfs first boot
 systemctl enable rpi-resizerootfs
+
 # Generate SSH host keys on first run
 systemctl enable regenerate_ssh_host_keys
 
 # Copy in the bluetooth firmware
 install -m644 /bsp/firmware/rpi/BCM43430A1.hcd /lib/firmware/brcm/
 # Copy rule and service
-cp /bsp/bluetooth/rpi/99-com.rules /etc/udev/rules.d/99-com.rules
-cp /bsp/bluetooth/rpi/hciuart.service /usr/lib/systemd/system/hciuart.service
+install -m644 /bsp/bluetooth/rpi/99-com.rules /etc/udev/rules.d/
+install -m644 /bsp/bluetooth/rpi/hciuart.service /etc/systemd/system/
 
 # Enable hciuart for bluetooth device
 install -m755 /bsp/bluetooth/rpi/btuart /usr/bin/
