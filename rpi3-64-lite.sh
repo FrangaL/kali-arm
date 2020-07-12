@@ -365,7 +365,7 @@ mount ${bootp} ${basedir}/root/boot
 
 echo "Rsyncing rootfs into image file"
 rsync -HPavz -q --exclude boot ${work_dir}/ ${basedir}/root/
-rsync -rtx -q ${work_dir}/boot ${basedir}/root/boot
+rsync -rtx -q ${work_dir}/boot ${basedir}/root
 sync
 
 # Umount filesystem
