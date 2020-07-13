@@ -283,9 +283,10 @@ rm -rf /var/lib/apt/lists/*
 rm -rf /var/cache/apt/*.bin
 rm -rf /var/cache/apt/archives/*
 rm -rf /var/cache/debconf/*.data-old
-for logs in `find /var/log -type f`; do > $logs; done
 history -c
 EOF
+#Clear all logs
+for logs in `find $work_dir/var/log -type f`; do > $logs; done
 
 # Disable the use of http proxy in case it is enabled.
 if [ -n "$proxy_url" ]; then
