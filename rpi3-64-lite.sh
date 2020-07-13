@@ -283,6 +283,7 @@ rm -rf /var/lib/apt/lists/*
 rm -rf /var/cache/apt/*.bin
 rm -rf /var/cache/apt/archives/*
 rm -rf /var/cache/debconf/*.data-old
+for logs in `find /var/log -type f`; do > $logs; done
 history -c
 EOF
 
