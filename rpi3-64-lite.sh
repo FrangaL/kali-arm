@@ -3,6 +3,14 @@
 # A trusted Kali Linux image created by Offensive Security - http://www.offensive-security.com
 set -e
 
+# Uncomment to activate debug
+# debug=true
+
+if [ "$debug" = true ]; then
+  exec > >(tee -a -i "${0%.*}.log") 2>&1
+  set -x
+fi
+
 # Architecture
 architecture=${architecture:-"arm64"}
 # Generate a random machine name to be used.
@@ -44,8 +52,10 @@ if [ ! -e "bsp" ]; then
   exit 255
 fi
 
+# Current directory
+current_dir="$(pwd)"
 # Base directory
-basedir=`pwd`/rpi3-nexmon-64-"$1"-lite
+basedir=${current_dir}/rpi3-nexmon-64-"$1"-lite
 # Working directory
 work_dir="${basedir}/kali-${architecture}"
 
@@ -53,8 +63,8 @@ work_dir="${basedir}/kali-${architecture}"
 if [ -e "${basedir}" ]; then
   echo "${basedir} directory exists, will not continue"
   exit 1
-elif [[ $(pwd) =~ [[:space:]] ]]; then
-  echo "The directory "\"$(pwd)"\" contains whitespace. Not supported."
+elif [[ ${current_dir} =~ [[:space:]] ]]; then
+  echo "The directory "\"${current_dir}"\" contains whitespace. Not supported."
   exit 1
 else
   echo "The basedir thinks it is: ${basedir}"
@@ -315,7 +325,7 @@ cp ./bsp/firmware/rpi/config.txt ${work_dir}/boot/config.txt
 sed -i "59,66d" ${work_dir}/boot/config.txt
 
 # To boot 64bit, these lines *have* to be in config.txt
-cat << EOF >> "${basedir}"/kali-${architecture}/boot/config.txt
+cat << EOF >> ${work_dir}/boot/config.txt
 
 [pi2]
 # Pi2 is 64bit only on v1.2+
