@@ -488,11 +488,14 @@ losetup -d ${loopdevice}
 
 
 # Don't pixz on 32bit, there isn't enough memory to compress the images.
-MACHINE_TYPE=`uname -m`
-if [ ${MACHINE_TYPE} == 'x86_64' ]; then
-echo "Compressing ${imagename}.img"
-pixz "${basedir}"/${imagename}.img "${basedir}"/../${imagename}.img.xz
-rm "${basedir}"/${imagename}.img
+if [ $(arch) == 'x86_64' ]; then
+	echo "Compressing ${imagename}.img"
+	rand=$(tr -cd 'A-Za-z0-9' < /dev/urandom | head -c4 ; echo) #Random name group
+	cgcreate -g cpu:/cpulimit-${rand} # Name of group
+	cgset -r cpu.shares=800 cpulimit-${rand} #Max 1024
+	cgset -r cpu.cfs_quota_us=80000 cpulimit-${rand} # Max 10000
+	cgexec -g cpu:cpulimit-${rand} pixz -p 2 "${basedir}"/${imagename}.img ${imagename}.img.xz # -p Number of cpu cores to use
+	cgdelete cpu:/cpulimit-${rand} # Delete group
 fi
 
 # Clean up all the temporary build stuff and remove the directories.
