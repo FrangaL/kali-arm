@@ -96,7 +96,7 @@ fi
 
 # create the rootfs - not much to modify here, except maybe throw in some more packages if you want.
 debootstrap --foreign --keyring=/usr/share/keyrings/kali-archive-keyring.gpg --include=kali-archive-keyring \
-  --components=${components} --include=${arm// /,} --arch ${architecture} ${suite} ${work_dir} http://http.kali.org/kali
+  --components=${components} --arch ${architecture} ${suite} ${work_dir} http://http.kali.org/kali
 
 # systemd-nspawn enviroment
 systemd-nspawn_exec(){
