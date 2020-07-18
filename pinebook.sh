@@ -206,13 +206,10 @@ echo 'console-common console-data/keymap/full select en-latin1-nodeadkeys' | deb
 
 # Copy all services
 cp -p /bsp/services/all/*.service /etc/systemd/system/
-cp -p /bsp/services/pinebook/*.service /etc/systemd/system/
 
 # Regenerated the shared-mime-info database on the first boot
 # since it fails to do so properly in a chroot.
 systemctl enable smi-hack
-# Compile the wifi driver on first boot
-systemctl enable pinebook-wifi-dkms
 
 # Generate SSH host keys on first run
 systemctl enable regenerate_ssh_host_keys
@@ -238,6 +235,38 @@ install -m644 /bsp/xorg/50-pine64-pinebook.touchpad.conf /etc/X11/xorg.conf.d/
 # Set the terminus font for a bit nicer display.
 sed -i -e 's/FONTFACE=.*/FONTFACE="Terminus"/' /etc/default/console-setup
 sed -i -e 's/FONTSIZE=.*/FONTSIZE="6x12"/' /etc/default/console-setup
+
+# Add wifi firmware and driver, and attempt to build, so we don't need to build on
+# first boot, which causes issues if people log in too soon...
+# Pull in the wifi and bluetooth firmware from anarsoul's git repository.
+git clone https://github.com/anarsoul/rtl8723bt-firmware
+cd rtl8723bt-firmware
+cp -a rtl_bt ${work_dir}/lib/firmware/
+
+# Need to package up the wifi driver (it's a Realtek 8723cs, with the usual
+# Realtek driver quality) still, so for now, we clone it and then build it
+# inside the chroot.
+cd /usr/src/
+git clone https://github.com/icenowy/rtl8723cs
+cat << __EOF__ > /usr/src/rtl8723cs/dkms.conf
+PACKAGE_NAME="rtl8723cs"
+PACKAGE_VERSION="2020.02.27"
+
+AUTOINSTALL="yes"
+
+CLEAN[0]="make clean"
+
+MAKE[0]="'make' -j4 ARCH=arm64 KVER=\${kernelver} KSRC=/lib/modules/\${kernelver}/build/"
+
+BUILT_MODULE_NAME[0]="8723cs"
+
+BUILT_MODULE_LOCATION[0]=""
+
+DEST_MODULE_LOCATION[0]="/kernel/drivers/net/wireless"
+__EOF__
+
+cd rtl8723cs
+dkms install rtl8723cs/2020.02.27 -k $(ls /lib/modules/)
 
 rm -f /usr/sbin/policy-rc.d
 unlink /usr/sbin/invoke-rc.d
@@ -294,35 +323,6 @@ CHROMIUM_FLAGS="\
 "
 EOF
 
-cd ${current_dir}
-
-# Pull in the wifi and bluetooth firmware from anarsoul's git repository.
-git clone https://github.com/anarsoul/rtl8723bt-firmware
-cd rtl8723bt-firmware
-cp -a ${current_dir}/rtl8723bt-firmware/rtl_bt ${work_dir}/lib/firmware/
-cd ${current_dir}
-
-# Need to package up the wifi driver (it's a Realtek 8723cs, with the usual
-# Realtek driver quality) still, so for now, we clone it and then build it
-# inside the chroot.
-cd ${work_dir}/usr/src/
-git clone https://github.com/icenowy/rtl8723cs
-cat << EOF > "${basedir}"/kali-${architecture}/usr/src/rtl8723cs/dkms.conf
-PACKAGE_NAME="rtl8723cs"
-PACKAGE_VERSION="2020.02.27"
-
-AUTOINSTALL="yes"
-
-CLEAN[0]="make clean"
-
-MAKE[0]="'make' -j4 ARCH=arm64 KVER=\${kernelver} KSRC=/lib/modules/\${kernelver}/build/"
-
-BUILT_MODULE_NAME[0]="8723cs"
-
-BUILT_MODULE_LOCATION[0]=""
-
-DEST_MODULE_LOCATION[0]="/kernel/drivers/net/wireless"
-EOF
 cd ${current_dir}
 
 # Calculate the space to create the image.
