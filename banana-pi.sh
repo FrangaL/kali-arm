@@ -100,7 +100,7 @@ debootstrap --foreign --keyring=/usr/share/keyrings/kali-archive-keyring.gpg --i
 
 # systemd-nspawn enviroment
 systemd-nspawn_exec(){
-  qemu_bin=/usr/bin/qemu-aarch64-static
+  qemu_bin=/usr/bin/qemu-arm-static
   LANG=C systemd-nspawn -q --bind-ro ${qemu_bin} -M ${machine} -D ${work_dir} "$@"
 }
 
