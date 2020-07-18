@@ -286,8 +286,8 @@ raw_size=$((${free_space}+${rootsize}+${bootstart}))
 
 # Create the disk and partition it
 dd if=/dev/zero of=${basedir}/${imagename}.img bs=1KiB count=0 seek=${raw_size} && sync
-parted ${imagename}.img --script -- mklabel msdos
-parted ${imagename}.img --script -- mkpart primary ext3 1MiB 100%
+parted "${basedir}"/${imagename}.img --script -- mklabel msdos
+parted "${basedir}"/${imagename}.img --script -- mkpart primary ext3 1MiB 100%
 
 # Set the partition variables
 loopdevice=`losetup -f --show "${basedir}"/${imagename}.img`
