@@ -294,9 +294,9 @@ if [[ "$resolution" == "1366x768" ]]; then
     xrandr --output HDMI-1 --mode  1360x768_60.00
 fi
 EOF
-chmod 755 ${work_dir}}/usr/local/bin/xrandrscript.sh
+chmod 755 ${work_dir}/usr/local/bin/xrandrscript.sh
 
-mkdir -p ${work_dir}}/usr/share/lightdm/lightdm.conf.d/
+mkdir -p ${work_dir}/usr/share/lightdm/lightdm.conf.d/
 cat << EOF > ${work_dir}/usr/share/lightdm/lightdm.conf.d/60-xrandrscript.conf
 [SeatDefaults]
 display-setup-script=/usr/local/bin/xrandrscript.sh
@@ -336,11 +336,11 @@ mount ${rootp} ${basedir}/root
 # Let's get the blkid of the rootpartition, and sed it out in the extlinux.conf file.
 # 0, means only replace the first instance.  This does mean that the second instance won't be replaced, but most people aren't going to use that(fingers crossed)
 # We also set it to rw instead of ro, because for whatever reason, it's not remounting rw when the initramfs->rootfs switch happens
-sed -i -e "0,/root=.*/s//root=UUID=$(blkid -s UUID -o value ${rootp}) rw quiet/g" ${work_dir}}/boot/extlinux/extlinux.conf
+sed -i -e "0,/root=.*/s//root=UUID=$(blkid -s UUID -o value ${rootp}) rw quiet/g" ${work_dir}/boot/extlinux/extlinux.conf
 
 # Create an fstab so that we don't mount / read-only.
 UUID=$(blkid -s UUID -o value ${rootp})
-echo "UUID=$UUID /               ext3    errors=remount-ro 0       1" >> ${work_dir}}/etc/fstab
+echo "UUID=$UUID /               ext3    errors=remount-ro 0       1" >> ${work_dir}/etc/fstab
 
 echo "Rsyncing rootfs into image file"
 rsync -HPavz -q ${work_dir}/ ${basedir}/root/
