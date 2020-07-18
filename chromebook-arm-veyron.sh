@@ -402,7 +402,7 @@ cat << __EOF__ > ${work_dir}/usr/src/kernel/arch/arm/boot/kernel-veyron.its
     };
 };
 __EOF__
-cd ${work_dir}}/usr/src/kernel/arch/arm/boot
+cd ${work_dir}/usr/src/kernel/arch/arm/boot
 mkimage -D "-I dts -O dtb -p 2048" -f kernel-veyron.its veyron-kernel
 
 # BEHOLD THE MAGIC OF PARTUUID/PARTNROFF
@@ -413,7 +413,7 @@ echo 'noinitrd console=tty1 quiet root=PARTUUID=%U/PARTNROFF=1 rootwait rw lsm.m
 dd if=/dev/zero of=bootloader.bin bs=512 count=1
 
 vbutil_kernel --arch arm --pack "${basedir}"/kernel.bin --keyblock /usr/share/vboot/devkeys/kernel.keyblock --signprivate /usr/share/vboot/devkeys/kernel_data_key.vbprivk --version 1 --config cmdline --bootloader bootloader.bin --vmlinuz veyron-kernel
-cd ${work_dir}}/usr/src/kernel
+cd ${work_dir}/usr/src/kernel
 make mrproper
 cp ${basedir}/../kernel-configs/veyron-4.19.config .config
 #cp ${basedir}/../kernel-configs/veyron-4.19-cros.config .config
