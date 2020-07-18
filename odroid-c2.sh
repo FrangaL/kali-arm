@@ -28,7 +28,7 @@ free_space="300"
 # /boot partition in MiB
 bootsize="128"
 # If you have your own preferred mirrors, set them here.
-mirror="http://kali.download/kali"
+mirror="http://http.kali.org/kali"
 # Gitlab url Kali repository
 kaligit="https://gitlab.com/kalilinux"
 # Github raw url
