@@ -285,6 +285,7 @@ rootsize=$((${free_space}+${rootsize//KiB/ }/1000*2*1024/2))
 raw_size=$((${free_space}+${rootsize}+${bootstart}))
 
 # Create the disk and partition it
+echo "Creating image file ${imagename}.img"
 dd if=/dev/zero of=${basedir}/${imagename}.img bs=1KiB count=0 seek=${raw_size} && sync
 parted "${basedir}"/${imagename}.img --script -- mklabel msdos
 parted "${basedir}"/${imagename}.img --script -- mkpart primary ext3 1MiB 100%
@@ -329,6 +330,7 @@ losetup -d ${loopdevice}
 # Don't pixz on 32bit, there isn't enough memory to compress the images.
 if [ $(arch) == 'x86_64' ]; then
   echo "Compressing ${imagename}.img"
+  cd ${current_dir}
   rand=$(tr -cd 'A-Za-z0-9' < /dev/urandom | head -c4 ; echo) # Randowm name group
   cgcreate -g cpu:/cpulimit-${rand} # Name of group
   cgset -r cpu.shares=800 cpulimit-${rand} # Max 1024
