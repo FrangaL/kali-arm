@@ -263,10 +263,10 @@ cd ${basedir}
 # Kernel section.  If you want to use a custom kernel, or configuration, replace
 # them in this section.
 # Mainline kernel branch
-git clone --depth 1 https://kernel.googlesource.com/pub/scm/linux/kernel/git/stable/linux.git -b linux-4.19.y ${work_dir}}/usr/src/kernel
+git clone --depth 1 https://kernel.googlesource.com/pub/scm/linux/kernel/git/stable/linux.git -b linux-4.19.y ${work_dir}/usr/src/kernel
 # ChromeOS kernel branch
 #git clone --depth 1 https://chromium.googlesource.com/chromiumos/third_party/kernel.git -b release-${kernel_release} ${work_dir}/usr/src/kernel
-cd ${work_dir}}/usr/src/kernel
+cd ${work_dir}/usr/src/kernel
 # Mainline kernel config
 cp ${basedir}/../kernel-configs/veyron-4.19.config .config
 # (Currently not working) chromeos-based kernel config
