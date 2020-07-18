@@ -210,6 +210,12 @@ echo 'console-common console-data/keymap/full select en-latin1-nodeadkeys' | deb
 cp -p /bsp/services/all/*.service /etc/systemd/system/
 cp -p /bsp/services/odroid-c2/*.service /etc/systemd/system/
 
+# For some reason the latest modesetting driver (part of xorg server)
+# seems to cause a lot of jerkiness.  Using the fbdev driver is not
+# ideal but it's far less frustrating to work with.
+mkdir -p /etc/X11/xorg.conf.d
+cp -p /bsp/xorg/20-meson.conf /etc/X11/xorg.conf.d/
+
 # Run u-boot-update to generate the extlinux.conf file - we will replace this later, via sed, to point to the correct root partition (hopefully?)
 u-boot-update
 
@@ -270,18 +276,14 @@ deb http://http.kali.org/kali kali-rolling main non-free contrib
 deb-src http://http.kali.org/kali kali-rolling main non-free contrib
 EOF
 
-# For some reason the latest modesetting driver (part of xorg server)
-# seems to cause a lot of jerkiness.  Using the fbdev driver is not
-# ideal but it's far less frustrating to work with.
-mkdir -p ${work_dir}/etc/X11/xorg.conf.d
-cp "${basedir}"/bsp/xorg/20-meson.conf ${work_dir}}/etc/X11/xorg.conf.d/
+
 
 # 1366x768 is sort of broken on the ODROID-C2, not sure where the issue is, but
 # we can work around it by setting the resolution to 1360x768.
 # This requires 2 files, a script and then something for lightdm to use.
 # I do not have anything set up for the console though, so that's still broken for now.
-mkdir -p ${work_dir}}/usr/local/bin
-cat << 'EOF' > ${work_dir}}/usr/local/bin/xrandrscript.sh
+mkdir -p ${work_dir}/usr/local/bin
+cat << 'EOF' > ${work_dir}/usr/local/bin/xrandrscript.sh
 #!/usr/bin/env bash
 
 resolution=$(xdpyinfo | awk '/dimensions:/ { print $2; exit }')
