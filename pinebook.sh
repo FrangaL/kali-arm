@@ -243,12 +243,39 @@ git clone https://github.com/anarsoul/rtl8723bt-firmware
 cd rtl8723bt-firmware
 cp -a rtl_bt /lib/firmware/
 
+# We need to fake what kernel version we're using because we're in a chroot
+# and dkms looks at the running kernel, not the kernel that is installed.
+# I'm sure I just need to read the man page, but that's less fun than
+# reusing this hack.
+cat << '_EOF_' > /root/fakeuname.c
+#define _GNU_SOURCE
+#include <unistd.h>
+#include <sys/syscall.h>
+#include <sys/types.h>
+#include <sys/utsname.h>
+#include <stdio.h>
+#include <string.h>
+/* Fake uname -r because we are in a chroot:
+https://gist.github.com/DamnedFacts/5239593
+*/
+int uname(struct utsname *buf)
+{
+ int ret;
+ ret = syscall(SYS_uname, buf);
+ strcpy(buf->release, "5.7.0-kali2-arm64");
+ strcpy(buf->machine, "aarch64");
+ return ret;
+}
+_EOF_
+
+cd /root && gcc -Wall -shared -o libfakeuname.so fakeuname.c
+
 # Need to package up the wifi driver (it's a Realtek 8723cs, with the usual
 # Realtek driver quality) still, so for now, we clone it and then build it
 # inside the chroot.
 cd /usr/src/
 git clone https://github.com/icenowy/rtl8723cs rtl8723cs-2020.02.27
-cat << __EOF__ > /usr/src/rtl8723cs-2020.02.27/dkms.conf.orig
+cat << __EOF__ > /usr/src/rtl8723cs-2020.02.27/dkms.conf
 PACKAGE_NAME="rtl8723cs"
 PACKAGE_VERSION="2020.02.27"
 
@@ -265,27 +292,8 @@ BUILT_MODULE_LOCATION[0]=""
 DEST_MODULE_LOCATION[0]="/kernel/drivers/net/wireless"
 __EOF__
 
-cat << __EOF__ > /usr/src/rtl8723cs-2020.02.27/dkms.conf
-PACKAGE_NAME="rtl8723cs"
-PACKAGE_VERSION="2020.02.27"
-
-AUTOINSTALL="yes"
-
-CLEAN[0]="make clean"
-
-MAKE[0]="'make' -j4 ARCH=arm64 KVER=$(ls /lib/modules/) KSRC=/lib/modules/$(ls /lib/modules/)/build/"
-
-BUILD_MODULE_NAME[0]=""
-
-DEST_MODULE_LOCATION[0]="/kernel/drivers/net/wireless"
-__EOF__
 cd /usr/src/rtl8723cs-2020.02.27
-dkms install rtl8723cs/2020.02.27 -k $(ls /lib/modules/)
-
-# Two configs because we want to build against only the version in the chroot...
-# No idea if this will work, but we're gonna try it.
-mv /usr/src/rtl8723cs-2020.02.27/dkms.conf.orig /usr/src/rtl8723cs-2020.02.27/dkms.conf
-
+LD_PRELOAD=/root/libfakeuname.so dkms install rtl8723cs/2020.02.27 -k $(ls /lib/modules/)
 
 rm -f /usr/sbin/policy-rc.d
 unlink /usr/sbin/invoke-rc.d
