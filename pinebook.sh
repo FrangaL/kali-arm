@@ -247,7 +247,7 @@ cp -a rtl_bt /lib/firmware/
 # Realtek driver quality) still, so for now, we clone it and then build it
 # inside the chroot.
 cd /usr/src/
-git clone https://github.com/icenowy/rtl8723cs
+git clone https://github.com/icenowy/rtl8723cs rtl8723cs-2020.02.07
 cat << __EOF__ > /usr/src/rtl8723cs/dkms.conf
 PACKAGE_NAME="rtl8723cs"
 PACKAGE_VERSION="2020.02.27"
