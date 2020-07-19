@@ -265,7 +265,7 @@ BUILT_MODULE_LOCATION[0]=""
 DEST_MODULE_LOCATION[0]="/kernel/drivers/net/wireless"
 __EOF__
 
-cd rtl8723cs
+cd rtl8723cs-2020.02.07
 dkms install rtl8723cs/2020.02.27 -k $(ls /lib/modules/)
 
 rm -f /usr/sbin/policy-rc.d
