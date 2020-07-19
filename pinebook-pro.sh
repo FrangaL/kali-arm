@@ -399,7 +399,7 @@ rsync -HPavz -q ${work_dir}/ ${basedir}/root/
 
 # Nick the u-boot from Manjaro ARM to see if my compilation was somehow
 # screwing things up.
-cp ${current_dir}/bsp/bootloader/pinebook-pro/idbloader.img ${current_dir}/bsp/bootloader/pinebook-pro/trust.img ${current_dir}/bsp/bootloader/pinebook-pro/uboot.img ${work_dir}/root/boot/
+cp ${current_dir}/bsp/bootloader/pinebook-pro/idbloader.img ${current_dir}/bsp/bootloader/pinebook-pro/trust.img ${current_dir}/bsp/bootloader/pinebook-pro/uboot.img ${basedir}/root/boot/
 dd if=${current_dir}/bsp/bootloader/pinebook-pro/idbloader.img of=${loopdevice} seek=64 conv=notrunc
 dd if=${current_dir}/bsp/bootloader/pinebook-pro/uboot.img of=${loopdevice} seek=16384 conv=notrunc
 dd if=${current_dir}/bsp/bootloader/pinebook-pro/trust.img of=${loopdevice} seek=24576 conv=notrunc
