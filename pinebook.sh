@@ -248,7 +248,7 @@ cp -a rtl_bt /lib/firmware/
 # inside the chroot.
 cd /usr/src/
 git clone https://github.com/icenowy/rtl8723cs rtl8723cs-2020.02.27
-cat << __EOF__ > /usr/src/rtl8723cs-2020.02.27/dkms.conf
+cat << __EOF__ > /usr/src/rtl8723cs-2020.02.27/dkms.conf.orig
 PACKAGE_NAME="rtl8723cs"
 PACKAGE_VERSION="2020.02.27"
 
@@ -265,8 +265,27 @@ BUILT_MODULE_LOCATION[0]=""
 DEST_MODULE_LOCATION[0]="/kernel/drivers/net/wireless"
 __EOF__
 
+cat << __EOF__ > /usr/src/rtl8723cs-2020.02.27/dkms.conf
+PACKAGE_NAME="rtl8723cs"
+PACKAGE_VERSION="2020.02.27"
+
+AUTOINSTALL="yes"
+
+CLEAN[0]="make clean"
+
+MAKE[0]="'make' -j4 ARCH=arm64 KVER=$(ls /lib/modules/) KSRC=/lib/modules/$(ls /lib/modules/)/build/"
+
+BUILD_MODULE_NAME[0]=""
+
+DEST_MODULE_LOCATION[0]="/kernel/drivers/net/wireless"
+__EOF__
 cd /usr/src/rtl8723cs-2020.02.27
 dkms install rtl8723cs/2020.02.27 -k $(ls /lib/modules/)
+
+# Two configs because we want to build against only the version in the chroot...
+# No idea if this will work, but we're gonna try it.
+mv /usr/src/rtl8723cs-2020.02.27/dkms.conf.orig /usr/src/rtl8723cs-2020.02.27/dkms.conf
+
 
 rm -f /usr/sbin/policy-rc.d
 unlink /usr/sbin/invoke-rc.d
