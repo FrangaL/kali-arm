@@ -241,7 +241,7 @@ sed -i -e 's/FONTSIZE=.*/FONTSIZE="6x12"/' /etc/default/console-setup
 # Pull in the wifi and bluetooth firmware from anarsoul's git repository.
 git clone https://github.com/anarsoul/rtl8723bt-firmware
 cd rtl8723bt-firmware
-cp -a rtl_bt ${work_dir}/lib/firmware/
+cp -a rtl_bt /lib/firmware/
 
 # Need to package up the wifi driver (it's a Realtek 8723cs, with the usual
 # Realtek driver quality) still, so for now, we clone it and then build it
