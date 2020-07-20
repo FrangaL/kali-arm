@@ -207,7 +207,7 @@ install -m755 /bsp/scripts/rpi-resizerootfs /usr/sbin/
 # Add rpi userland to the path (e.g. vcgencmd) 
 install -m644 /bsp/configs/raspi-userland.conf /etc/ld.so.conf.d/
 install -m644 /bsp/configs/vc.sh /etc/profile.d/vc.sh
-install -m644/bsp/udev/99-vchiq-permissions.rules /etc/udev/rules.d/
+install -m644 /bsp/udev/99-vchiq-permissions.rules /etc/udev/rules.d/
 
 # Bluetooth enabling
 install -m644 /bsp/bluetooth/rpi/99-com.rules /etc/udev/rules.d/
