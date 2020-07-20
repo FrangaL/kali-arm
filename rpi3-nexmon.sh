@@ -201,7 +201,7 @@ apt-get install --yes --allow-change-held-packages -o dpkg::options::=--force-co
 apt-get --yes --allow-change-held-packages autoremove
 
 install -m644 /bsp/services/all/*.service /etc/systemd/system/
-install -m644 /bsp/services/rpi/*.service /etc/lib/systemd/system/
+install -m644 /bsp/services/rpi/*.service /etc/systemd/system/
 
 # Re4son's rpi-tft configurator
 wget -q ${githubraw}/Re4son/RPi-Tweaks/master/kalipi-tft-config/kalipi-tft-config -O /usr/bin/kalipi-tft-config
