@@ -243,33 +243,6 @@ git clone https://github.com/anarsoul/rtl8723bt-firmware
 cd rtl8723bt-firmware
 cp -a rtl_bt /lib/firmware/
 
-# We need to fake what kernel version we're using because we're in a chroot
-# and dkms looks at the running kernel, not the kernel that is installed.
-# I'm sure I just need to read the man page, but that's less fun than
-# reusing this hack.
-cat << '_EOF_' > /root/fakeuname.c
-#define _GNU_SOURCE
-#include <unistd.h>
-#include <sys/syscall.h>
-#include <sys/types.h>
-#include <sys/utsname.h>
-#include <stdio.h>
-#include <string.h>
-/* Fake uname -r because we are in a chroot:
-https://gist.github.com/DamnedFacts/5239593
-*/
-int uname(struct utsname *buf)
-{
- int ret;
- ret = syscall(SYS_uname, buf);
- strcpy(buf->release, "5.7.0-kali2-arm64");
- strcpy(buf->machine, "aarch64");
- return ret;
-}
-_EOF_
-
-cd /root && gcc -Wall -shared -o libfakeuname.so fakeuname.c
-
 # Need to package up the wifi driver (it's a Realtek 8723cs, with the usual
 # Realtek driver quality) still, so for now, we clone it and then build it
 # inside the chroot.
@@ -293,7 +266,7 @@ DEST_MODULE_LOCATION[0]="/kernel/drivers/net/wireless"
 __EOF__
 
 cd /usr/src/rtl8723cs-2020.02.27
-LD_PRELOAD=/root/libfakeuname.so dkms install rtl8723cs/2020.02.27 -k $(ls /lib/modules/)
+dkms install rtl8723cs/2020.02.27 -k 5.7.0-kali2-arm64
 
 rm -f /usr/sbin/policy-rc.d
 unlink /usr/sbin/invoke-rc.d
