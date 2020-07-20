@@ -263,7 +263,7 @@ rm -rf /root/userland
 cp /etc/skel/.bashrc /root/.bashrc
 
 # Set a REGDOMAIN.  This needs to be done or wireless doesn't work correctly on the RPi 3B+
-sed -i -e 's/REGDOM.*/REGDOMAIN=00/g' "${basedir}"/kali-${architecture}/etc/default/crda
+sed -i -e 's/REGDOM.*/REGDOMAIN=00/g' /etc/default/crda
 
 # Enable login over serial
 echo "T0:23:respawn:/sbin/agetty -L ttyAMA0 115200 vt100" >> /etc/inittab
