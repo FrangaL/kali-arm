@@ -401,10 +401,13 @@ sync
 touch "${basedir}"/root/boot/ssh
 
 sync
+# Unmount filesystems
 umount -l ${bootp}
 umount -l ${rootp}
-kpartx -dv ${loopdevice}
-losetup -d ${loopdevice}
+
+# Remove loop devices
+losetup -d ${bootp}
+losetup -d ${rootp}
 
 if [ $(arch) == 'x86_64' ]; then
   echo "Compressing ${imagename}.img"
