@@ -356,10 +356,13 @@ touch "${basedir}"/root/boot/ssh
 sync
 # sleep for 10 seconds, to let the cache settle after sync.
 sleep 10
+# Unmount filesystems
 umount -l ${bootp}
 umount -l ${rootp}
-kpartx -dv ${loopdevice}
-losetup -d ${loopdevice}
+
+# Remove loop devices
+losetup -d ${bootp}
+losetup -d ${rootp}
 
 if [ $(arch) == 'x86_64' ]; then
   echo "Compressing ${imagename}.img"
