@@ -215,6 +215,8 @@ install -m644 /bsp/bluetooth/rpi/hciuart.service /etc/systemd/system/
 install -m644 /bsp/bluetooth/rpi/btuart /usr/bin/
 
 # Copy in the bluetooth firmware
+# And mkdir first because for some reason it isn't being created by install?
+mkdir /lib/firmware/brcm
 install -m644 /bsp/firmware/rpi/BCM43430A1.hcd /lib/firmware/brcm/
 
 # Re4son's rpi-tft configurator
