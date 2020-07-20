@@ -499,8 +499,8 @@ raw_size=$((${free_space}+${rootsize}+${bootstart}))
 echo "Creating image file ${imagename}.img"
 dd if=/dev/zero of="${basedir}"/${imagename}.img bs=1KiB count=0 seek=${raw_size} && sync
 parted "${basedir}"/${imagename}.img --script -- mklabel msdos
-parted "${basedir}"/${imagename}.img --script -- mkpart primary fat32 1MiB ${bootstart}KiB
-parted "${basedir}"/${imagename}.img --script -- mkpart primary ext3 ${bootend} 100%
+parted "${basedir}"/${imagename}.img --script -- mkpart primary fat32 32MiB ${bootstart}KiB
+parted "${basedir}"/${imagename}.img --script -- mkpart primary ext3 ${bootend}KiB 100%
 
 # Set the partition variables
 loopdevice=`losetup -f --show "${basedir}"/${imagename}.img`
