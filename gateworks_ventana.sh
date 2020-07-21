@@ -270,7 +270,7 @@ subnet 10.10.10.0 netmask 255.255.255.0 {
 }
 EOF
 
-cat << EOF > ${work_dir}/usb-gadget-setup
+echo | sed -e '/^#/d ; /^ *$/d' | systemd-nspawn_exec << EOF
 #Setup Serial Port
 #echo 'g_cdc' >> /etc/modules
 #echo '\n# USB Gadget Serial console port\nttyGS0' >> /etc/securetty
@@ -279,11 +279,7 @@ cat << EOF > ${work_dir}/usb-gadget-setup
 echo 'g_ether' >> /etc/modules
 sed -i 's/INTERFACESv4=""/INTERFACESv4="usb0"/g' /etc/default/isc-dhcp-server
 systemctl enable isc-dhcp-server
-rm -rf /usb-gadget-setup
 EOF
-
-chmod 755 ${work_dir}/usb-gadget-setup
-systemd-nspawn_exec /usb-gadget-setup
 
 # Clean system
 systemd-nspawn_exec << EOF
