@@ -354,7 +354,7 @@ wget 'https://github.com/armbian/firmware/blob/master/imx/sdma/sdma-imx6q.bin?ra
 # Not using extlinux.conf just yet...
 # Ensure we don't have root=/dev/sda3 in the extlinux.conf which comes from running u-boot-menu in a cross chroot.
 #sed -i -e 's/append.*/append root=\/dev\/mmcblk0p1 rootfstype=ext3 video=mxcfb0:dev=hdmi,1920x1080M@60,if=RGB24,bpp=32 console=ttymxc0,115200n8 console=tty1 consoleblank=0 rw rootwait/g' ${work_dir}/boot/extlinux/extlinux.conf
-install -m644 /bsp/bootloader/ventana/6x_bootscript-ventana.script ${work_dir}/boot/6x_bootscript-ventana.script
+install -m644 ${current_dir}/bsp/bootloader/ventana/6x_bootscript-ventana.script ${work_dir}/boot/6x_bootscript-ventana.script
 mkimage -A arm -T script -C none -d ${work_dir}/boot/6x_bootscript-ventana.script ${work_dir}/boot/6x_bootscript-ventana
 
 # Calculate the space to create the image.
