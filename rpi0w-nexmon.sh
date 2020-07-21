@@ -215,6 +215,7 @@ install -m644 /bsp/services/rpi/*.service /etc//systemd/system/
 install -m644 /bsp/bluetooth/rpi/50-bluetooth-hci-auto-poweron.rules /etc/udev/rules.d/
 install -m644 /bsp/bluetooth/rpi/pi-bluetooth+re4son_2.2_all.deb /root/
 # Copy in the bluetooth firmware
+mkdir -p /lib/firmware/brcm/
 install -m644 /bsp/firmware/rpi/BCM43430A1.hcd /lib/firmware/brcm/
 
 # Enable login over serial
