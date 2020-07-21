@@ -16,7 +16,7 @@ machine=$(tr -cd 'A-Za-z0-9' < /dev/urandom | head -c16 ; echo)
 # Custom hostname variable
 hostname=${2:-kali}
 # Custom image file name variable - MUST NOT include .img at the end.
-imagename=${3:-kali-linux-$1-rpi3-nexmon-64-lite}
+imagename=${3:-kali-linux-$1-bbb}
 # Suite to use, valid options are:
 # kali-rolling, kali-dev, kali-bleeding-edge, kali-dev-only, kali-experimental, kali-last-snapshot
 suite=${suite:-"kali-rolling"}
@@ -53,7 +53,7 @@ fi
 # Current directory
 current_dir="$(pwd)"
 # Base directory
-basedir=${current_dir}/rpi3-nexmon-64-"$1"-lite
+basedir=${current_dir}/bbb-"$1"
 # Working directory
 work_dir="${basedir}/kali-${architecture}"
 
@@ -211,7 +211,6 @@ systemctl enable ssh
 
 # Resize FS on first run (hopefully)
 systemctl enable rpiwiggle
-
 
 cd /root
 apt download -o APT::Sandbox::User=root ca-certificates 2>/dev/null
