@@ -26,8 +26,12 @@ suite=${suite:-"kali-rolling"}
 free_space="300"
 # /boot partition in MiB
 bootsize="128"
+# Select compression, xz or none
+compress="xz"
+# Choose filesystem format to format ( ext3 or ext4 )
+fstype="ext3"
 # If you have your own preferred mirrors, set them here.
-mirror="http://kali.download/kali"
+mirror="http://http.kali.org/kali"
 # Gitlab url Kali repository
 kaligit="https://gitlab.com/kalilinux"
 # Github raw url
@@ -42,7 +46,7 @@ fi
 # Pass version number
 if [[ $# -eq 0 ]] ; then
   echo "Please pass version number, e.g. $0 2.0, and (if you want) a hostname, default is kali"
-  exit 0
+  exit 1
 fi
 
 # Check exist bsp directory.
@@ -78,7 +82,7 @@ tools="aircrack-ng crunch cewl dnsrecon dnsutils ethtool exploitdb hydra john li
 services="apache2 atftpd openssh-server openvpn tightvncserver"
 extras="bluez bluez-firmware i2c-tools python3-configobj python3-pip python3-requests python3-rpi.gpio python3-smbus triggerhappy wpasupplicant"
 
-packages="${base} ${services}"
+packages="${arm} ${base} ${services}"
 
 # Automatic configuration to use an http proxy, such as apt-cacher-ng.
 # You can turn off automatic settings by uncommenting apt_cacher=off.
@@ -97,11 +101,17 @@ fi
 
 # create the rootfs - not much to modify here, except maybe throw in some more packages if you want.
 debootstrap --foreign --keyring=/usr/share/keyrings/kali-archive-keyring.gpg --include=kali-archive-keyring \
-  --components=${components} --include=${arm// /,} --arch ${architecture} ${suite} ${work_dir} http://http.kali.org/kali
+  --components=${components} --arch ${architecture} ${suite} ${work_dir} http://http.kali.org/kali
+
+# Detect architecture and define variable
+if [ ${architecture} = "arm64" ]; then
+        qemu_bin="/usr/bin/qemu-aarch64-static"
+elif [ ${architecture} = "armhf" ] || [ ${architecture} = "armel" ]; then
+        qemu_bin="/usr/bin/qemu-arm-static"
+fi
 
 # systemd-nspawn enviroment
 systemd-nspawn_exec(){
-  qemu_bin=/usr/bin/qemu-aarch64-static
   LANG=C systemd-nspawn -q --bind-ro ${qemu_bin} -M ${machine} -D ${work_dir} "$@"
 }
 
@@ -226,7 +236,7 @@ systemctl enable rpi-resizerootfs
 systemctl enable regenerate_ssh_host_keys
 
 # Copy in the bluetooth firmware
-install -m644 /bsp/firmware/rpi/BCM43430A1.hcd /lib/firmware/brcm/
+install -m644 /bsp/firmware/rpi/BCM43430A1.hcd -D /lib/firmware/brcm/BCM43430A1.hcd
 # Copy rule and service
 install -m644 /bsp/bluetooth/rpi/99-com.rules /etc/udev/rules.d/
 install -m644 /bsp/bluetooth/rpi/hciuart.service /etc/systemd/system/
@@ -306,7 +316,7 @@ fi
 
 # Create cmdline.txt file
 cat << EOF > ${work_dir}/boot/cmdline.txt
-dwc_otg.fiq_fix_enable=2 console=ttyAMA0,115200 kgdboc=ttyAMA0,115200 console=tty1 root=/dev/mmcblk0p2 rootfstype=ext3 rootwait rootflags=noload net.ifnames=0
+dwc_otg.fiq_fix_enable=2 console=ttyAMA0,115200 kgdboc=ttyAMA0,115200 console=tty1 root=/dev/mmcblk0p2 rootfstype=$fstype rootwait rootflags=noload net.ifnames=0
 EOF
 
 # systemd doesn't seem to be generating the fstab properly for some people, so
@@ -315,7 +325,7 @@ cat << EOF > ${work_dir}/etc/fstab
 # <file system> <mount point>   <type>  <options>       <dump>  <pass>
 proc            /proc           proc    defaults          0       0
 /dev/mmcblk0p1  /boot           vfat    defaults          0       2
-/dev/mmcblk0p2  /               ext3    defaults,noatime  0       1
+/dev/mmcblk0p2  /               $fstype    defaults,noatime  0       1
 EOF
 
 # Copy a default config, with everything commented out so people find it when
@@ -347,27 +357,30 @@ arm_64bit=1
 EOF
 
 # Calculate the space to create the image.
-free_space=$((${free_space}*1024))
-bootstart=$((${bootsize}*1024/1000*2*1024/2))
-bootend=$((${bootstart}+1024))
-rootsize=$(du -s --block-size KiB ${work_dir} --exclude boot | cut -f1)
-rootsize=$((${free_space}+${rootsize//KiB/ }/1000*2*1024/2))
-raw_size=$((${free_space}+${rootsize}+${bootstart}))
+rootsize=$(du -s -B1 ${work_dir} --exclude=${work_dir}/boot | cut -f1)
+rootsize=$((${rootsize}/1024+131072))
+raw_size=$(($((${free_space}*1024))+${rootsize}+$((${bootsize}*1024))+4096))
 
 # Create the disk and partition it
 echo "Creating image file ${imagename}.img"
-dd if=/dev/zero of=${basedir}/${imagename}.img bs=1KiB count=0 seek=${raw_size} && sync
-parted "${basedir}"/${imagename}.img --script -- mklabel msdos
-parted "${basedir}"/${imagename}.img --script -- mkpart primary fat32 1MiB ${bootstart}KiB
-parted "${basedir}"/${imagename}.img --script -- mkpart primary ext3 ${bootend}KiB 100%
+dd if=/dev/zero of="${basedir}"/${imagename}.img bs=1KiB count=0 seek=${raw_size}
+parted -s "${basedir}"/${imagename}.img mklabel msdos
+parted -s "${basedir}"/${imagename}.img mkpart primary fat32 1MiB ${bootsize}MiB
+parted -s -a minimal "${basedir}"/${imagename}.img mkpart primary $fstype ${bootsize}MiB 100%
 
 # Set the partition variables
-bootp="$(losetup -o 1MiB --sizelimit ${bootstart}KiB -f --show ${basedir}/${imagename}.img)"
-rootp="$(losetup -o ${bootend}KiB --sizelimit ${raw_size}KiB -f --show ${basedir}/${imagename}.img)"
+loopdevice=$(losetup --show -fP "${basedir}/${imagename}.img")
+bootp="${loopdevice}p1"
+rootp="${loopdevice}p2"
 
 # Create file systems
 mkfs.vfat -n BOOT -F 32 -v ${bootp}
-mkfs.ext3 -L ROOTFS -O ^64bit,^flex_bg,^metadata_csum ${rootp}
+if [[ $fstype == ext4 ]]; then
+  features="-O ^64bit,^metadata_csum"
+elif [[ $fstype == ext3 ]]; then
+  features="-O ^64bit"
+fi
+mkfs $features -t $fstype -L ROOTFS ${rootp}
 
 # Create the dirs for the partitions and mount them
 mkdir -p ${basedir}/root/
@@ -389,19 +402,39 @@ dosfsck -w -r -l -a -t "$bootp"
 e2fsck -y -f "$rootp"
 
 # Remove loop devices
-losetup -d ${bootp}
-losetup -d ${rootp}
+losetup -d ${loopdevice}
 
-if [ $(arch) == 'x86_64' ]; then
-  echo "Compressing ${imagename}.img"
+# Limite use cpu function
+limit_cpu (){
   rand=$(tr -cd 'A-Za-z0-9' < /dev/urandom | head -c4 ; echo) # Randowm name group
-  cgcreate -g cpu:/cpulimit-${rand} # Name of group
+  cgcreate -g cpu:/cpulimit-${rand} # Name of group cpulimit
   cgset -r cpu.shares=800 cpulimit-${rand} # Max 1024
   cgset -r cpu.cfs_quota_us=80000 cpulimit-${rand} # Max 100000
-  cgexec -g cpu:cpulimit-${rand} pixz -p 2 "${basedir}"/${imagename}.img ${imagename}.img.xz # -p Nº cpu cores use
-  cgdelete cpu:/cpulimit-${rand} # Delete group
-fi
+  # Retry command
+  local n=1; local max=5; local delay=2
+  while true; do
+    cgexec -g cpu:cpulimit-${rand} -g memory:mem-${rand} "$@" && break || {
+      if [[ $n -lt $max ]]; then
+        ((n++))
+        echo -e "\e[31m Command failed. Attempt $n/$max \033[0m"
+        sleep $delay;
+      else
+        echo "The command has failed after $n attempts."
+        break
+      fi
+    }
+  done
+}
 
+if [ $compress = xz ]; then
+  if [ $(arch) == 'x86_64' ]; then
+    echo "Compressing ${imagename}.img"
+    limit_cpu pixz -p 2 "${basedir}"/${imagename}.img ${imagename}.img.xz# -p Nº cpu cores use
+    chmod 644 ${imagename}.img.xz
+  fi
+else
+  chmod 644 ${imagename}.img
+fi
 # Clean up all the temporary build stuff and remove the directories.
 # Comment this out to keep things around if you want to see what may have gone wrong.
 echo "Cleaning up the temporary build files..."
