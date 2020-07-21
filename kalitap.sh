@@ -143,6 +143,9 @@ cat << EOF > ${work_dir}/etc/resolv.conf
 nameserver 8.8.8.8
 EOF
 
+# Copy directory bsp into build dir.
+cp -rp bsp ${work_dir}
+
 export MALLOC_CHECK_=0 # workaround for LP: #520465
 
 # Enable the use of http proxy in third-stage in case it is enabled.
