@@ -236,7 +236,7 @@ cat << _EOF_ >> /etc/udev/links.conf
 M   ttyO0 c 5 1
 _EOF_
 
-cat << _EOF_ >> ${work_dir}/etc/securetty
+cat << _EOF_ >> /etc/securetty
 ttyO0
 _EOF_
 
