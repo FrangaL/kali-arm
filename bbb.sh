@@ -1,43 +1,75 @@
 #!/bin/bash
 set -e
 
-if [[ $EUID -ne 0 ]]; then
-   echo "This script must be run as root"
-   exit 1
+# Uncomment to activate debug
+# debug=true
+
+if [ "$debug" = true ]; then
+  exec > >(tee -a -i "${0%.*}.log") 2>&1
+  set -x
 fi
 
-if [[ $# -eq 0 ]] ; then
-    echo "Please pass version number, e.g. $0 2.0"
-    exit 0
-fi
-
-basedir=`pwd`/beaglebone-black-$1
-
+# Architecture
+architecture=${architecture:-"armhf"}
+# Generate a random machine name to be used.
+machine=$(tr -cd 'A-Za-z0-9' < /dev/urandom | head -c16 ; echo)
 # Custom hostname variable
 hostname=${2:-kali}
 # Custom image file name variable - MUST NOT include .img at the end.
-imagename=${3:-kali-linux-$1-bbb}
-# Size of image in megabytes (Default is 14000=14GB)
-size=14000
-# Suite to use.
-# Valid options are:
+imagename=${3:-kali-linux-$1-rpi3-nexmon-64-lite}
+# Suite to use, valid options are:
 # kali-rolling, kali-dev, kali-bleeding-edge, kali-dev-only, kali-experimental, kali-last-snapshot
-# A release is done against kali-last-snapshot, but if you're building your own, you'll probably want to build
-# kali-rolling.
-suite=kali-rolling
+suite=${suite:-"kali-rolling"}
+# Free space rootfs in MiB
+free_space="300"
+# /boot partition in MiB
+bootsize="128"
+# If you have your own preferred mirrors, set them here.
+mirror="http://http.kali.org/kali"
+# Gitlab url Kali repository
+kaligit="https://gitlab.com/kalilinux"
+# Github raw url
+githubraw="https://raw.githubusercontent.com"
 
-# Generate a random machine name to be used.
-machine=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 16 | head -n 1)
+# Check EUID=0 you can run any binary as root.
+if [[ $EUID -ne 0 ]]; then
+  echo "This script must be run as root"
+  exit 1
+fi
 
-# Package installations for various sections.
-# This will build a minimal XFCE Kali system with the top 10 tools.
-# This is the section to edit if you would like to add more packages.
-# See http://www.kali.org/news/kali-linux-metapackages/ for meta packages you
-# can use. You can also install packages, using just the package name, but keep
-# in mind that not all packages work on ARM! If you specify one of those, the
-# script will throw an error, but will still continue on, and create an unusable
-# image, keep that in mind.
+# Pass version number
+if [[ $# -eq 0 ]] ; then
+  echo "Please pass version number, e.g. $0 2.0, and (if you want) a hostname, default is kali"
+  exit 0
+fi
 
+# Check exist bsp directory.
+if [ ! -e "bsp" ]; then
+  echo "Error: missing bsp directory structure"
+  echo "Please clone the full repository ${kaligit}/build-scripts/kali-arm"
+  exit 255
+fi
+
+# Current directory
+current_dir="$(pwd)"
+# Base directory
+basedir=${current_dir}/rpi3-nexmon-64-"$1"-lite
+# Working directory
+work_dir="${basedir}/kali-${architecture}"
+
+# Check directory build
+if [ -e "${basedir}" ]; then
+  echo "${basedir} directory exists, will not continue"
+  exit 1
+elif [[ ${current_dir} =~ [[:space:]] ]]; then
+  echo "The directory "\"${current_dir}"\" contains whitespace. Not supported."
+  exit 1
+else
+  echo "The basedir thinks it is: ${basedir}"
+  mkdir -p ${basedir}
+fi
+
+components="main,contrib,non-free"
 arm="kali-linux-arm ntpdate"
 base="apt-utils bash-completion console-setup dialog e2fsprogs ifupdown initramfs-tools inxi iw man-db mlocate netcat-traditional net-tools parted pciutils psmisc rfkill screen tmux unrar usbutils vim wget whiptail zerofree"
 desktop="kali-desktop-xfce kali-root-login xserver-xorg-video-fbdev xfonts-terminus xinput"
@@ -46,32 +78,45 @@ services="apache2 atftpd"
 extras="alsa-utils bc bison bluez bluez-firmware kali-linux-core libnss-systemd libssl-dev triggerhappy udhcpd"
 
 packages="${arm} ${base} ${services}"
-architecture="armhf"
-# If you have your own preferred mirrors, set them here.
-# After generating the rootfs, we set the sources.list to the default settings.
-mirror=http.kali.org
 
-# Set this to use an http proxy, like apt-cacher-ng, and uncomment further down
-# to unset it.
-#export http_proxy="http://localhost:3142/"
-
-mkdir -p "${basedir}"
-cd "${basedir}"
+# Automatic configuration to use an http proxy, such as apt-cacher-ng.
+# You can turn off automatic settings by uncommenting apt_cacher=off.
+# apt_cacher=off
+# By default the proxy settings are local, but you can define an external proxy.
+# proxy_url="http://external.intranet.local"
+apt_cacher=${apt_cacher:-"$(lsof -i :3142|cut -d ' ' -f3 | uniq | sed '/^\s*$/d')"}
+if [ -n "$proxy_url" ]; then
+  export http_proxy=$proxy_url
+elif [ "$apt_cacher" = "apt-cacher-ng" ] ; then
+  if [ -z "$proxy_url" ]; then
+    proxy_url=${proxy_url:-"http://127.0.0.1:3142/"}
+    export http_proxy=$proxy_url
+  fi
+fi
 
 # create the rootfs - not much to modify here, except maybe throw in some more packages if you want.
-debootstrap --foreign --keyring=/usr/share/keyrings/kali-archive-keyring.gpg --include=kali-archive-keyring --arch ${architecture} ${suite} kali-${architecture} http://${mirror}/kali
+debootstrap --foreign --keyring=/usr/share/keyrings/kali-archive-keyring.gpg --include=kali-archive-keyring \
+  --components=${components} --arch ${architecture} ${suite} ${work_dir} http://http.kali.org/kali
 
-cp /usr/bin/qemu-arm-static kali-${architecture}/usr/bin/
+# systemd-nspawn enviroment
+systemd-nspawn_exec(){
+  qemu_bin=/usr/bin/qemu-arm-static
+  LANG=C systemd-nspawn -q --bind-ro ${qemu_bin} -M ${machine} -D ${work_dir} "$@"
+}
 
-LANG=C systemd-nspawn -M $machine -D kali-${architecture} /debootstrap/debootstrap --second-stage
+# debootstrap second stage
+systemd-nspawn_exec /debootstrap/debootstrap --second-stage
 
-mkdir -p kali-${architecture}/etc/apt/
-cat << EOF > kali-${architecture}/etc/apt/sources.list
-deb http://${mirror}/kali ${suite} main contrib non-free
+cat << EOF > ${work_dir}/etc/apt/sources.list
+deb ${mirror} ${suite} ${components//,/ }
+#deb-src ${mirror} ${suite} ${components//,/ }
 EOF
 
-echo "${hostname}" > kali-${architecture}/etc/hostname
-cat << EOF > kali-${architecture}/etc/hosts
+# Set hostname
+echo "${hostname}" > ${work_dir}/etc/hostname
+
+# So X doesn't complain, we add kali to hosts
+cat << EOF > ${work_dir}/etc/hosts
 127.0.0.1       ${hostname}    localhost
 ::1             localhost ip6-localhost ip6-loopback
 fe00::0         ip6-localnet
@@ -80,58 +125,46 @@ ff02::1         ip6-allnodes
 ff02::2         ip6-allrouters
 EOF
 
-mkdir -p kali-${architecture}/etc/network/
-cat << EOF > kali-${architecture}/etc/network/interfaces
+# Disable IPv6
+cat << EOF > ${work_dir}/etc/modprobe.d/ipv6.conf
+# Don't load ipv6 by default
+alias net-pf-10 off
+EOF
+
+cat << EOF > ${work_dir}/etc/network/interfaces
 auto lo
 iface lo inet loopback
 
 auto eth0
 allow-hotplug eth0
 iface eth0 inet dhcp
-
-auto usb0
-iface usb0 inet static
-    address 192.168.7.2
-    netmask 255.255.255.0
-    network 192.168.7.0
-    gateway 192.168.7.1
 EOF
 
-cat << EOF > kali-${architecture}/etc/resolv.conf
-nameserver 8.8.8.8
-EOF
+# DNS server
+echo "nameserver 8.8.8.8" > ${work_dir}/etc/resolv.conf
+
+# Copy directory bsp into build dir.
+cp -rp bsp ${work_dir}
 
 export MALLOC_CHECK_=0 # workaround for LP: #520465
-export LC_ALL=C
+
+# Enable the use of http proxy in third-stage in case it is enabled.
+if [ -n "$proxy_url" ]; then
+  echo "Acquire::http { Proxy \"$proxy_url\" };" > ${work_dir}/etc/apt/apt.conf.d/66proxy
+fi
+
+# Third stage
+cat << EOF >  ${work_dir}/third-stage
+#!/bin/bash -e
 export DEBIAN_FRONTEND=noninteractive
-
-#mount -t proc proc kali-${architecture}/proc
-#mount -o bind /dev/ kali-${architecture}/dev/
-#mount -o bind /dev/pts kali-${architecture}/dev/pts
-
-cat << EOF > kali-${architecture}/debconf.set
-console-common console-data/keymap/policy select Select keymap from full list
-console-common console-data/keymap/full select en-latin1-nodeadkeys
-EOF
-
-mkdir -p kali-${architecture}/usr/lib/systemd/system/
-cp "${basedir}"/../bsp/services/all/*.service kali-${architecture}/usr/lib/systemd/system/
-
-cat << EOF > kali-${architecture}/third-stage
-#!/bin/bash
-set -e
-dpkg-divert --add --local --divert /usr/sbin/invoke-rc.d.chroot --rename /usr/sbin/invoke-rc.d
-cp /bin/true /usr/sbin/invoke-rc.d
+export RUNLEVEL=1
+ln -sf /bin/true /usr/sbin/invoke-rc.d
 echo -e "#!/bin/sh\nexit 101" > /usr/sbin/policy-rc.d
 chmod 755 /usr/sbin/policy-rc.d
 
 apt-get update
 
-debconf-set-selections /debconf.set
-rm -f /debconf.set
-apt-get update
-apt-get -y install git-core binutils ca-certificates initramfs-tools u-boot-tools
-apt-get -y install locales console-common less nano git
+apt-get -y install binutils ca-certificates console-common git initramfs-tools less locales nano u-boot-tools
 
 # Create kali user with kali password... but first, we need to manually make some groups because they don't yet exist...
 # This mirrors what we have on a pre-installed VM, until the script works properly to allow end users to set up their own... user.
@@ -147,19 +180,25 @@ groupadd -g 1000 kali
 useradd -m -u 1000 -g 1000 -G sudo,audio,bluetooth,cdrom,dialout,dip,lpadmin,netdev,plugdev,scanner,video,kali -s /bin/bash kali
 echo "kali:kali" | chpasswd
 
-export DEBIAN_FRONTEND=noninteractive
+aptops="--allow-change-held-packages -o dpkg::options::=--force-confnew"
+
 # This looks weird, but we do it twice because every so often, there's a failure to download from the mirror
 # So to workaround it, we attempt to install them twice.
-apt-get --yes --allow-change-held-packages -o dpkg::options::=--force-confnew install ${packages} || apt-get --yes --fix-broken install
-apt-get --yes --allow-change-held-packages -o dpkg::options::=--force-confnew install ${packages} || apt-get --yes --fix-broken install
-apt-get --yes --allow-change-held-packages -o dpkg::options::=--force-confnew install ${desktop} ${extras} ${tools} || apt-get --yes --fix-broken install
-apt-get --yes --allow-change-held-packages -o dpkg::options::=--force-confnew install ${desktop} ${extras} ${tools} || apt-get --yes --fix-broken install
-apt-get --yes --allow-change-held-packages --autoremove install systemd-timesyncd || apt-get --yes --fix-broken install
-apt-get --yes --allow-change-held-packages -o dpkg::options::=--force-confnew dist-upgrade
-apt-get --yes --allow-change-held-packages -o dpkg::options::=--force-confnew autoremove
+apt-get install -y \$aptops ${packages} || apt-get --yes --fix-broken install
+apt-get install -y \$aptops ${packages} || apt-get --yes --fix-broken install
+apt-get install -y \$aptops ${desktop} ${extras} ${tools} || apt-get --yes --fix-broken install
+apt-get install -y \$aptops ${desktop} ${extras} ${tools} || apt-get --yes --fix-broken install
+apt-get install -y \$aptops --autoremove systemd-timesyncd || apt-get --yes --fix-broken install
+apt-get dist-upgrade -y \$aptops
 
-echo "Making the image insecure"
-sed -i -e 's/^#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
+apt-get -y --allow-change-held-packages --purge autoremove
+
+# Linux console/Keyboard configuration
+echo 'console-common console-data/keymap/policy select Select keymap from full list' | debconf-set-selections
+echo 'console-common console-data/keymap/full select en-latin1-nodeadkeys' | debconf-set-selections
+
+# Copy all services
+install -m644 /bsp/services/all/*.service /etc/systemd/system/
 
 # Regenerated the shared-mime-info database on the first boot
 # since it fails to do so properly in a chroot.
@@ -167,96 +206,110 @@ systemctl enable smi-hack
 
 # Generate SSH host keys on first run
 systemctl enable regenerate_ssh_host_keys
+# Enable sshd
 systemctl enable ssh
 
 # Resize FS on first run (hopefully)
 systemctl enable rpiwiggle
 
+
+cd /root
+apt download -o APT::Sandbox::User=root ca-certificates 2>/dev/null
+
 # Copy bashrc
 cp  /etc/skel/.bashrc /root/.bashrc
 
-cd /root
-apt download ca-certificates
-apt download libgdk-pixbuf2.0-0
-apt download fontconfig
+# Set a REGDOMAIN.  This needs to be done or wireless doesn't work correctly on the RPi 3B+
+sed -i -e 's/REGDOM.*/REGDOMAIN=00/g' /etc/default/crda
+
+# Enable login over serial
+echo 'T1:12345:respawn:/sbin/agetty 115200 ttyO0 vt100' >> /etc/inittab
+
+# Try and make the console a bit nicer
+# Set the terminus font for a bit nicer display.
+sed -i -e 's/FONTFACE=.*/FONTFACE="Terminus"/' /etc/default/console-setup
+sed -i -e 's/FONTSIZE=.*/FONTSIZE="6x12"/' /etc/default/console-setup
+
+# Fix startup time from 5 minutes to 15 secs on raise interface wlan0
+sed -i 's/^TimeoutStartSec=5min/TimeoutStartSec=15/g' "/usr/lib/systemd/system/networking.service"
+
+cat << _EOF_ >> /etc/udev/links.conf
+M   ttyO0 c 5 1
+_EOF_
+
+cat << _EOF_ >> ${work_dir}/etc/securetty
+ttyO0
+_EOF_
 
 rm -f /usr/sbin/policy-rc.d
-rm -f /usr/sbin/invoke-rc.d
-dpkg-divert --remove --rename /usr/sbin/invoke-rc.d
-
-rm -f /third-stage
+unlink /usr/sbin/invoke-rc.d
 EOF
 
-chmod 755 kali-${architecture}/third-stage
-LANG=C systemd-nspawn -M ${machine} -D kali-${architecture} /third-stage
+# Run third stage
+chmod 755 ${work_dir}/third-stage
+systemd-nspawn_exec /third-stage
 
-cat << EOF > kali-${architecture}/cleanup
-#!/bin/bash
-rm -rf /root/.bash_history
-apt-get update
+# Clean system
+systemd-nspawn_exec << EOF
 rm -f /0
-rm -f /hs_err*
-rm -f cleanup
-rm -f /usr/bin/qemu*
+rm -rf /bsp
+fc-cache -frs
+rm -rf /tmp/*
+rm -rf /etc/*-
+rm -rf /hs_err*
+rm -rf /userland
+rm -rf /opt/vc/src
+rm -f /etc/ssh/ssh_host_*
+rm -rf /var/lib/apt/lists/*
+rm -rf /var/cache/apt/*.bin
+rm -rf /var/cache/apt/archives/*
+rm -rf /var/cache/debconf/*.data-old
+history -c
 EOF
+#Clear all logs
+for logs in `find $work_dir/var/log -type f`; do > $logs; done
 
-chmod 755 kali-${architecture}/cleanup
-LANG=C systemd-nspawn -M ${machine} -D kali-${architecture} /cleanup
+# Disable the use of http proxy in case it is enabled.
+if [ -n "$proxy_url" ]; then
+  unset http_proxy
+  rm -rf ${work_dir}/etc/apt/apt.conf.d/66proxy
+fi
 
-#umount kali-${architecture}/proc/sys/fs/binfmt_misc
-#umount kali-${architecture}/dev/pts
-#umount kali-${architecture}/dev/
-#umount kali-${architecture}/proc
-
-# Enable serial console on ttyO0
-echo 'T1:12345:respawn:/sbin/agetty 115200 ttyO0 vt100' >> "${basedir}"/kali-${architecture}/etc/inittab
-
-cat << EOF >> "${basedir}"/kali-${architecture}/etc/udev/links.conf
-M   ttyO0 c 5 1
-EOF
-
-cat << EOF >> "${basedir}"/kali-${architecture}/etc/securetty
-ttyO0
-EOF
-
-cat << EOF > "${basedir}"/kali-${architecture}/etc/apt/sources.list
+cat << EOF > ${work_dir}/etc/apt/sources.list
 deb http://http.kali.org/kali kali-rolling main non-free contrib
 deb-src http://http.kali.org/kali kali-rolling main non-free contrib
 EOF
 
 echo "Setting up modules.conf"
 # rm the symlink if it exists, and the original files if they exist
-rm "${basedir}"/kali-${architecture}/etc/modules
-rm "${basedir}"/kali-${architecture}/etc/modules-load.d/modules.conf
-cat << EOF > "${basedir}"/kali-${architecture}/etc/modules-load.d/modules.conf
+rm ${work_dir}/etc/modules
+rm ${work_dir}/etc/modules-load.d/modules.conf
+cat << EOF > ${work_dir}/etc/modules-load.d/modules.conf
 g_ether
 EOF
 
-# Uncomment this if you use apt-cacher-ng or else git clones will fail.
-#unset http_proxy
-
-git clone https://github.com/beagleboard/linux -b 4.9 --depth 1 "${basedir}"/kali-${architecture}/usr/src/kernel
-cd "${basedir}"/kali-${architecture}/usr/src/kernel
-git rev-parse HEAD > "${basedir}"/kali-${architecture}/usr/src/kernel-at-commit
+git clone https://github.com/beagleboard/linux -b 4.9 --depth 1 ${work_dir}/usr/src/kernel
+cd ${work_dir}/usr/src/kernel
+git rev-parse HEAD > ${work_dir}/usr/src/kernel-at-commit
 export ARCH=arm
 # Edit the CROSS_COMPILE variable as needed.
 export CROSS_COMPILE=arm-linux-gnueabihf-
 touch .scmversion
-patch -p1 --no-backup-if-mismatch < "${basedir}"/../patches/kali-wifi-injection-4.9.patch
-patch -p1 --no-backup-if-mismatch < "${basedir}"/../patches/0001-wireless-carl9170-Enable-sniffer-mode-promisc-flag-t.patch
+patch -p1 --no-backup-if-mismatch < ${current_dir}/patches/kali-wifi-injection-4.9.patch
+patch -p1 --no-backup-if-mismatch < ${current_dir}/patches/0001-wireless-carl9170-Enable-sniffer-mode-promisc-flag-t.patch
 make bb.org_defconfig
 make -j $(grep -c processor /proc/cpuinfo)
-cp arch/arm/boot/zImage "${basedir}"/kali-${architecture}/boot/zImage
-mkdir -p "${basedir}"/kali-${architecture}/boot/dtbs
-cp arch/arm/boot/dts/*.dtb "${basedir}"/kali-${architecture}/boot/dtbs/
-make INSTALL_MOD_PATH="${basedir}"/kali-${architecture} modules_install
-make INSTALL_MOD_PATH="${basedir}"/kali-${architecture} firmware_install
+cp arch/arm/boot/zImage ${work_dir}/boot/zImage
+mkdir -p ${work_dir}/boot/dtbs
+cp arch/arm/boot/dts/*.dtb ${work_dir}/boot/dtbs/
+make INSTALL_MOD_PATH=${work_dir} modules_install
+make INSTALL_MOD_PATH=${work_dir} firmware_install
 make mrproper
 make bb.org_defconfig
 cd "${basedir}"
 
 # Create uEnv.txt file
-cat << EOF > "${basedir}"/kali-${architecture}/boot/uEnv.txt
+cat << EOF > ${work_dir}/boot/uEnv.txt
 #u-boot eMMC specific overrides; Angstrom Distribution (BeagleBone Black) 2013-06-20
 kernel_file=zImage
 initrd_file=uInitrd
@@ -286,13 +339,17 @@ uenvcmd=run loadzimage; run loadfdt; run mmcargs; bootz \${loadaddr} - \${fdtadd
 #uenvcmd=run boot_fdt; run mmcargs; bootz \${loadaddr} 0x81000000:\${initrd_size} \${fdtaddr}
 EOF
 
-cat << EOF > "${basedir}"/kali-${architecture}/etc/fstab
-/dev/mmcblk0p2 / auto errors=remount-ro 0 1
-/dev/mmcblk0p1 /boot auto defaults 0 0
+# systemd doesn't seem to be generating the fstab properly for some people, so
+# let's create one. Further down we add the root partition, but we don't
+# know the UUID til after the image file is created.
+cat << EOF > ${work_dir}/etc/fstab
+# <file system> <mount point>   <type>  <options>       <dump>  <pass>
+proc            /proc           proc    defaults          0       0
+/dev/mmcblk0p1  /boot           vfat    defaults          0       2
 EOF
 
-mkdir -p "${basedir}"/kali-${architecture}/etc/X11/
-cat << EOF > "${basedir}"/kali-${architecture}/etc/X11/xorg.conf
+mkdir -p ${work_dir}/etc/X11/
+cat << EOF > ${work_dir}/etc/X11/xorg.conf
 Section "Monitor"
   Identifier    "Builtin Default Monitor"
 EndSection
@@ -322,8 +379,8 @@ EOF
 # Fix up the symlink for building external modules
 # kernver is used so we don't need to keep track of what the current compiled
 # version is
-kernver=$(ls "${basedir}"/kali-${architecture}/lib/modules/)
-cd "${basedir}"/kali-${architecture}/lib/modules/${kernver}
+kernver=$(ls ${work_dir}/lib/modules/)
+cd ${work_dir}/lib/modules/${kernver}
 rm build
 rm source
 ln -s /usr/src/kernel build
@@ -332,22 +389,28 @@ cd "${basedir}"
 
 # Unused currently, but this script is a part of using the usb as an ethernet
 # device.
-wget -c https://raw.github.com/RobertCNelson/tools/master/scripts/beaglebone-black-g-ether-load.sh -O "${basedir}"/kali-${architecture}/root/beaglebone-black-g-ether-load.sh
-chmod 755 "${basedir}"/kali-${architecture}/root/beaglebone-black-g-ether-load.sh
-
-sed -i -e 's/^#PermitRootLogin.*/PermitRootLogin yes/' "${basedir}"/kali-${architecture}/etc/ssh/sshd_config
+wget -c https://raw.github.com/RobertCNelson/tools/master/scripts/beaglebone-black-g-ether-load.sh -O ${work_dir}/root/beaglebone-black-g-ether-load.sh
+chmod 755 ${work_dir}/root/beaglebone-black-g-ether-load.sh
 
 # rpi-wiggle
-mkdir -p "${basedir}"/kali-${architecture}/root/scripts
-wget https://raw.github.com/steev/rpiwiggle/master/rpi-wiggle -O "${basedir}"/kali-${architecture}/root/scripts/rpi-wiggle.sh
-chmod 755 "${basedir}"/kali-${architecture}/root/scripts/rpi-wiggle.sh
+mkdir -p ${work_dir}/root/scripts
+wget https://raw.github.com/steev/rpiwiggle/master/rpi-wiggle -O ${work_dir}/root/scripts/rpi-wiggle.sh
+chmod 755 ${work_dir}/root/scripts/rpi-wiggle.sh
+
+# Calculate the space to create the image.
+free_space=$((${free_space}*1024))
+bootstart=$((${bootsize}*1024/1000*2*1024/2))
+bootend=$((${bootstart}+1024))
+rootsize=$(du -s --block-size KiB ${work_dir} --exclude boot | cut -f1)
+rootsize=$((${free_space}+${rootsize//KiB/ }/1000*2*1024/2))
+raw_size=$((${free_space}+${rootsize}+${bootstart}))
 
 # Create the disk and partition it
-echo "Creating image file for ${imagename}.img"
-dd if=/dev/zero of="${basedir}"/${imagename}.img bs=1M count=${size}
-parted ${imagename}.img --script -- mklabel msdos
-parted ${imagename}.img --script -- mkpart primary fat32 2048s 264191s
-parted ${imagename}.img --script -- mkpart primary ext3 264192s 100%
+echo "Creating image file ${imagename}.img"
+dd if=/dev/zero of=${basedir}/${imagename}.img bs=1KiB count=0 seek=${raw_size} && sync
+parted ${basedir}/${imagename}.img --script -- mklabel msdos
+parted ${basedir}/${imagename}.img --script -- mkpart primary fat32 1MiB ${bootstart}KiB
+parted ${basedir}/${imagename}.img --script -- mkpart primary ext3 ${bootend}KiB 100%
 
 # Set the partition variables
 loopdevice=`losetup -f --show "${basedir}"/${imagename}.img`
@@ -358,8 +421,8 @@ bootp=${device}p1
 rootp=${device}p2
 
 # Create file systems
-mkfs.vfat -F 16 ${bootp}
-mkfs.ext3 -O ^64bit -O ^flex_bg -O ^metadata_csum ${rootp}
+mkfs.vfat -n BOOT -F 16 ${bootp}
+mkfs.ext3 -L ROOTFS -O ^64bit,^flex_bg,^metadata_csum ${rootp}
 
 # Create the dirs for the partitions and mount them
 mkdir -p "${basedir}"/root
@@ -368,16 +431,16 @@ mkdir -p "${basedir}"/root/boot
 mount ${bootp} "${basedir}"/root/boot
 
 # We do this down here to get rid of the build system's resolv.conf after running through the build.
-cat << EOF > kali-${architecture}/etc/resolv.conf
+cat << EOF > ${work_dir}/etc/resolv.conf
 nameserver 8.8.8.8
 EOF
 
 # Create an fstab so that we don't mount / read-only.
 UUID=$(blkid -s UUID -o value ${rootp})
-echo "UUID=$UUID /               ext3    errors=remount-ro 0       1" >> "${basedir}"/kali-${architecture}/etc/fstab
+echo "UUID=$UUID /               ext3    errors=remount-ro 0       1" >> ${work_dir}/etc/fstab
 
 echo "Rsyncing rootfs into image file"
-rsync -HPavz -q "${basedir}"/kali-${architecture}/ "${basedir}"/root/
+rsync -HPavz -q ${work_dir}/ ${basedir}/root/
 
 # Unmount partitions
 sync
@@ -387,11 +450,15 @@ kpartx -dv ${loopdevice}
 losetup -d ${loopdevice}
 
 # Don't pixz on 32bit, there isn't enough memory to compress the images.
-MACHINE_TYPE=`uname -m`
-if [ ${MACHINE_TYPE} == 'x86_64' ]; then
-echo "Compressing ${imagename}.img"
-pixz "${basedir}"/${imagename}.img "${basedir}"/../${imagename}.img.xz
-rm "${basedir}"/${imagename}.img
+if [ $(arch) == 'x86_64' ]; then
+  echo "Compressing ${imagename}.img"
+  cd ${current_dir}
+  rand=$(tr -cd 'A-Za-z0-9' < /dev/urandom | head -c4 ; echo) # Randowm name group
+  cgcreate -g cpu:/cpulimit-${rand} # Name of group
+  cgset -r cpu.shares=800 cpulimit-${rand} # Max 1024
+  cgset -r cpu.cfs_quota_us=80000 cpulimit-${rand} # Max 100000
+  cgexec -g cpu:cpulimit-${rand} pixz -p 2 "${basedir}"/${imagename}.img ${imagename}.img.xz # -p Nº cpu cores use
+  cgdelete cpu:/cpulimit-${rand} # Delete group
 fi
 
 # Clean up all the temporary build stuff and remove the directories.
