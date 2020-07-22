@@ -23,7 +23,7 @@ imagename=${3:-kali-linux-$1-pinebook-pro}
 # kali-rolling, kali-dev, kali-bleeding-edge, kali-dev-only, kali-experimental, kali-last-snapshot
 suite=${suite:-"kali-rolling"}
 # Free space rootfs in MiB
-free_space="300"
+free_space="500"
 # /boot partition in MiB
 bootsize="128"
 # If you have your own preferred mirrors, set them here.
