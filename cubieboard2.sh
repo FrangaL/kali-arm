@@ -380,7 +380,7 @@ cd "${basedir}"/u-boot-sunxi/
 # Build u-boot
 make distclean
 make Cubieboard2_config
-make -j $(grep -c processor /proc/cpuinfo)
+make -j $(nproc)
 
 dd if=u-boot-sunxi-with-spl.bin of=${loopdevice} bs=1024 seek=8
 
