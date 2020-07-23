@@ -219,7 +219,7 @@ install -m755 /bsp/scripts/monstop /usr/bin/
 
 # Install the kernel packages
 echo "deb http://http.re4son-kernel.com/re4son kali-pi main" > /etc/apt/sources.list.d/re4son.list
-wget -qO- https://re4son-kernel.com/keys/http/archive-key.asc | apt-key add - > /dev/null 2>&1
+wget -qO /etc/apt/trusted.gpg.d/re4son-repo-key.asc https://re4son-kernel.com/keys/http/archive-key.asc
 apt-get update
 apt-get install -y \$aptops kalipi-kernel kalipi-bootloader kalipi-re4son-firmware kalipi-kernel-headers
 

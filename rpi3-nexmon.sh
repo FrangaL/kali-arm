@@ -194,7 +194,7 @@ apt-get install -y \$aptops --autoremove systemd-timesyncd || apt-get --yes --fi
 
 # Install the kernel packages
 echo "deb http://http.re4son-kernel.com/re4son kali-pi main" > /etc/apt/sources.list.d/re4son.list
-wget -O - https://re4son-kernel.com/keys/http/archive-key.asc | apt-key add -
+wget -qO /etc/apt/trusted.gpg.d/re4son-repo-key.asc https://re4son-kernel.com/keys/http/archive-key.asc
 apt-get update
 apt-get install --yes --allow-change-held-packages -o dpkg::options::=--force-confnew kalipi-kernel kalipi-bootloader kalipi-re4son-firmware kalipi-kernel-headers
 
