@@ -213,10 +213,9 @@ install -m644 /bsp/services/rpi/*.service /etc//systemd/system/
 
 # Bluetooth enabling
 install -m644 /bsp/bluetooth/rpi/50-bluetooth-hci-auto-poweron.rules /etc/udev/rules.d/
-install -m644 /bsp/bluetooth/rpi/pi-bluetooth+re4son_2.2_all.deb /root/
+install -m644 /bsp/bluetooth/rpi/99-com.rules /etc/udev/rules.d/
 # Copy in the bluetooth firmware
-mkdir -p /lib/firmware/brcm/
-install -m644 /bsp/firmware/rpi/BCM43430A1.hcd /lib/firmware/brcm/
+install -m644 /bsp/firmware/rpi/BCM43430A1.hcd -D /lib/firmware/brcm/
 
 # Enable login over serial
 echo "T0:23:respawn:/sbin/agetty -L ttyAMA0 115200 vt100" >> /etc/inittab
@@ -260,7 +259,7 @@ systemctl enable wpa_supplicant
 systemctl enable enable-ssh
 
 # Install pi-bluetooth deb package from re4son
-dpkg --force-all -i /root/pi-bluetooth+re4son_2.2_all.deb
+dpkg --force-all -i /bsp/bluetooth/rpi/pi-bluetooth+re4son_2.2_all.deb
 
 # Turn off kernel dmesg showing up in console since rpi0 only uses console
 echo "#!/bin/sh -e" > /etc/rc.local
