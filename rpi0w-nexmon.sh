@@ -28,6 +28,11 @@ suite=${suite:-"kali-rolling"}
 free_space="300"
 # /boot partition in MiB
 bootsize="128"
+# Select compression, xz or none
+compress="xz"
+# Choose filesystem format to format ( ext3 or ext4 )
+# 23 July 2020 - Build server produces broken ext4 filesystems.
+fstype="ext3"
 # If you have your own preferred mirrors, set them here.
 mirror="http://http.kali.org/kali"
 # Gitlab url Kali repository
@@ -334,7 +339,7 @@ EOF
 
 # Create cmdline.txt file
 cat << EOF > ${work_dir}/boot/cmdline.txt
-dwc_otg.lpm_enable=0 console=serial0,115200 console=tty1 root=/dev/mmcblk0p2 rootfstype=ext3 elevator=deadline fsck.repair=yes rootwait
+dwc_otg.lpm_enable=0 console=serial0,115200 console=tty1 root=/dev/mmcblk0p2 rootfstype=$fstype elevator=deadline fsck.repair=yes rootwait
 EOF
 
 # systemd doesn't seem to be generating the fstab properly for some people, so
@@ -343,7 +348,7 @@ cat << EOF > ${work_dir}/etc/fstab
 # <file system> <mount point>   <type>  <options>       <dump>  <pass>
 proc            /proc           proc    defaults          0       0
 /dev/mmcblk0p1  /boot           vfat    defaults          0       2
-/dev/mmcblk0p2  /               ext3    defaults,noatime  0       1
+/dev/mmcblk0p2  /               $fstype    defaults,noatime  0       1
 EOF
 
 # Copy a default config, with everything commented out so people find it when
@@ -367,7 +372,7 @@ echo "Creating image file ${imagename}.img"
 dd if=/dev/zero of=${basedir}/${imagename}.img bs=1KiB count=0 seek=${raw_size} && sync
 parted "${basedir}"/${imagename}.img --script -- mklabel msdos
 parted "${basedir}"/${imagename}.img --script -- mkpart primary fat32 1MiB ${bootstart}KiB
-parted "${basedir}"/${imagename}.img --script -- mkpart primary ext3 ${bootend}KiB 100%
+parted "${basedir}"/${imagename}.img --script -- mkpart primary $fstype ${bootend}KiB 100%
 
 # Set the partition variables
 bootp="$(losetup -o 1MiB --sizelimit ${bootstart}KiB -f --show ${basedir}/${imagename}.img)"
@@ -375,7 +380,7 @@ rootp="$(losetup -o ${bootend}KiB --sizelimit ${raw_size}KiB -f --show ${basedir
 
 # Create file systems
 mkfs.vfat -n BOOT -F 32 -v ${bootp}
-mkfs.ext3 -L ROOTFS -O ^64bit,^flex_bg,^metadata_csum ${rootp}
+mkfs.$fstype -L ROOTFS -O ^64bit,^flex_bg,^metadata_csum ${rootp}
 
 # Create the dirs for the partitions and mount them
 mkdir -p ${basedir}/root/
@@ -394,16 +399,36 @@ umount -l ${rootp}
 losetup -d ${bootp}
 losetup -d ${rootp}
 
-# Don't pixz on 32bit, there isn't enough memory to compress the images.
-if [ $(arch) == 'x86_64' ]; then
-  echo "Compressing ${imagename}.img"
-  cd ${current_dir}
+# Limite use cpu function
+limit_cpu (){
   rand=$(tr -cd 'A-Za-z0-9' < /dev/urandom | head -c4 ; echo) # Randowm name group
-  cgcreate -g cpu:/cpulimit-${rand} # Name of group
+  cgcreate -g cpu:/cpulimit-${rand} # Name of group cpulimit
   cgset -r cpu.shares=800 cpulimit-${rand} # Max 1024
   cgset -r cpu.cfs_quota_us=80000 cpulimit-${rand} # Max 100000
-  cgexec -g cpu:cpulimit-${rand} pixz -p 2 "${basedir}"/${imagename}.img ${imagename}.img.xz # -p Nº cpu cores use
-  cgdelete cpu:/cpulimit-${rand} # Delete group
+  # Retry command
+  local n=1; local max=5; local delay=2
+  while true; do
+    cgexec -g cpu:cpulimit-${rand} -g memory:mem-${rand} "$@" && break || {
+      if [[ $n -lt $max ]]; then
+        ((n++))
+        echo -e "\e[31m Command failed. Attempt $n/$max \033[0m"
+        sleep $delay;
+      else
+        echo "The command has failed after $n attempts."
+        break
+      fi
+    }
+  done
+}
+
+if [ $compress = xz ]; then
+  if [ $(arch) == 'x86_64' ]; then
+    echo "Compressing ${imagename}.img"
+    limit_cpu pixz -p $(nproc) "${basedir}"/${imagename}.img ${imagename}.img.xz # -p Nº cpu cores use
+    chmod 644 ${imagename}.img.xz
+  fi
+else
+  chmod 644 ${imagename}.img
 fi
 
 # Clean up all the temporary build stuff and remove the directories.
