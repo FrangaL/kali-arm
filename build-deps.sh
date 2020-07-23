@@ -99,15 +99,10 @@ fi
 # Create the script to clean the system.
 clean-system
 
-# Function of changing from version number to full number.
-versionToInt(){ local IFS=.;parts=($1);let val=1000000*parts[0]+1000*parts[1]+parts[2];echo $val;}
-
-# Check minimum version debootstrap.
-debootstrap_ver=$(versionToInt $(debootstrap --version |  grep -o '[0-9.]\+' | head -1))
-debootstrap_min=$(versionToInt 1.0.105)
-
-if [ ${debootstrap_ver} \< ${debootstrap_min} ]; then
-  echo "Currently your version of debootstrap does not support the script."
-  echo "The minimum version of debootstrap is 1.0.105"
-  exit 1
+# Checkear versión mínima debootstrap
+debootstrap_ver=$(debootstrap --version |  grep -o '[0-9.]\+' | head -1)
+if dpkg --compare-versions "$debootstrap_ver" lt "1.0.105"; then
+    echo "Currently your version of debootstrap does not support the script." >&2
+    echo "The minimum version of debootstrap is 1.0.105" >&2
+    exit 1
 fi
