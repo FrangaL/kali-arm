@@ -429,7 +429,7 @@ limit_cpu (){
 if [ $compress = xz ]; then
   if [ $(arch) == 'x86_64' ]; then
     echo "Compressing ${imagename}.img"
-    limit_cpu pixz -p 2 "${basedir}"/${imagename}.img ${imagename}.img.xz# -p Nº cpu cores use
+    limit_cpu pixz -p 2 "${basedir}"/${imagename}.img ${imagename}.img.xz # -p Nº cpu cores use
     chmod 644 ${imagename}.img.xz
   fi
 else
