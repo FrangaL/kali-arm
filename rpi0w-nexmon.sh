@@ -220,7 +220,7 @@ install -m644 /bsp/services/rpi/*.service /etc//systemd/system/
 install -m644 /bsp/bluetooth/rpi/50-bluetooth-hci-auto-poweron.rules /etc/udev/rules.d/
 install -m644 /bsp/bluetooth/rpi/99-com.rules /etc/udev/rules.d/
 # Copy in the bluetooth firmware
-install -m644 /bsp/firmware/rpi/BCM43430A1.hcd -D /lib/firmware/brcm/
+install -m644 /bsp/firmware/rpi/BCM43430A1.hcd -d /lib/firmware/brcm/
 
 # Enable login over serial
 echo "T0:23:respawn:/sbin/agetty -L ttyAMA0 115200 vt100" >> /etc/inittab
@@ -317,6 +317,7 @@ rm -rf /hs_err*
 rm -rf /userland
 rm -rf /opt/vc/src
 rm -f /etc/ssh/ssh_host_*
+rm -rf /var/lib/dpkg/*-old
 rm -rf /var/lib/apt/lists/*
 rm -rf /var/cache/apt/*.bin
 rm -rf /var/cache/apt/archives/*
@@ -360,23 +361,21 @@ sed -i "59,66d" ${work_dir}/boot/config.txt
 cd ${current_dir}
 
 # Calculate the space to create the image.
-free_space=$((${free_space}*1024))
-bootstart=$((${bootsize}*1024/1000*2*1024/2))
-bootend=$((${bootstart}+1024))
-rootsize=$(du -s --block-size KiB ${work_dir} --exclude boot | cut -f1)
-rootsize=$((${free_space}+${rootsize//KiB/ }/1000*2*1024/2))
-raw_size=$((${free_space}+${rootsize}+${bootstart}))
+rootsize=$(du -s -B1 ${work_dir} --exclude=${work_dir}/boot | cut -f1)
+rootsize=$((${rootsize}/1024+131072/1000*5*1024/5))
+raw_size=$(($((${free_space}*1024))+${rootsize}+$((${bootsize}*1024))+4096))
 
 # Create the disk and partition it
 echo "Creating image file ${imagename}.img"
-dd if=/dev/zero of=${basedir}/${imagename}.img bs=1KiB count=0 seek=${raw_size} && sync
-parted "${basedir}"/${imagename}.img --script -- mklabel msdos
-parted "${basedir}"/${imagename}.img --script -- mkpart primary fat32 1MiB ${bootstart}KiB
-parted "${basedir}"/${imagename}.img --script -- mkpart primary $fstype ${bootend}KiB 100%
+dd if=/dev/zero of="${basedir}"/${imagename}.img bs=1KiB count=0 seek=${raw_size}
+parted -s "${basedir}"/${imagename}.img mklabel msdos
+parted -s "${basedir}"/${imagename}.img mkpart primary fat32 1MiB ${bootsize}MiB
+parted -s -a minimal "${basedir}"/${imagename}.img mkpart primary $fstype ${bootsize}MiB 100%
 
 # Set the partition variables
-bootp="$(losetup -o 1MiB --sizelimit ${bootstart}KiB -f --show ${basedir}/${imagename}.img)"
-rootp="$(losetup -o ${bootend}KiB --sizelimit ${raw_size}KiB -f --show ${basedir}/${imagename}.img)"
+loopdevice=$(losetup --show -fP "${basedir}/${imagename}.img")
+bootp="${loopdevice}p1"
+rootp="${loopdevice}p2"
 
 # Create file systems
 mkfs.vfat -n BOOT -F 32 -v ${bootp}
@@ -396,8 +395,9 @@ sync
 # Unmount partitions
 umount -l ${bootp}
 umount -l ${rootp}
-losetup -d ${bootp}
-losetup -d ${rootp}
+
+# Remove loop device
+losetup -d ${loopdevice}
 
 # Limite use cpu function
 limit_cpu (){
@@ -408,7 +408,7 @@ limit_cpu (){
   # Retry command
   local n=1; local max=5; local delay=2
   while true; do
-    cgexec -g cpu:cpulimit-${rand} -g memory:mem-${rand} "$@" && break || {
+    cgexec -g cpu:cpulimit-${rand} "$@" && break || {
       if [[ $n -lt $max ]]; then
         ((n++))
         echo -e "\e[31m Command failed. Attempt $n/$max \033[0m"
