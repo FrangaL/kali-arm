@@ -258,6 +258,11 @@ cat << EOF > ${work_dir}/etc/resolv.conf
 nameserver 8.8.8.8
 EOF
 
+cat << EOF > ${work_dir}/etc/apt/sources.list
+deb http://http.kali.org/kali kali-rolling main contrib non-free
+#deb-src http://http.kali.org/kali kali-rolling main contrib non-free
+EOF
+
 cd ${basedir}
 
 # Kernel section.  If you want to use a custom kernel, or configuration, replace
@@ -474,16 +479,13 @@ cd ${basedir}
 cp ${basedir}/../bsp/firmware/veyron/brcm_patchram_plus ${work_dir}/usr/sbin/
 
 # Calculate the space to create the image.
-free_space=$((${free_space}*1024))
-bootstart=$((${bootsize}*1024/1000*2*1024/2))
-bootend=$((${bootstart}+1024))
-rootsize=$(du -s --block-size KiB ${work_dir} --exclude boot | cut -f1)
-rootsize=$((${free_space}+${rootsize//KiB/ }/1000*2*1024/2))
-raw_size=$((${free_space}+${rootsize}+${bootstart}))
+root_size=$(du -s -B1 ${work_dir} --exclude=${work_dir}/boot | cut -f1)
+root_extra=$((${root_size}/1024/1000*5*1024/5))
+raw_size=$(($((${free_space}*1024))+${root_extra}+$((${bootsize}*1024))+4096))
 
 # Create the disk and partition it
-echo "Creating image file for Veyron Chromebooks"
-dd if=/dev/zero of=${basedir}/${imagename}.img bs=1KiB count=0 seek=${raw_size} && sync
+echo "Creating image file ${imagename}.img"
+fallocate -l $(echo ${raw_size}Ki | numfmt --from=iec-i --to=si) "${basedir}"/${imagename}.img
 parted ${basedir}/${imagename}.img --script -- mklabel gpt
 cgpt create -z ${basedir}/${imagename}.img
 cgpt create ${basedir}/${imagename}.img

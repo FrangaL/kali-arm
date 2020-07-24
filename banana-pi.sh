@@ -265,7 +265,7 @@ echo "sunxi_emac" >> ${work_dir}/etc/modules
 
 cat << EOF > ${work_dir}/etc/apt/sources.list
 deb http://http.kali.org/kali kali-rolling main non-free contrib
-deb-src http://http.kali.org/kali kali-rolling main non-free contrib
+#deb-src http://http.kali.org/kali kali-rolling main non-free contrib
 EOF
 
 mkdir -p ${work_dir}/etc/X11/xorg.conf.d/
@@ -277,16 +277,13 @@ cp "${basedir}"/../bsp/xorg/20-fbdev.conf ${work_dir}/etc/X11/xorg.conf.d/
 sed -i -e 's/append.*/append console=ttyS0,115200 console=tty1 root=\/dev\/mmcblk0p1 rootwait panic=10 rw rootfstype=ext3 net.ifnames=0/g' ${work_dir}/boot/extlinux/extlinux.conf
 
 # Calculate the space to create the image.
-free_space=$((${free_space}*1024))
-bootstart=$((${bootsize}*1024/1000*2*1024/2))
-bootend=$((${bootstart}+1024))
-rootsize=$(du -s --block-size KiB ${work_dir} --exclude boot | cut -f1)
-rootsize=$((${free_space}+${rootsize//KiB/ }/1000*2*1024/2))
-raw_size=$((${free_space}+${rootsize}+${bootstart}))
+root_size=$(du -s -B1 ${work_dir} --exclude=${work_dir}/boot | cut -f1)
+root_extra=$((${root_size}/1024/1000*5*1024/5))
+raw_size=$(($((${free_space}*1024))+${root_extra}+$((${bootsize}*1024))+4096))
 
 # Create the disk and partition it
 echo "Creating image file ${imagename}.img"
-dd if=/dev/zero of=${basedir}/${imagename}.img bs=1KiB count=0 seek=${raw_size} && sync
+fallocate -l $(echo ${raw_size}Ki | numfmt --from=iec-i --to=si) "${basedir}"/${imagename}.img
 parted "${basedir}"/${imagename}.img --script -- mklabel msdos
 parted "${basedir}"/${imagename}.img --script -- mkpart primary ext3 1MiB 100%
 

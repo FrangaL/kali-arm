@@ -335,7 +335,7 @@ fi
 
 cat << EOF > ${work_dir}/etc/apt/sources.list
 deb http://http.kali.org/kali kali-rolling main non-free contrib
-deb-src http://http.kali.org/kali kali-rolling main non-free contrib
+#deb-src http://http.kali.org/kali kali-rolling main non-free contrib
 EOF
 
 # Create cmdline.txt file
@@ -361,23 +361,21 @@ sed -i "59,66d" ${work_dir}/boot/config.txt
 cd "${basedir}"
 
 # Calculate the space to create the image.
-free_space=$((${free_space}*1024))
-bootstart=$((${bootsize}*1024/1000*2*1024/2))
-bootend=$((${bootstart}+1024))
-rootsize=$(du -s --block-size KiB ${work_dir} --exclude boot | cut -f1)
-rootsize=$((${free_space}+${rootsize//KiB/ }/1000*2*1024/2))
-raw_size=$((${free_space}+${rootsize}+${bootstart}))
+root_size=$(du -s -B1 ${work_dir} --exclude=${work_dir}/boot | cut -f1)
+root_extra=$((${root_size}/1024/1000*5*1024/5))
+raw_size=$(($((${free_space}*1024))+${root_extra}+$((${bootsize}*1024))+4096))
 
 # Create the disk and partition it
 echo "Creating image file ${imagename}.img"
-dd if=/dev/zero of=${basedir}/${imagename}.img bs=1KiB count=0 seek=${raw_size} && sync
-parted "${basedir}"/${imagename}.img --script -- mklabel msdos
-parted "${basedir}"/${imagename}.img --script -- mkpart primary fat32 1MiB ${bootstart}KiB
-parted "${basedir}"/${imagename}.img --script -- mkpart primary ext3 ${bootend}KiB 100%
+fallocate -l $(echo ${raw_size}Ki | numfmt --from=iec-i --to=si) "${basedir}"/${imagename}.img
+parted -s "${basedir}"/${imagename}.img mklabel msdos
+parted -s "${basedir}"/${imagename}.img mkpart primary fat32 1MiB ${bootsize}MiB
+parted -s -a minimal "${basedir}"/${imagename}.img mkpart primary $fstype ${bootsize}MiB 100%
 
 # Set the partition variables
-bootp="$(losetup -o 1MiB --sizelimit ${bootstart}KiB -f --show ${basedir}/${imagename}.img)"
-rootp="$(losetup -o ${bootend}KiB --sizelimit ${raw_size}KiB -f --show ${basedir}/${imagename}.img)"
+loopdevice=$(losetup --show -fP "${basedir}/${imagename}.img")
+bootp="${loopdevice}p1"
+rootp="${loopdevice}p2"
 
 # Create file systems
 mkfs.vfat -n BOOT -F 32 -v ${bootp}
