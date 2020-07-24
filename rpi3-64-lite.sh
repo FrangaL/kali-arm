@@ -299,6 +299,7 @@ rm -rf /hs_err*
 rm -rf /userland
 rm -rf /opt/vc/src
 rm -f /etc/ssh/ssh_host_*
+rm -rf /var/lib/dpkg/*-old
 rm -rf /var/lib/apt/lists/*
 rm -rf /var/cache/apt/*.bin
 rm -rf /var/cache/apt/archives/*
@@ -358,7 +359,7 @@ EOF
 
 # Calculate the space to create the image.
 rootsize=$(du -s -B1 ${work_dir} --exclude=${work_dir}/boot | cut -f1)
-rootsize=$((${rootsize}/1024+131072))
+rootsize=$((${rootsize}/1024+131072/1000*5*1024/5))
 raw_size=$(($((${free_space}*1024))+${rootsize}+$((${bootsize}*1024))+4096))
 
 # Create the disk and partition it
@@ -413,7 +414,7 @@ limit_cpu (){
   # Retry command
   local n=1; local max=5; local delay=2
   while true; do
-    cgexec -g cpu:cpulimit-${rand} -g memory:mem-${rand} "$@" && break || {
+    cgexec -g cpu:cpulimit-${rand} "$@" && break || {
       if [[ $n -lt $max ]]; then
         ((n++))
         echo -e "\e[31m Command failed. Attempt $n/$max \033[0m"
