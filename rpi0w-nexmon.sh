@@ -361,13 +361,13 @@ sed -i "59,66d" ${work_dir}/boot/config.txt
 cd ${current_dir}
 
 # Calculate the space to create the image.
-rootsize=$(du -s -B1 ${work_dir} --exclude=${work_dir}/boot | cut -f1)
-rootsize=$((${rootsize}/1024+131072/1000*5*1024/5))
-raw_size=$(($((${free_space}*1024))+${rootsize}+$((${bootsize}*1024))+4096))
+root_size=$(du -s -B1 ${work_dir} --exclude=${work_dir}/boot | cut -f1)
+root_extra=$((${root_size}/1024/1000*5*1024/5))
+raw_size=$(($((${free_space}*1024))+${root_extra}+$((${bootsize}*1024))+4096))
 
 # Create the disk and partition it
 echo "Creating image file ${imagename}.img"
-dd if=/dev/zero of="${basedir}"/${imagename}.img bs=1KiB count=0 seek=${raw_size}
+fallocate -l $(echo ${raw_size}Ki | numfmt --from=iec-i --to=si) "${basedir}"/${imagename}.img
 parted -s "${basedir}"/${imagename}.img mklabel msdos
 parted -s "${basedir}"/${imagename}.img mkpart primary fat32 1MiB ${bootsize}MiB
 parted -s -a minimal "${basedir}"/${imagename}.img mkpart primary $fstype ${bootsize}MiB 100%
