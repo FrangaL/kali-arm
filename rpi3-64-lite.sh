@@ -236,7 +236,7 @@ systemctl enable rpi-resizerootfs
 systemctl enable regenerate_ssh_host_keys
 
 # Copy in the bluetooth firmware
-install -m644 /bsp/firmware/rpi/BCM43430A1.hcd -D /lib/firmware/brcm/BCM43430A1.hcd
+install -m644 /bsp/firmware/rpi/BCM43430A1.hcd /lib/firmware/brcm/
 # Copy rule and service
 install -m644 /bsp/bluetooth/rpi/99-com.rules /etc/udev/rules.d/
 install -m644 /bsp/bluetooth/rpi/hciuart.service /etc/systemd/system/
@@ -320,6 +320,9 @@ cat << EOF > ${work_dir}/boot/cmdline.txt
 dwc_otg.fiq_fix_enable=2 console=ttyAMA0,115200 kgdboc=ttyAMA0,115200 console=tty1 root=/dev/mmcblk0p2 rootfstype=$fstype rootwait rootflags=noload net.ifnames=0
 EOF
 
+# Enable the source code repositories
+sed -i '/deb-src/s/^#//' $work_dir/etc/apt/sources.list
+
 # systemd doesn't seem to be generating the fstab properly for some people, so
 # let's create one.
 cat << EOF > ${work_dir}/etc/fstab
@@ -358,13 +361,13 @@ arm_64bit=1
 EOF
 
 # Calculate the space to create the image.
-rootsize=$(du -s -B1 ${work_dir} --exclude=${work_dir}/boot | cut -f1)
-rootsize=$((${rootsize}/1024+131072/1000*5*1024/5))
-raw_size=$(($((${free_space}*1024))+${rootsize}+$((${bootsize}*1024))+4096))
+root_size=$(du -s -B1 ${work_dir} --exclude=${work_dir}/boot | cut -f1)
+root_extra=$((${root_size}/1024/1000*5*1024/5))
+raw_size=$(($((${free_space}*1024))+${root_extra}+$((${bootsize}*1024))+4096))
 
 # Create the disk and partition it
 echo "Creating image file ${imagename}.img"
-dd if=/dev/zero of="${basedir}"/${imagename}.img bs=1KiB count=0 seek=${raw_size}
+fallocate -l $(echo ${raw_size}Ki | numfmt --from=iec-i --to=si) "${basedir}"/${imagename}.img
 parted -s "${basedir}"/${imagename}.img mklabel msdos
 parted -s "${basedir}"/${imagename}.img mkpart primary fat32 1MiB ${bootsize}MiB
 parted -s -a minimal "${basedir}"/${imagename}.img mkpart primary $fstype ${bootsize}MiB 100%
