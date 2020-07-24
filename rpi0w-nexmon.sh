@@ -216,12 +216,6 @@ install -m755 /bsp/scripts/rpi-resizerootfs /usr/sbin/
 install -m644 /bsp/services/all/*.service /etc/systemd/system/
 install -m644 /bsp/services/rpi/*.service /etc//systemd/system/
 
-# Bluetooth enabling
-install -m644 /bsp/bluetooth/rpi/50-bluetooth-hci-auto-poweron.rules /etc/udev/rules.d/
-install -m644 /bsp/bluetooth/rpi/99-com.rules /etc/udev/rules.d/
-# Copy in the bluetooth firmware
-install -m644 /bsp/firmware/rpi/BCM43430A1.hcd -d /lib/firmware/brcm/
-
 # Enable login over serial
 echo "T0:23:respawn:/sbin/agetty -L ttyAMA0 115200 vt100" >> /etc/inittab
 
@@ -242,6 +236,12 @@ echo "deb http://http.re4son-kernel.com/re4son kali-pi main" > /etc/apt/sources.
 wget -qO /etc/apt/trusted.gpg.d/re4son-repo-key.asc https://re4son-kernel.com/keys/http/archive-key.asc
 apt-get update
 apt-get install --yes --allow-change-held-packages kalipi-kernel kalipi-bootloader kalipi-re4son-firmware kalipi-kernel-headers
+
+# Bluetooth enabling
+install -m644 /bsp/bluetooth/rpi/50-bluetooth-hci-auto-poweron.rules /etc/udev/rules.d/
+install -m644 /bsp/bluetooth/rpi/99-com.rules /etc/udev/rules.d/
+# Copy in the bluetooth firmware
+install -m644 /bsp/firmware/rpi/BCM43430A1.hcd /lib/firmware/brcm/
 
 # Regenerated the shared-mime-info database on the first boot
 # since it fails to do so properly in a chroot.
