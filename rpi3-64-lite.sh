@@ -31,7 +31,7 @@ compress="xz"
 # Choose filesystem format to format ( ext3 or ext4 )
 fstype="ext3"
 # If you have your own preferred mirrors, set them here.
-mirror="http://http.kali.org/kali"
+mirror=${4:-"http://http.kali.org/kali"}
 # Gitlab url Kali repository
 kaligit="https://gitlab.com/kalilinux"
 # Github raw url
@@ -118,6 +118,7 @@ systemd-nspawn_exec(){
 # debootstrap second stage
 systemd-nspawn_exec /debootstrap/debootstrap --second-stage
 
+# Define sources.list
 cat << EOF > ${work_dir}/etc/apt/sources.list
 deb ${mirror} ${suite} ${components//,/ }
 #deb-src ${mirror} ${suite} ${components//,/ }
@@ -191,7 +192,7 @@ groupadd -g 1000 kali
 useradd -m -u 1000 -g 1000 -G sudo,audio,bluetooth,cdrom,dialout,dip,lpadmin,netdev,plugdev,scanner,video,kali -s /bin/bash kali
 echo "kali:kali" | chpasswd
 
-aptops="--allow-change-held-packages -o dpkg::options::=--force-confnew"
+aptops="--allow-change-held-packages -o dpkg::options::=--force-confnew -o Acquire::Retries=3"
 
 apt-get install -y \$aptops ${packages} || apt-get install -y --fix-broken
 apt-get install -y \$aptops ${packages} || apt-get install -y --fix-broken
@@ -315,13 +316,24 @@ if [ -n "$proxy_url" ]; then
   rm -rf ${work_dir}/etc/apt/apt.conf.d/66proxy
 fi
 
+# Mirror replacement
+if [ ! -z "${@:5}" ]; then
+  mirror=${@:5}
+fi
+
+# Define sources.list
+cat << EOF > ${work_dir}/etc/apt/sources.list
+deb ${mirror} ${suite} ${components//,/ }
+#deb-src ${mirror} ${suite} ${components//,/ }
+EOF
+
+# Uncomment to enable the source code repositories
+#sed -i '/deb-src/s/^#//' $work_dir/etc/apt/sources.list
+
 # Create cmdline.txt file
 cat << EOF > ${work_dir}/boot/cmdline.txt
 dwc_otg.fiq_fix_enable=2 console=ttyAMA0,115200 kgdboc=ttyAMA0,115200 console=tty1 root=/dev/mmcblk0p2 rootfstype=$fstype rootwait rootflags=noload net.ifnames=0
 EOF
-
-# Enable the source code repositories
-sed -i '/deb-src/s/^#//' $work_dir/etc/apt/sources.list
 
 # systemd doesn't seem to be generating the fstab properly for some people, so
 # let's create one.
@@ -367,13 +379,13 @@ raw_size=$(($((${free_space}*1024))+${root_extra}+$((${bootsize}*1024))+4096))
 
 # Create the disk and partition it
 echo "Creating image file ${imagename}.img"
-fallocate -l $(echo ${raw_size}Ki | numfmt --from=iec-i --to=si) "${basedir}"/${imagename}.img
-parted -s "${basedir}"/${imagename}.img mklabel msdos
-parted -s "${basedir}"/${imagename}.img mkpart primary fat32 1MiB ${bootsize}MiB
-parted -s -a minimal "${basedir}"/${imagename}.img mkpart primary $fstype ${bootsize}MiB 100%
+fallocate -l $(echo ${raw_size}Ki | numfmt --from=iec-i --to=si) ${current_dir}/${imagename}.img
+parted -s ${current_dir}/${imagename}.img mklabel msdos
+parted -s ${current_dir}/${imagename}.img mkpart primary fat32 1MiB ${bootsize}MiB
+parted -s -a minimal ${current_dir}/${imagename}.img mkpart primary $fstype ${bootsize}MiB 100%
 
 # Set the partition variables
-loopdevice=$(losetup --show -fP "${basedir}/${imagename}.img")
+loopdevice=$(losetup --show -fP "${current_dir}/${imagename}.img")
 bootp="${loopdevice}p1"
 rootp="${loopdevice}p2"
 
@@ -433,11 +445,11 @@ limit_cpu (){
 if [ $compress = xz ]; then
   if [ $(arch) == 'x86_64' ]; then
     echo "Compressing ${imagename}.img"
-    limit_cpu pixz -p 2 "${basedir}"/${imagename}.img ${imagename}.img.xz # -p Nº cpu cores use
-    chmod 644 ${imagename}.img.xz
+    limit_cpu pixz -p 2 ${current_dir}/${imagename}.img # -p Nº cpu cores use
+    chmod 644 ${current_dir}/${imagename}.img.xz
   fi
 else
-  chmod 644 ${imagename}.img
+  chmod 644 ${current_dir}/${imagename}.img
 fi
 # Clean up all the temporary build stuff and remove the directories.
 # Comment this out to keep things around if you want to see what may have gone wrong.
