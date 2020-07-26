@@ -273,7 +273,7 @@ systemctl enable fake-hwclock
 
 # Create cmdline.txt file
 mkdir -p /boot
-echo "dwc_otg.lpm_enable=0 console=serial0,115200 console=tty1 root=/dev/mmcblk0p2 rootfstype=ext3 elevator=deadline fsck.repair=yes rootwait" > /boot/cmdline.txt
+echo "dwc_otg.lpm_enable=0 console=serial0,115200 console=tty1 root=/dev/mmcblk0p2 rootfstype=$fstype elevator=deadline fsck.repair=yes rootwait" > /boot/cmdline.txt
 
 # Install P4wnP1 A.L.O.A.
 cd /root/P4wnP1
@@ -441,7 +441,7 @@ cat << EOF > ${work_dir}/etc/fstab
 # <file system> <mount point>   <type>  <options>       <dump>  <pass>
 proc            /proc           proc    defaults          0       0
 /dev/mmcblk0p1  /boot           vfat    defaults          0       2
-/dev/mmcblk0p2  /               ext3    defaults,noatime  0       1
+/dev/mmcblk0p2  /               $fstype    defaults,noatime  0       1
 EOF
 
 
@@ -495,7 +495,7 @@ echo "Creating image file ${imagename}.img"
 fallocate -l $(echo ${raw_size}Ki | numfmt --from=iec-i --to=si) ${current_dir}/${imagename}.img
 parted ${current_dir}/${imagename}.img --script -- mklabel msdos
 parted ${current_dir}/${imagename}.img --script -- mkpart primary fat32 1MiB ${bootstart}KiB
-parted ${current_dir}/${imagename}.img --script -- mkpart primary ext3 ${bootend}KiB 100%
+parted ${current_dir}/${imagename}.img --script -- mkpart primary $fstype ${bootend}KiB 100%
 
 # Set the partition variables
 bootp="$(losetup -o 1MiB --sizelimit ${bootstart}KiB -f --show ${current_dir}/${imagename}.img)"

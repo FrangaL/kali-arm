@@ -256,6 +256,7 @@ rm -rf /hs_err*
 rm -rf /userland
 rm -rf /opt/vc/src
 rm -f /etc/ssh/ssh_host_*
+rm -rf /var/lib/dpkg/*-old
 rm -rf /var/lib/apt/lists/*
 rm -rf /var/cache/apt/*.bin
 rm -rf /var/cache/apt/archives/*
@@ -343,7 +344,7 @@ cd "${basedir}"
 # Create a file to set up our u-boot environment
 cat << EOF > ${work_dir}/boot/boot.txt
 setenv mmcdev 2
-setenv bootargs 'earlyprintk console=ttymxc3,115200 console=tty1 root=/dev/mmcblk0p2 rootfstype=ext3 rw rootwait net.ifnames=0'
+setenv bootargs 'earlyprintk console=ttymxc3,115200 console=tty1 root=/dev/mmcblk0p2 rootfstype=$fstype rw rootwait net.ifnames=0'
 setenv loadaddr  0x10800000
 setenv fdtaddr   0x15000000
 setenv bootm_low 0x15000000
@@ -407,7 +408,7 @@ EOF
 
 # Create an fstab so that we don't mount / read-only.
 UUID=$(blkid -s UUID -o value ${rootp})
-echo "UUID=$UUID /               ext3    errors=remount-ro 0       1" >> ${work_dir}/etc/fstab
+echo "UUID=$UUID /               $fstype    errors=remount-ro 0       1" >> ${work_dir}/etc/fstab
 
 echo "Rsyncing rootfs into image file"
 rsync -HPavz -q ${work_dir}/ ${basedir}/root/

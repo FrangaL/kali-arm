@@ -284,6 +284,7 @@ rm -rf /hs_err*
 rm -rf /userland
 rm -rf /opt/vc/src
 rm -f /etc/ssh/ssh_host_*
+rm -rf /var/lib/dpkg/*-old
 rm -rf /var/lib/apt/lists/*
 rm -rf /var/cache/apt/*.bin
 rm -rf /var/cache/apt/archives/*
@@ -312,7 +313,7 @@ EOF
 
 # Create cmdline.txt file
 cat << EOF > ${work_dir}/boot/cmdline.txt
-dwc_otg.lpm_enable=0 console=ttyAMA0,115200 kgdboc=ttyAMA0,115200 console=tty1 elevator=deadline root=/dev/mmcblk0p2 rootfstype=ext3 rootwait net.ifnames=0
+dwc_otg.lpm_enable=0 console=ttyAMA0,115200 kgdboc=ttyAMA0,115200 console=tty1 elevator=deadline root=/dev/mmcblk0p2 rootfstype=$fstype rootwait net.ifnames=0
 EOF
 
 # systemd doesn't seem to be generating the fstab properly for some people, so
@@ -321,7 +322,7 @@ cat << EOF > ${work_dir}/etc/fstab
 # <file system> <mount point>   <type>  <options>       <dump>  <pass>
 proc            /proc           proc    defaults          0       0
 /dev/mmcblk0p1  /boot           vfat    defaults          0       2
-/dev/mmcblk0p2  /               ext3    defaults,noatime  0       1
+/dev/mmcblk0p2  /               $fstype    defaults,noatime  0       1
 EOF
 
 # Copy a default config, with everything commented out so people find it when
@@ -340,7 +341,7 @@ echo "Creating image file ${imagename}.img"
 fallocate -l $(echo ${raw_size}Ki | numfmt --from=iec-i --to=si) ${current_dir}/${imagename}.img
 parted ${current_dir}/${imagename}.img --script -- mklabel msdos
 parted ${current_dir}/${imagename}.img --script -- mkpart primary fat32 1MiB ${bootstart}KiB
-parted ${current_dir}/${imagename}.img --script -- mkpart primary ext3 ${bootend}KiB 100%
+parted ${current_dir}/${imagename}.img --script -- mkpart primary $fstype ${bootend}KiB 100%
 
 # Set the partition variables
 bootp="$(losetup -o 1MiB --sizelimit ${bootstart}KiB -f --show ${current_dir}/${imagename}.img)"

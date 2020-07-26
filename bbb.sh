@@ -263,6 +263,7 @@ rm -rf /hs_err*
 rm -rf /userland
 rm -rf /opt/vc/src
 rm -f /etc/ssh/ssh_host_*
+rm -rf /var/lib/dpkg/*-old
 rm -rf /var/lib/apt/lists/*
 rm -rf /var/cache/apt/*.bin
 rm -rf /var/cache/apt/archives/*
@@ -330,7 +331,7 @@ loadfdt=load mmc \${mmcdev}:\${mmcpart} \${fdtaddr} /dtbs/\${fdtfile}
 
 console=ttyO0,115200n8
 mmcroot=/dev/mmcblk0p2 rw net.ifnames=0
-mmcrootfstype=ext3 rootwait fixrtc
+mmcrootfstype=$fstype rootwait fixrtc
 
 ##To disable HDMI/eMMC...
 #optargs=capemgr.disable_partno=BB-BONELT-HDMI,BB-BONELT-HDMIN,BB-BONE-EMMC-2G
@@ -416,7 +417,7 @@ echo "Creating image file ${imagename}.img"
 fallocate -l $(echo ${raw_size}Ki | numfmt --from=iec-i --to=si) ${current_dir}/${imagename}.img
 parted ${current_dir}/${imagename}.img --script -- mklabel msdos
 parted ${current_dir}/${imagename}.img --script -- mkpart primary fat32 1MiB ${bootstart}KiB
-parted ${current_dir}/${imagename}.img --script -- mkpart primary ext3 ${bootend}KiB 100%
+parted ${current_dir}/${imagename}.img --script -- mkpart primary $fstype ${bootend}KiB 100%
 
 # Set the partition variables
 loopdevice=`losetup -f --show ${current_dir}/${imagename}.img`
@@ -448,7 +449,7 @@ EOF
 
 # Create an fstab so that we don't mount / read-only.
 UUID=$(blkid -s UUID -o value ${rootp})
-echo "UUID=$UUID /               ext3    errors=remount-ro 0       1" >> ${work_dir}/etc/fstab
+echo "UUID=$UUID /               $fstype    errors=remount-ro 0       1" >> ${work_dir}/etc/fstab
 
 echo "Rsyncing rootfs into image file"
 rsync -HPavz -q ${work_dir}/ ${basedir}/root/

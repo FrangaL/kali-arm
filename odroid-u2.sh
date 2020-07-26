@@ -259,6 +259,7 @@ rm -rf /hs_err*
 rm -rf /userland
 rm -rf /opt/vc/src
 rm -f /etc/ssh/ssh_host_*
+rm -rf /var/lib/dpkg/*-old
 rm -rf /var/lib/apt/lists/*
 rm -rf /var/cache/apt/*.bin
 rm -rf /var/cache/apt/archives/*
@@ -366,7 +367,7 @@ cat << EOF > ${work_dir}/boot/boot.txt
 setenv initrd_high "0xffffffff"
 setenv fdt_high "0xffffffff"
 setenv bootcmd "fatload mmc 0:1 0x40008000 zImage; fatload mmc 0:1 0x42000000 uInitrd; bootm 0x40008000 0x42000000"
-setenv bootargs "console=tty1 console=ttySAC1,115200n8 root=/dev/mmcblk0p2 rootwait mem=2047M rw rootfstype=ext3 net.ifnames=0"
+setenv bootargs "console=tty1 console=ttySAC1,115200n8 root=/dev/mmcblk0p2 rootwait mem=2047M rw rootfstype=$fstype net.ifnames=0"
 boot
 EOF
 
@@ -385,7 +386,7 @@ echo "Creating image file ${imagename}.img"
 fallocate -l $(echo ${raw_size}Ki | numfmt --from=iec-i --to=si) ${current_dir}/${imagename}.img
 parted ${current_dir}/${imagename}.img --script -- mklabel msdos
 parted ${current_dir}/${imagename}.img --script -- mkpart primary fat32 1MiB ${bootstart}KiB
-parted ${current_dir}/${imagename}.img --script -- mkpart primary ext3 ${bootend}KiB 100%
+parted ${current_dir}/${imagename}.img --script -- mkpart primary $fstype ${bootend}KiB 100%
 
 # Set the partition variables
 loopdevice=`losetup -f --show ${current_dir}/${imagename}.img`
@@ -397,7 +398,7 @@ rootp=${device}p2
 
 # Create file systems
 mkfs.vfat -n BOOT ${bootp}
-# Disable 64bit on ext3 because the u-boot from 2010 is too old.
+# Disable 64bit on ext3/4 because the u-boot from 2010 is too old.
 if [[ $fstype == ext4 ]]; then
   features="-O ^64bit,^metadata_csum"
 elif [[ $fstype == ext3 ]]; then
