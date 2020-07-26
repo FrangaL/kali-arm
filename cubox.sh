@@ -26,8 +26,12 @@ suite=${suite:-"kali-rolling"}
 free_space="300"
 # /boot partition in MiB
 bootsize="128"
+# Select compression, xz or none
+compress="xz"
+# Choose filesystem format to format ( ext3 or ext4 )
+fstype="ext3"
 # If you have your own preferred mirrors, set them here.
-mirror="http://http.kali.org/kali"
+mirror=${4:-"http://http.kali.org/kali"}
 # Gitlab url Kali repository
 kaligit="https://gitlab.com/kalilinux"
 # Github raw url
@@ -265,9 +269,15 @@ if [ -n "$proxy_url" ]; then
   rm -rf ${work_dir}/etc/apt/apt.conf.d/66proxy
 fi
 
+# Mirror replacement
+if [ ! -z "${@:5}" ]; then
+  mirror=${@:5}
+fi
+
+# Define sources.list
 cat << EOF > ${work_dir}/etc/apt/sources.list
-deb http://http.kali.org/kali kali-rolling main non-free contrib
-#deb-src http://http.kali.org/kali kali-rolling main non-free contrib
+deb ${mirror} ${suite} ${components//,/ }
+#deb-src ${mirror} ${suite} ${components//,/ }
 EOF
 
 # We need an older cross compiler due to kernel age.
@@ -349,19 +359,23 @@ raw_size=$(($((${free_space}*1024))+${root_extra}+$((${bootsize}*1024))+4096))
 
 # Create the disk and partition it
 echo "Creating image file ${imagename}.img"
-fallocate -l $(echo ${raw_size}Ki | numfmt --from=iec-i --to=si) "${basedir}"/${imagename}.img
-parted ${basedir}/${imagename}.img --script -- mklabel msdos
-parted ${basedir}/${imagename}.img --script -- mkpart primary ext3 1MiB 100%
+fallocate -l $(echo ${raw_size}Ki | numfmt --from=iec-i --to=si) ${current_dir}/${imagename}.img
+parted ${current_dir}/${imagename}.img --script -- mklabel msdos
+parted ${current_dir}/${imagename}.img --script -- mkpart primary ext3 1MiB 100%
 
 # Set the partition variables
-loopdevice=`losetup -f --show "${basedir}"/${imagename}.img`
+loopdevice=`losetup -f --show ${current_dir}/${imagename}.img`
 device=`kpartx -va ${loopdevice} | sed 's/.*\(loop[0-9]\+\)p.*/\1/g' | head -1`
 sleep 5
 device="/dev/mapper/${device}"
 rootp=${device}p1
 
-# Create file systems
-mkfs.ext3 -L ROOTFS -O ^64bit,^flex_bg,^metadata_csum  ${rootp}
+if [[ $fstype == ext4 ]]; then
+  features="-O ^64bit,^metadata_csum"
+elif [[ $fstype == ext3 ]]; then
+  features="-O ^64bit"
+fi
+mkfs $features -t $fstype -L ROOTFS ${rootp}
 
 # Create the dirs for the partitions and mount them
 mkdir -p "${basedir}"/root
@@ -385,16 +399,36 @@ umount ${rootp}
 kpartx -dv ${loopdevice}
 losetup -d ${loopdevice}
 
-# Don't pixz on 32bit, there isn't enough memory to compress the images.
-if [ $(arch) == 'x86_64' ]; then
-  echo "Compressing ${imagename}.img"
-  cd ${current_dir}
+# Limite use cpu function
+limit_cpu (){
   rand=$(tr -cd 'A-Za-z0-9' < /dev/urandom | head -c4 ; echo) # Randowm name group
-  cgcreate -g cpu:/cpulimit-${rand} # Name of group
+  cgcreate -g cpu:/cpulimit-${rand} # Name of group cpulimit
   cgset -r cpu.shares=800 cpulimit-${rand} # Max 1024
   cgset -r cpu.cfs_quota_us=80000 cpulimit-${rand} # Max 100000
-  cgexec -g cpu:cpulimit-${rand} pixz -p 2 "${basedir}"/${imagename}.img ${imagename}.img.xz # -p Nº cpu cores use
-  cgdelete cpu:/cpulimit-${rand} # Delete group
+  # Retry command
+  local n=1; local max=5; local delay=2
+  while true; do
+    cgexec -g cpu:cpulimit-${rand} "$@" && break || {
+      if [[ $n -lt $max ]]; then
+        ((n++))
+        echo -e "\e[31m Command failed. Attempt $n/$max \033[0m"
+        sleep $delay;
+      else
+        echo "The command has failed after $n attempts."
+        break
+      fi
+    }
+  done
+}
+
+if [ $compress = xz ]; then
+  if [ $(arch) == 'x86_64' ]; then
+    echo "Compressing ${imagename}.img"
+    limit_cpu pixz -p 2 ${current_dir}/${imagename}.img # -p Nº cpu cores use
+    chmod 644 ${current_dir}/${imagename}.img.xz
+  fi
+else
+  chmod 644 ${current_dir}/${imagename}.img
 fi
 
 # Clean up all the temporary build stuff and remove the directories.
