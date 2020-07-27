@@ -199,7 +199,7 @@ echo 'console-common console-data/keymap/full select en-latin1-nodeadkeys' | deb
 
 # Copy all services
 cp -p /bsp/services/all/*.service /etc/systemd/system/
-cp -p /bsp/services/rpi/*.service /etc//systemd/system/
+cp -p /bsp/services/rpi/*.service /etc/systemd/system/
 
 # Scripts for monitor mode
 install -m755 /bsp/scripts/monstart /usr/bin/
@@ -382,8 +382,9 @@ parted ${current_dir}/${imagename}.img --script -- mkpart primary fat32 1MiB ${b
 parted ${current_dir}/${imagename}.img --script -- mkpart primary $fstype ${bootend}KiB 100%
 
 # Set the partition variables
-bootp="$(losetup -o 1MiB --sizelimit ${bootstart}KiB -f --show ${current_dir}/${imagename}.img)"
-rootp="$(losetup -o ${bootend}KiB --sizelimit ${raw_size}KiB -f --show ${current_dir}/${imagename}.img)"
+loopdevice=$(losetup --show -fP "${current_dir}/${imagename}.img")
+bootp="${loopdevice}p1"
+rootp="${loopdevice}p2"
 
 # Create file systems
 mkfs.vfat -n BOOT -F 32 -v ${bootp}
@@ -414,8 +415,7 @@ umount -l ${bootp}
 umount -l ${rootp}
 
 # Remove loop devices
-losetup -d ${bootp}
-losetup -d ${rootp}
+losetup -d ${loopdevice}
 
 # Limite use cpu function
 limit_cpu (){
