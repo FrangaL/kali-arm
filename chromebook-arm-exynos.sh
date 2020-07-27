@@ -36,7 +36,8 @@ githubraw="https://raw.githubusercontent.com"
 
 # Check EUID=0 you can run any binary as root.
 if [[ $EUID -ne 0 ]]; then
-  echo "This script must be run as root"
+  echo "This script must be run as root or have super user permissions"
+  echo "Use: sudo $0 ${1:-2.0} ${2:-kali}"
   exit 1
 fi
 
@@ -181,7 +182,7 @@ groupadd -g 1000 kali
 useradd -m -u 1000 -g 1000 -G sudo,audio,bluetooth,cdrom,dialout,dip,lpadmin,netdev,plugdev,scanner,video,kali -s /bin/bash kali
 echo "kali:kali" | chpasswd
 
-aptops="--allow-change-held-packages -o dpkg::options::=--force-confnew"
+aptops="--allow-change-held-packages -o dpkg::options::=--force-confnew -o Acquire::Retries=3"
 
 # This looks weird, but we do it twice because every so often, there's a failure to download from the mirror
 # So to workaround it, we attempt to install them twice.
@@ -263,8 +264,10 @@ if [ -n "$proxy_url" ]; then
 fi
 
 # Mirror replacement
-if [ ! -z "${@:5}" ]; then
+if [[ ! -z "${@:5}" || "$suite" != "kali-rolling" ]]; then
   mirror=${@:5}
+  [ ! -z "${@:5}"] || mirror="http://http.kali.org/kali"
+  [ "$suite" != "kali-rolling" ] && suite=kali-rolling
 fi
 
 # Define sources.list
@@ -693,7 +696,8 @@ limit_cpu (){
 if [ $compress = xz ]; then
   if [ $(arch) == 'x86_64' ]; then
     echo "Compressing ${imagename}.img"
-    limit_cpu pixz -p 2 ${current_dir}/${imagename}.img # -p Nº cpu cores use
+    [ $(nproc) \< 3 ] || cpu_cores=3 # cpu_cores = Number of cores to use
+    limit_cpu pixz -p ${cpu_cores:-2} ${current_dir}/${imagename}.img # -p Nº cpu cores use
     chmod 644 ${current_dir}/${imagename}.img.xz
   fi
 else

@@ -46,7 +46,8 @@ githubraw="https://raw.githubusercontent.com"
 
 # Check EUID=0 you can run any binary as root.
 if [[ $EUID -ne 0 ]]; then
-  echo "This script must be run as root"
+  echo "This script must be run as root or have super user permissions"
+  echo "Use: sudo $0 ${1:-2.0} ${2:-kali}"
   exit 1
 fi
 
@@ -334,8 +335,10 @@ LANG=C systemd-nspawn -M ${machine} -D kali-${architecture} /cleanup
 echo "T0:23:respawn:/sbin/agetty -L ttyAMA0 115200 vt100" >> ${work_dir}/etc/inittab
 
 # Mirror replacement
-if [ ! -z "${@:5}" ]; then
+if [[ ! -z "${@:5}" || "$suite" != "kali-rolling" ]]; then
   mirror=${@:5}
+  [ ! -z "${@:5}"] || mirror="http://http.kali.org/kali"
+  [ "$suite" != "kali-rolling" ] && suite=kali-rolling
 fi
 
 # Define sources.list
@@ -572,7 +575,8 @@ limit_cpu (){
 if [ $compress = xz ]; then
   if [ $(arch) == 'x86_64' ]; then
     echo "Compressing ${imagename}.img"
-    limit_cpu pixz -p 2 ${current_dir}/${imagename}.img # -p Nº cpu cores use
+    [ $(nproc) \< 3 ] || cpu_cores=3 # cpu_cores = Number of cores to use
+    limit_cpu pixz -p ${cpu_cores:-2} ${current_dir}/${imagename}.img # -p Nº cpu cores use
     chmod 644 ${current_dir}/${imagename}.img.xz
   fi
 else
