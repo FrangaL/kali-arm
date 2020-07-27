@@ -335,6 +335,7 @@ echo "T0:23:respawn:/sbin/agetty -L ttyAMA0 115200 vt100" >> ${work_dir}/etc/ini
 
 # Mirror replacement
 if [ ! -z "${@:5}" ]; then
+  [ $suite != kali-rolling ] || suite=kali-rolling
   mirror=${@:5}
 fi
 

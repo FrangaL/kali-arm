@@ -323,6 +323,7 @@ EOF
 
 # Mirror replacement
 if [ ! -z "${@:5}" ]; then
+  [ $suite != kali-rolling ] || suite=kali-rolling
   mirror=${@:5}
 fi
 
