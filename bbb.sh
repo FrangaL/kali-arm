@@ -409,12 +409,16 @@ chmod 755 ${work_dir}/root/scripts/rpi-wiggle.sh
 
 # Calculate the space to create the image.
 root_size=$(du -s -B1 ${work_dir} --exclude=${work_dir}/boot | cut -f1)
+echo $root_size
 root_extra=$((${root_size}/1024/1000*5*1024/5))
+echo $root_extra
 raw_size=$(($((${free_space}*1024))+${root_extra}+$((${bootsize}*1024))+4096))
+echo $raw_size
 
 # Create the disk and partition it
 echo "Creating image file ${imagename}.img"
 fallocate -l $(echo ${raw_size}Ki | numfmt --from=iec-i --to=si) ${current_dir}/${imagename}.img
+echo "Partitioning ${imagename}.img"
 parted ${current_dir}/${imagename}.img --script -- mklabel msdos
 parted ${current_dir}/${imagename}.img --script -- mkpart primary fat32 1MiB ${bootstart}KiB
 parted ${current_dir}/${imagename}.img --script -- mkpart primary $fstype ${bootend}KiB 100%
