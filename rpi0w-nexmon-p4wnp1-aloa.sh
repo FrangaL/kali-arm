@@ -494,12 +494,12 @@ raw_size=$(($((${free_space}*1024))+${root_extra}+$((${bootsize}*1024))+4096))
 echo "Creating image file ${imagename}.img"
 fallocate -l $(echo ${raw_size}Ki | numfmt --from=iec-i --to=si) ${current_dir}/${imagename}.img
 parted ${current_dir}/${imagename}.img --script -- mklabel msdos
-parted ${current_dir}/${imagename}.img --script -- mkpart primary fat32 1MiB ${bootstart}KiB
-parted ${current_dir}/${imagename}.img --script -- mkpart primary $fstype ${bootend}KiB 100%
+parted ${current_dir}/${imagename}.img --script -- mkpart primary fat32 1MiB ${bootstart}MiB
+parted ${current_dir}/${imagename}.img --script -- mkpart primary $fstype ${bootend}MiB 100%
 
 # Set the partition variables
-bootp="$(losetup -o 1MiB --sizelimit ${bootstart}KiB -f --show ${current_dir}/${imagename}.img)"
-rootp="$(losetup -o ${bootend}KiB --sizelimit ${raw_size}KiB -f --show ${current_dir}/${imagename}.img)"
+bootp="$(losetup -o 1MiB --sizelimit ${bootstart}MiB -f --show ${current_dir}/${imagename}.img)"
+rootp="$(losetup -o ${bootend}MiB --sizelimit ${raw_size}MiB -f --show ${current_dir}/${imagename}.img)"
 
 # Create file systems
 mkfs.vfat -n BOOT -F 32 -v ${bootp}

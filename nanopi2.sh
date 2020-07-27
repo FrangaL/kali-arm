@@ -397,8 +397,8 @@ raw_size=$(($((${free_space}*1024))+${root_extra}+$((${bootsize}*1024))+4096))
 echo "Creating image file ${imagename}.img"
 fallocate -l $(echo ${raw_size}Ki | numfmt --from=iec-i --to=si) ${current_dir}/${imagename}.img
 parted ${current_dir}/${imagename}.img --script -- mklabel msdos
-parted ${current_dir}/${imagename}.img --script -- mkpart primary ext3 1MiB ${bootstart}KiB
-parted ${current_dir}/${imagename}.img --script -- mkpart primary $fstype ${bootend}KiB 100%
+parted ${current_dir}/${imagename}.img --script -- mkpart primary ext3 1MiB ${bootstart}MiB
+parted ${current_dir}/${imagename}.img --script -- mkpart primary $fstype ${bootend}MiB 100%
 
 # Set the partition variables
 loopdevice=`losetup -f --show ${current_dir}/${imagename}.img`
