@@ -421,7 +421,7 @@ fallocate -l $(echo ${raw_size}Ki | numfmt --from=iec-i --to=si) ${current_dir}/
 echo "Partitioning ${imagename}.img"
 parted ${current_dir}/${imagename}.img --script -- mklabel msdos
 parted ${current_dir}/${imagename}.img --script -- mkpart primary fat32 1MiB ${bootsize}MiB
-parted ${current_dir}/${imagename}.img --script -- mkpart primary $fstype ${bootsize}MiB 100%
+parted -s -a minimal ${current_dir}/${imagename}.img --script -- mkpart primary $fstype ${bootsize}MiB 100%
 
 # Set the partition variables
 loopdevice=`losetup -f --show ${current_dir}/${imagename}.img`
