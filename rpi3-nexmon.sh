@@ -204,8 +204,8 @@ apt-get install --yes --allow-change-held-packages -o dpkg::options::=--force-co
 
 apt-get --yes --allow-change-held-packages autoremove
 
-install -m644 /bsp/services/all/*.service /etc/systemd/system/
-install -m644 /bsp/services/rpi/*.service /etc/systemd/system/
+cp -p /bsp/services/all/*.service /etc/systemd/system/
+cp -p /bsp/services/rpi/*.service /etc/systemd/system/
 
 # Re4son's rpi-tft configurator
 wget -q ${githubraw}/Re4son/RPi-Tweaks/master/kalipi-tft-config/kalipi-tft-config -O /usr/bin/kalipi-tft-config
@@ -340,8 +340,9 @@ parted ${current_dir}/${imagename}.img --script -- mkpart primary fat32 1MiB ${b
 parted ${current_dir}/${imagename}.img --script -- mkpart primary $fstype ${bootend}KiB 100%
 
 # Set the partition variables
-bootp="$(losetup -o 1MiB --sizelimit ${bootstart}KiB -f --show ${current_dir}/${imagename}.img)"
-rootp="$(losetup -o ${bootend}KiB --sizelimit ${raw_size}KiB -f --show ${current_dir}/${imagename}.img)"
+loopdevice=$(losetup --show -fP "${current_dir}/${imagename}.img")
+bootp="${loopdevice}p1"
+rootp="${loopdevice}p2"
 
 # Create file systems
 mkfs.vfat -n BOOT -F 32 -v ${bootp}
@@ -379,8 +380,7 @@ umount -l ${bootp}
 umount -l ${rootp}
 
 # Remove loop devices
-losetup -d ${bootp}
-losetup -d ${rootp}
+losetup -d ${loopdevice}
 
 # Limite use cpu function
 limit_cpu (){
