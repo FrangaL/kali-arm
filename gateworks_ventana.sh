@@ -319,7 +319,6 @@ echo 'T1:12345:respawn:/sbin/getty -L ttymxc1 115200 vt100' >> \
 
 # Mirror replacement
 if [ ! -z "${@:5}" ]; then
-  [ $suite != kali-rolling ] || suite=kali-rolling
   mirror=${@:5}
 fi
 
