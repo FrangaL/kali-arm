@@ -497,7 +497,7 @@ raw_size=$(($((${free_space}*1024))+${root_extra}+$((${bootsize}*1024))+4096))
 # Create the disk and partition it
 echo "Creating image file ${imagename}.img"
 fallocate -l $(echo ${raw_size}Ki | numfmt --from=iec-i --to=si) ${current_dir}/${imagename}.img
-parted ${current_dir}/${imagename}.img --script -- mklabel gpt
+parted -s ${current_dir}/${imagename}.img mklabel gpt
 cgpt create -z ${current_dir}/${imagename}.img
 cgpt create ${current_dir}/${imagename}.img
 
