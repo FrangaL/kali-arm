@@ -361,6 +361,7 @@ umount ${rootp}
 kpartx -dv ${loopdevice}
 losetup -d ${loopdevice}
 
+cd ${current_dir}
 
 # Limite use cpu function
 limit_cpu (){
