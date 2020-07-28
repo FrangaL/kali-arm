@@ -127,7 +127,7 @@ systemd-nspawn_exec(){
 }
 
 # We need to manually extract eatmydata to use it for the second stage.
-for archive in ${work_dir}/var/cache/apt/archive/*eatmydata*.deb; do
+for archive in ${work_dir}/var/cache/apt/archives/*eatmydata*.deb; do
   dpkg-deb --fsys-tarfile "$archive" > ${work_dir}/eatmydata
   tar -xkf ${work_dir}/eatmydata -C ${work_dir}
   rm -f ${work_dir}/eatmydata
