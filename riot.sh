@@ -325,7 +325,7 @@ EOF
 # Mirror replacement
 if [[ ! -z "${@:5}" || "$suite" != "kali-rolling" ]]; then
   mirror=${@:5}
-  [ ! -z "${@:5}"] || mirror="http://http.kali.org/kali"
+  [ ! -z "${@:5}" ] || mirror="http://http.kali.org/kali"
   [ "$suite" != "kali-rolling" ] && suite=kali-rolling
 fi
 
