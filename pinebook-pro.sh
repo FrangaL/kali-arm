@@ -101,8 +101,23 @@ elif [ "$apt_cacher" = "apt-cacher-ng" ] ; then
   fi
 fi
 
+# Detect architecture
+if [[ "${architecture}" == "arm64" ]]; then
+        QEMUARCH=qemu-aarch64
+        QEMUBIN="/usr/bin/qemu-aarch64-static"
+        LIB_ARCH="aarch64-linux-gnu"
+elif [[ "${architecture}" == "armhf" ]]; then
+        QEMUARCH=qemu-arm
+        QEMUBIN="/usr/bin/qemu-arm-static"
+        LIB_ARCH="arm-linux-gnueabihf"
+elif [[ "${architecture}" == "armel" ]]; then
+        QEMUARCH=qemu-arm
+        QEMUBIN="/usr/bin/qemu-arm-static"
+        LIB_ARCH="arm-linux-gnueabi"
+fi
+
 # create the rootfs - not much to modify here, except maybe throw in some more packages if you want.
-debootstrap --foreign --keyring=/usr/share/keyrings/kali-archive-keyring.gpg --include=kali-archive-keyring \
+eatmydata debootstrap --foreign --keyring=/usr/share/keyrings/kali-archive-keyring.gpg --include=kali-archive-keyring,eatmydata \
   --components=${components} --arch ${architecture} ${suite} ${work_dir} http://http.kali.org/kali
 
 # systemd-nspawn enviroment
@@ -111,8 +126,33 @@ systemd-nspawn_exec(){
   LANG=C systemd-nspawn -q --bind-ro ${qemu_bin} -M ${machine} -D ${work_dir} "$@"
 }
 
+# We need to manually extract eatmydata to use it for the second stage.
+for archive in ${work_dir}/var/cache/apt/archive/*eatmydata*.deb; do
+  dpkg-deb --fsys-tarfile "$archive" > ${work_dir}/eatmydata
+  tar -xkf ${work_dir}/eatmydata -C ${work_dir}
+  rm -f ${work_dir}/eatmydata
+done
+
+# Prepare dpkg to use eatmydata
+systemd-nspawn_exec dpkg-divert --divert /usr/bin/dpkg-eatmydata --rename --add /usr/bin/dpkg
+
+cat > ${work_dir}/usr/bin/dpkg << EOF
+#!/bin/sh
+if [ -e /usr/lib/${LIB_ARCH}/libeatmydata.so ]; then
+    [ -n "\${LD_PRELOAD}" ] && LD_PRELOAD="\$LD_PRELOAD:"
+    LD_PRELOAD="\$LD_PRELOAD\$so"
+fi
+for so in /usr/lib/${LIB_ARCH}/libeatmydata.so; do
+    [ -n "\$LD_PRELOAD" ] && LD_PRELOAD="\$LD_PRELOAD:"
+    LD_PRELOAD="\$LD_PRELOAD\$so"
+done
+export LD_PRELOAD
+exec "\$0-eatmydata" --force-unsafe-io "\$@"
+EOF
+chmod 755 ${work_dir}/usr/bin/dpkg
+
 # debootstrap second stage
-systemd-nspawn_exec /debootstrap/debootstrap --second-stage
+systemd-nspawn_exec eatmydata /debootstrap/debootstrap --second-stage
 
 cat << EOF > ${work_dir}/etc/apt/sources.list
 deb ${mirror} ${suite} ${components//,/ }
@@ -174,9 +214,9 @@ ln -sf /bin/true /usr/sbin/invoke-rc.d
 echo -e "#!/bin/sh\nexit 101" > /usr/sbin/policy-rc.d
 chmod 755 /usr/sbin/policy-rc.d
 
-apt-get update
+eatmydata apt-get update
 
-apt-get -y install git binutils ca-certificates console-common cryptsetup-bin initramfs-tools less locales nano u-boot-tools
+eatmydata apt-get -y install git binutils ca-certificates console-common cryptsetup-bin initramfs-tools less locales nano u-boot-tools
 
 # Create kali user with kali password... but first, we need to manually make some groups because they don't yet exist...
 # This mirrors what we have on a pre-installed VM, until the script works properly to allow end users to set up their own... user.
@@ -194,12 +234,12 @@ echo "kali:kali" | chpasswd
 
 aptops="--allow-change-held-packages -o dpkg::options::=--force-confnew -o Acquire::Retries=3"
 
-apt-get install -y \$aptops ${packages} || apt-get --yes --fix-broken install
-apt-get install -y \$aptops ${packages} || apt-get --yes --fix-broken install
-apt-get install -y \$aptops ${desktop} ${extras} ${tools} || apt-get --yes --fix-broken install
-apt-get install -y \$aptops ${desktop} ${extras} ${tools} || apt-get --yes --fix-broken install
-apt-get install -y \$aptops --autoremove systemd-timesyncd || apt-get --yes --fix-broken install
-apt-get dist-upgrade -y \$aptops
+eatmydata apt-get install -y \$aptops ${packages} || apt-get --yes --fix-broken install
+eatmydata apt-get install -y \$aptops ${packages} || apt-get --yes --fix-broken install
+eatmydata apt-get install -y \$aptops ${desktop} ${extras} ${tools} || apt-get --yes --fix-broken install
+eatmydata apt-get install -y \$aptops ${desktop} ${extras} ${tools} || apt-get --yes --fix-broken install
+eatmydata apt-get install -y \$aptops --autoremove systemd-timesyncd || apt-get --yes --fix-broken install
+eatmydata apt-get dist-upgrade -y \$aptops
 
 # Linux console/Keyboard configuration
 echo 'console-common console-data/keymap/policy select Select keymap from full list' | debconf-set-selections
@@ -229,11 +269,12 @@ systemctl enable bluetooth
 cp  /etc/skel/.bashrc /root/.bashrc
 
 cd /root
-apt download -o APT::Sandbox::User=root ca-certificates 2>/dev/null
+eatmydata apt download -o APT::Sandbox::User=root ca-certificates 2>/dev/null
 
 # Enable suspend2idle
 sed -i s/"#SuspendState=mem standby freeze"/"SuspendState=freeze"/g /etc/systemd/sleep.conf
 
+rm -f /usr/bin/dpkg
 rm -f /usr/sbin/policy-rc.d
 unlink /usr/sbin/invoke-rc.d
 EOF
@@ -241,6 +282,9 @@ EOF
 # Run third stage
 chmod 755 ${work_dir}/third-stage
 systemd-nspawn_exec /third-stage
+
+# Clean up eatmydata
+systemd-nspawn_exec dpkg-divert --remove --rename /usr/bin/dpkg
 
 # Clean system
 systemd-nspawn_exec << EOF
