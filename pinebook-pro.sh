@@ -103,17 +103,14 @@ fi
 
 # Detect architecture
 if [[ "${architecture}" == "arm64" ]]; then
-        QEMUARCH=qemu-aarch64
-        QEMUBIN="/usr/bin/qemu-aarch64-static"
-        LIB_ARCH="aarch64-linux-gnu"
+        qemu_bin="/usr/bin/qemu-aarch64-static"
+        lib_arch="aarch64-linux-gnu"
 elif [[ "${architecture}" == "armhf" ]]; then
-        QEMUARCH=qemu-arm
-        QEMUBIN="/usr/bin/qemu-arm-static"
-        LIB_ARCH="arm-linux-gnueabihf"
+        qemu_bin="/usr/bin/qemu-arm-static"
+        lib_arch="arm-linux-gnueabihf"
 elif [[ "${architecture}" == "armel" ]]; then
-        QEMUARCH=qemu-arm
-        QEMUBIN="/usr/bin/qemu-arm-static"
-        LIB_ARCH="arm-linux-gnueabi"
+        qemu_bin="/usr/bin/qemu-arm-static"
+        lib_arch="arm-linux-gnueabi"
 fi
 
 # create the rootfs - not much to modify here, except maybe throw in some more packages if you want.
@@ -122,7 +119,6 @@ eatmydata debootstrap --foreign --keyring=/usr/share/keyrings/kali-archive-keyri
 
 # systemd-nspawn enviroment
 systemd-nspawn_exec(){
-  qemu_bin=/usr/bin/qemu-aarch64-static
   LANG=C systemd-nspawn -q --bind-ro ${qemu_bin} -M ${machine} -D ${work_dir} "$@"
 }
 
@@ -138,11 +134,11 @@ systemd-nspawn_exec dpkg-divert --divert /usr/bin/dpkg-eatmydata --rename --add 
 
 cat > ${work_dir}/usr/bin/dpkg << EOF
 #!/bin/sh
-if [ -e /usr/lib/${LIB_ARCH}/libeatmydata.so ]; then
+if [ -e /usr/lib/${lib_arch}/libeatmydata.so ]; then
     [ -n "\${LD_PRELOAD}" ] && LD_PRELOAD="\$LD_PRELOAD:"
     LD_PRELOAD="\$LD_PRELOAD\$so"
 fi
-for so in /usr/lib/${LIB_ARCH}/libeatmydata.so; do
+for so in /usr/lib/${lib_arch}/libeatmydata.so; do
     [ -n "\$LD_PRELOAD" ] && LD_PRELOAD="\$LD_PRELOAD:"
     LD_PRELOAD="\$LD_PRELOAD\$so"
 done
@@ -269,7 +265,7 @@ systemctl enable bluetooth
 cp  /etc/skel/.bashrc /root/.bashrc
 
 cd /root
-eatmydata apt download -o APT::Sandbox::User=root ca-certificates 2>/dev/null
+apt download -o APT::Sandbox::User=root ca-certificates 2>/dev/null
 
 # Enable suspend2idle
 sed -i s/"#SuspendState=mem standby freeze"/"SuspendState=freeze"/g /etc/systemd/sleep.conf
@@ -505,7 +501,6 @@ else
 fi
 
 # Clean up all the temporary build stuff and remove the directories.
-# Comment this out to keep things around if you want to see what may have gone
-# wrong.
+# Comment this out to keep things around if you want to see what may have gone wrong.
 echo "Removing temporary build files"
 rm -rf "${basedir}"
