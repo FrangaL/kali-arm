@@ -288,7 +288,6 @@ dkms install rtl8723cs/2020.02.27 -k 5.7.0-kali1-arm64
 
 # Replace the conf file after we've built the module and hope for the best
 mv /usr/src/rtl8723cs-2020.02.27/dkms.conf.orig /usr/src/rtl8723cs-2020.02.27/dkms.conf
-
 EOF
 
 # Run third stage
