@@ -101,18 +101,54 @@ elif [ "$apt_cacher" = "apt-cacher-ng" ] ; then
   fi
 fi
 
+# Detect architecture
+if [[ "${architecture}" == "arm64" ]]; then
+        qemu_bin="/usr/bin/qemu-aarch64-static"
+        lib_arch="aarch64-linux-gnu"
+elif [[ "${architecture}" == "armhf" ]]; then
+        qemu_bin="/usr/bin/qemu-arm-static"
+        lib_arch="arm-linux-gnueabihf"
+elif [[ "${architecture}" == "armel" ]]; then
+        qemu_bin="/usr/bin/qemu-arm-static"
+        lib_arch="arm-linux-gnueabi"
+fi
+
 # create the rootfs - not much to modify here, except maybe throw in some more packages if you want.
-debootstrap --foreign --keyring=/usr/share/keyrings/kali-archive-keyring.gpg --include=kali-archive-keyring \
+eatmydata debootstrap --foreign --keyring=/usr/share/keyrings/kali-archive-keyring.gpg --include=kali-archive-keyring,eatmydata \
   --components=${components} --arch ${architecture} ${suite} ${work_dir} http://http.kali.org/kali
 
 # systemd-nspawn enviroment
 systemd-nspawn_exec(){
-  qemu_bin=/usr/bin/qemu-arm-static
   LANG=C systemd-nspawn -q --bind-ro ${qemu_bin} -M ${machine} -D ${work_dir} "$@"
 }
 
+# We need to manually extract eatmydata to use it for the second stage.
+for archive in ${work_dir}/var/cache/apt/archives/*eatmydata*.deb; do
+  dpkg-deb --fsys-tarfile "$archive" > ${work_dir}/eatmydata
+  tar -xkf ${work_dir}/eatmydata -C ${work_dir}
+  rm -f ${work_dir}/eatmydata
+done
+
+# Prepare dpkg to use eatmydata
+systemd-nspawn_exec dpkg-divert --divert /usr/bin/dpkg-eatmydata --rename --add /usr/bin/dpkg
+
+cat > ${work_dir}/usr/bin/dpkg << EOF
+#!/bin/sh
+if [ -e /usr/lib/${lib_arch}/libeatmydata.so ]; then
+    [ -n "\${LD_PRELOAD}" ] && LD_PRELOAD="\$LD_PRELOAD:"
+    LD_PRELOAD="\$LD_PRELOAD\$so"
+fi
+for so in /usr/lib/${lib_arch}/libeatmydata.so; do
+    [ -n "\$LD_PRELOAD" ] && LD_PRELOAD="\$LD_PRELOAD:"
+    LD_PRELOAD="\$LD_PRELOAD\$so"
+done
+export LD_PRELOAD
+exec "\$0-eatmydata" --force-unsafe-io "\$@"
+EOF
+chmod 755 ${work_dir}/usr/bin/dpkg
+
 # debootstrap second stage
-systemd-nspawn_exec /debootstrap/debootstrap --second-stage
+systemd-nspawn_exec eatmydata /debootstrap/debootstrap --second-stage
 
 cat << EOF > ${work_dir}/etc/apt/sources.list
 deb ${mirror} ${suite} ${components//,/ }
@@ -205,14 +241,14 @@ aptops="--allow-change-held-packages -o dpkg::options::=--force-confnew -o Acqui
 
 # This looks weird, but we do it twice because every so often, there's a failure to download from the mirror
 # So to workaround it, we attempt to install them twice.
-apt-get install -y \$aptops ${packages} || apt-get --yes --fix-broken install
-apt-get install -y \$aptops ${packages} || apt-get --yes --fix-broken install
-apt-get install -y \$aptops ${desktop} ${extras} ${tools} || apt-get --yes --fix-broken install
-apt-get install -y \$aptops ${desktop} ${extras} ${tools} || apt-get --yes --fix-broken install
-apt-get install -y \$aptops --autoremove systemd-timesyncd || apt-get --yes --fix-broken install
-apt-get dist-upgrade -y \$aptops
+eatmydata apt-get install -y \$aptops ${packages} || eatmydata apt-get --yes --fix-broken install
+eatmydata apt-get install -y \$aptops ${packages} || eatmydata apt-get --yes --fix-broken install
+eatmydata apt-get install -y \$aptops ${desktop} ${extras} ${tools} || eatmydata apt-get --yes --fix-broken install
+eatmydata apt-get install -y \$aptops ${desktop} ${extras} ${tools} || eatmydata apt-get --yes --fix-broken install
+eatmydata apt-get install -y \$aptops --autoremove systemd-timesyncd || eatmydata apt-get --yes --fix-broken install
+eatmydata apt-get dist-upgrade -y \$aptops
 
-apt-get --yes --allow-change-held-packages -o dpkg::options::=--force-confnew autoremove
+eatmydata apt-get --yes --allow-change-held-packages -o dpkg::options::=--force-confnew autoremove
 
 # Copy all services
 install -m644 /bsp/services/all/*.service /etc/systemd/system/
@@ -245,6 +281,8 @@ sed -i -e 's/FONTSIZE=.*/FONTSIZE="6x12"/' /etc/default/console-setup
 
 # Fix startup time from 5 minutes to 15 secs on raise interface wlan0
 sed -i 's/^TimeoutStartSec=5min/TimeoutStartSec=15/g' "/usr/lib/systemd/system/networking.service"
+
+rm -f /usr/bin/dpkg
 EOF
 
 # Run third stage
@@ -278,6 +316,9 @@ echo 'g_ether' >> /etc/modules
 sed -i 's/INTERFACESv4=""/INTERFACESv4="usb0"/g' /etc/default/isc-dhcp-server
 systemctl enable isc-dhcp-server
 EOF
+
+# Clean up eatmydata
+systemd-nspawn_exec dpkg-divert --remove --rename /usr/bin/dpkg
 
 # Clean system
 systemd-nspawn_exec << EOF

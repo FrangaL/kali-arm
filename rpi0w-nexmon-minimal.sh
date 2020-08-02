@@ -110,18 +110,54 @@ elif [ "$apt_cacher" = "apt-cacher-ng" ] ; then
   fi
 fi
 
+# Detect architecture
+if [[ "${architecture}" == "arm64" ]]; then
+        qemu_bin="/usr/bin/qemu-aarch64-static"
+        lib_arch="aarch64-linux-gnu"
+elif [[ "${architecture}" == "armhf" ]]; then
+        qemu_bin="/usr/bin/qemu-arm-static"
+        lib_arch="arm-linux-gnueabihf"
+elif [[ "${architecture}" == "armel" ]]; then
+        qemu_bin="/usr/bin/qemu-arm-static"
+        lib_arch="arm-linux-gnueabi"
+fi
+
 # create the rootfs - not much to modify here, except maybe throw in some more packages if you want.
-debootstrap --foreign --keyring=/usr/share/keyrings/kali-archive-keyring.gpg --include=kali-archive-keyring \
+eatmydata debootstrap --foreign --keyring=/usr/share/keyrings/kali-archive-keyring.gpg --include=kali-archive-keyring,eatmydata \
   --components=${components} --arch ${architecture} ${suite} ${work_dir} http://http.kali.org/kali
 
 # systemd-nspawn enviroment
 systemd-nspawn_exec(){
-  qemu_bin=/usr/bin/qemu-aarch64-static
   LANG=C systemd-nspawn -q --bind-ro ${qemu_bin} -M ${machine} -D ${work_dir} "$@"
 }
 
+# We need to manually extract eatmydata to use it for the second stage.
+for archive in ${work_dir}/var/cache/apt/archives/*eatmydata*.deb; do
+  dpkg-deb --fsys-tarfile "$archive" > ${work_dir}/eatmydata
+  tar -xkf ${work_dir}/eatmydata -C ${work_dir}
+  rm -f ${work_dir}/eatmydata
+done
+
+# Prepare dpkg to use eatmydata
+systemd-nspawn_exec dpkg-divert --divert /usr/bin/dpkg-eatmydata --rename --add /usr/bin/dpkg
+
+cat > ${work_dir}/usr/bin/dpkg << EOF
+#!/bin/sh
+if [ -e /usr/lib/${lib_arch}/libeatmydata.so ]; then
+    [ -n "\${LD_PRELOAD}" ] && LD_PRELOAD="\$LD_PRELOAD:"
+    LD_PRELOAD="\$LD_PRELOAD\$so"
+fi
+for so in /usr/lib/${lib_arch}/libeatmydata.so; do
+    [ -n "\$LD_PRELOAD" ] && LD_PRELOAD="\$LD_PRELOAD:"
+    LD_PRELOAD="\$LD_PRELOAD\$so"
+done
+export LD_PRELOAD
+exec "\$0-eatmydata" --force-unsafe-io "\$@"
+EOF
+chmod 755 ${work_dir}/usr/bin/dpkg
+
 # debootstrap second stage
-systemd-nspawn_exec /debootstrap/debootstrap --second-stage
+systemd-nspawn_exec eatmydata /debootstrap/debootstrap --second-stage
 
 cat << EOF > ${work_dir}/etc/apt/sources.list
 deb ${mirror} ${suite} ${components//,/ }
@@ -174,9 +210,9 @@ cat << EOF >  ${work_dir}/third-stage
 #!/bin/bash -e
 export DEBIAN_FRONTEND=noninteractive
 
-apt-get update
+eatmydata apt-get update
 
-apt-get -y install binutils ca-certificates console-common git initramfs-tools less locales nano u-boot-tools
+eatmydata apt-get -y install binutils ca-certificates console-common git initramfs-tools less locales nano u-boot-tools
 
 # Create kali user with kali password... but first, we need to manually make some groups because they don't yet exist...
 # This mirrors what we have on a pre-installed VM, until the script works properly to allow end users to set up their own... user.
@@ -194,13 +230,13 @@ echo "kali:kali" | chpasswd
 
 aptops="--allow-change-held-packages -o dpkg::options::=--force-confnew -o Acquire::Retries=3"
 
-apt-get install -y \$aptops ${packages} || apt-get --yes --fix-broken install
-apt-get install -y \$aptops ${packages} || apt-get --yes --fix-broken install
-apt-get install -y \$aptops ${desktop} ${extras} ${tools} || apt-get --yes --fix-broken install
-apt-get install -y \$aptops ${desktop} ${extras} ${tools} || apt-get --yes --fix-broken install
-apt-get dist-upgrade -y \$aptops
+eatmydata apt-get install -y \$aptops ${packages} || eatmydata apt-get --yes --fix-broken install
+eatmydata apt-get install -y \$aptops ${packages} || eatmydata apt-get --yes --fix-broken install
+eatmydata apt-get install -y \$aptops ${desktop} ${extras} ${tools} || eatmydata apt-get --yes --fix-broken install
+eatmydata apt-get install -y \$aptops ${desktop} ${extras} ${tools} || eatmydata apt-get --yes --fix-broken install
+eatmydata apt-get dist-upgrade -y \$aptops
 
-apt-get -y --allow-change-held-packages --purge autoremove
+eatmydata apt-get -y --allow-change-held-packages --purge autoremove
 
 # Linux console/Keyboard configuration
 echo 'console-common console-data/keymap/policy select Select keymap from full list' | debconf-set-selections
@@ -221,8 +257,8 @@ install -m755 /bsp/scripts/monstop /usr/bin/
 # Install the kernel packages
 echo "deb http://http.re4son-kernel.com/re4son kali-pi main" > /etc/apt/sources.list.d/re4son.list
 wget -qO /etc/apt/trusted.gpg.d/re4son-repo-key.asc https://re4son-kernel.com/keys/http/archive-key.asc
-apt-get update
-apt-get install -y \$aptops kalipi-kernel kalipi-bootloader kalipi-re4son-firmware kalipi-kernel-headers
+eatmydata apt-get update
+eatmydata apt-get install -y \$aptops kalipi-kernel kalipi-bootloader kalipi-re4son-firmware kalipi-kernel-headers
 
 # Bluetooth enabling
 # Copy in the bluetooth firmware
@@ -299,11 +335,16 @@ sed -i -e 's/FONTSIZE=.*/FONTSIZE="6x12"/' /etc/default/console-setup
 
 # Fix startup time from 5 minutes to 15 secs on raise interface wlan0
 sed -i 's/^TimeoutStartSec=5min/TimeoutStartSec=15/g' "/usr/lib/systemd/system/networking.service"
+
+rm -f /usr/bin/dpkg
 EOF
 
 # Run third stage
 chmod 755 ${work_dir}/third-stage
 systemd-nspawn_exec /third-stage
+
+# Clean up eatmydata
+systemd-nspawn_exec dpkg-divert --remove --rename /usr/bin/dpkg
 
 # Clean system
 systemd-nspawn_exec << EOF
