@@ -325,6 +325,9 @@ mkdir brcm
 cp BCM4345C5.hcd brcm/BCM.hcd
 cp BCM4345C5.hcd brcm/BCM4345C5.hcd
 cp nvram_ap6256.txt brcm/brcmfmac43456-sdio.pine64,pinebook-pro.txt
+# Show all channels on 2.4 and 5GHz bands in all countries
+# https://gitlab.manjaro.org/manjaro-arm/packages/community/ap6256-firmware/-/issues/2
+sed -i -e 's/ccode.*/ccode=all/' brcm/brcmfmac43456-sdio.pine64,pinebook-pro.txt
 cp fw_bcm43456c5_ag.bin brcm/brcmfmac43456-sdio.bin
 cp brcmfmac43456-sdio.clm_blob brcm/brcmfmac43456-sdio.clm_blob
 mkdir -p ${work_dir}/lib/firmware/brcm/
