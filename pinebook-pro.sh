@@ -226,11 +226,11 @@ echo "kali:kali" | chpasswd
 
 aptops="--allow-change-held-packages -o dpkg::options::=--force-confnew -o Acquire::Retries=3"
 
-eatmydata apt-get install -y \$aptops ${packages} || apt-get --yes --fix-broken install
-eatmydata apt-get install -y \$aptops ${packages} || apt-get --yes --fix-broken install
-eatmydata apt-get install -y \$aptops ${desktop} ${extras} ${tools} || apt-get --yes --fix-broken install
-eatmydata apt-get install -y \$aptops ${desktop} ${extras} ${tools} || apt-get --yes --fix-broken install
-eatmydata apt-get install -y \$aptops --autoremove systemd-timesyncd || apt-get --yes --fix-broken install
+eatmydata apt-get install -y \$aptops ${packages} || eatmydata apt-get --yes --fix-broken install
+eatmydata apt-get install -y \$aptops ${packages} || eatmydata apt-get --yes --fix-broken install
+eatmydata apt-get install -y \$aptops ${desktop} ${extras} ${tools} || eatmydata apt-get --yes --fix-broken install
+eatmydata apt-get install -y \$aptops ${desktop} ${extras} ${tools} || eatmydata apt-get --yes --fix-broken install
+eatmydata apt-get install -y \$aptops --autoremove systemd-timesyncd || eatmydata apt-get --yes --fix-broken install
 eatmydata apt-get dist-upgrade -y \$aptops
 
 # Linux console/Keyboard configuration
