@@ -173,10 +173,6 @@ fi
 cat << EOF >  ${work_dir}/third-stage
 #!/bin/bash -e
 export DEBIAN_FRONTEND=noninteractive
-export RUNLEVEL=1
-ln -sf /bin/true /usr/sbin/invoke-rc.d
-echo -e "#!/bin/sh\nexit 101" > /usr/sbin/policy-rc.d
-chmod 755 /usr/sbin/policy-rc.d
 
 apt-get update
 
@@ -278,18 +274,6 @@ sed -i -e 's/FONTSIZE=.*/FONTSIZE="6x12"/' /etc/default/console-setup
 
 # Fix startup time from 5 minutes to 15 secs on raise interface wlan0
 sed -i 's/^TimeoutStartSec=5min/TimeoutStartSec=15/g' "/usr/lib/systemd/system/networking.service"
-
-# Attempt to build the raspi userland
-git clone https://github.com/raspberrypi/userland /userland
-sed -i 's/-j4/-j2/g' "/userland/buildme"
-install -m644 /bsp/configs/raspi-userland.conf /etc/ld.so.conf.d/
-install -m755 /bsp/configs/vc.sh /etc/profile.d/
-install -m644 /bsp/udev/99-vchiq-permissions.rules /etc/udev/rules.d/
-# Compile raspi userland
-cd /userland && ./buildme --aarch64
-
-rm -f /usr/sbin/policy-rc.d
-unlink /usr/sbin/invoke-rc.d
 EOF
 
 # Run third stage

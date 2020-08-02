@@ -259,10 +259,6 @@ chmod 755 ${work_dir}/etc/init.d/brcm_patchram_plus
 cat << EOF > ${work_dir}/third-stage
 #!/bin/bash -e
 export DEBIAN_FRONTEND=noninteractive
-export RUNLEVEL=1
-ln -sf /bin/true /usr/sbin/invoke-rc.d
-echo -e "#!/bin/sh\nexit 101" > /usr/sbin/policy-rc.d
-chmod 755 /usr/sbin/policy-rc.d
 
 apt-get update
 
@@ -338,9 +334,6 @@ cd /
 # Set the terminus font for a bit nicer display.
 sed -ie 's/FONTFACE=.*/FONTFACE="Terminus"/g' /etc/default/console-setup
 sed -ie 's/FONTSIZE=.*/FONTSIZE="6x12"/g' /etc/default/console-setup
-
-rm -f /usr/sbin/policy-rc.d
-unlink /usr/sbin/invoke-rc.d
 EOF
 
 # Run third stage

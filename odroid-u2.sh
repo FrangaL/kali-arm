@@ -165,10 +165,6 @@ fi
 cat << EOF >  ${work_dir}/third-stage
 #!/bin/bash -e
 export DEBIAN_FRONTEND=noninteractive
-export RUNLEVEL=1
-ln -sf /bin/true /usr/sbin/invoke-rc.d
-echo -e "#!/bin/sh\nexit 101" > /usr/sbin/policy-rc.d
-chmod 755 /usr/sbin/policy-rc.d
 
 apt-get update
 
@@ -240,9 +236,6 @@ sed -i 's/^TimeoutStartSec=5min/TimeoutStartSec=15/g' "/usr/lib/systemd/system/n
 # This file needs to exist in order to save the mac address, otherwise every
 # boot, the ODROID-U2/U3 will generate a random mac address.
 touch /etc/smsc95xx_mac_addr
-
-rm -f /usr/sbin/policy-rc.d
-unlink /usr/sbin/invoke-rc.d
 EOF
 
 # Run third stage

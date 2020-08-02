@@ -162,10 +162,6 @@ fi
 cat << EOF >  ${work_dir}/third-stage
 #!/bin/bash -e
 export DEBIAN_FRONTEND=noninteractive
-export RUNLEVEL=1
-ln -sf /bin/true /usr/sbin/invoke-rc.d
-echo -e "#!/bin/sh\nexit 101" > /usr/sbin/policy-rc.d
-chmod 755 /usr/sbin/policy-rc.d
 
 apt-get update
 
@@ -238,9 +234,6 @@ sed -i 's/^TimeoutStartSec=5min/TimeoutStartSec=25/g' "/usr/lib/systemd/system/n
 cat << '_EOF_' > /etc/default/u-boot
 U_BOOT_PARAMETERS="console=ttyS0,115200 console=tty1 root=/dev/mmcblk0p1 rootwait panic=10 rw rootfstype=$fstype net.ifnames=0"
 _EOF_
-
-rm -f /usr/sbin/policy-rc.d
-unlink /usr/sbin/invoke-rc.d
 EOF
 
 # Run third stage
