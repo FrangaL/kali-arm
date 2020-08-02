@@ -205,10 +205,6 @@ EOF
 cat << EOF > ${work_dir}/third-stage
 #!/bin/bash -e
 export DEBIAN_FRONTEND=noninteractive
-export RUNLEVEL=1
-ln -sf /bin/true /usr/sbin/invoke-rc.d
-echo -e "#!/bin/sh\nexit 101" > /usr/sbin/policy-rc.d
-chmod 755 /usr/sbin/policy-rc.d
 
 eatmydata apt-get update
 
@@ -271,8 +267,6 @@ apt download -o APT::Sandbox::User=root ca-certificates 2>/dev/null
 sed -i s/"#SuspendState=mem standby freeze"/"SuspendState=freeze"/g /etc/systemd/sleep.conf
 
 rm -f /usr/bin/dpkg
-rm -f /usr/sbin/policy-rc.d
-unlink /usr/sbin/invoke-rc.d
 EOF
 
 # Run third stage
