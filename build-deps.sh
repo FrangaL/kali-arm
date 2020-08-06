@@ -6,6 +6,11 @@ if [[ $EUID -ne 0 ]]; then
   exit 1
 fi
 
+# Check compatible systems.
+if ! which dpkg > /dev/null; then
+   echo "Script only compatible with Debian-based systems"
+fi
+
 # List of installed packages file.
 backup_packages=list-debs-$(date +"%H_%M_%m_%d_%Y")
 # Create a current list of installed packages.
@@ -99,7 +104,7 @@ fi
 # Create the script to clean the system.
 clean-system
 
-# Checkear versión mínima debootstrap
+# Check minimum version debootstrap.
 debootstrap_ver=$(debootstrap --version |  grep -o '[0-9.]\+' | head -1)
 if dpkg --compare-versions "$debootstrap_ver" lt "1.0.105"; then
     echo "Currently your version of debootstrap does not support the script." >&2
