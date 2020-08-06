@@ -1,11 +1,12 @@
 [Unit]
 Description=Regenerate SSH host keys
-Before=ssh.service
+ConditionPathExistsGlob=!/etc/ssh/ssh_host_*_key
+
 [Service]
 Type=oneshot
-ExecStartPre=-/bin/dd if=/dev/hwrng of=/dev/urandom count=1 bs=4096
-ExecStartPre=-/bin/sh -c "/bin/rm -f -v /etc/ssh/ssh_host_*_key*"
-ExecStart=/usr/bin/ssh-keygen -A -v
-ExecStartPost=/bin/sh -c "for i in /etc/ssh/ssh_host_*_key*; do actualsize=$(wc -c <\"$i\") ;if [ $actualsize -eq 0 ]; then echo size is 0 bytes ; exit 1 ; fi ; done ; /bin/systemctl disable regenerate_ssh_host_keys"
+PartOf=ssh.service ssh.socket
+Before=ssh.service ssh.socket
+ExecStart=/usr/sbin/dpkg-reconfigure -fnoninteractive openssh-server
+
 [Install]
-WantedBy=multi-user.target
+RequiredBy=multi-user.target
