@@ -31,7 +31,7 @@ compress="xz"
 # Choose filesystem format to format ( ext3 or ext4 )
 fstype="ext3"
 # If you have your own preferred mirrors, set them here.
-mirror=${4:-"http://http.kali.org/kali"}
+mirror=${mirror:-"http://http.kali.org/kali"}
 # Gitlab url Kali repository
 kaligit="https://gitlab.com/kalilinux"
 # Github raw url
@@ -345,11 +345,10 @@ if [ -n "$proxy_url" ]; then
   rm -rf ${work_dir}/etc/apt/apt.conf.d/66proxy
 fi
 
-# Mirror replacement
-if [[ ! -z "${@:5}" || "$suite" != "kali-rolling" ]]; then
-  mirror=${@:5}
-  [ ! -z "${@:5}" ] || mirror="http://http.kali.org/kali"
-  [ "$suite" != "kali-rolling" ] && suite=kali-rolling
+# Mirror & suite replacement
+if [[ ! -z "${4}" || ! -z "${5}" ]]; then
+  mirror=${4}
+  suite=${5}
 fi
 
 # Define sources.list
