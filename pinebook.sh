@@ -248,6 +248,9 @@ systemctl enable smi-hack
 systemctl enable regenerate_ssh_host_keys
 systemctl enable ssh
 
+# Allow users to use NM over ssh
+install -m644 /bsp/polkit/10-NetworkManager.pkla /var/lib/polkit-1/localauthority/50-local.d
+
 # Copy bashrc
 cp  /etc/skel/.bashrc /root/.bashrc
 

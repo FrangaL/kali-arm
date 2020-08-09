@@ -282,6 +282,9 @@ systemctl enable regenerate_ssh_host_keys
 # Enable sshd
 systemctl enable ssh
 
+# Allow users to use NM over ssh
+install -m644 /bsp/polkit/10-NetworkManager.pkla /var/lib/polkit-1/localauthority/50-local.d
+
 cd /root
 apt download -o APT::Sandbox::User=root ca-certificates 2>/dev/null
 
