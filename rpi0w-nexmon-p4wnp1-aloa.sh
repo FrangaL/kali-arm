@@ -38,7 +38,7 @@ compress="xz"
 # Choose filesystem format to format ( ext3 or ext4 )
 fstype="ext3"
 # If you have your own preferred mirrors, set them here.
-mirror=${4:-"http://http.kali.org/kali"}
+mirror=${mirror:-"http://http.kali.org/kali"}
 # Gitlab url Kali repository
 kaligit="https://gitlab.com/kalilinux"
 # Github raw url
@@ -316,30 +316,43 @@ if [[ $? > 0 ]]; then
   exit 1
 fi
 
-cat << EOF > kali-${architecture}/cleanup
-#!/bin/bash
-rm -rf /root/.bash_history
-rm -rf /root/P4wnP1_go
-apt-get update
-apt-get clean
+# Clean system
+systemd-nspawn_exec << 'EOF'
 rm -f /0
-rm -f /hs_err*
-rm -f cleanup
-rm -f /usr/bin/qemu*
+rm -rf /bsp
+fc-cache -frs
+rm -rf /tmp/*
+rm -rf /etc/*-
+rm -rf /hs_err*
+rm -rf /userland
+rm -rf /opt/vc/src
+rm -f /etc/ssh/ssh_host_*
+rm -rf /var/lib/dpkg/*-old
+rm -rf /var/lib/apt/lists/*
+rm -rf /var/cache/apt/*.bin
+rm -rf /var/cache/apt/archives/*
+rm -rf /var/cache/debconf/*.data-old
+for logs in $(find /var/log -type f); do > $logs; done
+history -c
 EOF
+
+# Disable the use of http proxy in case it is enabled.
+if [ -n "$proxy_url" ]; then
+  unset http_proxy
+  rm -rf ${work_dir}/etc/apt/apt.conf.d/66proxy
+fi
+
+# Mirror & suite replacement
+if [[ ! -z "${4}" || ! -z "${5}" ]]; then
+  mirror=${4}
+  suite=${5}
+fi
 
 chmod 755 kali-${architecture}/cleanup
 LANG=C systemd-nspawn -M ${machine} -D kali-${architecture} /cleanup
 
 # Enable login over serial
 echo "T0:23:respawn:/sbin/agetty -L ttyAMA0 115200 vt100" >> ${work_dir}/etc/inittab
-
-# Mirror replacement
-if [[ ! -z "${@:5}" || "$suite" != "kali-rolling" ]]; then
-  mirror=${@:5}
-  [ ! -z "${@:5}" ] || mirror="http://http.kali.org/kali"
-  [ "$suite" != "kali-rolling" ] && suite=kali-rolling
-fi
 
 # Define sources.list
 cat << EOF > ${work_dir}/etc/apt/sources.list
@@ -584,7 +597,6 @@ else
 fi
 
 # Clean up all the temporary build stuff and remove the directories.
-# Comment this out to keep things around if you want to see what may have gone
-# wrong.
+# Comment this out to keep things around if you want to see what may have gone wrong.
 echo "Cleaning up the temporary build files..."
 rm -rf "${basedir}"

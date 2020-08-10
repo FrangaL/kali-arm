@@ -29,11 +29,11 @@ compress="xz"
 # Choose filesystem format to format ( ext3 or ext4 )
 fstype="ext3"
 # If you have your own preferred mirrors, set them here.
-mirror=${4:-"http://http.kali.org/kali"}
+mirror=${mirror:-"http://http.kali.org/kali"}
 # Gitlab url Kali repository
 kaligit="https://gitlab.com/kalilinux"
 # Github raw url
-githubraw="https://raw.githubusercontent.com"
+githubraw="$githubraw"
 
 # Check EUID=0 you can run any binary as root.
 if [[ $EUID -ne 0 ]]; then
@@ -279,7 +279,7 @@ systemd-nspawn_exec /third-stage
 systemd-nspawn_exec dpkg-divert --remove --rename /usr/bin/dpkg
 
 # Clean system
-systemd-nspawn_exec << EOF
+systemd-nspawn_exec << 'EOF'
 rm -f /0
 rm -rf /bsp
 fc-cache -frs
@@ -294,10 +294,9 @@ rm -rf /var/lib/apt/lists/*
 rm -rf /var/cache/apt/*.bin
 rm -rf /var/cache/apt/archives/*
 rm -rf /var/cache/debconf/*.data-old
+for logs in $(find /var/log -type f); do > $logs; done
 history -c
 EOF
-#Clear all logs
-for logs in `find $work_dir/var/log -type f`; do > $logs; done
 
 # Disable the use of http proxy in case it is enabled.
 if [ -n "$proxy_url" ]; then
@@ -305,11 +304,10 @@ if [ -n "$proxy_url" ]; then
   rm -rf ${work_dir}/etc/apt/apt.conf.d/66proxy
 fi
 
-# Mirror replacement
-if [[ ! -z "${@:5}" || "$suite" != "kali-rolling" ]]; then
-  mirror=${@:5}
-  [ ! -z "${@:5}" ] || mirror="http://http.kali.org/kali"
-  [ "$suite" != "kali-rolling" ] && suite=kali-rolling
+# Mirror & suite replacement
+if [[ ! -z "${4}" || ! -z "${5}" ]]; then
+  mirror=${4}
+  suite=${5}
 fi
 
 # Define sources.list
@@ -480,12 +478,12 @@ export ARCH=arm
 export CROSS_COMPILE=arm-linux-gnueabihf-
 patch -p1 --no-backup-if-mismatch < ${current_dir}/patches/kali-wifi-injection-4.14.patch
 patch -p1 --no-backup-if-mismatch < ${current_dir}/patches/0001-wireless-carl9170-Enable-sniffer-mode-promisc-flag-t.patch
-#wget https://raw.githubusercontent.com/inversepath/usbarmory/master/software/kernel_conf/mark-one/usbarmory_linux-4.14.config -O .config
-wget https://raw.githubusercontent.com/inversepath/usbarmory/master/software/kernel_conf/mark-one/imx53-usbarmory-host.dts -O arch/arm/boot/dts/imx53-usbarmory-host.dts
-wget https://raw.githubusercontent.com/inversepath/usbarmory/master/software/kernel_conf/mark-one/imx53-usbarmory-gpio.dts -O arch/arm/boot/dts/imx53-usbarmory-gpio.dts
-wget https://raw.githubusercontent.com/inversepath/usbarmory/master/software/kernel_conf/mark-one/imx53-usbarmory-spi.dts -O arch/arm/boot/dts/imx53-usbarmory-spi.dts
-wget https://raw.githubusercontent.com/inversepath/usbarmory/master/software/kernel_conf/mark-one/imx53-usbarmory-i2c.dts -O arch/arm/boot/dts/imx53-usbarmory-i2c.dts
-wget https://raw.githubusercontent.com/inversepath/usbarmory/master/software/kernel_conf/mark-one/imx53-usbarmory-scc2.dts -O arch/arm/boot/dts/imx53-usbarmory-scc2.dts
+#wget $githubraw/inversepath/usbarmory/master/software/kernel_conf/mark-one/usbarmory_linux-4.14.config -O .config
+wget $githubraw/inversepath/usbarmory/master/software/kernel_conf/mark-one/imx53-usbarmory-host.dts -O arch/arm/boot/dts/imx53-usbarmory-host.dts
+wget $githubraw/inversepath/usbarmory/master/software/kernel_conf/mark-one/imx53-usbarmory-gpio.dts -O arch/arm/boot/dts/imx53-usbarmory-gpio.dts
+wget $githubraw/inversepath/usbarmory/master/software/kernel_conf/mark-one/imx53-usbarmory-spi.dts -O arch/arm/boot/dts/imx53-usbarmory-spi.dts
+wget $githubraw/inversepath/usbarmory/master/software/kernel_conf/mark-one/imx53-usbarmory-i2c.dts -O arch/arm/boot/dts/imx53-usbarmory-i2c.dts
+wget $githubraw/inversepath/usbarmory/master/software/kernel_conf/mark-one/imx53-usbarmory-scc2.dts -O arch/arm/boot/dts/imx53-usbarmory-scc2.dts
 cp ${current_dir}/kernel-configs/usbarmory-4.14.config ${work_dir}/usr/src/kernel/.config
 cp ${current_dir}/kernel-configs/usbarmory-4.14.config ${work_dir}/usr/src/usbarmory-4.14.config
 make LOADADDR=0x70008000 -j $(grep -c processor /proc/cpuinfo) uImage modules imx53-usbarmory-gpio.dtb imx53-usbarmory-i2c.dtb imx53-usbarmory-spi.dtb imx53-usbarmory.dtb imx53-usbarmory-host.dtb imx53-usbarmory-scc2.dtb
@@ -495,11 +493,11 @@ cp arch/arm/boot/dts/imx53-usbarmory*.dtb ${work_dir}/boot/
 make mrproper
 # Since these aren't integrated into the kernel yet, mrproper removes them.
 cp ${current_dir}/kernel-configs/usbarmory-4.14.config ${work_dir}/usr/src/kernel/.config
-wget https://raw.githubusercontent.com/inversepath/usbarmory/master/software/kernel_conf/mark-one/imx53-usbarmory-host.dts -O arch/arm/boot/dts/imx53-usbarmory-host.dts
-wget https://raw.githubusercontent.com/inversepath/usbarmory/master/software/kernel_conf/mark-one/imx53-usbarmory-gpio.dts -O arch/arm/boot/dts/imx53-usbarmory-gpio.dts
-wget https://raw.githubusercontent.com/inversepath/usbarmory/master/software/kernel_conf/mark-one/imx53-usbarmory-spi.dts -O arch/arm/boot/dts/imx53-usbarmory-spi.dts
-wget https://raw.githubusercontent.com/inversepath/usbarmory/master/software/kernel_conf/mark-one/imx53-usbarmory-i2c.dts -O arch/arm/boot/dts/imx53-usbarmory-i2c.dts
-wget https://raw.githubusercontent.com/inversepath/usbarmory/master/software/kernel_conf/mark-one/imx53-usbarmory-scc2.dts -O arch/arm/boot/dts/imx53-usbarmory-scc2.dts
+wget $githubraw/inversepath/usbarmory/master/software/kernel_conf/mark-one/imx53-usbarmory-host.dts -O arch/arm/boot/dts/imx53-usbarmory-host.dts
+wget $githubraw/inversepath/usbarmory/master/software/kernel_conf/mark-one/imx53-usbarmory-gpio.dts -O arch/arm/boot/dts/imx53-usbarmory-gpio.dts
+wget $githubraw/inversepath/usbarmory/master/software/kernel_conf/mark-one/imx53-usbarmory-spi.dts -O arch/arm/boot/dts/imx53-usbarmory-spi.dts
+wget $githubraw/inversepath/usbarmory/master/software/kernel_conf/mark-one/imx53-usbarmory-i2c.dts -O arch/arm/boot/dts/imx53-usbarmory-i2c.dts
+wget $githubraw/inversepath/usbarmory/master/software/kernel_conf/mark-one/imx53-usbarmory-scc2.dts -O arch/arm/boot/dts/imx53-usbarmory-scc2.dts
 
 
 # Fix up the symlink for building external modules
@@ -599,7 +597,6 @@ else
 fi
 
 # Clean up all the temporary build stuff and remove the directories.
-# Comment this out to keep things around if you want to see what may have gone
-# wrong.
+# Comment this out to keep things around if you want to see what may have gone wrong.
 echo "Removing build directory"
 rm -rf "${basedir}"
