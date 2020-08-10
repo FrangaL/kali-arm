@@ -322,7 +322,7 @@ systemd-nspawn_exec /third-stage
 systemd-nspawn_exec dpkg-divert --remove --rename /usr/bin/dpkg
 
 # Clean system
-systemd-nspawn_exec << EOF
+systemd-nspawn_exec << 'EOF'
 rm -f /0
 rm -rf /bsp
 fc-cache -frs
@@ -337,10 +337,9 @@ rm -rf /var/lib/apt/lists/*
 rm -rf /var/cache/apt/*.bin
 rm -rf /var/cache/apt/archives/*
 rm -rf /var/cache/debconf/*.data-old
+for logs in $(find /var/log -type f); do > $logs; done
 history -c
 EOF
-#Clear all logs
-for logs in `find $work_dir/var/log -type f`; do > $logs; done
 
 # Disable the use of http proxy in case it is enabled.
 if [ -n "$proxy_url" ]; then
