@@ -321,6 +321,8 @@ git clone --depth 1 https://kernel.googlesource.com/pub/scm/linux/kernel/git/sta
 # ChromeOS kernel branch
 #git clone --depth 1 https://chromium.googlesource.com/chromiumos/third_party/kernel.git -b release-${kernel_release} ${work_dir}/usr/src/kernel
 cd ${work_dir}/usr/src/kernel
+# Check out 4.19.133 which was known to work...
+git checkout  17a87580a8856170d59aab302226811a4ae69149
 # Mainline kernel config
 cp ${basedir}/../kernel-configs/veyron-4.19.config .config
 # (Currently not working) chromeos-based kernel config
