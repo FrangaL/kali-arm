@@ -1,0 +1,26 @@
+#!/bin/bash -e
+
+# Choose a locale and generate it to eliminate LC warnings.
+echo en_US.UTF-8 UTF-8 >/etc/locale.en
+locale-gen 2>&1 >> /var/log/rootfs-cleanups.log
+echo LANG=en_US.UTF-8 >/etc/locale.conf
+
+# Add the kali user and give them all the access they need.
+if ! grep -qE '^kali:' /etc/passwd; then
+    adduser kali --home /home/kali --shell /bin/bash --disabled-password --gecos "" 2>&1 >>/var/log/rootfs-cleanups.log
+
+    mkdir -p /home/kali 2>&1 >>/var/log/rootfs-cleanups.log
+    chown kali:kali /home/kali 2>&1 >>/var/log/rootfs-cleanups.log
+    echo 'kali:kali' |chpasswd 2>&1 >>/var/log/rootfs-cleanups.log
+fi
+
+# Reload and trigger udev rule
+udevadm control --reload-rules
+udevadm trigger
+
+KALI_GROUPS="adm audio bluetooth games i2c input plugdev staff sudo users video netdev systemd-journal render wireshark kismet"
+
+for i in $KALI_GROUPS; do
+    echo "runonce: adding kali to $i" 2>&1 >>/var/log/rootfs-cleanups.log
+        adduser kali $i 2>&1 >>/var/log/rootfs-cleanups.log
+done
