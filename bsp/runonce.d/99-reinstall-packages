@@ -1,0 +1,21 @@
+#!/bin/bash
+set -e
+
+# Need to find a better way to do this.  But for whatever reason, the pem files are screwed up when
+# installed via qemu, so we need to get rid of them and reinstall the package (which happens in the deb bit below)
+rm -f /etc/ssl/certs/*.pem
+
+# Reinstall any debs found in /root
+for i in $(ls /root/*.deb); do
+    dpkg -i /root/$i
+done
+
+# Rebuild the shared-mime-info database
+if "dpkg -l | grep shared-mime-info | awk '{ print $2 }'" == "shared-mime-info"; then
+    dpkg-reconfigure -fnoninteractive shared-mime-info
+fi
+
+# Rebuild xfonts-base as well
+if "dpkg -l | grep xfonts-base | awk '{ print $2}'" == "xfonts-base"; then
+    dpkg-reconfigure -fnoninteractive xfonts-base
+fi
