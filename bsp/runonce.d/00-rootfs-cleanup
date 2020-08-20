@@ -20,6 +20,18 @@ fi
 udevadm control --reload-rules
 udevadm trigger
 
+if ! grep -qE '^bluetooth:' /etc/group; then
+    groupadd -r -g 112 bluetooth
+fi
+
+if ! grep -qE '^lpadmin:' /etc/group; then
+    groupadd -r -g 113 lpadmin
+fi
+
+if ! grep -qE '^scanner:' /etc/group; then
+    groupadd -r -g 122 scanner
+fi
+
 KALI_GROUPS="adm audio bluetooth cdrom dialout dip games i2c input kali kismet lpadmin netdev plugdev render scanner staff sudo systemd-journal users video wireshark"
 
 for i in $KALI_GROUPS; do
