@@ -20,7 +20,7 @@ fi
 udevadm control --reload-rules
 udevadm trigger
 
-KALI_GROUPS="adm audio bluetooth games i2c input plugdev staff sudo users video netdev systemd-journal render wireshark kismet"
+KALI_GROUPS="adm audio bluetooth cdrom dialout dip games i2c input kali kismet lpadmin netdev plugdev render scanner staff sudo systemd-journal users video wireshark"
 
 for i in $KALI_GROUPS; do
     echo "runonce: adding kali to $i" 2>&1 >>/var/log/rootfs-cleanups.log
