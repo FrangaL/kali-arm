@@ -11,7 +11,7 @@ set -u
 function should-run-script {
     local script="$1"; shift
     local script_sha1="$1"; shift
-    local scipt_basename=$(basename "${script")
+    local script_basename=$(basename "${script}")
 
     if [[ -f /var/cache/runonce/$script_basename ]]; then
         previous_sha1=$(cat /var/cache/runonce/$script_basename)
