@@ -10,6 +10,10 @@ for i in $(ls /root/*.deb); do
     dpkg -i /root/$i
 done
 
+# We also need to regenerate the default snakeoil cert
+# TODO: Only regenerate if the file doesn't exist?
+make-ssl-cert generate-default-snakeoil
+
 # Rebuild the shared-mime-info database
 if "dpkg -l | grep shared-mime-info | awk '{ print $2 }'" == "shared-mime-info"; then
     dpkg-reconfigure -fnoninteractive shared-mime-info
