@@ -1,25 +1,20 @@
 #!/bin/bash
 set -e
 
-# Need to find a better way to do this.  But for whatever reason, the pem files are screwed up when
-# installed via qemu, so we need to get rid of them and reinstall the package (which happens in the deb bit below)
-rm -f /etc/ssl/certs/*.pem
-
-# Reinstall any debs found in /root
-for i in $(ls /root/*.deb); do
-    dpkg -i /root/$i
+# Rebuild xfonts-base, ca-certificates and shared-mime-info database
+rebuild="shared-mime-info xfonts-base ca-certificates"
+for pkg in $rebuild; do
+  if [[ $(dpkg -l $pkg | awk '/^ii/ { print $1 }') = ii ]];
+  then
+    dpkg-reconfigure -fnoninteractive $pkg;
+  fi
 done
 
-# We also need to regenerate the default snakeoil cert
-# TODO: Only regenerate if the file doesn't exist?
-make-ssl-cert generate-default-snakeoil
-
-# Rebuild the shared-mime-info database
-if "dpkg -l | grep shared-mime-info | awk '{ print $2 }'" == "shared-mime-info"; then
-    dpkg-reconfigure -fnoninteractive shared-mime-info
-fi
-
-# Rebuild xfonts-base as well
-if "dpkg -l | grep xfonts-base | awk '{ print $2}'" == "xfonts-base"; then
-    dpkg-reconfigure -fnoninteractive xfonts-base
-fi
+# Clear and regenerate the font cache
+fc-cache -f
+# Update shared MIME info database
+update-mime-database
+# Update certificates
+update-ca-certificates
+# Regenerate the default snakeoil cert
+make-ssl-cert generate-default-snakeoil --force-overwrite
