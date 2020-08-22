@@ -1,33 +1,33 @@
 #!/bin/bash -e
+exec > >(tee -a -i /var/log/runonce.log) 2>&1
+
+# Create groups bluetooth lpadmin scanner
+if ! grep -qE '^bluetooth:' /etc/group; then
+  groupadd -r -g 112 bluetooth
+elif ! grep -qE '^lpadmin:' /etc/group; then
+  groupadd -r -g 113 lpadmin
+elif ! grep -qE '^scanner:' /etc/group; then
+  groupadd -r -g 122 scanner
+fi
+
+# Default groups
+KALI_GROUPS="adm,audio,cdrom,dialout,dip,games,i2c,input,kismet,netdev,plugdev,\
+render,staff,sudo,systemd-journal,users,video,wireshark,scanner,lpadmin,bluetooth"
+
+# Check exists groups
+for g in ${KALI_GROUPS/,/ }; do
+  if ! getent group $g >/dev/null; then
+    addgroup $g
+  fi
+done
 
 # Add the kali user and give them all the access they need.
 if ! grep -qE '^kali:' /etc/passwd; then
-    adduser kali --home /home/kali --shell /bin/bash --disabled-password --gecos "" 2>&1 >>/var/log/rootfs-cleanups.log
-
-    mkdir -p /home/kali 2>&1 >>/var/log/rootfs-cleanups.log
-    chown kali:kali /home/kali 2>&1 >>/var/log/rootfs-cleanups.log
-    echo 'kali:kali' |chpasswd 2>&1 >>/var/log/rootfs-cleanups.log
+  adduser --gecos "" --uid 1000 --gid 1000 --shell /bin/bash --disabled-password kali
+  usermod -a -G $KALI_GROUPS kali
+  echo 'kali:kali' | chpasswd
 fi
 
 # Reload and trigger udev rule
 udevadm control --reload-rules
 udevadm trigger
-
-if ! grep -qE '^bluetooth:' /etc/group; then
-    groupadd -r -g 112 bluetooth
-fi
-
-if ! grep -qE '^lpadmin:' /etc/group; then
-    groupadd -r -g 113 lpadmin
-fi
-
-if ! grep -qE '^scanner:' /etc/group; then
-    groupadd -r -g 122 scanner
-fi
-
-KALI_GROUPS="adm audio bluetooth cdrom dialout dip games i2c input kali kismet lpadmin netdev plugdev render scanner staff sudo systemd-journal users video wireshark"
-
-for i in $KALI_GROUPS; do
-    echo "runonce: adding kali to $i" 2>&1 >>/var/log/rootfs-cleanups.log
-        adduser kali $i 2>&1 >>/var/log/rootfs-cleanups.log
-done
