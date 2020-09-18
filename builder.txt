@@ -1,0 +1,5 @@
+# mirror="http://kali.download/kali"
+# replace_mirror="http://http.kali.org/kali"
+# suite="kali-experimental"
+# replace_suite="kali-rolling"
+# imagename="kali-linux-nightly-${hw_model}-${variant}-$(date +%F)"
