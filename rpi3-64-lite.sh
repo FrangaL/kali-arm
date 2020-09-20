@@ -36,11 +36,12 @@ systemd-nspawn_exec eatmydata /debootstrap/debootstrap --second-stage
 # Define sources.list
 include sources.list
 # Set hostname
-set_hostname
+set_hostname ${hostname}
 # So X doesn't complain, we add kali to hosts
 include hosts
 # Network configs
 include network
+add_interface eth0
 
 # Copy directory bsp into build dir.
 cp -rp bsp ${work_dir}
