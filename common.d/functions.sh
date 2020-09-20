@@ -40,7 +40,7 @@ function include () {
 
 # systemd-nspawn enviroment
 function systemd-nspawn_exec (){
-  systemd-nspawn -q --bind-ro ${qemu_bin} --capability=cap_setfcap -E RUNLEVEL=1,LANG=C -M ${machine} -D ${work_dir} "$@"
+  systemd-nspawn -q --bind-ro ${qemu_bin} --hostname=$hostname --capability=cap_setfcap -E RUNLEVEL=1,LANG=C -M ${machine} -D ${work_dir} "$@"
 }
 
 # create the rootfs - not much to modify here, except maybe throw in some more packages if you want.

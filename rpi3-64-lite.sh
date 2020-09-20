@@ -7,8 +7,7 @@
 
 # Load general functions
 source $(dirname $0)/common.d/functions.sh
-# Load common variables
-include variables
+
 
 # Hardware model
 hw_model=${hw_model:-"rpi3"}
@@ -19,6 +18,8 @@ variant=${variant:-"nexmon-${architecture}-lite"}
 # Custom image file name variable - MUST NOT include .img at the end.
 imagename=${imagename:-"kali-linux-${version}-${hw_model}-${variant}"}
 
+# Load common variables
+include variables
 # Checks script enviroment
 include check
 # Print compilation configuration
