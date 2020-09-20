@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 
 cat << EOF > ${work_dir}/etc/hosts
-127.0.0.1       ${hostname}    localhost
+127.0.1.1       ${hostname}
+127.0.0.1       localhost
 ::1             localhost ip6-localhost ip6-loopback
 fe00::0         ip6-localnet
 ff00::0         ip6-mcastprefix

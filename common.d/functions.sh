@@ -108,7 +108,26 @@ EOM
 
 # Set hostname
 function set_hostname (){
-  echo "${hostname}" > ${work_dir}/etc/hostname
+  if [[ $@ =~ ^[a-zA-Z0-9-]{2,63}+$ ]] ;then
+    echo "$@" > ${work_dir}/etc/hostname
+  else
+    log "$@ is not a correct hostname" $red
+    log "Using kali to default hostname" $bold
+    echo "kali" > ${work_dir}/etc/hostname
+  fi
+}
+
+# Add network interface
+function add_interface (){
+  interfaces="$@"
+  for netdev in $interfaces; do
+  cat << EOF > ${work_dir}/etc/network/interfaces.d/$netdev
+auto $netdev
+    allow-hotplug $netdev
+    iface $netdev inet dhcp
+EOF
+  log "Configured /etc/network/interfaces.d/$netdev" $bold
+  done
 }
 
 # Make SWAP
@@ -116,7 +135,7 @@ function make_swap (){
   if [ "$swap" = yes ]; then
     echo 'vm.swappiness = 50' >> ${work_dir}/etc/sysctl.conf
     systemd-nspawn_exec apt-get install -y dphys-swapfile > /dev/null 2>&1
-    sed -i 's/#CONF_SWAPSIZE=/CONF_SWAPSIZE=128/g' ${work_dir}/etc/dphys-swapfile
+    #sed -i 's/#CONF_SWAPSIZE=/CONF_SWAPSIZE=128/g' ${work_dir}/etc/dphys-swapfile
   fi
 }
 
