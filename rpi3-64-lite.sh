@@ -15,8 +15,7 @@ hw_model=${hw_model:-"rpi3"}
 architecture=${architecture:-"arm64"}
 # Variant name for image and dir build
 variant=${variant:-"nexmon-${architecture}-lite"}
-# Custom image file name variable - MUST NOT include .img at the end.
-imagename=${imagename:-"kali-linux-${version}-${hw_model}-${variant}"}
+
 
 # Load common variables
 include variables

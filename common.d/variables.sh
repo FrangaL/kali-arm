@@ -37,6 +37,11 @@ current_dir="$(pwd)"
 basedir=${current_dir}/${hw_model}-${variant}
 # Working directory
 work_dir="${basedir}/kali-${architecture}"
+# Custom image file name variable - MUST NOT include .img at the end.
+imagename=${imagename:-"kali-linux-${version}-${hw_model}-${variant}"}
+# systemd-nspawn version
+nspawn_ver=$(systemd-nspawn --version | awk '{if(NR==1) print $2}')
+
 
 # Load build configuration
 if [ -f ${current_dir}/builder.txt ]; then
