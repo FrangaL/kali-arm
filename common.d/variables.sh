@@ -19,6 +19,8 @@ bootsize="128"
 compress="xz"
 # Choose filesystem format to format ( ext3 or ext4 )
 fstype="ext3"
+# Generate a random root partition UUID to be used.
+root_uuid=$(cat < /proc/sys/kernel/random/uuid | less)
 # Disable IPV6 ( yes or no)
 disable_ipv6="yes"
 # Make SWAP ( yes or no)
@@ -39,8 +41,6 @@ basedir=${current_dir}/${hw_model}-${variant}
 work_dir="${basedir}/kali-${architecture}"
 # Custom image file name variable - MUST NOT include .img at the end.
 imagename=${imagename:-"kali-linux-${version}-${hw_model}-${variant}"}
-# systemd-nspawn version
-nspawn_ver=$(systemd-nspawn --version | awk '{if(NR==1) print $2}')
 
 
 # Load build configuration

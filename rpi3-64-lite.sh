@@ -6,7 +6,8 @@
 # debug=true
 
 # Load general functions
-source $(dirname $0)/common.d/functions.sh
+# shellcheck source=common.d/functions.sh
+source common.d/functions.sh
 
 
 # Hardware model
@@ -15,14 +16,14 @@ hw_model=${hw_model:-"rpi3"}
 architecture=${architecture:-"arm64"}
 # Variant name for image and dir build
 variant=${variant:-"nexmon-${architecture}-lite"}
+# Destop manager (xfce, gnome, i3, kde, lxde, mate, e17 or none)
+desktop=${desktop:-"none"}
 
 
 # Load common variables
 include variables
 # Checks script enviroment
 include check
-# Print compilation configuration
-print_config
 # Packages build list
 include packages
 # Load automatic proxy configuration
@@ -36,7 +37,7 @@ systemd-nspawn_exec eatmydata /debootstrap/debootstrap --second-stage
 # Define sources.list
 include sources.list
 # Set hostname
-set_hostname ${hostname}
+set_hostname "${hostname}"
 # So X doesn't complain, we add kali to hosts
 include hosts
 # Network configs
@@ -44,12 +45,12 @@ include network
 add_interface eth0
 
 # Copy directory bsp into build dir.
-cp -rp bsp ${work_dir}
+cp -rp bsp "${work_dir}"
 # workaround for LP: #520465
 export MALLOC_CHECK_=0
 
 # Third stage
-cat << EOF >  ${work_dir}/third-stage
+cat << EOF >  "${work_dir}"/third-stage
 #!/bin/bash -e
 
 # Enable the use of http proxy in third-stage in case it is enabled.
@@ -76,11 +77,8 @@ groupadd -r -g 122 scanner
 groupadd -g 1000 kali
 
 aptops="--allow-change-held-packages -o dpkg::options::=--force-confnew -o Acquire::Retries=3"
-packages="${arm} ${base} ${services} ${firmwares}"
 eatmydata apt-get install -y \$aptops ${packages} || eatmydata apt-get install -y --fix-broken
-#eatmydata apt-get install -y \$aptops ${packages} || eatmydata apt-get install -y --fix-broken
-eatmydata apt-get install -y \$aptops ${extras} ${tools} || eatmydata apt-get install -y --fix-broken
-#eatmydata apt-get install -y \$aptops ${packages} ${extras} ${tools} || eatmydata apt-get install -y --fix-broken
+eatmydata apt-get install -y \$aptops ${desktop_pkgs} ${extra} || eatmydata apt-get install -y --fix-broken
 
 eatmydata apt-get -y --allow-change-held-packages --purge autoremove
 
@@ -188,7 +186,7 @@ dpkg-divert --remove --rename /usr/bin/dpkg
 EOF
 
 # Run third stage
-chmod 755 ${work_dir}/third-stage
+chmod 755 "${work_dir}"/third-stage
 systemd-nspawn_exec /third-stage
 
 # Configure Raspberry PI firmware
@@ -196,11 +194,11 @@ include rpi_firmware
 # Compile Raspberry PI userland
 include rpi_userland
 # Choose a locale
-set_locale $locale
+set_locale "$locale"
 # Clean system
 include clean_system
 # Define DNS server after last running systemd-nspawn.
-echo "nameserver 8.8.8.8" > ${work_dir}/etc/resolv.conf
+echo "nameserver 8.8.8.8" > "${work_dir}"/etc/resolv.conf
 # Disable the use of http proxy in case it is enabled.
 disable_proxy
 # Mirror & suite replacement
@@ -209,7 +207,7 @@ restore_mirror
 include sources.list
 
 # systemd doesn't seem to be generating the fstab properly for some people, so let's create one.
-cat << EOF > ${work_dir}/etc/fstab
+cat << EOF > "${work_dir}"/etc/fstab
 # <file system> <mount point>   <type>  <options>       <dump>  <pass>
 proc            /proc           proc    defaults          0       0
 /dev/mmcblk0p1  /boot           vfat    defaults          0       2
@@ -219,11 +217,11 @@ EOF
 # Calculate the space to create the image.
 include size_img
 # Create the disk and partition it
-log "Creating image file ${imagename}.img" $green
-fallocate -l $(echo ${raw_size}Ki | numfmt --from=iec-i --to=si) ${current_dir}/${imagename}.img
-parted -s ${current_dir}/${imagename}.img mklabel msdos
-parted -s ${current_dir}/${imagename}.img mkpart primary fat32 1MiB ${bootsize}MiB
-parted -s -a minimal ${current_dir}/${imagename}.img mkpart primary $fstype ${bootsize}MiB 100%
+log "Creating image file ${imagename}.img" green
+fallocate -l $(echo "${raw_size}"Ki | numfmt --from=iec-i --to=si) "${current_dir}"/"${imagename}".img
+parted -s "${current_dir}"/"${imagename}".img mklabel msdos
+parted -s "${current_dir}"/"${imagename}".img mkpart primary fat32 1MiB "${bootsize}"MiB
+parted -s -a minimal "${current_dir}"/"${imagename}".img mkpart primary "$fstype" "${bootsize}"MiB 100%
 
 # Set the partition variables
 loopdevice=$(losetup --show -fP "${current_dir}/${imagename}.img")
@@ -231,40 +229,40 @@ bootp="${loopdevice}p1"
 rootp="${loopdevice}p2"
 
 # Create file systems
-mkfs.vfat -n BOOT -F 32 -v ${bootp}
-if [[ $fstype == ext4 ]]; then
-  features="-O ^64bit,^metadata_csum"
-elif [[ $fstype == ext3 ]]; then
-  features="-O ^64bit"
+mkfs.vfat -n BOOT -F 32 -v "${bootp}"
+if [[ "$fstype" == "ext4" ]]; then
+  features="^64bit,^metadata_csum"
+elif [[ "$fstype" == "ext3" ]]; then
+  features="^64bit"
 fi
-mkfs $features -t $fstype -L ROOTFS ${rootp}
+mkfs -O "$features" -t "$fstype" -L ROOTFS "${rootp}"
 
 # Create the dirs for the partitions and mount them
-mkdir -p ${basedir}/root/
-mount ${rootp} ${basedir}/root
-mkdir -p ${basedir}/root/boot
-mount ${bootp} ${basedir}/root/boot
+mkdir -p "${basedir}"/root/
+mount "${rootp}" "${basedir}"/root
+mkdir -p "${basedir}"/root/boot
+mount "${bootp}" "${basedir}"/root/boot
 
-log "Rsyncing rootfs into image file" $green
-rsync -HPavz -q --exclude boot ${work_dir}/ ${basedir}/root/
-rsync -rtx -q ${work_dir}/boot ${basedir}/root
+log "Rsyncing rootfs into image file" green
+rsync -HPavz -q --exclude boot "${work_dir}"/ "${basedir}"/root/
+rsync -rtx -q "${work_dir}"/boot "${basedir}"/root
 sync
 
 # Umount filesystem
-umount -l ${bootp}
-umount -l ${rootp}
+umount -l "${bootp}"
+umount -l "${rootp}"
 
 # Check filesystem
 dosfsck -w -r -l -a -t "$bootp"
 e2fsck -y -f "$rootp"
 
 # Remove loop devices
-losetup -d ${loopdevice}
+losetup -d "${loopdevice}"
 
 # Compress image compilation
 include compress_img
 
 # Clean up all the temporary build stuff and remove the directories.
 # Comment this out to keep things around if you want to see what may have gone wrong.
-log "Cleaning up the temporary build files..." $green
+log "Cleaning up the temporary build files..." green
 rm -rf "${basedir}"
