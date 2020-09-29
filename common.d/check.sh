@@ -41,10 +41,10 @@ esac
 
 # Check systemd-nspawn version
 nspawn_ver=$(systemd-nspawn --version | awk '{if(NR==1) print $2}')
-if [[ $nspawn_ver -ge 241 ]]; then
-    extra_args="-q --hostname=$hostname"
-elif [[ $nspawn_ver -ge 245 ]]; then
-    extra_args="-q -P --hostname=$hostname"
+if [[ $nspawn_ver -ge 245 ]]; then
+    extra_args="--hostname=$hostname -q -P"
+elif [[ $nspawn_ver -ge 241 ]]; then
+    extra_args="--hostname=$hostname -q"
 else
     extra_args="-q"
 fi

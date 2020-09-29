@@ -37,8 +37,9 @@ function include (){
 }
 
 # systemd-nspawn enviroment
+# Putting quotes around $extra_args causes systemd-nspawn to pass the extra arguments as 1, so leave it unquoted.
 function systemd-nspawn_exec (){
-  systemd-nspawn --bind-ro "$qemu_bin" "$extra_args" --capability=cap_setfcap -E RUNLEVEL=1,LANG=C -M "$machine" -D "$work_dir" "$@"
+  systemd-nspawn --bind-ro "$qemu_bin" $extra_args --capability=cap_setfcap -E RUNLEVEL=1,LANG=C -M "$machine" -D "$work_dir" "$@"
 }
 
 # create the rootfs - not much to modify here, except maybe throw in some more packages if you want.
