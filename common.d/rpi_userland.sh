@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 
-git clone https://github.com/raspberrypi/userland.git ${basedir}/userland
+git clone https://github.com/raspberrypi/userland.git "${basedir}"/userland
 
-cd ${basedir}/userland && mkdir build
-pushd ${basedir}/userland/build
+cd "${basedir}"/userland && mkdir build
+pushd "${basedir}"/userland/build || exit
 
 case ${architecture} in
   arm64)
@@ -18,11 +18,11 @@ case ${architecture} in
 esac
 
 make -j$(nproc) 2>/dev/null
-mkdir ${work_dir}/opt/vc
-mv {bin,lib,inc} ${work_dir}/opt/vc
+mkdir "${work_dir}"/opt/vc
+mv {bin,lib,inc} "${work_dir}"/opt/vc
 
-cd ${current_dir}
+cd "${current_dir}" || exit
 
-install -m644 ${current_dir}/bsp/configs/raspi-userland.conf ${work_dir}/etc/ld.so.conf.d/
-install -m755 ${current_dir}/bsp/configs/vc.sh ${work_dir}/etc/profile.d/
-install -m644 ${current_dir}/bsp/udev/99-vchiq-permissions.rules ${work_dir}/etc/udev/rules.d/
+install -m644 "${current_dir}"/bsp/configs/raspi-userland.conf "${work_dir}"/etc/ld.so.conf.d/
+install -m755 "${current_dir}"/bsp/configs/vc.sh "${work_dir}"/etc/profile.d/
+install -m644 "${current_dir}"/bsp/udev/99-vchiq-permissions.rules "${work_dir}"/etc/udev/rules.d/
