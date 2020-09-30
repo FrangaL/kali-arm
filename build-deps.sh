@@ -47,8 +47,8 @@ libpython2_dev="libexpat1-dev libpython2.7 libpython2.7-dev libpython2.7-minimal
 dependencies="gnupg flex bison gperf build-essential zip curl libncurses5-dev zlib1g-dev \
 parted kpartx debootstrap pixz qemu-user-static abootimg cgpt vboot-kernel-utils vboot-utils \
 u-boot-tools bc lzma lzop automake autoconf m4 rsync schedtool git dosfstools e2fsprogs \
-device-tree-compiler libssl-dev systemd-container libgmp3-dev gawk qpdf make libfl-dev swig ${libpython2_dev} \
-python3-dev cgroup-tools lsof jetring eatmydata cmake pkg-config"
+device-tree-compiler libssl-dev systemd-container libgmp3-dev gawk qpdf make libfl-dev swig \
+${libpython2_dev} python3-dev cgroup-tools lsof jetring eatmydata cmake pkg-config less"
 
 deps="${dependencies} ${compilers}"
 
