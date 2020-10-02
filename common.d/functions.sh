@@ -67,15 +67,22 @@ function restore_mirror (){
 
 # Limite use cpu function
 function limit_cpu (){
-  rand=$(tr -cd 'A-Za-z0-9' < /dev/urandom | head -c4 ; echo) # Randowm name group
-  cgcreate -g cpu:/cpulimit-"${rand}" # Name of group cpulimit
-  cgset -r cpu.shares=800 cpulimit-"${rand}" # Max 1024
-  cgset -r cpu.cfs_quota_us=80000 cpulimit-"${rand}" # Max 100000
+  if [[ $cpu_limit -eq "0" || -z $cpu_limit ]]; then
+    local cpu_shares="1024"; local cpu_quota="100000";
+  else
+    local cpu_shares=$((1024 * cpu_limit / 100)) # 1024 max value
+    local cpu_quota=$((100000 * cpu_limit / 100)) # 100000 max value
+  fi
+  # Random group name
+  local rand=$(tr -cd 'A-Za-z0-9' < /dev/urandom | head -c4 ; echo)
+  cgcreate -g cpu:/cpulimit-"$rand"
+  cgset -r cpu.shares="$cpu_shares" cpulimit-"$rand"
+  cgset -r cpu.cfs_quota_us="$cpu_quota" cpulimit-"$rand"
   # Retry command
   local n=1; local max=5; local delay=2
   while true; do
     # shellcheck disable=SC2015
-    cgexec -g cpu:cpulimit-"${rand}" "$@" && break || {
+    cgexec -g cpu:cpulimit-"$rand" "$@" && break || {
       if [[ $n -lt $max ]]; then
         ((n++))
         log "Command failed. Attempt $n/$max " red

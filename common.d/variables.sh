@@ -25,6 +25,8 @@ root_uuid=$(cat < /proc/sys/kernel/random/uuid | less)
 disable_ipv6="yes"
 # Make SWAP ( yes or no)
 swap="no"
+# 0 or 100 No limit, 10 = percentage use, 50, 75, 90, etc.
+cpu_limit="85"
 # If you have your own preferred mirrors, set them here.
 mirror=${mirror:-"http://http.kali.org/kali"}
 # Use packages from the listed components of the archive.
