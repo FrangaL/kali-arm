@@ -48,3 +48,18 @@ elif [[ $nspawn_ver -ge 241 ]]; then
 else
     extra_args="-q"
 fi
+
+# Check cpu cores to use
+if [ "$cpu_cores" = "0" ]; then
+  nproc=$(nproc --all)
+elif [[ "$cpu_cores" =~ ^[0-9]{1,2}$ ]]; then
+  if [ "$cpu_cores" -le $(nproc --all) ]; then
+    nproc="$cpu_cores"
+  else
+    nproc=$(nproc --all)
+  fi
+elif [[ "$cpu_cores" =~ ^[-0-9]{1,2}$ ]]; then
+  nproc=$(nproc --ignore="${cpu_cores/-/}")
+else
+  nproc="1"
+fi
