@@ -68,10 +68,10 @@ function restore_mirror (){
 # Limite use cpu function
 function limit_cpu (){
   if [[ $cpu_limit -eq "0" || -z $cpu_limit ]]; then
-    local cpu_shares="1024"; local cpu_quota="100000";
+    local cpu_shares=$((num_cores * 1024)); local cpu_quota="-1";
   else
-    local cpu_shares=$((1024 * cpu_limit / 100)) # 1024 max value
-    local cpu_quota=$((100000 * cpu_limit / 100)) # 100000 max value
+    local cpu_shares=$((1024 * num_cores * cpu_limit / 100)) # 1024 max value per core
+    local cpu_quota=$((100000 * num_cores * cpu_limit / 100)) # 100000 max value per core
   fi
   # Random group name
   local rand=$(tr -cd 'A-Za-z0-9' < /dev/urandom | head -c4 ; echo)
@@ -93,6 +93,7 @@ function limit_cpu (){
       fi
     }
   done
+  cgdelete -g cpu:/cpulimit-"$rand"
 }
 
 # Choose a locale
