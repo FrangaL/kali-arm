@@ -51,15 +51,15 @@ fi
 
 # Check cpu cores to use
 if [ "$cpu_cores" = "0" ]; then
-  nproc=$(nproc --all)
+  num_cores=$(nproc --all)
 elif [[ "$cpu_cores" =~ ^[0-9]{1,2}$ ]]; then
   if [ "$cpu_cores" -le $(nproc --all) ]; then
-    nproc="$cpu_cores"
+    num_cores="$cpu_cores"
   else
-    nproc=$(nproc --all)
+    num_cores=$(nproc --all)
   fi
 elif [[ "$cpu_cores" =~ ^[-0-9]{1,2}$ ]]; then
-  nproc=$(nproc --ignore="${cpu_cores/-/}")
+  num_cores=$(nproc --ignore="${cpu_cores/-/}")
 else
-  nproc="1"
+  num_cores="1"
 fi
