@@ -147,6 +147,7 @@ function make_swap (){
   fi
 }
 
+# Print current config.
 function print_config (){
   log "Compilation info" bold
   if [[ "$hw_model" == *rpi* ]]; then
@@ -154,8 +155,28 @@ function print_config (){
     log "Hardware model: $(tput sgr0) $name_model" cyan
   else
     log "Hardware model: $(tput sgr0) $hw_model" cyan
-      fi
+  fi
   log "Architecture: $(tput sgr0) $architecture" cyan
   log "The basedir thinks it is: $(tput sgr0) ${basedir}" cyan
   sleep 1
+}
+
+# Calculate the space to create the image and create.
+function make_image() {
+  # Calculate the space to create the image.
+  root_size=$(du -s -B1 "${work_dir}" --exclude="${work_dir}"/boot | cut -f1)
+  root_extra=$((root_size/1024/1000*5*1024/5))
+  raw_size=$(($((free_space*1024))+root_extra+$((bootsize*1024))+4096))
+  img_size=$(echo "${raw_size}"Ki | numfmt --from=iec-i --to=si)
+  # Create the disk image
+  log "Creating image file ${imagename}.img $img_size" green
+  fallocate -l "$img_size" "${current_dir}"/"${imagename}".img
+}
+
+# Clean up all the temporary build stuff and remove the directories.
+function clean_build() {
+  log "Cleaning up the temporary build files..." yellow
+  rm -rf "${basedir}"
+  log "Done." green
+  log "Your image is: $(tput sgr0) ${imagename}.img.xz" bold
 }

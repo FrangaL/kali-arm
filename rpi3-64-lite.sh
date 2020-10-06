@@ -214,11 +214,10 @@ proc            /proc           proc    defaults          0       0
 /dev/mmcblk0p2  /               $fstype    defaults,noatime  0       1
 EOF
 
-# Calculate the space to create the image.
-include size_img
-# Create the disk and partition it
-log "Creating image file ${imagename}.img" green
-fallocate -l $(echo "${raw_size}"Ki | numfmt --from=iec-i --to=si) "${current_dir}"/"${imagename}".img
+# Calculate the space to create the image and create.
+make_image
+
+# Create the disk partitions it
 parted -s "${current_dir}"/"${imagename}".img mklabel msdos
 parted -s "${current_dir}"/"${imagename}".img mkpart primary fat32 1MiB "${bootsize}"MiB
 parted -s -a minimal "${current_dir}"/"${imagename}".img mkpart primary "$fstype" "${bootsize}"MiB 100%
@@ -264,5 +263,4 @@ include compress_img
 
 # Clean up all the temporary build stuff and remove the directories.
 # Comment this out to keep things around if you want to see what may have gone wrong.
-log "Cleaning up the temporary build files..." green
-rm -rf "${basedir}"
+clean_build
