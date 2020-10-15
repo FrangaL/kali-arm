@@ -1,18 +1,24 @@
 #!/bin/bash -e
 exec > >(tee -a -i /var/log/runonce.log) 2>&1
 
-# Create groups bluetooth lpadmin scanner.
-if ! grep -qE '^bluetooth:' /etc/group; then
+# Create groups bluetooth, lpadmin, scanner & kali.
+if ! getent group 'bluetooth'; then
   groupadd -r -g 112 bluetooth
-elif ! grep -qE '^lpadmin:' /etc/group; then
+fi
+if ! getent group 'lpadmin'; then
   groupadd -r -g 113 lpadmin
-elif ! grep -qE '^scanner:' /etc/group; then
+fi
+if ! getent group 'scanner'; then
   groupadd -r -g 122 scanner
 fi
+if ! getent group 'kali'; then
+  groupadd -g 1000 kali
+fi
+
 
 # Default groups.
-kali_groups="adm,audio,cdrom,dialout,dip,games,input,netdev,plugdev,\
-render,staff,sudo,systemd-journal,users,video,scanner,lpadmin,bluetooth"
+kali_groups="adm,audio,cdrom,dialout,dip,games,input,netdev,plugdev,render,\
+staff,sudo,systemd-journal,users,video,scanner,lpadmin,bluetooth,kali"
 
 # Check that the application groups exist.
 app_groups="wireshark kismet i2c"
@@ -23,7 +29,7 @@ for g in $app_groups; do
 done
 
 # Add the kali user and give them all the access they need.
-if ! grep -qE '^kali:' /etc/passwd; then
+if ! getent passwd 'kali'; then
   adduser --gecos "" --uid 1000 --gid 1000 --shell /bin/bash --disabled-password kali
   usermod -a -G $kali_groups kali
   echo 'kali:kali' | chpasswd

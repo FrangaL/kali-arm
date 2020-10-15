@@ -4,8 +4,8 @@
 LOCALES="en_US.UTF-8"
 sed -i 's/^# *\($LOCALES\)/\1/' /etc/locale.gen
 locale-gen
-echo LANG=$LOCALES >/etc/locale.conf
-echo LC_ALL=$LOCALES >>/etc/locale.conf
+echo "LANG=$LOCALES" >/etc/locale.conf
+echo "LC_ALL=$LOCALES" >>/etc/locale.conf
 cat <<'EOM' >/etc/profile.d/default-lang.sh
 if [ -z "$LANG" ]; then
     source /etc/locale.conf

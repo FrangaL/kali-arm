@@ -9,6 +9,7 @@ fi
 # Check compatible systems.
 if ! which dpkg > /dev/null; then
    echo "Script only compatible with Debian-based systems"
+   exit 1
 fi
 
 # List of installed packages file.
