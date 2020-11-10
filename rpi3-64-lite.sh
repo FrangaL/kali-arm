@@ -2,9 +2,6 @@
 # This is the Raspberry Pi 2 v1.2/3/4 Kali ARM 64 bit build script - http://www.kali.org/downloads
 # A trusted Kali Linux image created by Offensive Security - http://www.offensive-security.com
 
-# Uncomment to activate debug
-# debug=true
-
 # Load general functions
 # shellcheck source=common.d/functions.sh
 source common.d/functions.sh
@@ -16,7 +13,7 @@ hw_model=${hw_model:-"rpi3"}
 architecture=${architecture:-"arm64"}
 # Variant name for image and dir build
 variant=${variant:-"nexmon-${architecture}-lite"}
-# Destop manager (xfce, gnome, i3, kde, lxde, mate, e17 or none)
+# Desktop manager (xfce, gnome, i3, kde, lxde, mate, e17 or none)
 desktop=${desktop:-"none"}
 
 
@@ -84,7 +81,7 @@ eatmydata apt-get -y --allow-change-held-packages --purge autoremove
 
 # Default groups.
 kali_groups="adm,audio,cdrom,dialout,dip,games,input,netdev,plugdev,\
-render,staff,sudo,systemd-journal,users,video,scanner,lpadmin,bluetooth"
+render,staff,sudo,systemd-journal,users,video,scanner,lpadmin,bluetooth,kali"
 
 # Check that the application groups exist.
 app_groups="wireshark kismet i2c"

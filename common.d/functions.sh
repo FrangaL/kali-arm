@@ -1,15 +1,7 @@
 #!/usr/bin/env bash
 
-# Debug function
-function debug (){
-  if [ "$debug" = true ]; then
-    exec > >(tee -a -i "${0%.*}.log") 2>&1
-    set -x
-  fi
-}; debug;
-
 # Print color echo
-log() {
+function log() {
   local set_color="$2"
   case $set_color in
     bold) color=$(tput bold);;
@@ -22,8 +14,35 @@ log() {
   [ -z "$text" ] && echo "$color $1 $(tput sgr0)" || echo "$text"
 }
 
+# Usage function
+function usage() {
+  log "Usage commands:" bold
+  echo "# Desktop manager (xfce, gnome, i3, kde, lxde, mate, e17 or none)"
+  echo "$0 --desktop kde"
+  echo ""
+  echo "# Enable debug & log file."
+  echo "$0 --debug"
+}
+
+# Arguments function
+function arguments() {
+    while true; do
+      case "$1" in
+        -a|--arch) architecture="$2"; shift 2;;
+        --desktop) desktop="$2"; shift 2;;
+        -h|--h|-help|--help) usage; exit 0 ;;
+        -d|--debug)
+          exec > >(tee -a "${0%.*}.log") 2>&1
+          set -x; shift 0; break ;;
+        -*|--*) log "Unknown option $1" red; exit 1 ;;
+        --) shift; break ;;
+        *) break ;;
+      esac
+    done
+}; arguments $*;
+
 # Function to include common files
-function include (){
+function include() {
   local file="$1"
   if [[ -f "common.d/${file}.sh" ]]; then
     log " ✅ Load common file ${file}" green
@@ -38,18 +57,18 @@ function include (){
 
 # systemd-nspawn enviroment
 # Putting quotes around $extra_args causes systemd-nspawn to pass the extra arguments as 1, so leave it unquoted.
-function systemd-nspawn_exec (){
+function systemd-nspawn_exec() {
   systemd-nspawn --bind-ro "$qemu_bin" $extra_args --capability=cap_setfcap -E RUNLEVEL=1,LANG=C -M "$machine" -D "$work_dir" "$@"
 }
 
 # create the rootfs - not much to modify here, except maybe throw in some more packages if you want.
-function debootstrap_exec (){
+function debootstrap_exec() {
   eatmydata debootstrap --foreign --keyring=/usr/share/keyrings/kali-archive-keyring.gpg --components="${components}" \
     --include=kali-archive-keyring,eatmydata --arch "${architecture}" "${suite}" "${work_dir}" "$@"
 }
 
 # Disable the use of http proxy in case it is enabled.
-function disable_proxy (){
+function disable_proxy() {
   if [ -n "$proxy_url" ]; then
     unset http_proxy
     rm -rf "${work_dir}"/etc/apt/apt.conf.d/66proxy
@@ -57,7 +76,7 @@ function disable_proxy (){
 }
 
 # Mirror & suite replacement
-function restore_mirror (){
+function restore_mirror() {
   if [[ -n "${replace_mirror}" ]]; then
     mirror=${replace_mirror}
   elif [[ -n "${replace_suite}" ]]; then
@@ -66,7 +85,7 @@ function restore_mirror (){
 }
 
 # Limite use cpu function
-function limit_cpu (){
+function limit_cpu() {
   if [[ $cpu_limit -eq "0" || -z $cpu_limit ]]; then
     local cpu_shares=$((num_cores * 1024)); local cpu_quota="-1";
   else
@@ -97,7 +116,7 @@ function limit_cpu (){
 }
 
 # Choose a locale
-function set_locale (){
+function set_locale() {
   LOCALES="$1"
   sed -i "s/^# *\($LOCALES\)/\1/" "${work_dir}"/etc/locale.gen
   systemd-nspawn_exec locale-gen
@@ -115,7 +134,7 @@ EOM
 }
 
 # Set hostname
-function set_hostname (){
+function set_hostname() {
   if [[ "$1" =~ ^[a-zA-Z0-9-]{2,63}+$ ]] ;then
     echo "$1" > "${work_dir}"/etc/hostname
   else
@@ -126,7 +145,7 @@ function set_hostname (){
 }
 
 # Add network interface
-function add_interface (){
+function add_interface() {
   interfaces="$*"
   for netdev in $interfaces; do
     cat << EOF > "${work_dir}"/etc/network/interfaces.d/"$netdev"
@@ -139,7 +158,7 @@ EOF
 }
 
 # Make SWAP
-function make_swap (){
+function make_swap() {
   if [ "$swap" = yes ]; then
     echo 'vm.swappiness = 50' >> "${work_dir}"/etc/sysctl.conf
     systemd-nspawn_exec apt-get install -y dphys-swapfile > /dev/null 2>&1
@@ -148,7 +167,7 @@ function make_swap (){
 }
 
 # Print current config.
-function print_config (){
+function print_config() {
   log "Compilation info" bold
   if [[ "$hw_model" == *rpi* ]]; then
     name_model="Raspberry PI 2/3/4"
