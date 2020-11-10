@@ -6,7 +6,7 @@ if [ "$compress" = xz ]; then
     limit_cpu pixz -p "$num_cores" "${current_dir}"/"${imagename}".img # -p Nº cpu cores use
     chmod 644 "${current_dir}"/"${imagename}".img.xz
   else
-    xz -T "$num_cores" "${current_dir}"/"${imagename}".img # -T Nº cpu cores use
+    xz --memlimit-compress=50% -T "$num_cores" "${current_dir}"/"${imagename}".img # -T Nº cpu cores use
     chmod 644 "${current_dir}"/"${imagename}".img.xz
   fi
 else
