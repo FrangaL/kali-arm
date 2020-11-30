@@ -1,18 +1,29 @@
 #!/bin/bash -e
 exec > >(tee -a -i /var/log/runonce.log) 2>&1
 
-# Create groups bluetooth, lpadmin, scanner & kali.
+# Create or modify group bluetooth.
 if ! getent group 'bluetooth'; then
   groupadd -r -g 112 bluetooth
+else
+  groupmod -g 112 bluetooth
 fi
+# Create or modify group lpadmin.
 if ! getent group 'lpadmin'; then
   groupadd -r -g 113 lpadmin
+else
+  groupmod -g 113 lpadmin
 fi
+# Create or modify group scanner.
 if ! getent group 'scanner'; then
   groupadd -r -g 122 scanner
+else
+  groupmod -g 122 scanner
 fi
+# Create or modify group kali.
 if ! getent group 'kali'; then
   groupadd -g 1000 kali
+else
+  groupmod -g 1000 kali
 fi
 
 
