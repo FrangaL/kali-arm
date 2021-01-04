@@ -1,0 +1,19 @@
+version: '3'
+services:
+  kali-builder:
+    build: .
+    image: kali-img-builder:1.0.1
+    cap_add:
+    - SYS_ADMIN
+    container_name: kali-builder
+    restart: always
+    hostname: kali-builder
+    network_mode: bridge
+    privileged: true
+    tmpfs:
+    - /tmp
+    - /run
+    - /run/lock
+    volumes:
+    - /dev:/dev
+    - /sys/fs/cgroup:/sys/fs/cgroup:ro
