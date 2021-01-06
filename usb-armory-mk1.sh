@@ -470,29 +470,28 @@ sed -i 's/INTERFACES.*/INTERFACES="usb0"/g' ${work_dir}/etc/default/isc-dhcp-ser
 
 # Kernel section. If you want to use a custom kernel, or configuration, replace
 # them in this section.
-git clone -b linux-4.14.y --depth 1 git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git ${work_dir}/usr/src/kernel
+git clone -b linux-5.4.y --depth 1 git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git ${work_dir}/usr/src/kernel
 cd ${work_dir}/usr/src/kernel
 git rev-parse HEAD > ${work_dir}/usr/src/kernel-at-commit
 touch .scmversion
 export ARCH=arm
 export CROSS_COMPILE=arm-linux-gnueabihf-
-patch -p1 --no-backup-if-mismatch < ${current_dir}/patches/kali-wifi-injection-4.14.patch
+patch -p1 --no-backup-if-mismatch < ${current_dir}/patches/kali-wifi-injection-5.4.patch
 patch -p1 --no-backup-if-mismatch < ${current_dir}/patches/0001-wireless-carl9170-Enable-sniffer-mode-promisc-flag-t.patch
-#wget $githubraw/inversepath/usbarmory/master/software/kernel_conf/mark-one/usbarmory_linux-4.14.config -O .config
 wget $githubraw/inversepath/usbarmory/master/software/kernel_conf/mark-one/imx53-usbarmory-host.dts -O arch/arm/boot/dts/imx53-usbarmory-host.dts
 wget $githubraw/inversepath/usbarmory/master/software/kernel_conf/mark-one/imx53-usbarmory-gpio.dts -O arch/arm/boot/dts/imx53-usbarmory-gpio.dts
 wget $githubraw/inversepath/usbarmory/master/software/kernel_conf/mark-one/imx53-usbarmory-spi.dts -O arch/arm/boot/dts/imx53-usbarmory-spi.dts
 wget $githubraw/inversepath/usbarmory/master/software/kernel_conf/mark-one/imx53-usbarmory-i2c.dts -O arch/arm/boot/dts/imx53-usbarmory-i2c.dts
 wget $githubraw/inversepath/usbarmory/master/software/kernel_conf/mark-one/imx53-usbarmory-scc2.dts -O arch/arm/boot/dts/imx53-usbarmory-scc2.dts
-cp ${current_dir}/kernel-configs/usbarmory-4.14.config ${work_dir}/usr/src/kernel/.config
-cp ${current_dir}/kernel-configs/usbarmory-4.14.config ${work_dir}/usr/src/usbarmory-4.14.config
+cp ${current_dir}/kernel-configs/usbarmory-5.4.config ${work_dir}/usr/src/kernel/.config
+cp ${current_dir}/kernel-configs/usbarmory-5.4.config ${work_dir}/usr/src/usbarmory-5.4.config
 make LOADADDR=0x70008000 -j $(grep -c processor /proc/cpuinfo) uImage modules imx53-usbarmory-gpio.dtb imx53-usbarmory-i2c.dtb imx53-usbarmory-spi.dtb imx53-usbarmory.dtb imx53-usbarmory-host.dtb imx53-usbarmory-scc2.dtb
 make modules_install INSTALL_MOD_PATH=${work_dir}
 cp arch/arm/boot/zImage ${work_dir}/boot/
 cp arch/arm/boot/dts/imx53-usbarmory*.dtb ${work_dir}/boot/
 make mrproper
 # Since these aren't integrated into the kernel yet, mrproper removes them.
-cp ${current_dir}/kernel-configs/usbarmory-4.14.config ${work_dir}/usr/src/kernel/.config
+cp ${current_dir}/kernel-configs/usbarmory-5.4.config ${work_dir}/usr/src/kernel/.config
 wget $githubraw/inversepath/usbarmory/master/software/kernel_conf/mark-one/imx53-usbarmory-host.dts -O arch/arm/boot/dts/imx53-usbarmory-host.dts
 wget $githubraw/inversepath/usbarmory/master/software/kernel_conf/mark-one/imx53-usbarmory-gpio.dts -O arch/arm/boot/dts/imx53-usbarmory-gpio.dts
 wget $githubraw/inversepath/usbarmory/master/software/kernel_conf/mark-one/imx53-usbarmory-spi.dts -O arch/arm/boot/dts/imx53-usbarmory-spi.dts
