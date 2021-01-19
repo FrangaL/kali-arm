@@ -30,23 +30,26 @@ fi
 case ${architecture} in
   arm64)
     qemu_bin="/usr/bin/qemu-aarch64-static"
-    lib_arch="aarch64-linux-gnu" ;;
+    lib_arch="aarch64-linux-gnu"
+    ;;
   armhf)
     qemu_bin="/usr/bin/qemu-arm-static"
-    lib_arch="arm-linux-gnueabihf" ;;
+    lib_arch="arm-linux-gnueabihf"
+    ;;
   armel)
     qemu_bin="/usr/bin/qemu-arm-static"
-    lib_arch="arm-linux-gnueabi" ;;
+    lib_arch="arm-linux-gnueabi"
+    ;;
 esac
 
 # Check systemd-nspawn version
 nspawn_ver=$(systemd-nspawn --version | awk '{if(NR==1) print $2}')
 if [[ $nspawn_ver -ge 245 ]]; then
-    extra_args="--hostname=$hostname -q -P"
+  extra_args="--hostname=$hostname -q -P"
 elif [[ $nspawn_ver -ge 241 ]]; then
-    extra_args="--hostname=$hostname -q"
+  extra_args="--hostname=$hostname -q"
 else
-    extra_args="-q"
+  extra_args="-q"
 fi
 
 # Check cpu cores to use

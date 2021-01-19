@@ -1,11 +1,10 @@
 #!/bin/bash -e
 # This is the Raspberry Pi 2 v1.2/3/4 Kali ARM 64 bit build script - http://www.kali.org/downloads
 # A trusted Kali Linux image created by Offensive Security - http://www.offensive-security.com
-
+# shellcheck disable=SC2154
 # Load general functions
-# shellcheck source=common.d/functions.sh
+# shellcheck source=/dev/null
 source common.d/functions.sh
-
 
 # Hardware model
 hw_model=${hw_model:-"rpi3"}
@@ -15,7 +14,6 @@ architecture=${architecture:-"arm64"}
 variant=${variant:-"nexmon-${architecture}-lite"}
 # Desktop manager (xfce, gnome, i3, kde, lxde, mate, e17 or none)
 desktop=${desktop:-"none"}
-
 
 # Load common variables
 include variables
@@ -47,7 +45,7 @@ cp -rp bsp "${work_dir}"
 export MALLOC_CHECK_=0
 
 # Third stage
-cat << EOF >  "${work_dir}"/third-stage
+cat <<EOF >"${work_dir}"/third-stage
 #!/bin/bash -e
 
 # Enable the use of http proxy in third-stage in case it is enabled.
@@ -195,7 +193,7 @@ set_locale "$locale"
 # Clean system
 include clean_system
 # Define DNS server after last running systemd-nspawn.
-echo "nameserver 8.8.8.8" > "${work_dir}"/etc/resolv.conf
+echo "nameserver 8.8.8.8" >"${work_dir}"/etc/resolv.conf
 # Disable the use of http proxy in case it is enabled.
 disable_proxy
 # Mirror & suite replacement
@@ -204,7 +202,7 @@ restore_mirror
 include sources.list
 
 # systemd doesn't seem to be generating the fstab properly for some people, so let's create one.
-cat << EOF > "${work_dir}"/etc/fstab
+cat <<EOF >"${work_dir}"/etc/fstab
 # <file system> <mount point>   <type>  <options>       <dump>  <pass>
 proc            /proc           proc    defaults          0       0
 /dev/mmcblk0p1  /boot           vfat    defaults          0       2

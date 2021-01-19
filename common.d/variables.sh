@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# shellcheck disable=SC2034,SC2154
 
 # Generate a random machine name to be used.
 machine=$(dbus-uuidgen)
@@ -20,7 +21,7 @@ compress="xz"
 # Choose filesystem format to format ( ext3 or ext4 )
 fstype="ext3"
 # Generate a random root partition UUID to be used.
-root_uuid=$(cat < /proc/sys/kernel/random/uuid | less)
+root_uuid=$(cat </proc/sys/kernel/random/uuid | less)
 # Disable IPV6 ( yes or no)
 disable_ipv6="yes"
 # Make SWAP ( yes or no)
@@ -46,8 +47,8 @@ work_dir="${basedir}/kali-${architecture}"
 # Custom image file name variable - MUST NOT include .img at the end.
 imagename=${imagename:-"kali-linux-${version}-${hw_model}-${variant}"}
 
-
 # Load build configuration
-if [ -f ${current_dir}/builder.txt ]; then
-  source ${current_dir}/builder.txt
+if [ -f "${current_dir}"/builder.txt ]; then
+  # shellcheck source=./builder.txt
+  source "${current_dir}"/builder.txt
 fi
