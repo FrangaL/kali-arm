@@ -6,8 +6,7 @@ Before=dhcpcd.service
 [Service]
 Type=oneshot
 RemainAfterExit=yes
-ExecStart=/bin/mv /boot/wpa_supplicant.conf /etc/wpa_supplicant/wpa_supplicant.conf
-ExecStartPost=/bin/chmod 600 /etc/wpa_supplicant/wpa_supplicant.conf
+ExecStart=/usr/bin/copy-user-wpasupplicant.sh
 
 [Install]
 WantedBy=multi-user.target

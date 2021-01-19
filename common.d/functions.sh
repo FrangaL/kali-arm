@@ -4,11 +4,11 @@
 function log() {
   local set_color="$2"
   case $set_color in
-    bold) color=$(tput bold);;
-    red) color=$(tput setaf 1);;
-    green) color=$(tput setaf 2);;
-    yellow) color=$(tput setaf 3);;
-    cyan) color=$(tput setaf 6);;
+    bold) color=$(tput bold) ;;
+    red) color=$(tput setaf 1) ;;
+    green) color=$(tput setaf 2) ;;
+    yellow) color=$(tput setaf 3) ;;
+    cyan) color=$(tput setaf 6) ;;
     *) text="$1" ;;
   esac
   [ -z "$text" ] && echo "$color $1 $(tput sgr0)" || echo "$text"
@@ -26,20 +26,39 @@ function usage() {
 
 # Arguments function
 function arguments() {
-    while true; do
-      case "$1" in
-        -a|--arch) architecture="$2"; shift 2;;
-        --desktop) desktop="$2"; shift 2;;
-        -h|--h|-help|--help) usage; exit 0 ;;
-        -d|--debug)
-          exec > >(tee -a "${0%.*}.log") 2>&1
-          set -x; shift 0; break ;;
-        -*|--*) log "Unknown option $1" red; exit 1 ;;
-        --) shift; break ;;
-        *) break ;;
-      esac
-    done
-}; arguments $*;
+  while true; do
+    case "$1" in
+      -a | --arch)
+        architecture="$2"
+        shift 2
+        ;;
+      --desktop)
+        desktop="$2"
+        shift 2
+        ;;
+      -h | --h | -help | --help)
+        usage
+        exit 0
+        ;;
+      -d | --debug)
+        exec > >(tee -a "${0%.*}.log") 2>&1
+        set -x
+        shift 0
+        break
+        ;;
+      -* | --*)
+        log "Unknown option $1" red
+        exit 1
+        ;;
+      --)
+        shift
+        break
+        ;;
+      *) break ;;
+    esac
+  done
+}
+arguments $*
 
 # Function to include common files
 function include() {
@@ -87,25 +106,31 @@ function restore_mirror() {
 # Limite use cpu function
 function limit_cpu() {
   if [[ $cpu_limit -eq "0" || -z $cpu_limit ]]; then
-    local cpu_shares=$((num_cores * 1024)); local cpu_quota="-1";
+    local cpu_shares=$((num_cores * 1024))
+    local cpu_quota="-1"
   else
-    local cpu_shares=$((1024 * num_cores * cpu_limit / 100)) # 1024 max value per core
+    local cpu_shares=$((1024 * num_cores * cpu_limit / 100))  # 1024 max value per core
     local cpu_quota=$((100000 * num_cores * cpu_limit / 100)) # 100000 max value per core
   fi
   # Random group name
-  local rand=$(tr -cd 'A-Za-z0-9' < /dev/urandom | head -c4 ; echo)
+  local rand=$(
+    tr -cd 'A-Za-z0-9' </dev/urandom | head -c4
+    echo
+  )
   cgcreate -g cpu:/cpulimit-"$rand"
   cgset -r cpu.shares="$cpu_shares" cpulimit-"$rand"
   cgset -r cpu.cfs_quota_us="$cpu_quota" cpulimit-"$rand"
   # Retry command
-  local n=1; local max=5; local delay=2
+  local n=1
+  local max=5
+  local delay=2
   while true; do
     # shellcheck disable=SC2015
     cgexec -g cpu:cpulimit-"$rand" "$@" && break || {
       if [[ $n -lt $max ]]; then
         ((n++))
         log "Command failed. Attempt $n/$max " red
-        sleep $delay;
+        sleep $delay
       else
         log "The command has failed after $n attempts." yellow
         break
@@ -135,12 +160,12 @@ EOM
 
 # Set hostname
 function set_hostname() {
-  if [[ "$1" =~ ^[a-zA-Z0-9-]{2,63}+$ ]] ;then
-    echo "$1" > "${work_dir}"/etc/hostname
+  if [[ "$1" =~ ^[a-zA-Z0-9-]{2,63}+$ ]]; then
+    echo "$1" >"${work_dir}"/etc/hostname
   else
     log "$1 is not a correct hostname" red
     log "Using kali to default hostname" bold
-    echo "kali" > "${work_dir}"/etc/hostname
+    echo "kali" >"${work_dir}"/etc/hostname
   fi
 }
 
@@ -148,7 +173,7 @@ function set_hostname() {
 function add_interface() {
   interfaces="$*"
   for netdev in $interfaces; do
-    cat << EOF > "${work_dir}"/etc/network/interfaces.d/"$netdev"
+    cat <<EOF >"${work_dir}"/etc/network/interfaces.d/"$netdev"
 auto $netdev
     allow-hotplug $netdev
     iface $netdev inet dhcp
@@ -160,8 +185,8 @@ EOF
 # Make SWAP
 function make_swap() {
   if [ "$swap" = yes ]; then
-    echo 'vm.swappiness = 50' >> "${work_dir}"/etc/sysctl.conf
-    systemd-nspawn_exec apt-get install -y dphys-swapfile > /dev/null 2>&1
+    echo 'vm.swappiness = 50' >>"${work_dir}"/etc/sysctl.conf
+    systemd-nspawn_exec apt-get install -y dphys-swapfile >/dev/null 2>&1
     #sed -i 's/#CONF_SWAPSIZE=/CONF_SWAPSIZE=128/g' ${work_dir}/etc/dphys-swapfile
   fi
 }
@@ -184,8 +209,8 @@ function print_config() {
 function make_image() {
   # Calculate the space to create the image.
   root_size=$(du -s -B1 "${work_dir}" --exclude="${work_dir}"/boot | cut -f1)
-  root_extra=$((root_size/1024/1000*5*1024/5))
-  raw_size=$(($((free_space*1024))+root_extra+$((bootsize*1024))+4096))
+  root_extra=$((root_size / 1024 / 1000 * 5 * 1024 / 5))
+  raw_size=$(($((free_space * 1024)) + root_extra + $((bootsize * 1024)) + 4096))
   img_size=$(echo "${raw_size}"Ki | numfmt --from=iec-i --to=si)
   # Create the disk image
   log "Creating image file ${imagename}.img $img_size" green

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Clean system
-systemd-nspawn_exec << 'EOF'
+systemd-nspawn_exec <<'EOF'
 rm -f /0
 rm -rf /bsp
 fc-cache -frs

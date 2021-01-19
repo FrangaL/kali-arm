@@ -8,13 +8,16 @@ pushd "${basedir}"/userland/build || exit
 case ${architecture} in
   arm64)
     cmake -DCMAKE_SYSTEM_NAME=Linux -DCMAKE_BUILD_TYPE=release -DCMAKE_TOOLCHAIN_FILE="makefiles/cmake/toolchains/aarch64-linux-gnu.cmake" \
-      -DALL_APPS=OFF -DCMAKE_SYSTEM_PROCESSOR="arm64" -DARM64=ON ../ ;;
+      -DALL_APPS=OFF -DCMAKE_SYSTEM_PROCESSOR="arm64" -DARM64=ON ../
+    ;;
   armel)
     cmake -DCMAKE_SYSTEM_NAME=Linux -DCMAKE_BUILD_TYPE=release -DCMAKE_TOOLCHAIN_FILE="makefiles/cmake/toolchains/arm-linux-gnueabihf.cmake" \
-      -DALL_APPS=OFF -DCMAKE_SYSTEM_PROCESSOR="arm" -DARM64=OFF ../ ;;
+      -DALL_APPS=OFF -DCMAKE_SYSTEM_PROCESSOR="arm" -DARM64=OFF ../
+    ;;
   armhf)
     cmake -DCMAKE_SYSTEM_NAME=Linux -DCMAKE_BUILD_TYPE=release -DCMAKE_TOOLCHAIN_FILE="makefiles/cmake/toolchains/arm-linux-gnueabihf.cmake" \
-      -DALL_APPS=OFF -DCMAKE_SYSTEM_PROCESSOR="arm" -DARM64=OFF ../ ;;
+      -DALL_APPS=OFF -DCMAKE_SYSTEM_PROCESSOR="arm" -DARM64=OFF ../
+    ;;
 esac
 
 make -j$(nproc) 2>/dev/null
