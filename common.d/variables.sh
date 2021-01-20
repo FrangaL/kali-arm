@@ -49,6 +49,9 @@ imagename=${imagename:-"kali-linux-${version}-${hw_model}-${variant}"}
 
 # Load build configuration
 if [ -f "${current_dir}"/builder.txt ]; then
-  # shellcheck source=./builder.txt
+  # shellcheck source=/dev/null
   source "${current_dir}"/builder.txt
 fi
+
+# workaround for LP: #520465
+export MALLOC_CHECK_=0

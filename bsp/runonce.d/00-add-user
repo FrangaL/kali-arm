@@ -34,7 +34,7 @@ staff,sudo,systemd-journal,users,video,scanner,lpadmin,bluetooth,kali"
 # Check that the application groups exist.
 app_groups="wireshark kismet i2c"
 for g in $app_groups; do
-  if getent group $g >/dev/null; then
+  if getent group "$g" >/dev/null; then
     kali_groups+=",$g"
   fi
 done
@@ -42,7 +42,7 @@ done
 # Add the kali user and give them all the access they need.
 if ! getent passwd 'kali'; then
   adduser --gecos "" --uid 1000 --gid 1000 --shell /bin/bash --disabled-password kali
-  usermod -a -G $kali_groups kali
+  usermod -a -G "$kali_groups" kali
   echo 'kali:kali' | chpasswd
 fi
 

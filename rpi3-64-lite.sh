@@ -1,13 +1,14 @@
 #!/bin/bash -e
 # This is the Raspberry Pi 2 v1.2/3/4 Kali ARM 64 bit build script - http://www.kali.org/downloads
 # A trusted Kali Linux image created by Offensive Security - http://www.offensive-security.com
+
 # shellcheck disable=SC2154
 # Load general functions
 # shellcheck source=/dev/null
-source common.d/functions.sh
+source ./common.d/functions.sh
 
 # Hardware model
-hw_model=${hw_model:-"rpi3"}
+hw_model=${hw_model:-"rpi4"}
 # Architecture
 architecture=${architecture:-"arm64"}
 # Variant name for image and dir build
@@ -38,72 +39,26 @@ include hosts
 # Network configs
 include network
 add_interface eth0
-
+# APT options
+include apt_options
 # Copy directory bsp into build dir.
 cp -rp bsp "${work_dir}"
-# workaround for LP: #520465
-export MALLOC_CHECK_=0
 
 # Third stage
 cat <<EOF >"${work_dir}"/third-stage
 #!/bin/bash -e
 
-# Enable the use of http proxy in third-stage in case it is enabled.
-if [ -n "$proxy_url" ]; then
-  echo "Acquire::http { Proxy \"$proxy_url\" };" > /etc/apt/apt.conf.d/66proxy
-fi
-
-if [[ "$variant" == *lite* ]]; then
-  cat > /etc/apt/apt.conf.d/99_norecommends <<EOM
-APT::Install-Recommends "false";
-APT::AutoRemove::RecommendsImportant "false";
-APT::AutoRemove::SuggestsImportant "false";
-EOM
-fi
-
-export DEBIAN_FRONTEND=noninteractive
 eatmydata apt-get update
 eatmydata apt-get -y install ${third_stage_pkgs}
 
-# Create groups bluetooth,lpadmin,scanner,kali.
-groupadd -r -g 118 bluetooth
-groupadd -r -g 113 lpadmin
-groupadd -r -g 122 scanner
-groupadd -g 1000 kali
+eatmydata apt-get install -y ${packages} || eatmydata apt-get install -y --fix-broken
+eatmydata apt-get install -y ${desktop_pkgs} ${extra} || eatmydata apt-get install -y --fix-broken
 
-aptops="--allow-change-held-packages -o dpkg::options::=--force-confnew -o Acquire::Retries=3"
-eatmydata apt-get install -y \$aptops ${packages} || eatmydata apt-get install -y --fix-broken
-eatmydata apt-get install -y \$aptops ${desktop_pkgs} ${extra} || eatmydata apt-get install -y --fix-broken
-
-eatmydata apt-get -y --allow-change-held-packages --purge autoremove
-
-# Default groups.
-kali_groups="adm,audio,cdrom,dialout,dip,games,input,netdev,plugdev,\
-render,staff,sudo,systemd-journal,users,video,scanner,lpadmin,bluetooth,kali"
-
-# Check that the application groups exist.
-app_groups="wireshark kismet i2c"
-for g in \$app_groups; do
-  if getent group \$g >/dev/null; then
-    kali_groups+=",\$g"
-  fi
-done
-
-# Add the kali user and give them all the access they need.
-if ! grep -qE '^kali:' /etc/passwd; then
-  adduser --gecos "" --uid 1000 --gid 1000 --shell /bin/bash --disabled-password kali
-  usermod -a -G \$kali_groups kali
-  echo 'kali:kali' | chpasswd
-fi
+eatmydata apt-get -y --purge autoremove
 
 # Linux console/Keyboard configuration
 echo 'console-common console-data/keymap/policy select Select keymap from full list' | debconf-set-selections
 echo 'console-common console-data/keymap/full select en-latin1-nodeadkeys' | debconf-set-selections
-
-# Add the user to the sudoers file if they're not there
-if ! grep -q kali /etc/sudoers; then
-    echo 'kali ALL=(ALL) NOPASSWD: ALL' >>/etc/sudoers
-fi
 
 # Copy all services
 cp -p /bsp/services/all/*.service /etc/systemd/system/
@@ -121,7 +76,7 @@ install -m755 /bsp/scripts/monstop /usr/bin/
 echo "deb http://http.re4son-kernel.com/re4son kali-pi main" > /etc/apt/sources.list.d/re4son.list
 wget -qO /etc/apt/trusted.gpg.d/kali_pi-archive-keyring.gpg https://re4son-kernel.com/keys/http/kali_pi-archive-keyring.gpg
 eatmydata apt-get update
-eatmydata apt-get install -y \$aptops kalipi-kernel kalipi-bootloader kalipi-re4son-firmware kalipi-kernel-headers
+eatmydata apt-get install -y kalipi-kernel kalipi-bootloader kalipi-re4son-firmware kalipi-kernel-headers
 
 # Regenerated the shared-mime-info database on the first boot
 # since it fails to do so properly in a chroot.
@@ -175,6 +130,11 @@ sed -i -e 's/FONTSIZE=.*/FONTSIZE="6x12"/' /etc/default/console-setup
 # Fix startup time from 5 minutes to 15 secs on raise interface wlan0
 sed -i 's/^TimeoutStartSec=5min/TimeoutStartSec=15/g' "/usr/lib/systemd/system/networking.service"
 
+# Enable runonce
+install -m755 /bsp/scripts/runonce /usr/sbin/
+cp -rf /bsp/runonce.d /etc
+systemctl enable runonce
+
 # Clean up dpkg.eatmydata
 rm -f /usr/bin/dpkg
 dpkg-divert --remove --rename /usr/bin/dpkg
@@ -223,7 +183,7 @@ bootp="${loopdevice}p1"
 rootp="${loopdevice}p2"
 
 # Create file systems
-mkfs.vfat -n BOOT -F 32 -v "${bootp}"
+mkfs.vfat -n BOOT -F 32 "${bootp}"
 if [[ "$fstype" == "ext4" ]]; then
   features="^64bit,^metadata_csum"
 elif [[ "$fstype" == "ext3" ]]; then

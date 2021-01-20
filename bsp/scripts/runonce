@@ -16,7 +16,7 @@ function should-run-script {
     if [[ -f /var/cache/runonce/$script_basename ]]; then
         previous_sha1=$(cat /var/cache/runonce/$script_basename)
 
-        if [[ $script_sha1 == $previous_sha1 ]]; then
+        if [[ $script_sha1 == "$previous_sha1" ]]; then
             return 1
         fi
     fi
@@ -38,8 +38,8 @@ function main {
 
         if [[ $? == 0 ]]; then
             local script_basename=$(basename $script)
-            echo $script_sha1 > /var/cache/runonce/$script_basename
-            sync /var/cache/runonce/$script_basename
+            echo $script_sha1 > /var/cache/runonce/"$script_basename"
+            sync /var/cache/runonce/"$script_basename"
         fi
     done
 }
