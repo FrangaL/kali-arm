@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# shellcheck disable=SC2154
 
 # Print color echo
 function log() {
@@ -46,7 +47,7 @@ function arguments() {
         shift 0
         break
         ;;
-      -* | --*)
+      -\* | --\*)
         log "Unknown option $1" red
         exit 1
         ;;
@@ -58,14 +59,14 @@ function arguments() {
     esac
   done
 }
-arguments $*
+arguments "$*"
 
 # Function to include common files
 function include() {
   local file="$1"
   if [[ -f "common.d/${file}.sh" ]]; then
     log " ✅ Load common file ${file}" green
-    # shellcheck source-path=common.d
+    # shellcheck source=/dev/null
     source "common.d/${file}.sh"
     return 0
   else
@@ -77,7 +78,8 @@ function include() {
 # systemd-nspawn enviroment
 # Putting quotes around $extra_args causes systemd-nspawn to pass the extra arguments as 1, so leave it unquoted.
 function systemd-nspawn_exec() {
-  systemd-nspawn --bind-ro "$qemu_bin" $extra_args --capability=cap_setfcap -E RUNLEVEL=1,LANG=C -M "$machine" -D "$work_dir" "$@"
+  ENV="RUNLEVEL=1,LANG=C,DEBIAN_FRONTEND=noninteractive,DEBCONF_NOWARNINGS=yes"
+  systemd-nspawn --bind-ro "$qemu_bin" $extra_args --capability=cap_setfcap -E $ENV -M "$machine" -D "$work_dir" "$@"
 }
 
 # create the rootfs - not much to modify here, except maybe throw in some more packages if you want.
@@ -98,6 +100,7 @@ function disable_proxy() {
 function restore_mirror() {
   if [[ -n "${replace_mirror}" ]]; then
     mirror=${replace_mirror}
+    export mirror
   elif [[ -n "${replace_suite}" ]]; then
     suite=${replace_suite}
   fi
@@ -105,7 +108,7 @@ function restore_mirror() {
 
 # Limite use cpu function
 function limit_cpu() {
-  if [[ $cpu_limit -eq "0" || -z $cpu_limit ]]; then
+  if [[ ${cpu_limit:=} -eq "0" || -z $cpu_limit ]]; then
     local cpu_shares=$((num_cores * 1024))
     local cpu_quota="-1"
   else
@@ -113,7 +116,8 @@ function limit_cpu() {
     local cpu_quota=$((100000 * num_cores * cpu_limit / 100)) # 100000 max value per core
   fi
   # Random group name
-  local rand=$(
+  local rand
+  rand=$(
     tr -cd 'A-Za-z0-9' </dev/urandom | head -c4
     echo
   )
@@ -209,7 +213,7 @@ function print_config() {
 function make_image() {
   # Calculate the space to create the image.
   root_size=$(du -s -B1 "${work_dir}" --exclude="${work_dir}"/boot | cut -f1)
-  root_extra=$((root_size / 1024 / 1000 * 5 * 1024 / 5))
+  root_extra=$((root_size * 5 * 1024 / 5 / 1024 / 1000))
   raw_size=$(($((free_space * 1024)) + root_extra + $((bootsize * 1024)) + 4096))
   img_size=$(echo "${raw_size}"Ki | numfmt --from=iec-i --to=si)
   # Create the disk image
@@ -222,5 +226,6 @@ function clean_build() {
   log "Cleaning up the temporary build files..." yellow
   rm -rf "${basedir}"
   log "Done." green
+  echo -e "\n"
   log "Your image is: $(tput sgr0) ${imagename}.img.xz" bold
 }
