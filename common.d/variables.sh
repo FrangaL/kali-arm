@@ -46,12 +46,16 @@ basedir=${current_dir}/${hw_model}-${variant}
 work_dir="${basedir}/kali-${architecture}"
 # Custom image file name variable - MUST NOT include .img at the end.
 imagename=${imagename:-"kali-linux-${version}-${hw_model}-${variant}"}
+# workaround for LP: #520465
+export MALLOC_CHECK_=0
+# Proxy
+# You can turn off automatic settings by uncommenting apt_cacher=off.
+# apt_cacher=off
+# By default the proxy settings are local, but you can define an external proxy.
+# proxy_url="http://external.intranet.local"
 
 # Load build configuration
 if [ -f "${current_dir}"/builder.txt ]; then
   # shellcheck source=/dev/null
   source "${current_dir}"/builder.txt
 fi
-
-# workaround for LP: #520465
-export MALLOC_CHECK_=0

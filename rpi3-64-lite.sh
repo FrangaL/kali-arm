@@ -32,15 +32,15 @@ include eatmydata
 systemd-nspawn_exec eatmydata /debootstrap/debootstrap --second-stage
 # Define sources.list
 include sources.list
-# Set hostname
-set_hostname "${hostname}"
+# APT options
+include apt_options
 # So X doesn't complain, we add kali to hosts
 include hosts
+# Set hostname
+set_hostname "${hostname}"
 # Network configs
 include network
 add_interface eth0
-# APT options
-include apt_options
 # Copy directory bsp into build dir.
 cp -rp bsp "${work_dir}"
 
@@ -48,6 +48,7 @@ cp -rp bsp "${work_dir}"
 cat <<EOF >"${work_dir}"/third-stage
 #!/bin/bash -e
 
+export DEBIAN_FRONTEND=noninteractive
 eatmydata apt-get update
 eatmydata apt-get -y install ${third_stage_pkgs}
 
@@ -183,6 +184,7 @@ bootp="${loopdevice}p1"
 rootp="${loopdevice}p2"
 
 # Create file systems
+log "Formating partitions" green
 mkfs.vfat -n BOOT -F 32 "${bootp}"
 if [[ "$fstype" == "ext4" ]]; then
   features="^64bit,^metadata_csum"
@@ -207,7 +209,7 @@ umount -l "${bootp}"
 umount -l "${rootp}"
 
 # Check filesystem
-dosfsck -w -r -l -a -t "$bootp"
+dosfsck -w -r -a -t "$bootp"
 e2fsck -y -f "$rootp"
 
 # Remove loop devices

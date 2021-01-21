@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# shellcheck disable=SC2154
 
 git clone https://github.com/raspberrypi/userland.git "${basedir}"/userland
 
@@ -20,7 +21,7 @@ case ${architecture} in
     ;;
 esac
 
-make -j$(nproc) 2>/dev/null
+make -j"$(nproc)" 2>/dev/null
 mkdir "${work_dir}"/opt/vc
 mv {bin,lib,inc} "${work_dir}"/opt/vc
 

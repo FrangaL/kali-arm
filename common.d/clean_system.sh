@@ -19,6 +19,6 @@ rm -rf /var/cache/debconf/*-old
 rm -rf /var/cache/apt/archives/*
 rm -rf /etc/apt/apt.conf.d/apt_opts
 rm -rf /etc/apt/apt.conf.d/99_norecommends
-find /var/log -depth -type f -print0 | xargs -0 truncate -s 0
+for logs in $(find /var/log -type f); do > $logs; done
 history -c
 EOF
