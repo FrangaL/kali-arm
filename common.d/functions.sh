@@ -197,16 +197,19 @@ function make_swap() {
 
 # Print current config.
 function print_config() {
+  clear
+  echo -e "\n"
   log "Compilation info" bold
   if [[ "$hw_model" == *rpi* ]]; then
-    name_model="Raspberry PI 2/3/4"
+    name_model="Raspberry PI 2/3/4/400"
     log "Hardware model: $(tput sgr0) $name_model" cyan
   else
     log "Hardware model: $(tput sgr0) $hw_model" cyan
   fi
   log "Architecture: $(tput sgr0) $architecture" cyan
   log "The basedir thinks it is: $(tput sgr0) ${basedir}" cyan
-  sleep 1
+  echo -e "\n"
+  sleep 1.5
 }
 
 # Calculate the space to create the image and create.
@@ -227,5 +230,5 @@ function clean_build() {
   rm -rf "${basedir}"
   log "Done." green
   echo -e "\n"
-  log "Your image is: $(tput sgr0) ${imagename}.img.xz" bold
+  log "Your image is: $(tput sgr0) $(ls "${imagename}".*)" bold
 }
