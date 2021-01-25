@@ -2,7 +2,9 @@ version: '3'
 services:
   kali-builder:
     build: .
-    image: kali-img-builder:1.0.1
+    image: kali-img-builder:latest
+    stdin_open: true
+    tty: true
     cap_add:
     - SYS_ADMIN
     container_name: kali-builder
