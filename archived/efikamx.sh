@@ -1,6 +1,15 @@
 #!/bin/bash
 set -e
 
+# This is Kali Linux ARM image for EfikaMX
+# More information: https://www.kali.org/docs/arm/efikamx/
+
+echo "This script is now deprecated. The kernel is too old to run systemd" >&2
+sleep 5s
+
+# Uncomment to activate debug
+# debug=true
+
 if [[ $EUID -ne 0 ]]; then
    echo "This script must be run as root"
    exit 1
@@ -10,8 +19,6 @@ if [[ $# -eq 0 ]] ; then
     echo "Please pass version number, e.g. $0 1.0.1"
     exit 0
 fi
-
-echo "This script is now deprecated.  The kernel is too old to run systemd"
 
 basedir=`pwd`/efikamx-$1
 
