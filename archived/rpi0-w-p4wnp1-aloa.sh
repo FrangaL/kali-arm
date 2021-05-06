@@ -1,13 +1,11 @@
 #!/bin/bash
 set -e
 
-######
-# This is a work in progress script for P4wnP1 A.L.O.A. based on @binkybear's built script for P4wnP1
-#
-##########
+# This is Kali Linux ARM image for Raspberry Pi Zero W (P4wnP1 A.L.O.A.)
+# More information: https://www.kali.org/docs/arm/raspberry-pi-zero-w/
 
 # Doesn't currently work, so lets just exit.
-echo "This script is currently in need of work, porting to the new URLs, as well as the new setup."
+echo "This script is now deprecated. This script is currently in need of work, porting to the new URLs, as well as the new setup." >&2
 exit 1
 
 # Uncomment to activate debug
@@ -25,7 +23,7 @@ machine=$(tr -cd 'A-Za-z0-9' < /dev/urandom | head -c16 ; echo)
 # Custom hostname variable
 hostname=${2:-kali}
 # Custom image file name variable - MUST NOT include .img at the end.
-imagename=${3:-kali-linux-$1-rpi0w-p4wnp1}
+imagename=${3:-kali-linux-$1-rpi0-w-p4wnp1-aloa}
 # Suite to use, valid options are:
 # kali-rolling, kali-dev, kali-bleeding-edge, kali-dev-only, kali-experimental, kali-last-snapshot
 suite=${suite:-"kali-rolling"}
@@ -35,7 +33,7 @@ free_space="300"
 bootsize="128"
 # Select compression, xz or none
 compress="xz"
-# Choose filesystem format to format ( ext3 or ext4 )
+# Choose filesystem format to format (ext3 or ext4)
 fstype="ext3"
 # If you have your own preferred mirrors, set them here.
 mirror=${mirror:-"http://http.kali.org/kali"}
@@ -86,7 +84,7 @@ fi
 components="main,contrib,non-free"
 arm="fake-hwclock ntpdate u-boot-tools"
 tools="aircrack-ng crunch cewl dnsrecon dnsutils ethtool exploitdb hydra medusa metasploit-framework ncrack nmap passing-the-hash proxychains recon-ng sqlmap tcpdump theharvester tor tshark usbutils whois windows-binaries winexe wpscan"
-base="apt-transport-https apt-utils console-setup e2fsprogs firmware-linux firmware-realtek firmware-atheros ifupdown initramfs-tools iw kali-defaults man-db mlocate netcat-traditional net-tools parted psmisc rfkill screen snmpd snmp tftp tmux unrar usbutils vim wget zerofree"
+base="apt-transport-https apt-utils console-setup e2fsprogs ifupdown initramfs-tools iw man-db mlocate netcat-traditional net-tools parted psmisc rfkill screen tmux unrar usbutils vim wget whiptail zerofree firmware-linux firmware-realtek firmware-atheros kali-defaults snmpd snmp tftp"
 services="apache2 atftpd openssh-server openvpn"
 # haveged: assure enough entropy data for hostapd on startup
 # avahi-daemon: allow mDNS resolution (apple bonjour) by remote hosts
