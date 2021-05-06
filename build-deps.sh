@@ -1,23 +1,27 @@
-#!/bin/bash -e
+#!/bin/bash
+set -e
 
-# Check permisions script.
+# Installs all required dependencies for Kali-ARM Build-Sceipts
+# See `./README.md` for more information
+
+# Check permisions script
 if [[ $EUID -ne 0 ]]; then
   echo "This script must be run as root"
   exit 1
 fi
 
-# Check compatible systems.
+# Check compatible systems
 if ! which dpkg > /dev/null; then
    echo "Script only compatible with Debian-based systems"
    exit 1
 fi
 
-# List of installed packages file.
+# List of installed packages file
 backup_packages=list-debs-$(date +"%H_%M_%m_%d_%Y")
-# Create a current list of installed packages.
+# Create a current list of installed packages
 dpkg --get-selections > ${backup_packages}
 
-# Function create script to clean system packages.
+# Function create script to clean system packages
 clean-system () {
 cat << EOF > clean_system${backup_packages//list-debs/}.sh
 #!/bin/bash -e
@@ -61,21 +65,21 @@ apt-wait () {
   if [ "$1" == "update" ];then
     apt-get update
   elif [ "$1" == "install_deps" ];then
-    apt-get install -y -qq $deps
+    apt-get -y install -qq $deps
   elif [ "$1" == "remove" ];then
     apt-get -y --purge "$@"
   fi
 }
 
-# Update list deb packages.
+# Update list deb packages
 apt-wait update
-# Install dependencies.
+# Install dependencies
 apt-wait install_deps
 
-# Install kali-archive-keyring.
+# Install kali-archive-keyring
 if [ ! -f /usr/share/keyrings/kali-archive-keyring.gpg ]; then
   temp_key="$(mktemp -d)"
-  git clone https://gitlab.com/kalilinux/packages/kali-archive-keyring.git $temp_key
+  git clone --depth 1 https://gitlab.com/kalilinux/packages/kali-archive-keyring.git $temp_key
   cd $temp_key && make && make install && cd $OLDPWD && rm -rf $temp_key
 fi
 
@@ -98,10 +102,10 @@ elif [ $(arch) == 'i386' ]; then
   apt-wait install_deps
 fi
 
-# Create the script to clean the system.
+# Create the script to clean the system
 clean-system
 
-# Check minimum version debootstrap.
+# Check minimum version debootstrap
 debootstrap_ver=$(debootstrap --version | grep -o '[0-9.]\+' | head -1)
 if dpkg --compare-versions "$debootstrap_ver" lt "1.0.105"; then
     echo "Currently your version of debootstrap does not support the script." >&2
