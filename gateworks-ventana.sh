@@ -1,7 +1,8 @@
 #!/bin/bash
 set -e
 
-# This is for the Gateworks Ventana (Freescale based).
+# This is Kali Linux ARM image for Gateworks Ventana
+# More information: https://www.kali.org/docs/arm/gateworks-ventana/
 
 # Uncomment to activate debug
 # debug=true
@@ -13,11 +14,11 @@ fi
 
 # Architecture
 architecture=${architecture:-"armhf"}
-# Generate a random machine name to be used.
+# Generate a random machine name to be used
 machine=$(tr -cd 'A-Za-z0-9' < /dev/urandom | head -c16 ; echo)
 # Custom hostname variable
 hostname=${2:-kali}
-# Custom image file name variable - MUST NOT include .img at the end.
+# Custom image file name variable - MUST NOT include .img at the end
 imagename=${3:-kali-linux-$1-ventana}
 # Suite to use, valid options are:
 # kali-rolling, kali-dev, kali-bleeding-edge, kali-dev-only, kali-experimental, kali-last-snapshot
@@ -28,32 +29,34 @@ free_space="300"
 bootsize="128"
 # Select compression, xz or none
 compress="xz"
-# Choose filesystem format to format ( ext3 or ext4 )
+# Choose filesystem format to format (ext3 or ext4)
 fstype="ext3"
-# If you have your own preferred mirrors, set them here.
+# If you have your own preferred mirrors, set them here
 mirror=${mirror:-"http://http.kali.org/kali"}
-# Gitlab url Kali repository
+# GitLab URL for Kali repository
 kaligit="https://gitlab.com/kalilinux"
-# Github raw url
+# GitHub raw URL
 githubraw="https://raw.githubusercontent.com"
 
-# Check EUID=0 you can run any binary as root.
+# Checks script environment
+# Check EUID=0 you can run any binary as root
 if [[ $EUID -ne 0 ]]; then
-  echo "This script must be run as root or have super user permissions"
-  echo "Use: sudo $0 ${1:-2.0} ${2:-kali}"
+  echo "This script must be run as root or have super user permissions" >&2
+  echo "Use: sudo $0 ${1:-2.0} ${2:-kali}" >&2
   exit 1
 fi
 
 # Pass version number
 if [[ $# -eq 0 ]] ; then
-  echo "Please pass version number, e.g. $0 2.0, and (if you want) a hostname, default is kali"
-  exit 0
+  echo "Please pass version number, e.g. $0 2021.1, and (if you want) a hostname, default is kali" >&2
+  echo "Use: sudo $0 ${1:-2020.1} ${2:-kali}" >&2
+  exit 1
 fi
 
-# Check exist bsp directory.
+# Check exist bsp directory
 if [ ! -e "bsp" ]; then
-  echo "Error: missing bsp directory structure"
-  echo "Please clone the full repository ${kaligit}/build-scripts/kali-arm"
+  echo "Error: missing bsp directory structure" >&2
+  echo "Please clone the full repository ${kaligit}/build-scripts/kali-arm" >&2
   exit 255
 fi
 
@@ -66,32 +69,40 @@ work_dir="${basedir}/kali-${architecture}"
 
 # Check directory build
 if [ -e "${basedir}" ]; then
-  echo "${basedir} directory exists, will not continue"
+  echo "${basedir} directory exists, will not continue" >&2
   exit 1
 elif [[ ${current_dir} =~ [[:space:]] ]]; then
-  echo "The directory "\"${current_dir}"\" contains whitespace. Not supported."
+  echo "The directory "\"${current_dir}"\" contains whitespace. Not supported." >&2
   exit 1
 else
   echo "The basedir thinks it is: ${basedir}"
-  mkdir -p ${basedir}
+  mkdir -p "${basedir}"
 fi
 
 components="main,contrib,non-free"
+
+# Packages build list
+# Every ARM device has this
 arm="kali-linux-arm ntpdate"
-base="apt-transport-https apt-utils bash-completion console-setup dialog e2fsprogs ifupdown initramfs-tools inxi isc-dhcp-server iw man-db mlocate netcat-traditional net-tools parted pciutils psmisc rfkill screen tmux u-boot-menu unrar usbutils vim wget whiptail zerofree"
+# Required for the board
+base="apt-transport-https apt-utils bash-completion console-setup dialog e2fsprogs ifupdown initramfs-tools inxi iw man-db mlocate netcat-traditional net-tools parted pciutils psmisc rfkill screen tmux unrar usbutils vim wget whiptail zerofree u-boot-menu isc-dhcp-server"
+# GUI
 desktop="kali-desktop-xfce kali-root-login xserver-xorg-video-fbdev xfonts-terminus xinput"
+# Kali Tools
 tools="kali-linux-default"
+# OS services
 services="apache2 atftpd can-utils i2c-tools"
-extras="alsa-utils bc bison bluez bluez-firmware kali-linux-core libnss-systemd libssl-dev triggerhappy"
+# Any extra packages
+extras="alsa-utils bc bison bluez bluez-firmware kali-linux-core libssl-dev triggerhappy libnss-systemd"
 
 packages="${arm} ${base} ${services}"
 
-# Automatic configuration to use an http proxy, such as apt-cacher-ng.
-# You can turn off automatic settings by uncommenting apt_cacher=off.
+# Load automatic proxy configuration
+# You can turn off automatic settings by uncommenting apt_cacher=off
 # apt_cacher=off
-# By default the proxy settings are local, but you can define an external proxy.
+# By default the proxy settings are local, but you can define an external proxy
 # proxy_url="http://external.intranet.local"
-apt_cacher=${apt_cacher:-"$(lsof -i :3142|cut -d ' ' -f3 | uniq | sed '/^\s*$/d')"}
+apt_cacher=${apt_cacher:-"$(lsof -i :3142 | cut -d ' ' -f3 | uniq | sed '/^\s*$/d')"}
 if [ -n "$proxy_url" ]; then
   export http_proxy=$proxy_url
 elif [ "$apt_cacher" = "apt-cacher-ng" ] ; then
@@ -103,17 +114,18 @@ fi
 
 # Detect architecture
 if [[ "${architecture}" == "arm64" ]]; then
-        qemu_bin="/usr/bin/qemu-aarch64-static"
-        lib_arch="aarch64-linux-gnu"
+  qemu_bin="/usr/bin/qemu-aarch64-static"
+  lib_arch="aarch64-linux-gnu"
 elif [[ "${architecture}" == "armhf" ]]; then
-        qemu_bin="/usr/bin/qemu-arm-static"
-        lib_arch="arm-linux-gnueabihf"
+  qemu_bin="/usr/bin/qemu-arm-static"
+  lib_arch="arm-linux-gnueabihf"
 elif [[ "${architecture}" == "armel" ]]; then
-        qemu_bin="/usr/bin/qemu-arm-static"
-        lib_arch="arm-linux-gnueabi"
+  qemu_bin="/usr/bin/qemu-arm-static"
+  lib_arch="arm-linux-gnueabi"
 fi
 
-# create the rootfs - not much to modify here, except maybe throw in some more packages if you want.
+# Execute initial debootstrap
+# create the rootfs - not much to modify here, except maybe throw in some more packages if you want
 eatmydata debootstrap --foreign --keyring=/usr/share/keyrings/kali-archive-keyring.gpg --include=kali-archive-keyring,eatmydata \
   --components=${components} --arch ${architecture} ${suite} ${work_dir} http://http.kali.org/kali
 
@@ -122,7 +134,7 @@ systemd-nspawn_exec(){
   LANG=C systemd-nspawn -q --bind-ro ${qemu_bin} -M ${machine} -D ${work_dir} "$@"
 }
 
-# We need to manually extract eatmydata to use it for the second stage.
+# We need to manually extract eatmydata to use it for the second stage
 for archive in ${work_dir}/var/cache/apt/archives/*eatmydata*.deb; do
   dpkg-deb --fsys-tarfile "$archive" > ${work_dir}/eatmydata
   tar -xkf ${work_dir}/eatmydata -C ${work_dir}
@@ -145,19 +157,20 @@ done
 export LD_PRELOAD
 exec "\$0-eatmydata" --force-unsafe-io "\$@"
 EOF
-chmod 755 ${work_dir}/usr/bin/dpkg
+chmod 755 "${work_dir}"/usr/bin/dpkg
 
 # debootstrap second stage
 systemd-nspawn_exec eatmydata /debootstrap/debootstrap --second-stage
 
-cat << EOF > ${work_dir}/etc/apt/sources.list
+# Define sources.list
+cat << EOF > "${work_dir}"/etc/apt/sources.list
 deb ${mirror} ${suite} ${components//,/ }
 #deb-src ${mirror} ${suite} ${components//,/ }
 EOF
 
 echo "${hostname}" > ${work_dir}/etc/hostname
 
-cat << EOF > ${work_dir}/etc/network/interfaces
+cat << EOF > "${work_dir}"/etc/network/interfaces
 auto lo
 iface lo inet loopback
 
@@ -177,7 +190,7 @@ EOF
 echo "${hostname}" > ${work_dir}/etc/hostname
 
 # So X doesn't complain, we add kali to hosts
-cat << EOF > ${work_dir}/etc/hosts
+cat << EOF > "${work_dir}"/etc/hosts
 127.0.0.1       ${hostname}    localhost
 ::1             localhost ip6-localhost ip6-loopback
 fe00::0         ip6-localnet
@@ -186,13 +199,14 @@ ff02::1         ip6-allnodes
 ff02::2         ip6-allrouters
 EOF
 
+# Network configs
 # Disable IPv6
-cat << EOF > ${work_dir}/etc/modprobe.d/ipv6.conf
+cat << EOF > "${work_dir}"/etc/modprobe.d/ipv6.conf
 # Don't load ipv6 by default
 alias net-pf-10 off
 EOF
 
-cat << EOF > ${work_dir}/etc/network/interfaces
+cat << EOF > "${work_dir}"/etc/network/interfaces
 auto lo
 iface lo inet loopback
 
@@ -202,33 +216,36 @@ iface eth0 inet dhcp
 EOF
 
 # DNS server
-echo "nameserver 8.8.8.8" > ${work_dir}/etc/resolv.conf
+cat << EOF > "${work_dir}"/etc/resolv.conf
+nameserver 8.8.8.8
+EOF
 
-# Copy directory bsp into build dir.
-cp -rp bsp ${work_dir}
+# Copy directory bsp into build dir
+cp -rp bsp "${work_dir}"
 
 export MALLOC_CHECK_=0 # workaround for LP: #520465
 
-# Enable the use of http proxy in third-stage in case it is enabled.
+# Enable the use of http proxy in third-stage in case it is enabled
 if [ -n "$proxy_url" ]; then
   echo "Acquire::http { Proxy \"$proxy_url\" };" > ${work_dir}/etc/apt/apt.conf.d/66proxy
 fi
 
 # Third stage
-cat << EOF >  ${work_dir}/third-stage
+cat << EOF > "${work_dir}"/third-stage
 #!/bin/bash -e
+
 export DEBIAN_FRONTEND=noninteractive
 
-apt-get update
+eatmydata apt-get update
 
-apt-get -y install binutils ca-certificates console-common cryptsetup-bin git initramfs-tools less locales u-boot-tools
+eatmydata apt-get -y install binutils ca-certificates console-common less locales cryptsetup-bin git initramfs-tools u-boot-tools
 
-# Create kali user with kali password... but first, we need to manually make some groups because they don't yet exist...
-# This mirrors what we have on a pre-installed VM, until the script works properly to allow end users to set up their own... user.
+# Create kali user with kali password... but first, we need to manually make some groups because they don't yet exist..
+# This mirrors what we have on a pre-installed VM, until the script works properly to allow end users to set up their own... user
 # However we leave off floppy, because who a) still uses them, and b) attaches them to an SBC!?
-# And since a lot of these have serial devices of some sort, dialout is added as well.
+# And since a lot of these have serial devices of some sort, dialout is added as well
 # scanner, lpadmin and bluetooth have to be added manually because they don't
-# yet exist in /etc/group at this point.
+# yet exist in /etc/group at this point
 groupadd -r -g 118 bluetooth
 groupadd -r -g 113 lpadmin
 groupadd -r -g 122 scanner
@@ -240,27 +257,36 @@ echo "kali:kali" | chpasswd
 aptops="--allow-change-held-packages -o dpkg::options::=--force-confnew -o Acquire::Retries=3"
 
 # This looks weird, but we do it twice because every so often, there's a failure to download from the mirror
-# So to workaround it, we attempt to install them twice.
-eatmydata apt-get install -y \$aptops ${packages} || eatmydata apt-get --yes --fix-broken install
-eatmydata apt-get install -y \$aptops ${packages} || eatmydata apt-get --yes --fix-broken install
-eatmydata apt-get install -y \$aptops ${desktop} ${extras} ${tools} || eatmydata apt-get --yes --fix-broken install
-eatmydata apt-get install -y \$aptops ${desktop} ${extras} ${tools} || eatmydata apt-get --yes --fix-broken install
-eatmydata apt-get install -y \$aptops --autoremove systemd-timesyncd || eatmydata apt-get --yes --fix-broken install
-eatmydata apt-get dist-upgrade -y \$aptops
+# So to workaround it, we attempt to install them twice
+eatmydata apt-get -y install \$aptops ${packages} || eatmydata apt-get --yes --fix-broken install
+eatmydata apt-get -y install \$aptops ${packages} || eatmydata apt-get --yes --fix-broken install
+eatmydata apt-get -y install \$aptops ${desktop} ${extras} ${tools} || eatmydata apt-get --yes --fix-broken install
+eatmydata apt-get -y install \$aptops ${desktop} ${extras} ${tools} || eatmydata apt-get --yes --fix-broken install
 
-eatmydata apt-get --yes --allow-change-held-packages -o dpkg::options::=--force-confnew autoremove
+# We want systemd-timesyncd not sntp which gets pulled in by something in kali-linux-default
+eatmydata apt-get -y install \$aptops --autoremove systemd-timesyncd || eatmydata apt-get --yes --fix-broken install
+
+eatmydata apt-get dist-upgrade -y \$aptops
+eatmydata apt-get autoremove -y --allow-change-held-packages -o dpkg::options::=--force-confnew --purge
 
 # Copy all services
 install -m644 /bsp/services/all/*.service /etc/systemd/system/
 
-# Regenerated the shared-mime-info database on the first boot
-# since it fails to do so properly in a chroot.
+# Regenerate the shared-mime-info database on the first boot
+# since it fails to do so properly in a chroot
 systemctl enable smi-hack
 
 # Generate SSH host keys on first run
 systemctl enable regenerate_ssh_host_keys
+
 # Enable sshd
 systemctl enable ssh
+
+# We replace the u-boot menu defaults here so we can make sure the build system doesn't poison it
+# We use _EOF_ so that the third-stage script doesn't end prematurely
+cat << '_EOF_' > /etc/default/u-boot
+U_BOOT_PARAMETERS="console=ttyS0,115200 console=tty1 root=/dev/mmcblk0p1 rootwait panic=10 rw rootfstype=$fstype net.ifnames=0"
+_EOF_
 
 # Allow users to use NM over ssh
 install -m644 /bsp/polkit/10-NetworkManager.pkla /var/lib/polkit-1/localauthority/50-local.d
@@ -268,19 +294,13 @@ install -m644 /bsp/polkit/10-NetworkManager.pkla /var/lib/polkit-1/localauthorit
 cd /root
 apt download -o APT::Sandbox::User=root ca-certificates 2>/dev/null
 
-# Copy bashrc
-cp  /etc/skel/.bashrc /root/.bashrc
-
-# We replace the u-boot menu defaults here so we can make sure the build system doesn't poison it.
-# We use _EOF_ so that the third-stage script doesn't end prematurely.
-cat << '_EOF_' > /etc/default/u-boot
-U_BOOT_PARAMETERS="console=ttyS0,115200 console=tty1 root=/dev/mmcblk0p1 rootwait panic=10 rw rootfstype=$fstype net.ifnames=0"
-_EOF_
+# Copy over the default bashrc
+cp /etc/skel/.bashrc /root/.bashrc
 
 # Try and make the console a bit nicer
-# Set the terminus font for a bit nicer display.
-sed -i -e 's/FONTFACE=.*/FONTFACE="Terminus"/' /etc/default/console-setup
-sed -i -e 's/FONTSIZE=.*/FONTSIZE="6x12"/' /etc/default/console-setup
+# Set the terminus font for a bit nicer display
+sed -i -e 's/FONTFACE=.*/FONTFACE="Terminus"/g' /etc/default/console-setup
+sed -i -e 's/FONTSIZE=.*/FONTSIZE="6x12"/g' /etc/default/console-setup
 
 # Fix startup time from 5 minutes to 15 secs on raise interface wlan0
 sed -i 's/^TimeoutStartSec=5min/TimeoutStartSec=15/g' "/usr/lib/systemd/system/networking.service"
@@ -289,11 +309,11 @@ rm -f /usr/bin/dpkg
 EOF
 
 # Run third stage
-chmod 755 ${work_dir}/third-stage
+chmod 755 "${work_dir}"/third-stage
 systemd-nspawn_exec /third-stage
 
 # Set up usb gadget mode before cleanup
-cat << EOF > ${work_dir}/etc/dhcp/dhcpd.conf
+cat << EOF > "${work_dir}"/etc/dhcp/dhcpd.conf
 ddns-update-style none;
 default-lease-time 600;
 max-lease-time 7200;
@@ -343,7 +363,7 @@ for logs in $(find /var/log -type f); do > $logs; done
 history -c
 EOF
 
-# Disable the use of http proxy in case it is enabled.
+# Disable the use of http proxy in case it is enabled
 if [ -n "$proxy_url" ]; then
   unset http_proxy
   rm -rf ${work_dir}/etc/apt/apt.conf.d/66proxy
@@ -355,38 +375,37 @@ if [[ ! -z "${4}" || ! -z "${5}" ]]; then
   suite=${5}
 fi
 
-# Enable serial console
-echo 'T1:12345:respawn:/sbin/getty -L ttymxc1 115200 vt100' >> \
-    ${work_dir}/etc/inittab
+# Enable the serial console
+echo 'T1:12345:respawn:/sbin/getty -L ttymxc1 115200 vt100' >> ${work_dir}/etc/inittab
 
 # Define sources.list
-cat << EOF > ${work_dir}/etc/apt/sources.list
+cat << EOF > "${work_dir}"/etc/apt/sources.list
 deb ${mirror} ${suite} ${components//,/ }
 #deb-src ${mirror} ${suite} ${components//,/ }
 EOF
 
-cd ${current_dir}
+cd "${current_dir}"
 
-# Do the kernel stuff...
-git clone --depth 1 -b gateworks_4.20.7 https://github.com/gateworks/linux-imx6 ${work_dir}/usr/src/kernel
-cd ${work_dir}/usr/src/kernel
-# Don't change the version because of our patches.
+# Do the kernel stuff..
+git clone --depth 1 https://github.com/gateworks/linux-imx6 --branch gateworks_4.20.7 ${work_dir}/usr/src/kernel
+cd ${work_dir}/usr/src/kernel/
+# Don't change the version because of our patches
 touch .scmversion
 export ARCH=arm
 export CROSS_COMPILE=arm-linux-gnueabihf-
 patch -p1 < ${current_dir}/patches/veyron/4.19/kali-wifi-injection.patch
 patch -p1 < ${current_dir}/patches/veyron/4.19/wireless-carl9170-Enable-sniffer-mode-promisc-flag-t.patch
-cp ${current_dir}/kernel-configs/gateworks_ventana-4.20.7.config .config
-cp ${current_dir}/kernel-configs/gateworks_ventana-4.20.7.config ${work_dir}/usr/src/gateworks_ventana-4.20.7.config
+cp "${current_dir}"/kernel-configs/gateworks_ventana-4.20.7.config .config
+cp "${current_dir}"/kernel-configs/gateworks_ventana-4.20.7.config ${work_dir}/usr/src/gateworks_ventana-4.20.7.config
 make -j $(grep -c processor /proc/cpuinfo)
 make uImage LOADADDR=0x10008000
 make modules_install INSTALL_MOD_PATH=${work_dir}
 cp arch/arm/boot/dts/imx6*-gw*.dtb ${work_dir}/boot/
 cp arch/arm/boot/uImage ${work_dir}/boot/
 make mrproper
-cd ${current_dir}
+cd "${current_dir}"
 
-# Pull in imx6 smda/vpu firmware for vpu.
+# Pull in imx6 smda/vpu firmware for vpu
 mkdir -p ${work_dir}/lib/firmware/vpu
 mkdir -p ${work_dir}/lib/firmware/imx/sdma
 wget 'https://github.com/armbian/firmware/blob/master/vpu/v4l-coda960-imx6dl.bin?raw=true' -O ${work_dir}/lib/firmware/vpu/v4l-coda960-imx6dl.bin
@@ -395,67 +414,77 @@ wget 'https://github.com/armbian/firmware/blob/master/vpu/vpu_fw_imx6d.bin?raw=t
 wget 'https://github.com/armbian/firmware/blob/master/vpu/vpu_fw_imx6q.bin?raw=true' -O ${work_dir}/lib/firmware/vpu_fw_imx6q.bin
 wget 'https://github.com/armbian/firmware/blob/master/imx/sdma/sdma-imx6q.bin?raw=true' -O ${work_dir}/lib/firmware/imx/sdma/sdma-imx6q.bin
 
-# Not using extlinux.conf just yet...
-# Ensure we don't have root=/dev/sda3 in the extlinux.conf which comes from running u-boot-menu in a cross chroot.
+# Not using extlinux.conf just yet..
+# Ensure we don't have root=/dev/sda3 in the extlinux.conf which comes from running u-boot-menu in a cross chroot
 #sed -i -e 's/append.*/append root=\/dev\/mmcblk0p1 rootfstype=$fstype video=mxcfb0:dev=hdmi,1920x1080M@60,if=RGB24,bpp=32 console=ttymxc0,115200n8 console=tty1 consoleblank=0 rw rootwait/g' ${work_dir}/boot/extlinux/extlinux.conf
 install -m644 ${current_dir}/bsp/bootloader/ventana/6x_bootscript-ventana.script ${work_dir}/boot/6x_bootscript-ventana.script
 mkimage -A arm -T script -C none -d ${work_dir}/boot/6x_bootscript-ventana.script ${work_dir}/boot/6x_bootscript-ventana
 
-# Calculate the space to create the image.
+cd "${current_dir}"
+
+# Calculate the space to create the image
 root_size=$(du -s -B1 ${work_dir} --exclude=${work_dir}/boot | cut -f1)
+echo $root_size
 root_extra=$((${root_size}/1024/1000*5*1024/5))
+echo $root_extra
 raw_size=$(($((${free_space}*1024))+${root_extra}+$((${bootsize}*1024))+4096))
+echo $raw_size
 
 # Create the disk and partition it
 echo "Creating image file ${imagename}.img"
 fallocate -l $(echo ${raw_size}Ki | numfmt --from=iec-i --to=si) ${current_dir}/${imagename}.img
+echo "Partitioning ${imagename}.img"
 parted -s ${current_dir}/${imagename}.img mklabel msdos
 parted -s -a minimal ${current_dir}/${imagename}.img mkpart primary $fstype 1MiB 100%
 
 # Set the partition variables
-loopdevice=`losetup -f --show ${current_dir}/${imagename}.img`
+loopdevice=$(losetup --show -fP "${current_dir}/${imagename}.img")
 device=`kpartx -va ${loopdevice} | sed 's/.*\(loop[0-9]\+\)p.*/\1/g' | head -1`
 sleep 5
 device="/dev/mapper/${device}"
 rootp=${device}p1
 
-if [[ $fstype == ext4 ]]; then
-  features="-O ^64bit,^metadata_csum"
-elif [[ $fstype == ext3 ]]; then
-  features="-O ^64bit"
+# Create file systems
+if [[ "$fstype" == "ext4" ]]; then
+  features="^64bit,^metadata_csum"
+elif [[ "$fstype" == "ext3" ]]; then
+  features="^64bit"
 fi
-mkfs $features -t $fstype -L ROOTFS ${rootp}
+mkfs -O "$features" -t "$fstype" -L ROOTFS "${rootp}"
 
-# Create the dirs for the partitions and mount them
-mkdir -p "${basedir}"/root
-mount ${rootp} "${basedir}"/root
-
-# We do this down here to get rid of the build system's resolv.conf after running through the build.
-cat << EOF > ${work_dir}/etc/resolv.conf
+# We do this down here to get rid of the build system's resolv.conf after running through the build
+cat << EOF > "${work_dir}"/etc/resolv.conf
 nameserver 8.8.8.8
 EOF
 
-# Create an fstab so that we don't mount / read-only.
+# Create the dirs for the partitions and mount them
+mkdir -p "${basedir}"/root/
+mount "${rootp}" "${basedir}"/root
+
+# Create an fstab so that we don't mount / read-only
 UUID=$(blkid -s UUID -o value ${rootp})
 echo "UUID=$UUID /               $fstype    errors=remount-ro 0       1" >> ${work_dir}/etc/fstab
 
 echo "Rsyncing rootfs into image file"
-rsync -HPavz -q ${work_dir}/ ${basedir}/root/
+rsync -HPavz -q "${work_dir}"/boot "${basedir}"/root/
 
 #wget http://dev.gateworks.com/ventana/images/SPL -O "${basedir}"/root/usr/lib/u-boot/gateworks/SPL
 #wget http://dev.gateworks.com/ventana/images/u-boot.img -O "${basedir}"/root/usr/lib/u-boot/gateworks/u-boot.img
 #dd conv=fsync,notrunc if="${basedir}"/root/usr/lib/u-boot/gateworks/SPL of=${loopdevice} bs=1k seek=1
 #dd conv=fsync,notrunc if="${basedir}"/root/usr/lib/u-boot/gateworks/u-boot.img of=${loopdevice} bs=1k seek=69
 
-# Unmount partitions
-sync
-umount ${rootp}
+# Start to unmount partition(s)
+sync; sync
+# sleep for 10 seconds, to let the cache settle after sync
+sleep 10
+# Unmount filesystem
+umount -l "${rootp}"
 
 # We need an older cross compiler for compiling u-boot so check out the 4.7
-# cross compiler.
-#git clone https://github.com/offensive-security/gcc-arm-linux-gnueabihf-4.7
+# cross compiler
+#git clone --depth 1 https://github.com/offensive-security/gcc-arm-linux-gnueabihf-4.7
 
-#git clone https://github.com/Gateworks/u-boot-imx6.git
+#git clone --depth 1 https://github.com/Gateworks/u-boot-imx6.git
 #cd "${basedir}"/u-boot-imx6
 #make CROSS_COMPILE="${basedir}"/gcc-arm-linux-gnueabihf-4.7/bin/arm-linux-gnueabihf- gwventana_defconfig
 #make CROSS_COMPILE="${basedir}"/gcc-arm-linux-gnueabihf-4.7/bin/arm-linux-gnueabihf-
@@ -464,11 +493,15 @@ umount ${rootp}
 #dd if=u-boot.img of=${loopdevice} bs=1K seek=42
 
 kpartx -dv ${loopdevice}
-losetup -d ${loopdevice}
 
-# Limite use cpu function
+cd "${basedir}"
+
+# Remove loop device
+losetup -d "${loopdevice}"
+
+# Limited use CPU function
 limit_cpu (){
-  rand=$(tr -cd 'A-Za-z0-9' < /dev/urandom | head -c4 ; echo) # Randowm name group
+  rand=$(tr -cd 'A-Za-z0-9' < /dev/urandom | head -c4 ; echo) # Random name group
   cgcreate -g cpu:/cpulimit-${rand} # Name of group cpulimit
   cgset -r cpu.shares=800 cpulimit-${rand} # Max 1024
   cgset -r cpu.cfs_quota_us=80000 cpulimit-${rand} # Max 100000
@@ -499,7 +532,7 @@ else
   chmod 644 ${current_dir}/${imagename}.img
 fi
 
-# Clean up all the temporary build stuff and remove the directories.
-# Comment this out to keep things around if you want to see what may have gone wrong.
-echo "Removing temporary build files"
+# Clean up all the temporary build stuff and remove the directories
+# Comment this out to keep things around if you want to see what may have gone wrong
+echo "Clean up the build system"
 rm -rf "${basedir}"
