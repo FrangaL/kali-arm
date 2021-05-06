@@ -1,7 +1,8 @@
 #!/bin/bash
 set -e
 
-# This image is for the Pinebook.
+# This is Kali Linux ARM image for Pinebook Pro
+# More information: https://www.kali.org/docs/arm/pinebook-pro/
 
 # Uncomment to activate debug
 # debug=true
@@ -13,11 +14,11 @@ fi
 
 # Architecture
 architecture=${architecture:-"arm64"}
-# Generate a random machine name to be used.
+# Generate a random machine name to be used
 machine=$(tr -cd 'A-Za-z0-9' < /dev/urandom | head -c16 ; echo)
 # Custom hostname variable
 hostname=${2:-kali}
-# Custom image file name variable - MUST NOT include .img at the end.
+# Custom image file name variable - MUST NOT include .img at the end
 imagename=${3:-kali-linux-$1-pinebook-pro}
 # Suite to use, valid options are:
 # kali-rolling, kali-dev, kali-bleeding-edge, kali-dev-only, kali-experimental, kali-last-snapshot
@@ -28,32 +29,34 @@ free_space="500"
 bootsize="128"
 # Select compression, xz or none
 compress="xz"
-# Choose filesystem format to format ( ext3 or ext4 )
+# Choose filesystem format to format (ext3 or ext4)
 fstype="ext3"
-# If you have your own preferred mirrors, set them here.
+# If you have your own preferred mirrors, set them here
 mirror=${mirror:-"http://http.kali.org/kali"}
-# Gitlab url Kali repository
+# GitLab URL for Kali repository
 kaligit="https://gitlab.com/kalilinux"
-# Github raw url
+# GitHub raw URL
 githubraw="https://raw.githubusercontent.com"
 
-# Check EUID=0 you can run any binary as root.
+# Checks script environment
+# Check EUID=0 you can run any binary as root
 if [[ $EUID -ne 0 ]]; then
-  echo "This script must be run as root or have super user permissions"
-  echo "Use: sudo $0 ${1:-2.0} ${2:-kali}"
+  echo "This script must be run as root or have super user permissions" >&2
+  echo "Use: sudo $0 ${1:-2.0} ${2:-kali}" >&2
   exit 1
 fi
 
 # Pass version number
 if [[ $# -eq 0 ]] ; then
-  echo "Please pass version number, e.g. $0 2.0, and (if you want) a hostname, default is kali"
-  exit 0
+  echo "Please pass version number, e.g. $0 2021.1, and (if you want) a hostname, default is kali" >&2
+  echo "Use: sudo $0 ${1:-2020.1} ${2:-kali}" >&2
+  exit 1
 fi
 
-# Check exist bsp directory.
+# Check exist bsp directory
 if [ ! -e "bsp" ]; then
-  echo "Error: missing bsp directory structure"
-  echo "Please clone the full repository ${kaligit}/build-scripts/kali-arm"
+  echo "Error: missing bsp directory structure" >&2
+  echo "Please clone the full repository ${kaligit}/build-scripts/kali-arm" >&2
   exit 255
 fi
 
@@ -66,32 +69,40 @@ work_dir="${basedir}/kali-${architecture}"
 
 # Check directory build
 if [ -e "${basedir}" ]; then
-  echo "${basedir} directory exists, will not continue"
+  echo "${basedir} directory exists, will not continue" >&2
   exit 1
 elif [[ ${current_dir} =~ [[:space:]] ]]; then
-  echo "The directory "\"${current_dir}"\" contains whitespace. Not supported."
+  echo "The directory "\"${current_dir}"\" contains whitespace. Not supported." >&2
   exit 1
 else
   echo "The basedir thinks it is: ${basedir}"
-  mkdir -p ${basedir}
+  mkdir -p "${basedir}"
 fi
 
 components="main,contrib,non-free"
+
+# Packages build list
+# Every ARM device has this
 arm="kali-linux-arm ntpdate"
-base="apt-transport-https apt-utils bash-completion console-setup dialog dkms e2fsprogs ifupdown initramfs-tools inxi iw man-db mlocate netcat-traditional net-tools parted pciutils psmisc rfkill screen tmux unrar usbutils vim wget whiptail zerofree"
+# Required for the board
+base="apt-transport-https apt-utils bash-completion console-setup dialog e2fsprogs ifupdown initramfs-tools inxi iw man-db mlocate netcat-traditional net-tools parted pciutils psmisc rfkill screen tmux unrar usbutils vim wget whiptail zerofree dkms"
+# GUI
 desktop="kali-desktop-xfce kali-root-login"
+# Kali Tools
 tools="kali-linux-default"
+# OS services
 services="apache2 atftpd"
-extras="alsa-utils bc bison bluez bluez-firmware kali-linux-core libnss-systemd libssl-dev triggerhappy"
+# Any extra packages
+extras="alsa-utils bc bison bluez bluez-firmware kali-linux-core libssl-dev triggerhappy libnss-systemd"
 
 packages="${arm} ${base} ${services}"
 
-# Automatic configuration to use an http proxy, such as apt-cacher-ng.
-# You can turn off automatic settings by uncommenting apt_cacher=off.
+# Load automatic proxy configuration
+# You can turn off automatic settings by uncommenting apt_cacher=off
 # apt_cacher=off
-# By default the proxy settings are local, but you can define an external proxy.
+# By default the proxy settings are local, but you can define an external proxy
 # proxy_url="http://external.intranet.local"
-apt_cacher=${apt_cacher:-"$(lsof -i :3142|cut -d ' ' -f3 | uniq | sed '/^\s*$/d')"}
+apt_cacher=${apt_cacher:-"$(lsof -i :3142 | cut -d ' ' -f3 | uniq | sed '/^\s*$/d')"}
 if [ -n "$proxy_url" ]; then
   export http_proxy=$proxy_url
 elif [ "$apt_cacher" = "apt-cacher-ng" ] ; then
@@ -103,17 +114,18 @@ fi
 
 # Detect architecture
 if [[ "${architecture}" == "arm64" ]]; then
-        qemu_bin="/usr/bin/qemu-aarch64-static"
-        lib_arch="aarch64-linux-gnu"
+  qemu_bin="/usr/bin/qemu-aarch64-static"
+  lib_arch="aarch64-linux-gnu"
 elif [[ "${architecture}" == "armhf" ]]; then
-        qemu_bin="/usr/bin/qemu-arm-static"
-        lib_arch="arm-linux-gnueabihf"
+  qemu_bin="/usr/bin/qemu-arm-static"
+  lib_arch="arm-linux-gnueabihf"
 elif [[ "${architecture}" == "armel" ]]; then
-        qemu_bin="/usr/bin/qemu-arm-static"
-        lib_arch="arm-linux-gnueabi"
+  qemu_bin="/usr/bin/qemu-arm-static"
+  lib_arch="arm-linux-gnueabi"
 fi
 
-# create the rootfs - not much to modify here, except maybe throw in some more packages if you want.
+# Execute initial debootstrap
+# create the rootfs - not much to modify here, except maybe throw in some more packages if you want
 eatmydata debootstrap --foreign --keyring=/usr/share/keyrings/kali-archive-keyring.gpg --include=kali-archive-keyring,eatmydata \
   --components=${components} --arch ${architecture} ${suite} ${work_dir} http://http.kali.org/kali
 
@@ -122,7 +134,7 @@ systemd-nspawn_exec(){
   LANG=C systemd-nspawn -q --bind-ro ${qemu_bin} -M ${machine} -D ${work_dir} "$@"
 }
 
-# We need to manually extract eatmydata to use it for the second stage.
+# We need to manually extract eatmydata to use it for the second stage
 for archive in ${work_dir}/var/cache/apt/archives/*eatmydata*.deb; do
   dpkg-deb --fsys-tarfile "$archive" > ${work_dir}/eatmydata
   tar -xkf ${work_dir}/eatmydata -C ${work_dir}
@@ -145,12 +157,13 @@ done
 export LD_PRELOAD
 exec "\$0-eatmydata" --force-unsafe-io "\$@"
 EOF
-chmod 755 ${work_dir}/usr/bin/dpkg
+chmod 755 "${work_dir}"/usr/bin/dpkg
 
 # debootstrap second stage
 systemd-nspawn_exec eatmydata /debootstrap/debootstrap --second-stage
 
-cat << EOF > ${work_dir}/etc/apt/sources.list
+# Define sources.list
+cat << EOF > "${work_dir}"/etc/apt/sources.list
 deb ${mirror} ${suite} ${components//,/ }
 #deb-src ${mirror} ${suite} ${components//,/ }
 EOF
@@ -159,7 +172,7 @@ EOF
 echo "${hostname}" > ${work_dir}/etc/hostname
 
 # So X doesn't complain, we add kali to hosts
-cat << EOF > ${work_dir}/etc/hosts
+cat << EOF > "${work_dir}"/etc/hosts
 127.0.0.1       ${hostname}    localhost
 ::1             localhost ip6-localhost ip6-loopback
 fe00::0         ip6-localnet
@@ -168,13 +181,14 @@ ff02::1         ip6-allnodes
 ff02::2         ip6-allrouters
 EOF
 
+# Network configs
 # Disable IPv6
-cat << EOF > ${work_dir}/etc/modprobe.d/ipv6.conf
+cat << EOF > "${work_dir}"/etc/modprobe.d/ipv6.conf
 # Don't load ipv6 by default
 alias net-pf-10 off
 EOF
 
-cat << EOF > ${work_dir}/etc/network/interfaces
+cat << EOF > "${work_dir}"/etc/network/interfaces
 auto lo
 iface lo inet loopback
 
@@ -184,38 +198,42 @@ iface eth0 inet dhcp
 EOF
 
 # DNS server
-echo "nameserver 8.8.8.8" > ${work_dir}/etc/resolv.conf
+cat << EOF > "${work_dir}"/etc/resolv.conf
+nameserver 8.8.8.8
+EOF
 
-# Copy directory bsp into build dir.
-cp -rp bsp ${work_dir}
+# Copy directory bsp into build dir
+cp -rp bsp "${work_dir}"
 
 export MALLOC_CHECK_=0 # workaround for LP: #520465
 
-# Enable the use of http proxy in third-stage in case it is enabled.
+# Enable the use of http proxy in third-stage in case it is enabled
 if [ -n "$proxy_url" ]; then
   echo "Acquire::http { Proxy \"$proxy_url\" };" > ${work_dir}/etc/apt/apt.conf.d/66proxy
 fi
 
-# Disable RESUME (suspend/resume is currently broken anyway!) which speeds up boot massively.
+# Disable RESUME (suspend/resume is currently broken anyway!) which speeds up boot massively
 mkdir -p ${work_dir}/etc/initramfs-tools/conf.d/
-cat << EOF > ${work_dir}/etc/initramfs-tools/conf.d/resume
+cat << EOF > "${work_dir}"/etc/initramfs-tools/conf.d/resume
 RESUME=none
 EOF
 
-cat << EOF > ${work_dir}/third-stage
+# Third stage
+cat << EOF > "${work_dir}"/third-stage
 #!/bin/bash -e
+
 export DEBIAN_FRONTEND=noninteractive
 
 eatmydata apt-get update
 
-eatmydata apt-get -y install git binutils ca-certificates console-common cryptsetup-bin initramfs-tools less locales nano u-boot-tools
+eatmydata apt-get -y install binutils ca-certificates console-common git less locales nano u-boot-tools cryptsetup-bin initramfs-tools
 
-# Create kali user with kali password... but first, we need to manually make some groups because they don't yet exist...
-# This mirrors what we have on a pre-installed VM, until the script works properly to allow end users to set up their own... user.
+# Create kali user with kali password... but first, we need to manually make some groups because they don't yet exist..
+# This mirrors what we have on a pre-installed VM, until the script works properly to allow end users to set up their own... user
 # However we leave off floppy, because who a) still uses them, and b) attaches them to an SBC!?
-# And since a lot of these have serial devices of some sort, dialout is added as well.
+# And since a lot of these have serial devices of some sort, dialout is added as well
 # scanner, lpadmin and bluetooth have to be added manually because they don't
-# yet exist in /etc/group at this point.
+# yet exist in /etc/group at this point
 groupadd -r -g 118 bluetooth
 groupadd -r -g 113 lpadmin
 groupadd -r -g 122 scanner
@@ -226,45 +244,53 @@ echo "kali:kali" | chpasswd
 
 aptops="--allow-change-held-packages -o dpkg::options::=--force-confnew -o Acquire::Retries=3"
 
-eatmydata apt-get install -y \$aptops ${packages} || eatmydata apt-get --yes --fix-broken install
-eatmydata apt-get install -y \$aptops ${packages} || eatmydata apt-get --yes --fix-broken install
-eatmydata apt-get install -y \$aptops ${desktop} ${extras} ${tools} || eatmydata apt-get --yes --fix-broken install
-eatmydata apt-get install -y \$aptops ${desktop} ${extras} ${tools} || eatmydata apt-get --yes --fix-broken install
-eatmydata apt-get install -y \$aptops --autoremove systemd-timesyncd || eatmydata apt-get --yes --fix-broken install
-eatmydata apt-get dist-upgrade -y \$aptops
+# This looks weird, but we do it twice because every so often, there's a failure to download from the mirror
+# So to workaround it, we attempt to install them twice
+eatmydata apt-get -y install \$aptops ${packages} || eatmydata apt-get --yes --fix-broken install
+eatmydata apt-get -y install \$aptops ${packages} || eatmydata apt-get --yes --fix-broken install
+eatmydata apt-get -y install \$aptops ${desktop} ${extras} ${tools} || eatmydata apt-get --yes --fix-broken install
+eatmydata apt-get -y install \$aptops ${desktop} ${extras} ${tools} || eatmydata apt-get --yes --fix-broken install
 
-# Linux console/Keyboard configuration
+# We want systemd-timesyncd not sntp which gets pulled in by something in kali-linux-default
+eatmydata apt-get -y install \$aptops --autoremove systemd-timesyncd || eatmydata apt-get --yes --fix-broken install
+
+eatmydata apt-get dist-upgrade -y \$aptops
+eatmydata apt-get autoremove -y --allow-change-held-packages --purge
+
+# Linux console/keyboard configuration
 echo 'console-common console-data/keymap/policy select Select keymap from full list' | debconf-set-selections
 echo 'console-common console-data/keymap/full select en-latin1-nodeadkeys' | debconf-set-selections
 
 # Copy all services
-cp -p /bsp/services/all/*.service /etc/systemd/system/
+install -m644 /bsp/services/all/*.service /etc/systemd/system/
 
-#Touchpad settings
+# Touchpad settings
 install -m644 /bsp/xorg/50-pine64-pinebook-pro.touchpad.conf /etc/X11/xorg.conf.d/
 
 # Saved audio settings
 install -m644 /bsp/audio/pinebook-pro/asound.state /var/lib/alsa/asound.state
 
-# Regenerated the shared-mime-info database on the first boot
-# since it fails to do so properly in a chroot.
+# Regenerate the shared-mime-info database on the first boot
+# since it fails to do so properly in a chroot
 systemctl enable smi-hack
 
 # Generate SSH host keys on first run
 systemctl enable regenerate_ssh_host_keys
+
+# Enable sshd
 systemctl enable ssh
 
-# And enable bluetooth
+# Enable bluetooth
 systemctl enable bluetooth
-
-# Copy bashrc
-cp  /etc/skel/.bashrc /root/.bashrc
 
 # Allow users to use NM over ssh
 install -m644 /bsp/polkit/10-NetworkManager.pkla /var/lib/polkit-1/localauthority/50-local.d
 
 cd /root
 apt download -o APT::Sandbox::User=root ca-certificates 2>/dev/null
+
+# Copy over the default bashrc
+cp /etc/skel/.bashrc /root/.bashrc
 
 # Enable suspend2idle
 sed -i s/"#SuspendState=mem standby freeze"/"SuspendState=freeze"/g /etc/systemd/sleep.conf
@@ -273,7 +299,7 @@ rm -f /usr/bin/dpkg
 EOF
 
 # Run third stage
-chmod 755 ${work_dir}/third-stage
+chmod 755 "${work_dir}"/third-stage
 systemd-nspawn_exec /third-stage
 
 # Clean up eatmydata
@@ -299,7 +325,7 @@ for logs in $(find /var/log -type f); do > $logs; done
 history -c
 EOF
 
-# Disable the use of http proxy in case it is enabled.
+# Disable the use of http proxy in case it is enabled
 if [ -n "$proxy_url" ]; then
   unset http_proxy
   rm -rf ${work_dir}/etc/apt/apt.conf.d/66proxy
@@ -312,15 +338,15 @@ if [[ ! -z "${4}" || ! -z "${5}" ]]; then
 fi
 
 # Define sources.list
-cat << EOF > ${work_dir}/etc/apt/sources.list
+cat << EOF > "${work_dir}"/etc/apt/sources.list
 deb ${mirror} ${suite} ${components//,/ }
 #deb-src ${mirror} ${suite} ${components//,/ }
 EOF
 
 cd "${basedir}"
 
-# Pull in the wifi and bluetooth firmware from manjaro's git repository.
-git clone https://gitlab.manjaro.org/manjaro-arm/packages/community/ap6256-firmware.git
+# Pull in the wifi and bluetooth firmware from manjaro's git repository
+git clone --depth 1 https://gitlab.manjaro.org/manjaro-arm/packages/community/ap6256-firmware.git
 cd ap6256-firmware
 mkdir brcm
 cp BCM4345C5.hcd brcm/BCM.hcd
@@ -333,30 +359,30 @@ cp fw_bcm43456c5_ag.bin brcm/brcmfmac43456-sdio.bin
 cp brcmfmac43456-sdio.clm_blob brcm/brcmfmac43456-sdio.clm_blob
 mkdir -p ${work_dir}/lib/firmware/brcm/
 cp -a brcm/* ${work_dir}/lib/firmware/brcm/
-cd ${current_dir}
+cd "${current_dir}"
 
 # Time to build the kernel
 cd ${work_dir}/usr/src
-git clone https://gitlab.manjaro.org/tsys/linux-pinebook-pro.git --depth 1 linux
-cd linux
+git clone --depth 1 https://gitlab.manjaro.org/tsys/linux-pinebook-pro.git linux
+cd linux/
 touch .scmversion
 patch -p1 --no-backup-if-mismatch < ${current_dir}/patches/pinebook-pro/0001-net-smsc95xx-Allow-mac-address-to-be-set-as-a-parame.patch
 patch -p1 --no-backup-if-mismatch < ${current_dir}/patches/pinebook-pro/0008-board-rockpi4-dts-upper-port-host.patch
 patch -p1 --no-backup-if-mismatch < ${current_dir}/patches/pinebook-pro/0008-rk-hwacc-drm.patch
 patch -p1 --no-backup-if-mismatch < ${current_dir}/patches/pinebook-pro/kali-wifi-injection.patch
-cp ${current_dir}/kernel-configs/pinebook-pro-5.7.config .config
+cp "${current_dir}"/kernel-configs/pinebook-pro-5.7.config .config
 make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- oldconfig
 make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- -j$(nproc)
 make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- INSTALL_MOD_PATH=${work_dir} modules_install
 cp arch/arm64/boot/Image ${work_dir}/boot
 cp arch/arm64/boot/dts/rockchip/rk3399-pinebook-pro.dtb ${work_dir}/boot
 # clean up because otherwise we leave stuff around that causes external modules
-# to fail to build.
+# to fail to build
 make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- mrproper
 # And copy the config back in again (and copy it to /usr/src to keep a backup
 # around)
-cp ${current_dir}/kernel-configs/pinebook-pro-5.7.config .config
-cp ${current_dir}/kernel-configs/pinebook-pro-5.7.config ../default-config
+cp "${current_dir}"/kernel-configs/pinebook-pro-5.7.config .config
+cp "${current_dir}"/kernel-configs/pinebook-pro-5.7.config ../default-config
 
 # Fix up the symlink for building external modules
 # kernver is used to we don't need to keep track of what the current compiled
@@ -367,7 +393,7 @@ rm build
 rm source
 ln -s /usr/src/linux build
 ln -s /usr/src/linux source
-cd ${current_dir}
+cd "${current_dir}"
 
 cat << '__EOF__' > ${work_dir}/boot/boot.txt
 # MAC address (use spaces instead of colons)
@@ -393,7 +419,7 @@ fi
 __EOF__
 cd ${work_dir}/boot
 mkimage -A arm -O linux -T script -C none -n "U-Boot boot script" -d boot.txt boot.scr
-cd ${current_dir}
+cd "${current_dir}"
 
 # Enable brightness up/down and sleep hotkeys and attempt to improve
 # touchpad performance
@@ -410,64 +436,78 @@ evdev:input:b0003v258Ap001E*
   EVDEV_ABS_36=::15
 EOF
 
-# Calculate the space to create the image.
+cd "${current_dir}"
+
+# Calculate the space to create the image
 root_size=$(du -s -B1 ${work_dir} --exclude=${work_dir}/boot | cut -f1)
+echo $root_size
 root_extra=$((${root_size}/1024/1000*5*1024/5))
+echo $root_extra
 raw_size=$(($((${free_space}*1024))+${root_extra}+$((${bootsize}*1024))+4096))
+echo $raw_size
 
 # Create the disk and partition it
 echo "Creating image file ${imagename}.img"
 fallocate -l $(echo ${raw_size}Ki | numfmt --from=iec-i --to=si) ${current_dir}/${imagename}.img
+echo "Partitioning ${imagename}.img"
 parted -s ${current_dir}/${imagename}.img mklabel msdos
 parted -s -a minimal ${current_dir}/${imagename}.img mkpart primary $fstype 32MiB 100%
 
 # Set the partition variables
-loopdevice=`losetup -f --show ${current_dir}/${imagename}.img`
+loopdevice=$(losetup --show -fP "${current_dir}/${imagename}.img")
 device=`kpartx -va ${loopdevice} | sed 's/.*\(loop[0-9]\+\)p.*/\1/g' | head -1`
 sleep 5
 device="/dev/mapper/${device}"
 rootp=${device}p1
 
-if [[ $fstype == ext4 ]]; then
-  features="-O ^64bit,^metadata_csum"
-elif [[ $fstype == ext3 ]]; then
-  features="-O ^64bit"
+# Create file systems
+if [[ "$fstype" == "ext4" ]]; then
+  features="^64bit,^metadata_csum"
+elif [[ "$fstype" == "ext3" ]]; then
+  features="^64bit"
 fi
-mkfs $features -t $fstype -L ROOTFS ${rootp}
+mkfs -O "$features" -t "$fstype" -L ROOTFS "${rootp}"
 
-# Create the dirs for the partitions and mount them
-mkdir -p "${basedir}"/root
-mount ${rootp} "${basedir}"/root
-
-# We do this down here to get rid of the build system's resolv.conf after running through the build.
-cat << EOF > ${work_dir}/etc/resolv.conf
+# We do this down here to get rid of the build system's resolv.conf after running through the build
+cat << EOF > "${work_dir}"/etc/resolv.conf
 nameserver 8.8.8.8
 EOF
 
-# Create an fstab so that we don't mount / read-only.
+# Create the dirs for the partitions and mount them
+mkdir -p "${basedir}"/root/
+mount "${rootp}" "${basedir}"/root
+
+# Create an fstab so that we don't mount / read-only
 UUID=$(blkid -s UUID -o value ${rootp})
 echo "UUID=$UUID /               $fstype    errors=remount-ro 0       1" >> ${work_dir}/etc/fstab
 
 echo "Rsyncing rootfs into image file"
-rsync -HPavz -q ${work_dir}/ ${basedir}/root/
+rsync -HPavz -q "${work_dir}"/boot "${basedir}"/root/
 
 # Nick the u-boot from Manjaro ARM to see if my compilation was somehow
-# screwing things up.
-cp ${current_dir}/bsp/bootloader/pinebook-pro/idbloader.img ${current_dir}/bsp/bootloader/pinebook-pro/trust.img ${current_dir}/bsp/bootloader/pinebook-pro/uboot.img ${basedir}/root/boot/
+# screwing things up
+cp "${current_dir}"/bsp/bootloader/pinebook-pro/idbloader.img ${current_dir}/bsp/bootloader/pinebook-pro/trust.img ${current_dir}/bsp/bootloader/pinebook-pro/uboot.img ${basedir}/root/boot/
 dd if=${current_dir}/bsp/bootloader/pinebook-pro/idbloader.img of=${loopdevice} seek=64 conv=notrunc
 dd if=${current_dir}/bsp/bootloader/pinebook-pro/uboot.img of=${loopdevice} seek=16384 conv=notrunc
 dd if=${current_dir}/bsp/bootloader/pinebook-pro/trust.img of=${loopdevice} seek=24576 conv=notrunc
 
-# Unmount partitions
-sync
-umount ${rootp}
+# Start to unmount partition(s)
+sync; sync
+# sleep for 10 seconds, to let the cache settle after sync
+sleep 10
+# Unmount filesystem
+umount -l "${rootp}"
 
 kpartx -dv ${loopdevice}
-losetup -d ${loopdevice}
 
-# Limite use cpu function
+cd "${basedir}"
+
+# Remove loop device
+losetup -d "${loopdevice}"
+
+# Limited use CPU function
 limit_cpu (){
-  rand=$(tr -cd 'A-Za-z0-9' < /dev/urandom | head -c4 ; echo) # Randowm name group
+  rand=$(tr -cd 'A-Za-z0-9' < /dev/urandom | head -c4 ; echo) # Random name group
   cgcreate -g cpu:/cpulimit-${rand} # Name of group cpulimit
   cgset -r cpu.shares=800 cpulimit-${rand} # Max 1024
   cgset -r cpu.cfs_quota_us=80000 cpulimit-${rand} # Max 100000
@@ -498,7 +538,7 @@ else
   chmod 644 ${current_dir}/${imagename}.img
 fi
 
-# Clean up all the temporary build stuff and remove the directories.
-# Comment this out to keep things around if you want to see what may have gone wrong.
-echo "Removing temporary build files"
+# Clean up all the temporary build stuff and remove the directories
+# Comment this out to keep things around if you want to see what may have gone wrong
+echo "Clean up the build system"
 rm -rf "${basedir}"
