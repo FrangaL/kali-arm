@@ -1,7 +1,8 @@
 #!/bin/bash
+set -e
 
-# This is the FriendlyARM NanoPi NEO Plus2 Kali ARM build script - http://nanopi.io/
-# A trusted Kali Linux image created by Offensive Security - http://www.offensive-security.com
+# This is Kali Linux ARM image for NanoPi NEO Plus2
+# More information: https://www.kali.org/docs/arm/nanopi-neo-plus2/
 
 # Uncomment to activate debug
 # debug=true
@@ -13,12 +14,12 @@ fi
 
 # Architecture
 architecture=${architecture:-"arm64"}
-# Generate a random machine name to be used.
+# Generate a random machine name to be used
 machine=$(tr -cd 'A-Za-z0-9' < /dev/urandom | head -c16 ; echo)
 # Custom hostname variable
 hostname=${2:-kali}
-# Custom image file name variable - MUST NOT include .img at the end.
-imagename=${3:-kali-linux-$1-nanopineoplus2}
+# Custom image file name variable - MUST NOT include .img at the end
+imagename=${3:-kali-linux-$1-nanopi-neo-plus2}
 # Suite to use, valid options are:
 # kali-rolling, kali-dev, kali-bleeding-edge, kali-dev-only, kali-experimental, kali-last-snapshot
 suite=${suite:-"kali-rolling"}
@@ -28,32 +29,34 @@ free_space="300"
 bootsize="128"
 # Select compression, xz or none
 compress="xz"
-# Choose filesystem format to format ( ext3 or ext4 )
+# Choose filesystem format to format (ext3 or ext4)
 fstype="ext3"
-# If you have your own preferred mirrors, set them here.
+# If you have your own preferred mirrors, set them here
 mirror=${mirror:-"http://http.kali.org/kali"}
-# Gitlab url Kali repository
+# GitLab URL for Kali repository
 kaligit="https://gitlab.com/kalilinux"
-# Github raw url
+# GitHub raw URL
 githubraw="https://raw.githubusercontent.com"
 
-# Check EUID=0 you can run any binary as root.
+# Checks script environment
+# Check EUID=0 you can run any binary as root
 if [[ $EUID -ne 0 ]]; then
-  echo "This script must be run as root or have super user permissions"
-  echo "Use: sudo $0 ${1:-2.0} ${2:-kali}"
+  echo "This script must be run as root or have super user permissions" >&2
+  echo "Use: sudo $0 ${1:-2.0} ${2:-kali}" >&2
   exit 1
 fi
 
 # Pass version number
 if [[ $# -eq 0 ]] ; then
-  echo "Please pass version number, e.g. $0 2.0, and (if you want) a hostname, default is kali"
-  exit 0
+  echo "Please pass version number, e.g. $0 2021.1, and (if you want) a hostname, default is kali" >&2
+  echo "Use: sudo $0 ${1:-2020.1} ${2:-kali}" >&2
+  exit 1
 fi
 
-# Check exist bsp directory.
+# Check exist bsp directory
 if [ ! -e "bsp" ]; then
-  echo "Error: missing bsp directory structure"
-  echo "Please clone the full repository ${kaligit}/build-scripts/kali-arm"
+  echo "Error: missing bsp directory structure" >&2
+  echo "Please clone the full repository ${kaligit}/build-scripts/kali-arm" >&2
   exit 255
 fi
 
@@ -66,32 +69,39 @@ work_dir="${basedir}/kali-${architecture}"
 
 # Check directory build
 if [ -e "${basedir}" ]; then
-  echo "${basedir} directory exists, will not continue"
+  echo "${basedir} directory exists, will not continue" >&2
   exit 1
 elif [[ ${current_dir} =~ [[:space:]] ]]; then
-  echo "The directory "\"${current_dir}"\" contains whitespace. Not supported."
+  echo "The directory "\"${current_dir}"\" contains whitespace. Not supported." >&2
   exit 1
 else
   echo "The basedir thinks it is: ${basedir}"
-  mkdir -p ${basedir}
+  mkdir -p "${basedir}"
 fi
 
 components="main,contrib,non-free"
+
+# Packages build list
+# Every ARM device has this
 arm="kali-linux-arm ntpdate"
+# Required for the board
 base="apt-transport-https apt-utils bash-completion console-setup dialog e2fsprogs ifupdown initramfs-tools inxi iw man-db mlocate netcat-traditional net-tools parted psmisc rfkill screen tmux unrar usbutils vim wget whiptail zerofree"
-#desktop="kali-desktop-xfce kali-root-login xserver-xorg-video-fbdev xfonts-terminus xinput"
+#desktop="kali-desktop-xfce kali-desktop-xfce kali-root-login xserver-xorg-video-fbdev xfonts-terminus xinput"
+# Kali Tools
 tools="kali-linux-default"
+# OS services
 services="apache2 atftpd haveged"
+# Any extra packages
 extras="alsa-utils bc bison bluez bluez-firmware kali-linux-core libssl-dev triggerhappy"
 
 packages="${arm} ${base} ${services}"
 
-# Automatic configuration to use an http proxy, such as apt-cacher-ng.
-# You can turn off automatic settings by uncommenting apt_cacher=off.
+# Load automatic proxy configuration
+# You can turn off automatic settings by uncommenting apt_cacher=off
 # apt_cacher=off
-# By default the proxy settings are local, but you can define an external proxy.
+# By default the proxy settings are local, but you can define an external proxy
 # proxy_url="http://external.intranet.local"
-apt_cacher=${apt_cacher:-"$(lsof -i :3142|cut -d ' ' -f3 | uniq | sed '/^\s*$/d')"}
+apt_cacher=${apt_cacher:-"$(lsof -i :3142 | cut -d ' ' -f3 | uniq | sed '/^\s*$/d')"}
 if [ -n "$proxy_url" ]; then
   export http_proxy=$proxy_url
 elif [ "$apt_cacher" = "apt-cacher-ng" ] ; then
@@ -103,17 +113,18 @@ fi
 
 # Detect architecture
 if [[ "${architecture}" == "arm64" ]]; then
-        qemu_bin="/usr/bin/qemu-aarch64-static"
-        lib_arch="aarch64-linux-gnu"
+  qemu_bin="/usr/bin/qemu-aarch64-static"
+  lib_arch="aarch64-linux-gnu"
 elif [[ "${architecture}" == "armhf" ]]; then
-        qemu_bin="/usr/bin/qemu-arm-static"
-        lib_arch="arm-linux-gnueabihf"
+  qemu_bin="/usr/bin/qemu-arm-static"
+  lib_arch="arm-linux-gnueabihf"
 elif [[ "${architecture}" == "armel" ]]; then
-        qemu_bin="/usr/bin/qemu-arm-static"
-        lib_arch="arm-linux-gnueabi"
+  qemu_bin="/usr/bin/qemu-arm-static"
+  lib_arch="arm-linux-gnueabi"
 fi
 
-# create the rootfs - not much to modify here, except maybe throw in some more packages if you want.
+# Execute initial debootstrap
+# create the rootfs - not much to modify here, except maybe throw in some more packages if you want
 eatmydata debootstrap --foreign --keyring=/usr/share/keyrings/kali-archive-keyring.gpg --include=kali-archive-keyring,eatmydata \
   --components=${components} --arch ${architecture} ${suite} ${work_dir} http://http.kali.org/kali
 
@@ -122,7 +133,7 @@ systemd-nspawn_exec(){
   LANG=C systemd-nspawn -q --bind-ro ${qemu_bin} -M ${machine} -D ${work_dir} "$@"
 }
 
-# We need to manually extract eatmydata to use it for the second stage.
+# We need to manually extract eatmydata to use it for the second stage
 for archive in ${work_dir}/var/cache/apt/archives/*eatmydata*.deb; do
   dpkg-deb --fsys-tarfile "$archive" > ${work_dir}/eatmydata
   tar -xkf ${work_dir}/eatmydata -C ${work_dir}
@@ -145,12 +156,13 @@ done
 export LD_PRELOAD
 exec "\$0-eatmydata" --force-unsafe-io "\$@"
 EOF
-chmod 755 ${work_dir}/usr/bin/dpkg
+chmod 755 "${work_dir}"/usr/bin/dpkg
 
 # debootstrap second stage
 systemd-nspawn_exec eatmydata /debootstrap/debootstrap --second-stage
 
-cat << EOF > ${work_dir}/etc/apt/sources.list
+# Define sources.list
+cat << EOF > "${work_dir}"/etc/apt/sources.list
 deb ${mirror} ${suite} ${components//,/ }
 #deb-src ${mirror} ${suite} ${components//,/ }
 EOF
@@ -165,8 +177,8 @@ allow-hotplug eth0
 iface eth0 inet dhcp
 
 # This prevents NetworkManager from attempting to use this
-# device to connect to wifi, since NM doesn't show which device is which.
-# Unfortunately, it still SHOWS the device, just that it's not managed.
+# device to connect to wifi, since NM doesn't show which device is which
+# Unfortunately, it still SHOWS the device, just that it's not managed
 iface p2p0 inet manual
 EOF
 
@@ -174,7 +186,7 @@ EOF
 echo "${hostname}" > ${work_dir}/etc/hostname
 
 # So X doesn't complain, we add kali to hosts
-cat << EOF > ${work_dir}/etc/hosts
+cat << EOF > "${work_dir}"/etc/hosts
 127.0.0.1       ${hostname}    localhost
 ::1             localhost ip6-localhost ip6-loopback
 fe00::0         ip6-localnet
@@ -183,13 +195,14 @@ ff02::1         ip6-allnodes
 ff02::2         ip6-allrouters
 EOF
 
+# Network configs
 # Disable IPv6
-cat << EOF > ${work_dir}/etc/modprobe.d/ipv6.conf
+cat << EOF > "${work_dir}"/etc/modprobe.d/ipv6.conf
 # Don't load ipv6 by default
 alias net-pf-10 off
 EOF
 
-cat << EOF > ${work_dir}/etc/network/interfaces
+cat << EOF > "${work_dir}"/etc/network/interfaces
 auto lo
 iface lo inet loopback
 
@@ -199,20 +212,22 @@ iface eth0 inet dhcp
 EOF
 
 # DNS server
-echo "nameserver 8.8.8.8" > ${work_dir}/etc/resolv.conf
+cat << EOF > "${work_dir}"/etc/resolv.conf
+nameserver 8.8.8.8
+EOF
 
-# Copy directory bsp into build dir.
-cp -rp bsp ${work_dir}
+# Copy directory bsp into build dir
+cp -rp bsp "${work_dir}"
 
 export MALLOC_CHECK_=0 # workaround for LP: #520465
 
-# Enable the use of http proxy in third-stage in case it is enabled.
+# Enable the use of http proxy in third-stage in case it is enabled
 if [ -n "$proxy_url" ]; then
   echo "Acquire::http { Proxy \"$proxy_url\" };" > ${work_dir}/etc/apt/apt.conf.d/66proxy
 fi
 
 # Eventually this should become a systemd service, but for now, we use the same
-# init.d file that they provide and we let systemd handle the conversion.
+# init.d file that they provide and we let systemd handle the conversion
 mkdir -p ${work_dir}/etc/init.d/
 cat << 'EOF' > ${work_dir}/etc/init.d/brcm_patchram_plus
 #!/bin/bash
@@ -290,22 +305,23 @@ case "$1" in
         ;;
 esac
 EOF
-chmod 755 ${work_dir}/etc/init.d/brcm_patchram_plus
-
-cat << EOF > ${work_dir}/third-stage
+chmod 755 "${work_dir}"/etc/init.d/brcm_patchram_plus
+# Third stage
+cat << EOF > "${work_dir}"/third-stage
 #!/bin/bash -e
+
 export DEBIAN_FRONTEND=noninteractive
 
 eatmydata apt-get update
 
-eatmydata apt-get -y install binutils ca-certificates console-common git initramfs-tools less locales nano u-boot-tools
+eatmydata apt-get -y install binutils ca-certificates console-common git less locales nano initramfs-tools u-boot-tools
 
-# Create kali user with kali password... but first, we need to manually make some groups because they don't yet exist...
-# This mirrors what we have on a pre-installed VM, until the script works properly to allow end users to set up their own... user.
+# Create kali user with kali password... but first, we need to manually make some groups because they don't yet exist..
+# This mirrors what we have on a pre-installed VM, until the script works properly to allow end users to set up their own... user
 # However we leave off floppy, because who a) still uses them, and b) attaches them to an SBC!?
-# And since a lot of these have serial devices of some sort, dialout is added as well.
+# And since a lot of these have serial devices of some sort, dialout is added as well
 # scanner, lpadmin and bluetooth have to be added manually because they don't
-# yet exist in /etc/group at this point.
+# yet exist in /etc/group at this point
 groupadd -r -g 118 bluetooth
 groupadd -r -g 113 lpadmin
 groupadd -r -g 122 scanner
@@ -317,26 +333,30 @@ echo "kali:kali" | chpasswd
 aptops="--allow-change-held-packages -o dpkg::options::=--force-confnew -o Acquire::Retries=3"
 
 # This looks weird, but we do it twice because every so often, there's a failure to download from the mirror
-# So to workaround it, we attempt to install them twice.
-eatmydata apt-get install -y \$aptops ${packages} || eatmydata apt-get --yes --fix-broken install
-eatmydata apt-get install -y \$aptops ${packages} || eatmydata apt-get --yes --fix-broken install
-eatmydata apt-get install -y \$aptops ${desktop} ${extras} ${tools} || eatmydata apt-get --yes --fix-broken install
-eatmydata apt-get install -y \${aptops} ${desktop} ${extras} ${tools} || eatmydata apt-get --yes --fix-broken install
-eatmydata apt-get install --autoremove -y \$aptops systemd-timesyncd || eatmydata apt-get --yes --fix-broken install
-eatmydata apt-get dist-upgrade -y \$aptops
+# So to workaround it, we attempt to install them twice
+eatmydata apt-get -y install \$aptops ${packages} || eatmydata apt-get --yes --fix-broken install
+eatmydata apt-get -y install \$aptops ${packages} || eatmydata apt-get --yes --fix-broken install
+eatmydata apt-get -y install \$aptops ${desktop} ${extras} ${tools} || eatmydata apt-get --yes --fix-broken install
+eatmydata apt-get -y install \$aptops ${desktop} ${extras} ${tools} || eatmydata apt-get --yes --fix-broken install
 
-# Linux console/Keyboard configuration
+# We want systemd-timesyncd not sntp which gets pulled in by something in kali-linux-default
+eatmydata apt-get -y install \$aptops --autoremove systemd-timesyncd || eatmydata apt-get --yes --fix-broken install
+
+eatmydata apt-get dist-upgrade -y \$aptops
+eatmydata apt-get autoremove -y --allow-change-held-packages --purge
+
+# Linux console/keyboard configuration
 echo 'console-common console-data/keymap/policy select Select keymap from full list' | debconf-set-selections
 echo 'console-common console-data/keymap/full select en-latin1-nodeadkeys' | debconf-set-selections
 
 # Copy all services
-cp /bsp/services/all/*.service /etc/systemd/system/
+install -m644 /bsp/services/all/*.service /etc/systemd/system/
 
 # Required to kick the bluetooth chip
 install -m755 /bsp/firmware/veyron/brcm_patchram_plus /bin/brcm_patchram_plus
 
-# Regenerated the shared-mime-info database on the first boot
-# since it fails to do so properly in a chroot.
+# Regenerate the shared-mime-info database on the first boot
+# since it fails to do so properly in a chroot
 systemctl enable smi-hack
 
 # Resize FS on first run (hopefully)
@@ -344,6 +364,8 @@ systemctl enable rpiwiggle
 
 # Generate SSH host keys on first run
 systemctl enable regenerate_ssh_host_keys
+
+# Enable sshd
 systemctl enable ssh
 
 # There's no graphical output on this device so
@@ -352,33 +374,34 @@ systemctl set-default multi-user
 # Allow users to use NM over ssh
 install -m644 /bsp/polkit/10-NetworkManager.pkla /var/lib/polkit-1/localauthority/50-local.d
 
-# Copy over the default bashrc
-cp  /etc/skel/.bashrc /root/.bashrc
-
 cd /root
 apt download -o APT::Sandbox::User=root ca-certificates 2>/dev/null
 
+# Copy over the default bashrc
+cp /etc/skel/.bashrc /root/.bashrc
+
 # Enable bluetooth - we do this way because we haven't written a systemd service
-# file for it yet.
+# file for it yet
 update-rc.d brcm_patchram_plus defaults
 
 # Because they have it in the system image, lets go ahead and clone these as
-# well.
+# well
 cd /home/kali/
 git clone --depth 1 https://github.com/friendlyarm/WiringNP
 git clone --depth 1 https://github.com/auto3000/RPi.GPIO_NP
 chown -R kali:kali {WiringNP,RPi.GPIO_NP}
 cd /
 
-# Set the terminus font for a bit nicer display.
-sed -ie 's/FONTFACE=.*/FONTFACE="Terminus"/g' /etc/default/console-setup
-sed -ie 's/FONTSIZE=.*/FONTSIZE="6x12"/g' /etc/default/console-setup
+# Try and make the console a bit nicer
+# Set the terminus font for a bit nicer display
+sed -i -e 's/FONTFACE=.*/FONTFACE="Terminus"/g' /etc/default/console-setup
+sed -i -e 's/FONTSIZE=.*/FONTSIZE="6x12"/g' /etc/default/console-setup
 
 rm -f /usr/bin/dpkg
 EOF
 
 # Run third stage
-chmod 755 ${work_dir}/third-stage
+chmod 755 "${work_dir}"/third-stage
 systemd-nspawn_exec /third-stage
 
 # Clean up eatmydata
@@ -404,7 +427,7 @@ for logs in $(find /var/log -type f); do > $logs; done
 history -c
 EOF
 
-# Disable the use of http proxy in case it is enabled.
+# Disable the use of http proxy in case it is enabled
 if [ -n "$proxy_url" ]; then
   unset http_proxy
   rm -rf ${work_dir}/etc/apt/apt.conf.d/66proxy
@@ -421,21 +444,21 @@ nameserver 8.8.8.8
 EOF
 
 # Define sources.list
-cat << EOF > ${work_dir}/etc/apt/sources.list
+cat << EOF > "${work_dir}"/etc/apt/sources.list
 deb ${mirror} ${suite} ${components//,/ }
 #deb-src ${mirror} ${suite} ${components//,/ }
 EOF
 
 # Kernel section. If you want to use a custom kernel, or configuration, replace
-# them in this section.
+# them in this section
 git clone --depth 1 https://github.com/friendlyarm/linux -b sunxi-4.x.y ${work_dir}/usr/src/kernel
 cd ${work_dir}/usr/src/kernel
 git rev-parse HEAD > ${work_dir}/usr/src/kernel-at-commit
 touch .scmversion
 export ARCH=arm64
 export CROSS_COMPILE=aarch64-linux-gnu-
-cp ${current_dir}/kernel-configs/neoplus2.config ${work_dir}/usr/src/kernel/.config
-cp ${current_dir}/kernel-configs/neoplus2.config ${work_dir}/usr/src/
+cp "${current_dir}"/kernel-configs/neoplus2.config ${work_dir}/usr/src/kernel/.config
+cp "${current_dir}"/kernel-configs/neoplus2.config ${work_dir}/usr/src/
 patch -p1 --no-backup-if-mismatch < ${current_dir}/patches/kali-wifi-injection-4.14.patch
 patch -p1 --no-backup-if-mismatch < ${current_dir}/patches/0001-wireless-carl9170-Enable-sniffer-mode-promisc-flag-t.patch
 make -j $(grep -c processor /proc/cpuinfo)
@@ -446,13 +469,13 @@ cp arch/arm64/boot/dts/allwinner/*.dtb ${work_dir}/boot/
 mkdir -p ${work_dir}/boot/overlays/
 cp arch/arm64/boot/dts/allwinner/overlays/*.dtb ${work_dir}/boot/overlays/
 make mrproper
-cd ${current_dir}
+cd "${current_dir}"
 
-# Copy over the firmware for the ap6212 wifi.
+# Copy over the firmware for the ap6212 wifi
 # On the neo plus2 default install there are other firmware files installed for
-# p2p and apsta but I can't find them publicly posted to friendlyarm's github.
+# p2p and apsta but I can't find them publicly posted to friendlyarm's github
 # At some point, nexmon could work for the device, but the support would need to
-# be added to nexmon.
+# be added to nexmon
 mkdir -p ${work_dir}/lib/firmware/ap6212/
 wget https://raw.githubusercontent.com/friendlyarm/android_vendor_broadcom_nanopi2/nanopi2-lollipop-mr1/proprietary/nvram_ap6212.txt -O ${work_dir}/lib/firmware/ap6212/nvram.txt
 wget https://raw.githubusercontent.com/friendlyarm/android_vendor_broadcom_nanopi2/nanopi2-lollipop-mr1/proprietary/nvram_ap6212a.txt -O ${work_dir}/lib/firmware/ap6212/nvram_ap6212.txt
@@ -464,17 +487,17 @@ wget https://raw.githubusercontent.com/friendlyarm/android_vendor_broadcom_nanop
 wget https://raw.githubusercontent.com/friendlyarm/android_vendor_broadcom_nanopi2/nanopi2-lollipop-mr1/proprietary/config_ap6212.txt -O ${work_dir}/lib/firmware/ap6212/config.txt
 
 # The way the base system comes, the firmware seems to be a symlink into the
-# ap6212 directory so let's do the same here.
+# ap6212 directory so let's do the same here
 # NOTE: This means we can't install firmware-brcm80211 firmware package because
 # the firmware will conflict, and based on testing the firmware in the package
-# *will not* work with this device.
+# *will not* work with this device
 mkdir -p ${work_dir}/lib/firmware/brcm
 cd ${work_dir}/lib/firmware/brcm
 ln -s /lib/firmware/ap6212/fw_bcm43438a1.bin brcmfmac43430a1-sdio.bin
 ln -s /lib/firmware/ap6212/nvram_ap6212.txt brcmfmac43430a1-sdio.txt
 ln -s /lib/firmware/ap6212/fw_bcm43438a0.bin brcmfmac43430-sdio.bin
 ln -s /lib/firmware/ap6212/nvram.txt brcmfmac43430-sdio.txt
-cd ${current_dir}
+cd "${current_dir}"
 
 # Fix up the symlink for building external modules
 # kernver is used so we don't need to keep track of what the current compiled
@@ -485,9 +508,9 @@ rm build
 rm source
 ln -s /usr/src/kernel build
 ln -s /usr/src/kernel source
-cd ${current_dir}
+cd "${current_dir}"
 
-cat << EOF > ${work_dir}/boot/boot.cmd
+cat << EOF > "${work_dir}"/boot/boot.cmd
 # Recompile with:
 # mkimage -C none -A arm -T script -d boot.cmd boot.scr
 
@@ -533,22 +556,28 @@ mkimage -C none -A arm -T script -d ${work_dir}/boot/boot.cmd ${work_dir}/boot/b
 # rpi-wiggle
 mkdir -p ${work_dir}/root/scripts
 wget https://raw.github.com/steev/rpiwiggle/master/rpi-wiggle -O ${work_dir}/root/scripts/rpi-wiggle.sh
-chmod 755 ${work_dir}/root/scripts/rpi-wiggle.sh
+chmod 755 "${work_dir}"/root/scripts/rpi-wiggle.sh
 
-# Calculate the space to create the image.
+cd "${current_dir}"
+
+# Calculate the space to create the image
 root_size=$(du -s -B1 ${work_dir} --exclude=${work_dir}/boot | cut -f1)
+echo $root_size
 root_extra=$((${root_size}/1024/1000*5*1024/5))
+echo $root_extra
 raw_size=$(($((${free_space}*1024))+${root_extra}+$((${bootsize}*1024))+4096))
+echo $raw_size
 
 # Create the disk and partition it
 echo "Creating image file ${imagename}.img"
 fallocate -l $(echo ${raw_size}Ki | numfmt --from=iec-i --to=si) ${current_dir}/${imagename}.img
+echo "Partitioning ${imagename}.img"
 parted -s ${current_dir}/${imagename}.img mklabel msdos
 parted -s ${current_dir}/${imagename}.img mkpart primary fat32 32MiB ${bootsize}MiB
 parted -s -a minimal ${current_dir}/${imagename}.img mkpart primary $fstype ${bootsize}MiB 100%
 
 # Set the partition variables
-loopdevice=`losetup -f --show ${current_dir}/${imagename}.img`
+loopdevice=$(losetup --show -fP "${current_dir}/${imagename}.img")
 device=`kpartx -va ${loopdevice} | sed 's/.*\(loop[0-9]\+\)p.*/\1/g' | head -1`
 sleep 5
 device="/dev/mapper/${device}"
@@ -557,49 +586,60 @@ rootp=${device}p2
 
 # Create file systems
 mkfs.vfat -n BOOT ${bootp}
-if [[ $fstype == ext4 ]]; then
-  features="-O ^64bit,^metadata_csum"
-elif [[ $fstype == ext3 ]]; then
-  features="-O ^64bit"
+if [[ "$fstype" == "ext4" ]]; then
+  features="^64bit,^metadata_csum"
+elif [[ "$fstype" == "ext3" ]]; then
+  features="^64bit"
 fi
-mkfs $features -t $fstype -L ROOTFS ${rootp}
+mkfs -O "$features" -t "$fstype" -L ROOTFS "${rootp}"
+
+# We do this down here to get rid of the build system's resolv.conf after running through the build
+cat << EOF > "${work_dir}"/etc/resolv.conf
+nameserver 8.8.8.8
+EOF
 
 # Create the dirs for the partitions and mount them
-mkdir -p "${basedir}"/root
-mount ${rootp} "${basedir}"/root
+mkdir -p "${basedir}"/root/
+mount "${rootp}" "${basedir}"/root
 mkdir -p "${basedir}"/root/boot
 mount ${bootp} "${basedir}"/root/boot
 
-# Create an fstab so that we don't mount / read-only.
+# Create an fstab so that we don't mount / read-only
 UUID=$(blkid -s UUID -o value ${rootp})
 echo "UUID=$UUID /               $fstype    errors=remount-ro 0       1" >> ${work_dir}/etc/fstab
 
 echo "Rsyncing rootfs into image file"
-rsync -HPavz -q ${work_dir}/ ${basedir}/root/
+rsync -HPavz -q "${work_dir}"/boot "${basedir}"/root/
 
-# Unmount partitions
-sync
-umount -l ${bootp}
-umount -l ${rootp}
+# Start to unmount partition(s)
+sync; sync
+# sleep for 10 seconds, to let the cache settle after sync
+sleep 10
+# Unmount filesystem
+umount -l "${bootp}"
+umount -l "${rootp}"
+
 kpartx -dv ${loopdevice}
 
 cd "${basedir}"
-git clone https://github.com/friendlyarm/u-boot.git
+git clone --depth 1 https://github.com/friendlyarm/u-boot.git
 cd u-boot
 git checkout sunxi-v2017.x
 make nanopi_h5_defconfig
 make
+
+# Write bootloader to imagefile
 dd if=spl/sunxi-spl.bin of=${loopdevice} bs=1024 seek=8
 dd if=u-boot.itb of=${loopdevice} bs=1024 seek=40
-sync
 
-cd ${current_dir}
+cd "${basedir}"
 
-losetup -d ${loopdevice}
+# Remove loop device
+losetup -d "${loopdevice}"
 
-# Limite use cpu function
+# Limited use CPU function
 limit_cpu (){
-  rand=$(tr -cd 'A-Za-z0-9' < /dev/urandom | head -c4 ; echo) # Randowm name group
+  rand=$(tr -cd 'A-Za-z0-9' < /dev/urandom | head -c4 ; echo) # Random name group
   cgcreate -g cpu:/cpulimit-${rand} # Name of group cpulimit
   cgset -r cpu.shares=800 cpulimit-${rand} # Max 1024
   cgset -r cpu.cfs_quota_us=80000 cpulimit-${rand} # Max 100000
@@ -630,7 +670,7 @@ else
   chmod 644 ${current_dir}/${imagename}.img
 fi
 
-# Clean up all the temporary build stuff and remove the directories.
-# Comment this out to keep things around if you want to see what may have gone wrong.
+# Clean up all the temporary build stuff and remove the directories
+# Comment this out to keep things around if you want to see what may have gone wrong
 echo "Clean up the build system"
 rm -rf "${basedir}"
