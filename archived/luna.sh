@@ -1,6 +1,12 @@
 #!/bin/bash
 set -e
 
+# This is Kali Linux ARM image for ???TODO???
+# More information: https://www.kali.org/docs/arm/???TODO???/
+
+echo "This script is now deprecated." >&2
+sleep 5s
+
 # Uncomment to activate debug
 # debug=true
 
@@ -26,7 +32,7 @@ free_space="300"
 bootsize="128"
 # Select compression, xz or none
 compress="xz"
-# Choose filesystem format to format ( ext3 or ext4 )
+# Choose filesystem format to format (ext3 or ext4)
 fstype="ext3"
 # If you have your own preferred mirrors, set them here.
 mirror=${mirror:-"http://http.kali.org/kali"}
@@ -76,7 +82,7 @@ fi
 
 components="main,contrib,non-free"
 arm="kali-linux-arm ntpdate"
-base="apt-transport-https apt-utils bash-completion console-setup dialog ifupdown initramfs-tools inxi iw man-db mlocate netcat-traditional net-tools parted pciutils psmisc rfkill screen tmux unrar usbutils vim wget whiptail zerofree"
+base="apt-transport-https apt-utils bash-completion console-setup initramfs-tools inxi iw man-db mlocate netcat-traditional net-tools parted pciutils psmisc rfkill screen tmux unrar usbutils vim wget whiptail zerofree"
 desktop="kali-desktop-xfce kali-root-login xserver-xorg-video-fbdev xfonts-terminus xinput"
 tools="kali-linux-default"
 services="apache2 atftpd"
@@ -195,7 +201,7 @@ if [ -n "$proxy_url" ]; then
 fi
 
 # Third stage
-cat << EOF >  ${work_dir}/third-stage
+cat << EOF > ${work_dir}/third-stage
 #!/bin/bash -e
 export DEBIAN_FRONTEND=noninteractive
 
@@ -229,7 +235,7 @@ eatmydata apt-get install -y \$aptops --autoremove systemd-timesyncd || eatmydat
 
 eatmydata apt-get -y --allow-change-held-packages --purge autoremove
 
-# Linux console/Keyboard configuration
+# Linux console/keyboard configuration
 echo 'console-common console-data/keymap/policy select Select keymap from full list' | debconf-set-selections
 echo 'console-common console-data/keymap/full select en-latin1-nodeadkeys' | debconf-set-selections
 
