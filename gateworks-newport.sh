@@ -1,24 +1,22 @@
 #!/bin/bash
+# This is for the Gateworks Newport (Cavium Octeon based).
 set -e
-
-# This is for the Gateworks Ventana (Freescale based).
 
 # Uncomment to activate debug
 # debug=true
-
 if [ "$debug" = true ]; then
   exec > >(tee -a -i "${0%.*}.log") 2>&1
   set -x
 fi
 
 # Architecture
-architecture=${architecture:-"armhf"}
+architecture=${architecture:-"arm64"}
 # Generate a random machine name to be used.
-machine=$(tr -cd 'A-Za-z0-9' < /dev/urandom | head -c16 ; echo)
+machine=$(dbus-uuidgen)
 # Custom hostname variable
 hostname=${2:-kali}
 # Custom image file name variable - MUST NOT include .img at the end.
-imagename=${3:-kali-linux-$1-ventana}
+imagename=${3:-kali-linux-$1-newport}
 # Suite to use, valid options are:
 # kali-rolling, kali-dev, kali-bleeding-edge, kali-dev-only, kali-experimental, kali-last-snapshot
 suite=${suite:-"kali-rolling"}
@@ -60,7 +58,7 @@ fi
 # Current directory
 current_dir="$(pwd)"
 # Base directory
-basedir=${current_dir}/gateworks-ventana-"$1"
+basedir=${current_dir}/gateworks-newport-"$1"
 # Working directory
 work_dir="${basedir}/kali-${architecture}"
 
@@ -82,7 +80,7 @@ base="apt-transport-https apt-utils bash-completion console-setup dialog e2fspro
 desktop="kali-desktop-xfce kali-root-login xserver-xorg-video-fbdev xfonts-terminus xinput"
 tools="kali-linux-default"
 services="apache2 atftpd can-utils i2c-tools"
-extras="alsa-utils bc bison bluez bluez-firmware kali-linux-core libnss-systemd libssl-dev triggerhappy"
+extras="alsa-utils bc bison crda bluez bluez-firmware kali-linux-core libnss-systemd libssl-dev triggerhappy"
 
 packages="${arm} ${base} ${services}"
 
@@ -102,16 +100,17 @@ elif [ "$apt_cacher" = "apt-cacher-ng" ] ; then
 fi
 
 # Detect architecture
-if [[ "${architecture}" == "arm64" ]]; then
-        qemu_bin="/usr/bin/qemu-aarch64-static"
-        lib_arch="aarch64-linux-gnu"
-elif [[ "${architecture}" == "armhf" ]]; then
-        qemu_bin="/usr/bin/qemu-arm-static"
-        lib_arch="arm-linux-gnueabihf"
-elif [[ "${architecture}" == "armel" ]]; then
-        qemu_bin="/usr/bin/qemu-arm-static"
-        lib_arch="arm-linux-gnueabi"
-fi
+case ${architecture} in
+  arm64)
+    qemu_bin="/usr/bin/qemu-aarch64-static"
+    lib_arch="aarch64-linux-gnu" ;;
+  armhf)
+    qemu_bin="/usr/bin/qemu-arm-static"
+    lib_arch="arm-linux-gnueabihf" ;;
+  armel)
+    qemu_bin="/usr/bin/qemu-arm-static"
+    lib_arch="arm-linux-gnueabi" ;;
+esac
 
 # create the rootfs - not much to modify here, except maybe throw in some more packages if you want.
 eatmydata debootstrap --foreign --keyring=/usr/share/keyrings/kali-archive-keyring.gpg --include=kali-archive-keyring,eatmydata \
@@ -162,22 +161,6 @@ EOF
 
 echo "${hostname}" > ${work_dir}/etc/hostname
 
-cat << EOF > ${work_dir}/etc/network/interfaces
-auto lo
-iface lo inet loopback
-
-auto eth0
-allow-hotplug eth0
-iface eth0 inet dhcp
-
-allow-hotplug usb0
-iface usb0 inet static
-    address 10.10.10.1
-    netmask 255.255.255.0
-    network 10.10.10.0
-    broadcast 10.10.10.255
-EOF
-
 # Set hostname
 echo "${hostname}" > ${work_dir}/etc/hostname
 
@@ -205,9 +188,6 @@ auto eth0
 allow-hotplug eth0
 iface eth0 inet dhcp
 EOF
-
-# DNS server
-echo "nameserver 8.8.8.8" > ${work_dir}/etc/resolv.conf
 
 # Copy directory bsp into build dir.
 cp -rp bsp ${work_dir}
@@ -295,43 +275,14 @@ sed -i -e 's/FONTSIZE=.*/FONTSIZE="6x12"/' /etc/default/console-setup
 # Fix startup time from 5 minutes to 30 secs on raise interface wlan0
 sed -i 's/^TimeoutStartSec=5min/TimeoutStartSec=30/g' "/usr/lib/systemd/system/networking.service"
 
+# Clean up dpkg.eatmydata
 rm -f /usr/bin/dpkg
+dpkg-divert --remove --rename /usr/bin/dpkg
 EOF
 
 # Run third stage
 chmod 755 ${work_dir}/third-stage
 systemd-nspawn_exec /third-stage
-
-# Set up usb gadget mode before cleanup
-cat << EOF > ${work_dir}/etc/dhcp/dhcpd.conf
-ddns-update-style none;
-default-lease-time 600;
-max-lease-time 7200;
-log-facility local7;
-
-subnet 10.10.10.0 netmask 255.255.255.0 {
-        range 10.10.10.10 10.10.10.20;
-        option subnet-mask 255.255.255.0;
-        option domain-name-servers 8.8.8.8;
-        option routers 10.10.10.1;
-        default-lease-time 600;
-        max-lease-time 7200;
-}
-EOF
-
-echo | sed -e '/^#/d ; /^ *$/d' | systemd-nspawn_exec << EOF
-#Setup Serial Port
-#echo 'g_cdc' >> /etc/modules
-#echo '\n# USB Gadget Serial console port\nttyGS0' >> /etc/securetty
-#systemctl enable getty@ttyGS0.service
-#Setup Ethernet Port
-echo 'g_ether' >> /etc/modules
-sed -i 's/INTERFACESv4=""/INTERFACESv4="usb0"/g' /etc/default/isc-dhcp-server
-systemctl enable isc-dhcp-server
-EOF
-
-# Clean up eatmydata
-systemd-nspawn_exec dpkg-divert --remove --rename /usr/bin/dpkg
 
 # Clean system
 systemd-nspawn_exec << 'EOF'
@@ -341,6 +292,7 @@ fc-cache -frs
 rm -rf /tmp/*
 rm -rf /etc/*-
 rm -rf /hs_err*
+rm -rf /third-stage
 rm -rf /userland
 rm -rf /opt/vc/src
 rm -f /etc/ssh/ssh_host_*
@@ -352,6 +304,9 @@ rm -rf /var/cache/debconf/*.data-old
 for logs in $(find /var/log -type f); do > $logs; done
 history -c
 EOF
+
+# Define DNS server after last running systemd-nspawn.
+echo "nameserver 8.8.8.8" > ${work_dir}/etc/resolv.conf
 
 # Disable the use of http proxy in case it is enabled.
 if [ -n "$proxy_url" ]; then
@@ -365,70 +320,81 @@ if [[ ! -z "${4}" || ! -z "${5}" ]]; then
   suite=${5}
 fi
 
-# Enable serial console
-echo 'T1:12345:respawn:/sbin/getty -L ttymxc1 115200 vt100' >> \
-    ${work_dir}/etc/inittab
-
 # Define sources.list
 cat << EOF > ${work_dir}/etc/apt/sources.list
 deb ${mirror} ${suite} ${components//,/ }
 #deb-src ${mirror} ${suite} ${components//,/ }
 EOF
 
+# Enable serial console
+echo 'T1:12345:respawn:/sbin/getty -L ttymxc1 115200 vt100' >> \
+    ${work_dir}/etc/inittab
+
 cd ${current_dir}
 
 # Do the kernel stuff...
-git clone --depth 1 -b gateworks_4.20.7 https://github.com/gateworks/linux-imx6 ${work_dir}/usr/src/kernel
+git clone --depth 1 -b v5.4.45-newport https://github.com/gateworks/linux-newport ${work_dir}/usr/src/kernel
 cd ${work_dir}/usr/src/kernel
 # Don't change the version because of our patches.
 touch .scmversion
-export ARCH=arm
-export CROSS_COMPILE=arm-linux-gnueabihf- mrproper
-patch -p1 < ${current_dir}/patches/veyron/4.19/kali-wifi-injection.patch
-patch -p1 < ${current_dir}/patches/veyron/4.19/wireless-carl9170-Enable-sniffer-mode-promisc-flag-t.patch
-cp ${current_dir}/kernel-configs/gateworks-ventana-4.20.7.config .config
-cp ${current_dir}/kernel-configs/gateworks-ventana-4.20.7.config ${work_dir}/usr/src/gateworks-ventana-4.20.7.config
+export ARCH=arm64
+export CROSS_COMPILE=aarch64-linux-gnu- 
+patch -p1 < ${current_dir}/patches/kali-wifi-injection-5.4.patch
+patch -p1 < ${current_dir}/patches/0001-wireless-carl9170-Enable-sniffer-mode-promisc-flag-t.patch
+cp ${current_dir}/kernel-configs/gateworks-newport-5.4.45.config .config
+cp ${current_dir}/kernel-configs/gateworks-newport-5.4.45.config ${work_dir}/usr/src/gateworks-newport-5.4.45.config
+#build
 make -j $(grep -c processor /proc/cpuinfo)
-make uImage LOADADDR=0x10008000
-make modules_install INSTALL_MOD_PATH=${work_dir}
-cp arch/arm/boot/dts/imx6*-gw*.dtb ${work_dir}/boot/
-cp arch/arm/boot/uImage ${work_dir}/boot/
+# install compressed kernel in a kernel.itb
+mkimage -f auto -A arm64 -O linux -T kernel -C gzip -n "Newport Kali Kernel" -a 20080000 -e 20080000 -d arch/arm64/boot/Image.gz kernel.itb
+cp kernel.itb ${work_dir}/boot
+# install kernel modules
+make INSTALL_MOD_STRIP=1 INSTALL_MOD_PATH=${work_dir} modules_install
+make INSTALL_HDR_PATH=${work_dir}/usr headers_install
+# cryptodev-linux build/install
+git clone --depth 1 https://github.com/cryptodev-linux/cryptodev-linux ${work_dir}/usr/src/cryptodev-linux
+cd ${work_dir}/usr/src
+make -C cryptodev-linux KERNEL_DIR=${work_dir}/usr/src/kernel
+make -C cryptodev-linux KERNEL_DIR=${work_dir}/usr/src/kernel DESTDIR=${work_dir} INSTALL_MOD_PATH=${work_dir} install
+# wireguard-linux-compat build/install
+git clone --depth 1 https://git.zx2c4.com/wireguard-linux-compat ${work_dir}/usr/src/wireguard-linux-compat
+make -C ${work_dir}/usr/src/kernel M=../wireguard-linux-compat/src modules
+make -C ${work_dir}/usr/src/kernel M=../wireguard-linux-compat/src INSTALL_MOD_PATH=${work_dir} modules_install
 # cleanup
 cd ${work_dir}/usr/src/kernel
 make mrproper
 
-# Pull in imx6 smda/vpu firmware for vpu.
-mkdir -p ${work_dir}/lib/firmware/vpu
-mkdir -p ${work_dir}/lib/firmware/imx/sdma
-wget 'https://github.com/armbian/firmware/blob/master/vpu/v4l-coda960-imx6dl.bin?raw=true' -O ${work_dir}/lib/firmware/vpu/v4l-coda960-imx6dl.bin
-wget 'https://github.com/armbian/firmware/blob/master/vpu/v4l-coda960-imx6q.bin?raw=true' -O ${work_dir}/lib/firmware/vpu/v4l-coda960-imx6q.bin
-wget 'https://github.com/armbian/firmware/blob/master/vpu/vpu_fw_imx6d.bin?raw=true' -O ${work_dir}/lib/firmware/vpu_fw_imx6d.bin
-wget 'https://github.com/armbian/firmware/blob/master/vpu/vpu_fw_imx6q.bin?raw=true' -O ${work_dir}/lib/firmware/vpu_fw_imx6q.bin
-wget 'https://github.com/armbian/firmware/blob/master/imx/sdma/sdma-imx6q.bin?raw=true' -O ${work_dir}/lib/firmware/imx/sdma/sdma-imx6q.bin
+# U-boot script
+install -m644 ${current_dir}/bsp/bootloader/gateworks-newport/newport.scr ${work_dir}/boot/newport.scr
+mkimage -A arm64 -T script -C none -d ${work_dir}/boot/newport.scr ${work_dir}/boot/newport.scr
 
-# Not using extlinux.conf just yet...
-# Ensure we don't have root=/dev/sda3 in the extlinux.conf which comes from running u-boot-menu in a cross chroot.
-#sed -i -e 's/append.*/append root=\/dev\/mmcblk0p1 rootfstype=$fstype video=mxcfb0:dev=hdmi,1920x1080M@60,if=RGB24,bpp=32 console=ttymxc0,115200n8 console=tty1 consoleblank=0 rw rootwait/g' ${work_dir}/boot/extlinux/extlinux.conf
-install -m644 ${current_dir}/bsp/bootloader/gateworks-ventana/6x_bootscript-ventana.script ${work_dir}/boot/6x_bootscript-ventana.script
-mkimage -A arm -T script -C none -d ${work_dir}/boot/6x_bootscript-ventana.script ${work_dir}/boot/6x_bootscript-ventana
+# reboot script
+cat << EOF > ${work_dir}/lib/systemd/system-shutdown/gsc-poweroff
+#!/bin/bash
+# use GSC to power cycle the system
+echo 2 > /sys/bus/i2c/devices/0-0020/powerdown
+done
+EOF
+chmod +x ${work_dir}/lib/systemd/system-shutdown/gsc-poweroff
 
 # Calculate the space to create the image.
 root_size=$(du -s -B1 ${work_dir} --exclude=${work_dir}/boot | cut -f1)
 root_extra=$((${root_size}/1024/1000*5*1024/5))
-raw_size=$(($((${free_space}*1024))+${root_extra}+$((${bootsize}*1024))+4096))
+raw_size=$(($((${free_space}*1024))+${root_extra}))
 
-# Create the disk and partition it
+# Weird Boot Partition
 echo "Creating image file ${imagename}.img"
-fallocate -l $(echo ${raw_size}Ki | numfmt --from=iec-i --to=si) ${current_dir}/${imagename}.img
-parted -s ${current_dir}/${imagename}.img mklabel msdos
-parted -s -a minimal ${current_dir}/${imagename}.img mkpart primary $fstype 1MiB 100%
+wget http://dev.gateworks.com/newport/boot_firmware/firmware-newport.img -O ${current_dir}/${imagename}.img
+fallocate -l $(echo ${raw_size}Ki | numfmt --from=iec-i --to=si) ${base_dir}/${imagename}.img
+dd if=${base_dir}/${imagename}.img of=${current_dir}/${imagename}.img bs=16M seek=1
+echo ", +" | sfdisk -N 2 ${current_dir}/${imagename}.img
 
 # Set the partition variables
 loopdevice=`losetup -f --show ${current_dir}/${imagename}.img`
 device=`kpartx -va ${loopdevice} | sed 's/.*\(loop[0-9]\+\)p.*/\1/g' | head -1`
 sleep 5
 device="/dev/mapper/${device}"
-rootp=${device}p1
+rootp=${device}p2
 
 # Create file systems
 if [[ $fstype == ext4 ]]; then
@@ -442,22 +408,12 @@ mkfs $features -t $fstype -L ROOTFS ${rootp}
 mkdir -p "${basedir}"/root
 mount ${rootp} "${basedir}"/root
 
-# We do this down here to get rid of the build system's resolv.conf after running through the build.
-cat << EOF > ${work_dir}/etc/resolv.conf
-nameserver 8.8.8.8
-EOF
-
 # Create an fstab so that we don't mount / read-only.
 UUID=$(blkid -s UUID -o value ${rootp})
 echo "UUID=$UUID /               $fstype    errors=remount-ro 0       1" >> ${work_dir}/etc/fstab
 
 echo "Rsyncing rootfs into image file"
 rsync -HPavz -q ${work_dir}/ ${basedir}/root/
-
-#wget http://dev.gateworks.com/ventana/images/SPL -O "${basedir}"/root/usr/lib/u-boot/gateworks/SPL
-#wget http://dev.gateworks.com/ventana/images/u-boot.img -O "${basedir}"/root/usr/lib/u-boot/gateworks/u-boot.img
-#dd conv=fsync,notrunc if="${basedir}"/root/usr/lib/u-boot/gateworks/SPL of=${loopdevice} bs=1k seek=1
-#dd conv=fsync,notrunc if="${basedir}"/root/usr/lib/u-boot/gateworks/u-boot.img of=${loopdevice} bs=1k seek=69
 
 # Unmount partitions
 sync
@@ -492,7 +448,8 @@ if [ $compress = xz ]; then
   if [ $(arch) == 'x86_64' ]; then
     echo "Compressing ${imagename}.img"
     [ $(nproc) \< 3 ] || cpu_cores=3 # cpu_cores = Number of cores to use
-    limit_cpu pixz -p ${cpu_cores:-2} ${current_dir}/${imagename}.img # -p Nº cpu cores use
+#    limit_cpu pixz -p ${cpu_cores:-2} ${current_dir}/${imagename}.img # -p Nº cpu cores use
+    pixz -p ${cpu_cores:-2} ${current_dir}/${imagename}.img # -p Nº cpu cores use
     chmod 644 ${current_dir}/${imagename}.img.xz
   fi
 else
