@@ -365,8 +365,9 @@ cd ${work_dir}/usr/src/kernel
 make mrproper
 
 # U-boot script
-install -m644 ${current_dir}/bsp/bootloader/gateworks-newport/newport.scr ${work_dir}/boot/newport.scr
-mkimage -A arm64 -T script -C none -d ${work_dir}/boot/newport.scr ${work_dir}/boot/newport.scr
+install -m644 ${current_dir}/bsp/bootloader/gateworks-newport/newport.scr ${work_dir}/boot/newport.script
+mkimage -A arm64 -T script -C none -d ${work_dir}/boot/newport.script ${work_dir}/boot/newport.scr
+rm ${work_dir}/boot/newport.script
 
 # reboot script
 cat << EOF > ${work_dir}/lib/systemd/system-shutdown/gsc-poweroff
