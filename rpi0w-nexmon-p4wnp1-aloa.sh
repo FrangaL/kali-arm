@@ -201,14 +201,12 @@ chmod 755 /usr/sbin/policy-rc.d
 apt-get update
 apt-get --yes --allow-change-held-packages install locales-all
 
-debconf-set-selections /debconf.set
-rm -f /debconf.set
 apt-get update
+export DEBIAN_FRONTEND=noninteractive
 apt-get -y install git-core binutils ca-certificates initramfs-tools u-boot-tools
 apt-get -y install locales console-common less nano git
 echo "root:toor" | chpasswd
 rm -f /etc/udev/rules.d/70-persistent-net.rules
-export DEBIAN_FRONTEND=noninteractive
 apt-get --yes --allow-change-held-packages -o dpkg::options::=--force-confnew install ${packages} || apt-get --yes --fix-broken install
 apt-get --yes --allow-change-held-packages -o dpkg::options::=--force-confnew install ${desktop} ${tools} || apt-get --yes --fix-broken install
 apt-get --yes --allow-change-held-packages -o dpkg::options::=--force-confnew dist-upgrade
