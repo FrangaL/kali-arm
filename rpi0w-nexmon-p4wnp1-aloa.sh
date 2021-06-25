@@ -1,14 +1,7 @@
 #!/bin/bash
 set -e
 
-######
-# This is a work in progress script for P4wnP1 A.L.O.A. based on @binkybear's built script for P4wnP1
-#
-##########
-
-# Doesn't currently work, so lets just exit.
-#echo "This script is currently in need of work, porting to the new URLs, as well as the new setup."
-#exit 1
+# This script is purposely different from the others due to its heavily customized nature.
 
 # Uncomment to activate debug
 # debug=true
@@ -512,7 +505,7 @@ raw_size=$(($((${free_space}*1024))+${root_extra}+$((${bootsize}*1024))+4096))
 echo "Creating image file ${imagename}.img"
 fallocate -l $(echo ${raw_size}Ki | numfmt --from=iec-i --to=si) ${current_dir}/${imagename}.img
 parted -s ${current_dir}/${imagename}.img mklabel msdos
-parted -s ${current_dir}/${imagename}.img mkpart primary fat32 1MiB ${bootsize}MiB
+parted -s ${current_dir}/${imagename}.img mkpart primary fat32 4MiB ${bootsize}MiB
 parted -s -a minimal ${current_dir}/${imagename}.img mkpart primary $fstype ${bootsize}MiB 100%
 
 # Set the partition variables
@@ -591,7 +584,7 @@ if [ $compress = xz ]; then
   if [ $(arch) == 'x86_64' ]; then
     echo "Compressing ${imagename}.img"
     [ $(nproc) \< 3 ] || cpu_cores=3 # cpu_cores = Number of cores to use
-    limit_cpu pixz -p ${cpu_cores:-2} ${current_dir}/${imagename}.img # -p Nº cpu cores use
+    pixz -p ${cpu_cores:-2} ${current_dir}/${imagename}.img # -p Nº cpu cores use
     chmod 644 ${current_dir}/${imagename}.img.xz
   fi
 else
