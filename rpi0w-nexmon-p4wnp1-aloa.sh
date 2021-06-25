@@ -7,8 +7,8 @@ set -e
 ##########
 
 # Doesn't currently work, so lets just exit.
-echo "This script is currently in need of work, porting to the new URLs, as well as the new setup."
-exit 1
+#echo "This script is currently in need of work, porting to the new URLs, as well as the new setup."
+#exit 1
 
 # Uncomment to activate debug
 # debug=true
@@ -128,8 +128,9 @@ debootstrap --foreign --keyring=/usr/share/keyrings/kali-archive-keyring.gpg --i
 
 # systemd-nspawn enviroment
 systemd-nspawn_exec(){
-  qemu_bin=/usr/bin/qemu-aarch64-static
-  LANG=C systemd-nspawn -q --bind-ro ${qemu_bin} -M ${machine} -D ${work_dir} "$@"
+systemd-nspawn_exec() {
+  ENV="RUNLEVEL=1,LANG=C,DEBIAN_FRONTEND=noninteractive,DEBCONF_NOWARNINGS=yes"
+  systemd-nspawn --bind-ro "$qemu_bin" $extra_args --capability=cap_setfcap -E $ENV -M "$machine" -D "$work_dir" "$@"
 }
 
 # debootstrap second stage
@@ -187,9 +188,9 @@ fi
 cp "${basedir}"/../bsp/firmware/rpi/config.txt ${work_dir}/boot/config.txt
 
 # move P4wnP1 in (change to release blob when ready)
-git clone  -b 'v0.1.0-alpha2' --single-branch --depth 1  https://github.com/mame82/P4wnP1_aloa ${work_dir}/root/P4wnP1
+git clone  -b 'master' --single-branch --depth 1  https://github.com/rogandawes/P4wnP1_aloa ${work_dir}/root/P4wnP1
 
-cat << EOF > kali-${architecture}/third-stage
+cat << EOF > ${basedir}/kali-${architecture}/third-stage
 #!/bin/bash
 set -e
 dpkg-divert --add --local --divert /usr/sbin/invoke-rc.d.chroot --rename /usr/sbin/invoke-rc.d
@@ -309,8 +310,8 @@ dpkg-divert --remove --rename /usr/sbin/invoke-rc.d
 rm -f /third-stage
 EOF
 
-chmod 755 kali-${architecture}/third-stage
-LANG=C systemd-nspawn -M ${machine} -D kali-${architecture} /third-stage
+chmod 755 ${basedir}/kali-${architecture}/third-stage
+LANG=C systemd-nspawn -M ${machine} -D ${basedir}/kali-${architecture} /third-stage
 if [[ $? > 0 ]]; then
   echo "Third stage failed"
   exit 1
@@ -335,6 +336,8 @@ rm -rf /var/cache/debconf/*.data-old
 for logs in $(find /var/log -type f); do > $logs; done
 history -c
 EOF
+# Define DNS server after last running systemd-nspawn.
+echo "nameserver 8.8.8.8" > ${work_dir}/etc/resolv.conf
 
 # Disable the use of http proxy in case it is enabled.
 if [ -n "$proxy_url" ]; then
@@ -386,7 +389,8 @@ git clone --depth 1 https://github.com/Re4son/re4son-raspberrypi-linux -b rpi-4.
 
 
 cd ${work_dir}/usr/src/kernel
-
+# Remove redundant yyloc global declaration
+patch -p1 --no-backup-if-mismatch < ${basedir}/../patches/11647f99b4de6bc460e106e876f72fc7af3e54a6.patch
 # Note: Compiling the kernel in /usr/src/kernel of the target file system is problematic, as the binaries of the compiling host architecture
 # get deployed to the /usr/src/kernel/scripts subfolder (in this case linux-x64 binaries), which is symlinked to /usr/src/build later on.
 # This would f.e. hinder rebuilding single modules, like nexmon's brcmfmac driver, on the Pi itself (online compilation).
