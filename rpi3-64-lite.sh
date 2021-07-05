@@ -244,19 +244,15 @@ echo 'console-common console-data/keymap/full select en-latin1-nodeadkeys' | deb
 cp -p /bsp/services/all/*.service /etc/systemd/system/
 cp -p /bsp/services/rpi/*.service /etc/systemd/system/
 
-# Re4son's rpi-tft configurator
-wget -q ${githubraw}/Re4son/RPi-Tweaks/master/kalipi-tft-config/kalipi-tft-config -O /usr/bin/kalipi-tft-config
-chmod 755 /usr/bin/kalipi-tft-config
-
 # Script mode wlan monitor START/STOP
 install -m755 /bsp/scripts/monstart /usr/bin/
 install -m755 /bsp/scripts/monstop /usr/bin/
 
-# Install the kernel packages
+# Install the kernel/kalipi-config, kalipi-tft-config packages
 echo "deb http://http.re4son-kernel.com/re4son kali-pi main" > /etc/apt/sources.list.d/re4son.list
 wget -qO /etc/apt/trusted.gpg.d/kali_pi-archive-keyring.gpg https://re4son-kernel.com/keys/http/kali_pi-archive-keyring.gpg
 eatmydata apt-get update
-eatmydata apt-get install -y \$aptops kalipi-kernel kalipi-bootloader kalipi-re4son-firmware kalipi-kernel-headers
+eatmydata apt-get install -y \$aptops kalipi-kernel kalipi-bootloader kalipi-re4son-firmware kalipi-kernel-headers kalipi-config kalipi-tft-config
 
 # Regenerated the shared-mime-info database on the first boot
 # since it fails to do so properly in a chroot.
