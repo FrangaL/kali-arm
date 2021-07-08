@@ -1,16 +1,18 @@
 #!/bin/sh
-# Code comes from Fran Rodríguez
+# Code comes from Francisco José Rodríguez Martos
 # https://github.com/FrangaL/rpi-img-builder
-DISKPART="$(findmnt -n -o SOURCE /)"
-DISKNAME="/dev/$(lsblk -no pkname "$DISKPART")"
-flock ${DISKNAME} sfdisk -f ${DISKNAME} -N ${DISKPART##*[!0-9]} <<EOF
+
+root_dev="$(findmnt -n -o SOURCE /)"
+root_part="/dev/$(lsblk -no pkname $root_dev)"
+root_part_num=$(blkid -sPART_ENTRY_NUMBER -o value -p $root_part)
+
+flock $root_part sfdisk -f $root_part -N $root_part_num <<EOF
 ,+
 EOF
 
 sleep 5
 udevadm settle
 sleep 5
-flock ${DISKNAME} partprobe ${DISKNAME}
-mount -o remount,rw ${DISKPART}
-resize2fs ${DISKPART}
-exit 0
+flock $root_part partprobe $root_part
+mount -o remount,rw $root_dev
+resize2fs $root_dev
