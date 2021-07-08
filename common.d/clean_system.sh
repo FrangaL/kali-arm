@@ -22,3 +22,6 @@ rm -rf /etc/apt/apt.conf.d/99_norecommends
 for logs in $(find /var/log -type f); do > $logs; done
 history -c
 EOF
+
+rm -f "${work_dir}"/etc/machine-id || true
+rm -f "${work_dir}"/var/lib/dbus/machine-id || true
