@@ -77,7 +77,7 @@ install -m755 /bsp/scripts/monstop /usr/bin/
 echo "deb http://http.re4son-kernel.com/re4son kali-pi main" > /etc/apt/sources.list.d/re4son.list
 wget -qO /etc/apt/trusted.gpg.d/kali_pi-archive-keyring.gpg https://re4son-kernel.com/keys/http/kali_pi-archive-keyring.gpg
 eatmydata apt-get update
-eatmydata apt-get install -y kalipi-kernel kalipi-bootloader kalipi-re4son-firmware kalipi-kernel-headers
+eatmydata apt-get install -y kalipi-kernel kalipi-bootloader kalipi-re4son-firmware kalipi-kernel-headers firmware-raspberry kalipi-config kalipi-tft-config
 
 # Regenerated the shared-mime-info database on the first boot
 # since it fails to do so properly in a chroot.
@@ -92,16 +92,6 @@ systemctl enable rpi-resizerootfs
 # Generate SSH host keys on first run
 systemctl enable regenerate_ssh_host_keys
 
-# Copy in the bluetooth firmware
-install -m644 /bsp/firmware/rpi/BCM43430A1.hcd /lib/firmware/brcm/
-# Copy rule and service
-install -m644 /bsp/bluetooth/rpi/99-com.rules /etc/udev/rules.d/
-install -m644 /bsp/bluetooth/rpi/hciuart.service /etc/systemd/system/
-
-# Enable hciuart for bluetooth device
-install -m755 /bsp/bluetooth/rpi/btuart /usr/bin/
-systemctl enable hciuart
-
 # Enable copying of user wpa_supplicant.conf file
 systemctl enable copy-user-wpasupplicant
 
@@ -113,9 +103,6 @@ install -m644 /bsp/polkit/10-NetworkManager.pkla /var/lib/polkit-1/localauthorit
 
 cd /root
 apt download -o APT::Sandbox::User=root ca-certificates 2>/dev/null
-
-# Copy over the default bashrc
-cp /etc/skel/.bashrc /root/.bashrc
 
 # Set a REGDOMAIN.  This needs to be done or wireless doesn't work correctly on the RPi 3B+
 sed -i -e 's/REGDOM.*/REGDOMAIN=00/g' /etc/default/crda
