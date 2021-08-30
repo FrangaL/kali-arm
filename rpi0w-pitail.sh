@@ -82,7 +82,7 @@ desktop="kali-desktop-xfce kali-root-login xserver-xorg-video-fbdev xfonts-termi
 tools="kali-linux-default"
 services="apache2 atftpd"
 extras="alsa-utils bc bison crda bluez bluez-firmware i2c-tools kali-linux-core libnss-systemd libssl-dev lua5.1 python3-configobj python3-pip python3-requests python3-rpi.gpio python3-smbus triggerhappy wpasupplicant"
-pitail="kalipi-config kalipi-tft-config bluelog bluesnarfer blueranger bluez-tools bridge-utils wifiphisher cmake mailutils libusb-1.0-0-dev htop locate pure-ftpd tigervnc-standalone-server dnsmasq darkstat"
+pitail="bluelog bluesnarfer blueranger bluez-tools bridge-utils wifiphisher cmake mailutils libusb-1.0-0-dev htop locate pure-ftpd tigervnc-standalone-server dnsmasq darkstat"
 packages="${arm} ${base} ${services} ${pitail}"
 
 # Check to ensure that the architecture is set to ARMEL since the RPi is the
@@ -347,7 +347,7 @@ cp -r /etc/skel/.vnc /root/
 cp -r /etc/skel/.vnc /home/kali/
 
 # Allow users to use NM over ssh
-install -m644 /bsp/polkit/10-NetworkManager.pkla /var/lib/polkit-1/localauthority/50-local.d
+#install -m644 /bsp/polkit/10-NetworkManager.pkla /var/lib/polkit-1/localauthority/50-local.d
 
 cd /root
 apt download -o APT::Sandbox::User=root ca-certificates 2>/dev/null
@@ -385,7 +385,7 @@ systemctl enable pi-tailap.service
 systemctl enable systemd-networkd
 systemctl enable bt-agent
 systemctl enable bt-network
-systemctl disable network-manager
+systemctl disable NetworkManager
 systemctl disable haveged
 
 # Set vnc password
