@@ -46,6 +46,8 @@ basedir=${current_dir}/${hw_model}-${variant}
 work_dir="${basedir}/kali-${architecture}"
 # Custom image file name variable - MUST NOT include .img at the end.
 imagename=${imagename:-"kali-linux-${version}-${hw_model}-${variant}"}
+# DNS server
+nameserver=${nameserver:-"8.8.8.8"}
 # workaround for LP: #520465
 export MALLOC_CHECK_=0
 # Proxy
