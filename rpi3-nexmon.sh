@@ -54,7 +54,8 @@ eatmydata apt-get -y install ${third_stage_pkgs}
 
 eatmydata apt-get install -y ${packages} || eatmydata apt-get install -y --fix-broken
 eatmydata apt-get install -y ${desktop_pkgs} ${extra} || eatmydata apt-get install -y --fix-broken
-
+# ntp doesn't always sync the date, but systemd's timesyncd does, so we remove ntp and reinstall it with this.
+eatmydata apt-get install -y systemd-timesyncd --autoremove
 eatmydata apt-get -y --purge autoremove
 
 # Linux console/Keyboard configuration
@@ -109,6 +110,9 @@ sed -i -e 's/FONTSIZE=.*/FONTSIZE="6x12"/' /etc/default/console-setup
 
 # Fix startup time from 5 minutes to 15 secs on raise interface wlan0
 sed -i 's/^TimeoutStartSec=5min/TimeoutStartSec=15/g' "/usr/lib/systemd/system/networking.service"
+
+# Disable haveged daemon
+systemctl disable haveged
 
 # Enable runonce
 install -m755 /bsp/scripts/runonce /usr/sbin/
