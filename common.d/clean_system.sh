@@ -23,5 +23,10 @@ for logs in $(find /var/log -type f); do > $logs; done
 history -c
 EOF
 
+# Newer systemd requires that /etc/machine-id exists but is empty.
 rm -f "${work_dir}"/etc/machine-id || true
+touch "${work_dir}"/etc/machine-id
 rm -f "${work_dir}"/var/lib/dbus/machine-id || true
+
+# Runonce requires it exists so make sure it does.
+mkdir -p "${work_dir}"/var/cache/runonce
