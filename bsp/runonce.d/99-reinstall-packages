@@ -13,7 +13,7 @@ done
 # Clear and regenerate the font cache
 fc-cache -f
 # Update shared MIME info database
-update-mime-database
+update-mime-database /usr/share/mime
 # Update certificates
 update-ca-certificates
 # Regenerate the default snakeoil cert
