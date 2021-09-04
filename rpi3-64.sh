@@ -127,6 +127,8 @@ systemd-nspawn_exec /third-stage
 
 #Configure RaspberryPi firmware (set config.txt to 64bit)
 include rpi_firmware
+# Compile RaspberryPi userland
+include rpi_userland
 # Choose a locale
 set_locale "$locale"
 # Clean system
