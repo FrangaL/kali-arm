@@ -74,11 +74,8 @@ echo "deb http://http.re4son-kernel.com/re4son kali-pi main" > /etc/apt/sources.
 wget -qO /etc/apt/trusted.gpg.d/kali_pi-archive-keyring.gpg https://re4son-kernel.com/keys/http/kali_pi-archive-keyring.gpg
 eatmydata apt-get update
 eatmydata apt-get install -y kalipi-kernel kalipi-bootloader kalipi-re4son-firmware kalipi-kernel-headers kalipi-config kalipi-tft-config firmware-raspberry
-
-# Regenerated the shared-mime-info database on the first boot
-# since it fails to do so properly in a chroot.
-systemctl enable smi-hack
-
+# ntp doesn't always sync the date, but systemd's timesyncd does, so we remove ntp and reinstall it with this.
+eatmydata apt-get install -y systemd-timesyncd --autoremove
 # Copy script rpi-resizerootfs
 install -m755 /bsp/scripts/rpi-resizerootfs /usr/sbin/
 
@@ -99,9 +96,6 @@ install -m644 /bsp/polkit/10-NetworkManager.pkla /var/lib/polkit-1/localauthorit
 
 cd /root
 apt download -o APT::Sandbox::User=root ca-certificates 2>/dev/null
-
-# Copy over the default bashrc
-cp /etc/skel/.bashrc /root/.bashrc
 
 # Set a REGDOMAIN.  This needs to be done or wireless doesn't work correctly on the RPi 3B+
 sed -i -e 's/REGDOM.*/REGDOMAIN=00/g' /etc/default/crda
@@ -131,6 +125,8 @@ EOF
 chmod 755 "${work_dir}"/third-stage
 systemd-nspawn_exec /third-stage
 
+#Configure RaspberryPi firmware (set config.txt to 64bit)
+include rpi_firmware
 # Choose a locale
 set_locale "$locale"
 # Clean system
