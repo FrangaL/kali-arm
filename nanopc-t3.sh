@@ -255,9 +255,6 @@ sync
 #make CROSS_COMPILE=aarch64-linux-gnu-
 #dd if=fip-nonsecure.img of=$loopdevice bs=512 seek=3841
 
-losetup -d ${loopdevice}
-
-
 cd ${current_dir}
 
 # Umount filesystem
