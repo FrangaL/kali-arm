@@ -40,7 +40,8 @@ include hosts
 set_hostname "${hostname}"
 # Network configs
 include network
-add_interface wlan0
+# Do *NOT* include wlan0 if using a desktop otherwise NetworkManager will ignore it.
+#add_interface wlan0
 # Copy directory bsp into build dir.
 cp -rp bsp "${work_dir}"
 
@@ -54,7 +55,7 @@ eatmydata apt-get -y install ${third_stage_pkgs}
 
 eatmydata apt-get install -y ${packages} || eatmydata apt-get install -y --fix-broken
 eatmydata apt-get install -y ${desktop_pkgs} ${extra} || eatmydata apt-get install -y --fix-broken
-
+eatmydata apt-get install -y dkms linux-image-arm64 u-boot-menu u-boot-rockchip
 eatmydata apt-get -y --purge autoremove
 
 # Linux console/Keyboard configuration
@@ -152,16 +153,48 @@ cp -a brcm/* ${work_dir}/lib/firmware/brcm/
 cd ${current_dir}
 
 # Time to build the kernel
+# 5.14.1 from linux-stable
 cd ${work_dir}/usr/src
-git clone https://gitlab.manjaro.org/tsys/linux-pinebook-pro.git --depth 1 linux
+git clone  -b linux-5.14.y --depth 1 git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git ${work_dir}/usr/src/linux
 cd linux
 touch .scmversion
-#patch -p1 --no-backup-if-mismatch < ${current_dir}/patches/pinebook-pro/0008-board-rockpi4-dts-upper-port-host.patch
-#patch -p1 --no-backup-if-mismatch < ${current_dir}/patches/pinebook-pro/0008-rk-hwacc-drm.patch
-patch -p1 --no-backup-if-mismatch < ${current_dir}/patches/kali-wifi-injection-5.9.patch
-make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- pinebook_pro_defconfig
-# Remove the MANJARO-ARM from the LOCALVERSION
-sed -i -e "s/-MANJARO-ARM//" .config
+# Lots o patches, for added support nicked from Manjaro
+#patch -p1 --no-backup-if-mismatch < ${current_dir}/patches/kali-wifi-injection-5.9.patch
+patch -Np1 -i "${current_dir}/patches/pinebook-pro/pbp-5.14/0001-net-smsc95xx-Allow-mac-address-to-be-set-as-a-parame.patch"             #All
+patch -Np1 -i "${current_dir}/patches/pinebook-pro/pbp-5.14/0002-arm64-dts-amlogic-add-support-for-Radxa-Zero.patch"                     #Radxa Zero
+patch -Np1 -i "${current_dir}/patches/pinebook-pro/pbp-5.14/0003-arm64-dts-allwinner-add-hdmi-sound-to-pine-devices.patch"               #Pine64
+patch -Np1 -i "${current_dir}/patches/pinebook-pro/pbp-5.14/0004-arm64-dts-allwinner-add-ohci-ehci-to-h5-nanopi.patch"                   #Nanopi Neo Plus 2
+patch -Np1 -i "${current_dir}/patches/pinebook-pro/pbp-5.14/0005-drm-bridge-analogix_dp-Add-enable_psr-param.patch"                      #Pinebook Pro
+patch -Np1 -i "${current_dir}/patches/pinebook-pro/pbp-5.14/0006-gpu-drm-add-new-display-resolution-2560x1440.patch"                     #Odroid
+patch -Np1 -i "${current_dir}/patches/pinebook-pro/pbp-5.14/0007-nuumio-panfrost-Silence-Panfrost-gem-shrinker-loggin.patch"             #Panfrost
+patch -Np1 -i "${current_dir}/patches/pinebook-pro/pbp-5.14/0008-arm64-dts-rockchip-Add-Firefly-Station-p1-support.patch"                #Firelfy Station P1
+patch -Np1 -i "${current_dir}/patches/pinebook-pro/pbp-5.14/0009-typec-displayport-some-devices-have-pin-assignments-reversed.patch"     #DP Alt Mode
+patch -Np1 -i "${current_dir}/patches/pinebook-pro/pbp-5.14/0010-usb-typec-add-extcon-to-tcpm.patch"                                     #DP Alt Mode
+patch -Np1 -i "${current_dir}/patches/pinebook-pro/pbp-5.14/0011-arm64-rockchip-add-DP-ALT-rockpro64.patch"                              #DP Alt mode - RockPro64
+patch -Np1 -i "${current_dir}/patches/pinebook-pro/pbp-5.14/0012-ayufan-drm-rockchip-add-support-for-modeline-32MHz-e.patch"             #DP Alt mode
+patch -Np1 -i "${current_dir}/patches/pinebook-pro/pbp-5.14/0013-rk3399-rp64-pcie-Reimplement-rockchip-PCIe-bus-scan-delay.patch"        #RockPro64
+patch -Np1 -i "${current_dir}/patches/pinebook-pro/pbp-5.14/0014-phy-rockchip-typec-Set-extcon-capabilities.patch"                       #DP Alt mode
+patch -Np1 -i "${current_dir}/patches/pinebook-pro/pbp-5.14/0015-usb-typec-altmodes-displayport-Add-hacky-generic-altmode.patch"         #DP Alt mode
+patch -Np1 -i "${current_dir}/patches/pinebook-pro/pbp-5.14/0018-drm-meson-add-YUV422-output-support.patch"                              #G12B
+patch -Np1 -i "${current_dir}/patches/pinebook-pro/pbp-5.14/0019-arm64-dts-meson-add-initial-Beelink-GT1-Ultimate-dev.patch"             #Beelink
+patch -Np1 -i "${current_dir}/patches/pinebook-pro/pbp-5.14/0020-add-ugoos-device.patch"                                                 #Ugoos
+patch -Np1 -i "${current_dir}/patches/pinebook-pro/pbp-5.14/0021-drm-panfrost-Handle-failure-in-panfrost_job_hw_submit.patch"            #AMLogic
+patch -Np1 -i "${current_dir}/patches/pinebook-pro/pbp-5.14/0022-arm64-dts-rockchip-Add-pcie-bus-scan-delay-to-rockpr.patch"             #RockPro64
+# Pinebook Pro patches
+patch -Np1 -i "${current_dir}/patches/pinebook-pro/pbp-5.14/0016-arm64-dts-rockchip-add-typec-extcon-hack.patch"                         #DP Alt mode
+patch -Np1 -i "${current_dir}/patches/pinebook-pro/pbp-5.14/0017-arm64-dts-rockchip-setup-USB-type-c-port-as-dual-data-role.patch"       #USB-C charging
+# Pinebook, PinePhone and PineTab patches
+patch -Np1 -i "${current_dir}/patches/pinebook-pro/pbp-5.14/0001-Bluetooth-Add-new-quirk-for-broken-local-ext-features.patch"            #Bluetooth
+patch -Np1 -i "${current_dir}/patches/pinebook-pro/pbp-5.14/0002-Bluetooth-btrtl-add-support-for-the-RTL8723CS.patch"                    #Bluetooth
+patch -Np1 -i "${current_dir}/patches/pinebook-pro/pbp-5.14/0003-arm64-allwinner-a64-enable-Bluetooth-On-Pinebook.patch"                 #Bluetooth
+patch -Np1 -i "${current_dir}/patches/pinebook-pro/pbp-5.14/0004-arm64-dts-allwinner-enable-bluetooth-pinetab-pinepho.patch"             #Bluetooth
+patch -Np1 -i "${current_dir}/patches/pinebook-pro/pbp-5.14/0005-staging-add-rtl8723cs-driver.patch"                                     #Wifi
+patch -Np1 -i "${current_dir}/patches/pinebook-pro/pbp-5.14/0006-pinetab-accelerometer.patch"                                            #accelerometer
+patch -Np1 -i "${current_dir}/patches/pinebook-pro/pbp-5.14/0007-enable-jack-detection-pinetab.patch"                                    #Audio
+patch -Np1 -i "${current_dir}/patches/pinebook-pro/pbp-5.14/0008-enable-hdmi-output-pinetab.patch"                                       #HDMI
+patch -Np1 -i "${current_dir}/patches/pinebook-pro/pbp-5.14/0009-drm-panel-Adjust-sync-values-for-Feixin-K101-IM2BYL02-panel.patch"      #Display
+
+cp ${current_dir}/kernel-configs/pinebook-pro-5.14.config .config
 make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- LOCALVERSION= -j$(nproc)
 make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- LOCALVERSION= INSTALL_MOD_PATH=${work_dir} modules_install
 cp arch/arm64/boot/Image ${work_dir}/boot
@@ -169,10 +202,10 @@ cp arch/arm64/boot/dts/rockchip/rk3399-pinebook-pro.dtb ${work_dir}/boot
 # clean up because otherwise we leave stuff around that causes external modules
 # to fail to build.
 make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- mrproper
-# And re-setup the .config file, and make a backup in the previous directory
-make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- pinebook_pro_defconfig
-sed -i -e "s/-MANJARO-ARM//" .config
-cp .config ../pinebook_pro_config
+## And re-setup the .config file, and make a backup in the previous directory
+cp ${current_dir}/kernel-configs/pinebook-pro-5.14.config .config
+cp ${current_dir}/kernel-configs/pinebook-pro-5.14.config ../pinebook-pro-5.14.config
+
 
 # Fix up the symlink for building external modules
 # kernver is used to we don't need to keep track of what the current compiled
@@ -209,6 +242,7 @@ fi
 __EOF__
 cd ${work_dir}/boot
 mkimage -A arm -O linux -T script -C none -n "U-Boot boot script" -d boot.txt boot.scr
+
 cd ${current_dir}
 
 # Enable brightness up/down and sleep hotkeys and attempt to improve
@@ -258,16 +292,23 @@ proc            /proc           proc    defaults          0       0
 UUID=$(blkid -s UUID -o value ${rootp})  /               $fstype    defaults,noatime  0       1
 EOF
 
+# FUTURE: Move to debian u-boot when it works properly.
+# Ensure we don't have root=/dev/sda3 in the extlinux.conf which comes from running u-boot-menu in a cross chroot.
+# We do this down here because we don't know the UUID until after the image is created.
+#sed -i -e "0,/root=.*/s//root=UUID=$(blkid -s UUID -o value ${rootp}) rootfstype=$fstype console=ttyS0,115200 console=tty1 consoleblank=0 rw quiet rootwait/g" ${work_dir}/boot/extlinux/extlinux.conf
+
 log "Rsyncing rootfs into image file" green
 rsync -HPavz -q "${work_dir}"/ "${basedir}"/root/
 sync
 
-# Nick the u-boot from Manjaro ARM to see if my compilation was somehow
-# screwing things up.
+## Nick the u-boot from Manjaro ARM to see if my compilation was somehow
+## screwing things up.
 cp ${current_dir}/bsp/bootloader/pinebook-pro/idbloader.img ${current_dir}/bsp/bootloader/pinebook-pro/trust.img ${current_dir}/bsp/bootloader/pinebook-pro/uboot.img ${basedir}/root/boot/
 dd if=${current_dir}/bsp/bootloader/pinebook-pro/idbloader.img of=${loopdevice} seek=64 conv=notrunc
 dd if=${current_dir}/bsp/bootloader/pinebook-pro/uboot.img of=${loopdevice} seek=16384 conv=notrunc
 dd if=${current_dir}/bsp/bootloader/pinebook-pro/trust.img of=${loopdevice} seek=24576 conv=notrunc
+
+#TARGET="/usr/lib/u-boot/pinebook-pro-rk3399" /usr/bin/u-boot-install-rockchip ${loopdevice}
 
 # Umount filesystem
 umount -l "${rootp}"
