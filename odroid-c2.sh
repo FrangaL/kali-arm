@@ -8,7 +8,7 @@
 source ./common.d/functions.sh
 
 # Hardware model
-hw_model=${hw_model:-"odroidc2"}
+hw_model=${hw_model:-"odroid-c2"}
 # Architecture
 architecture=${architecture:-"arm64"}
 # Variant name for image and dir build
