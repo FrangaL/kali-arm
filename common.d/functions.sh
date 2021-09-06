@@ -99,11 +99,12 @@ function disable_proxy() {
 # Mirror & suite replacement
 function restore_mirror() {
   if [[ -n "${replace_mirror}" ]]; then
-    mirror=${replace_mirror}
-    export mirror
+    export mirror=${replace_mirror}
   elif [[ -n "${replace_suite}" ]]; then
-    suite=${replace_suite}
+    export suite=${replace_suite}
   fi
+  echo "deb ${mirror} ${replace_suite} main contrib non-free" > "${work_dir}"/etc/apt/sources.list
+  echo "#deb-src ${mirror} ${replace_suite} main contrib non-free" >> "${work_dir}"/etc/apt/sources.list
 }
 
 # Limite use cpu function
