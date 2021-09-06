@@ -120,7 +120,6 @@ debootstrap --foreign --keyring=/usr/share/keyrings/kali-archive-keyring.gpg --i
   --components=${components} --include=${arm// /,} --arch ${architecture} ${suite} ${work_dir} http://http.kali.org/kali
 
 # systemd-nspawn enviroment
-systemd-nspawn_exec(){
 systemd-nspawn_exec() {
   ENV="RUNLEVEL=1,LANG=C,DEBIAN_FRONTEND=noninteractive,DEBCONF_NOWARNINGS=yes"
   systemd-nspawn --bind-ro "$qemu_bin" $extra_args --capability=cap_setfcap -E $ENV -M "$machine" -D "$work_dir" "$@"
