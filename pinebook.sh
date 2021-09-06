@@ -40,7 +40,9 @@ include hosts
 set_hostname "${hostname}"
 # Network configs
 include network
-add_interface wlan0
+# Do not include wlan0 on a wireless only device, otherwise NetworkManager won't run.
+# wlan0 requires special editing of the /etc/network/interfaces.d/wlan0 file, to add the wireless network and ssid
+#add_interface wlan0
 # Copy directory bsp into build dir.
 cp -rp bsp "${work_dir}"
 
