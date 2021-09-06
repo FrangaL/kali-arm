@@ -48,3 +48,6 @@ if [[ "$variant" == *lite* ]]; then
 fi
 
 third_stage_pkgs="binutils ca-certificates console-common console-setup locales libterm-readline-gnu-perl git wget curl"
+
+extra+=" $(cat kali-config/common/package-list/*.list.chroot 2>/dev/null)"
+extra+=" $(cat kali-config/variant-${desktop}/package-list/*.list.chroot 2>/dev/null)"
