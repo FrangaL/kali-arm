@@ -49,7 +49,8 @@ dependencies="gnupg flex bison gperf build-essential zip curl libncurses5-dev zl
 parted kpartx debootstrap pixz qemu-user-static abootimg cgpt vboot-kernel-utils vboot-utils \
 u-boot-tools bc lzma lzop automake autoconf m4 rsync schedtool git dosfstools e2fsprogs \
 device-tree-compiler libssl-dev systemd-container libgmp3-dev gawk qpdf make libfl-dev swig \
-${libpython2_dev} dbus python3-dev cgroup-tools lsof jetring eatmydata cmake pkg-config less"
+${libpython2_dev} dbus python3-dev cgroup-tools lsof jetring eatmydata cmake pkg-config less \
+libubootenv-tool"
 
 deps="${dependencies} ${compilers}"
 
