@@ -136,7 +136,7 @@ restore_mirror
 # Reload sources.list
 include sources.list
 
-cd "${basedir}"
+cd ${current_dir}
 
 # Pull in the wifi and bluetooth firmware from manjaro's git repository.
 git clone https://gitlab.manjaro.org/manjaro-arm/packages/community/ap6256-firmware.git
@@ -225,7 +225,7 @@ cat << '__EOF__' > ${work_dir}/boot/boot.txt
 setenv macaddr da 19 c8 7a 6d f4
 
 part uuid ${devtype} ${devnum}:${bootpart} uuid
-setenv bootargs console=ttyS2,1500000 root=PARTUUID=${uuid} rw rootwait video=eDP-1:1920x1080@60
+setenv bootargs console=tty1 console=ttyS2,1500000 root=PARTUUID=${uuid} rw rootwait video=eDP-1:1920x1080@60
 setenv fdtfile rk3399-pinebook-pro.dtb
 
 if load ${devtype} ${devnum}:${bootpart} ${kernel_addr_r} /boot/Image; then
