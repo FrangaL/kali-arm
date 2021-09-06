@@ -119,6 +119,30 @@ fi
 debootstrap --foreign --keyring=/usr/share/keyrings/kali-archive-keyring.gpg --include=kali-archive-keyring \
   --components=${components} --include=${arm// /,} --arch ${architecture} ${suite} ${work_dir} http://http.kali.org/kali
 
+case ${architecture} in
+  arm64)
+    qemu_bin="/usr/bin/qemu-aarch64-static"
+    lib_arch="aarch64-linux-gnu"
+  ;;
+  armhf)
+    qemu_bin="/usr/bin/qemu-arm-static"
+    lib_arch="arm-linux-gnueabihf"
+  ;;
+  armel)
+    qemu_bin="/usr/bin/qemu-arm-static"
+    lib_arch="arm-linux-gnueabi"
+  ;;
+esac
+
+nspawn_ver=$(systemd-nspawn --version | awk '{if(NR==1) print $2}')
+if [[ $nspawn_ver -ge 245 ]]; then
+  extra_args="--hostname=$hostname -q -P"
+elif [[ $nspawn_ver -ge 241 ]]; then
+  extra_args="--hostname=$hostname -q"
+else
+  extra_args="-q"
+fi
+
 # systemd-nspawn enviroment
 systemd-nspawn_exec() {
   ENV="RUNLEVEL=1,LANG=C,DEBIAN_FRONTEND=noninteractive,DEBCONF_NOWARNINGS=yes"
@@ -308,7 +332,7 @@ if [[ $? > 0 ]]; then
 fi
 
 # Clean system
-systemd-nspawn_exec << 'EOF'
+systemd-nspawn_exec <<'EOF'
 rm -f /0
 rm -rf /bsp
 fc-cache -frs
@@ -317,15 +341,24 @@ rm -rf /etc/*-
 rm -rf /hs_err*
 rm -rf /userland
 rm -rf /opt/vc/src
+rm -rf /third-stage
 rm -f /etc/ssh/ssh_host_*
 rm -rf /var/lib/dpkg/*-old
 rm -rf /var/lib/apt/lists/*
 rm -rf /var/cache/apt/*.bin
+rm -rf /var/cache/debconf/*-old
 rm -rf /var/cache/apt/archives/*
-rm -rf /var/cache/debconf/*.data-old
+rm -rf /etc/apt/apt.conf.d/apt_opts
+rm -rf /etc/apt/apt.conf.d/99_norecommends
 for logs in $(find /var/log -type f); do > $logs; done
 history -c
 EOF
+
+# Newer systemd requires that /etc/machine-id exists but is empty.
+rm -f "${work_dir}"/etc/machine-id || true
+touch "${work_dir}"/etc/machine-id
+rm -f "${work_dir}"/var/lib/dbus/machine-id || true
+
 # Define DNS server after last running systemd-nspawn.
 echo "nameserver 8.8.8.8" > ${work_dir}/etc/resolv.conf
 
@@ -340,9 +373,6 @@ if [[ ! -z "${4}" || ! -z "${5}" ]]; then
   mirror=${4}
   suite=${5}
 fi
-
-chmod 755 kali-${architecture}/cleanup
-LANG=C systemd-nspawn -M ${machine} -D kali-${architecture} /cleanup
 
 # Enable login over serial
 echo "T0:23:respawn:/sbin/agetty -L ttyAMA0 115200 vt100" >> ${work_dir}/etc/inittab
