@@ -244,7 +244,7 @@ bootargs	console=ttySAC0,115200n8 root=/dev/mmcblk0p2 rootfstype=$fstype rootwai
 bootdelay	1
 EOF
 
-fw_setenv ${loopdevice} -s env.conf
+./fw_setenv ${loopdevice} -s env.conf
 sync
 
 # It should be possible to build your own u-boot, as part of this, if you
