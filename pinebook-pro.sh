@@ -55,7 +55,9 @@ eatmydata apt-get -y install ${third_stage_pkgs}
 
 eatmydata apt-get install -y ${packages} || eatmydata apt-get install -y --fix-broken
 eatmydata apt-get install -y ${desktop_pkgs} ${extra} || eatmydata apt-get install -y --fix-broken
-eatmydata apt-get install -y dkms linux-image-arm64 u-boot-menu u-boot-rockchip
+# Commented out for now, we don't want to install them due to the wifi device crashing
+# and causing kernel panics, even with the latest from unstable Debian.
+#eatmydata apt-get install -y dkms linux-image-arm64 u-boot-menu u-boot-rockchip
 eatmydata apt-get -y --purge autoremove
 
 # Linux console/Keyboard configuration
