@@ -136,9 +136,8 @@ restore_mirror
 # Reload sources.list
 include sources.list
 
-cd ${current_dir}
-
 # Pull in the wifi and bluetooth firmware from manjaro's git repository.
+cd ${work_dir}
 git clone https://gitlab.manjaro.org/manjaro-arm/packages/community/ap6256-firmware.git
 cd ap6256-firmware
 mkdir brcm
@@ -153,6 +152,7 @@ cp brcmfmac43456-sdio.clm_blob brcm/brcmfmac43456-sdio.clm_blob
 mkdir -p ${work_dir}/lib/firmware/brcm/
 cp -a brcm/* ${work_dir}/lib/firmware/brcm/
 cd ${current_dir}
+rm -rf ${work_dir}/ap6256-firmware
 
 # Time to build the kernel
 # 5.14.1 from linux-stable
