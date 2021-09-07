@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# This is the bare minimimum if you want to start from very scratch.
+minimal_pkgs="ca-certificates iw parted ssh wpasupplicant"
+
 # This is the list of minimal common packages
 common_min_pkgs="apt-transport-https firmware-linux firmware-realtek firmware-atheros \
 firmware-libertas ifupdown initramfs-tools kali-defaults man-db mlocate netcat-traditional net-tools \
