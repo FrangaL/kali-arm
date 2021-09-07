@@ -77,6 +77,8 @@ eatmydata apt-get install -y kalipi-kernel kalipi-bootloader kalipi-re4son-firmw
 
 # Copy script rpi-resizerootfs
 install -m755 /bsp/scripts/rpi-resizerootfs /usr/sbin/
+# Copy script for handling wpa_supplicant file
+install -m755 /bsp/scripts/copy-user-wpasupplicant.sh /usr/bin/
 
 # Enable rpi-resizerootfs first boot
 systemctl enable rpi-resizerootfs

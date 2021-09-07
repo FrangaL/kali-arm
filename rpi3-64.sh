@@ -76,8 +76,11 @@ eatmydata apt-get update
 eatmydata apt-get install -y kalipi-kernel kalipi-bootloader kalipi-re4son-firmware kalipi-kernel-headers kalipi-config kalipi-tft-config firmware-raspberry
 # ntp doesn't always sync the date, but systemd's timesyncd does, so we remove ntp and reinstall it with this.
 eatmydata apt-get install -y systemd-timesyncd --autoremove
+
 # Copy script rpi-resizerootfs
 install -m755 /bsp/scripts/rpi-resizerootfs /usr/sbin/
+# Copy script for handling wpa_supplicant file
+install -m755 /bsp/scripts/copy-user-wpasupplicant.sh /usr/bin/
 
 # Enable rpi-resizerootfs first boot
 systemctl enable rpi-resizerootfs

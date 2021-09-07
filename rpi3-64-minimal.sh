@@ -72,6 +72,8 @@ install -m755 /bsp/scripts/kalipi-tft-config /usr/bin/
 # Script mode wlan monitor START/STOP
 install -m755 /bsp/scripts/monstart /usr/bin/
 install -m755 /bsp/scripts/monstop /usr/bin/
+# Copy script for handling wpa_supplicant file
+install -m755 /bsp/scripts/copy-user-wpasupplicant.sh /usr/bin/
 
 # Install the kernel packages
 echo "deb http://http.re4son-kernel.com/re4son kali-pi main" > /etc/apt/sources.list.d/re4son.list
