@@ -132,7 +132,7 @@ disable_proxy
 # Mirror & suite replacement
 restore_mirror
 # Reload sources.list
-include sources.list
+#include sources.list
 
 # Create an fstab so that we don't mount / read-only.
 UUID=$(blkid -s UUID -o value ${rootp})

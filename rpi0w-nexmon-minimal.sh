@@ -137,7 +137,7 @@ disable_proxy
 # Mirror & suite replacement
 restore_mirror
 # Reload sources.list
-include sources.list
+#include sources.list
 
 # systemd doesn't seem to be generating the fstab properly for some people, so let's create one.
 cat <<EOF >"${work_dir}"/etc/fstab

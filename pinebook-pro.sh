@@ -134,7 +134,7 @@ disable_proxy
 # Mirror & suite replacement
 restore_mirror
 # Reload sources.list
-include sources.list
+#include sources.list
 
 # Pull in the wifi and bluetooth firmware from manjaro's git repository.
 cd ${work_dir}

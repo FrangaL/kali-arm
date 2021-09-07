@@ -125,7 +125,7 @@ disable_proxy
 # Mirror & suite replacement
 restore_mirror
 # Reload sources.list
-include sources.list
+#include sources.list
 
 cd "${basedir}"
 # Do the kernel stuff...

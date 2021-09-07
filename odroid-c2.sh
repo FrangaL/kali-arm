@@ -137,7 +137,7 @@ disable_proxy
 # Mirror & suite replacement
 restore_mirror
 # Reload sources.list
-include sources.list
+#include sources.list
 
 # 1366x768 is sort of broken on the ODROID-C2, not sure where the issue is, but
 # we can work around it by setting the resolution to 1360x768.

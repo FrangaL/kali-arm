@@ -124,7 +124,7 @@ disable_proxy
 # Mirror & suite replacement
 restore_mirror
 # Reload sources.list
-include sources.list
+#include sources.list
 
 # Set up usb gadget mode
 cat << EOF > ${work_dir}/etc/dhcp/dhcpd.conf

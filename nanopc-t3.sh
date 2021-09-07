@@ -41,7 +41,7 @@ set_hostname "${hostname}"
 # Network configs
 include network
 add_interface eth0
-add_interface wlan0
+#add_interface wlan0
 # Copy directory bsp into build dir.
 cp -rp bsp "${work_dir}"
 
@@ -125,7 +125,7 @@ disable_proxy
 # Mirror & suite replacement
 restore_mirror
 # Reload sources.list
-include sources.list
+#include sources.list
 
 # Kernel section. If you want to use a custom kernel, or configuration, replace
 # them in this section.

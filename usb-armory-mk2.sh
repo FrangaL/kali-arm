@@ -167,7 +167,7 @@ disable_proxy
 # Mirror & suite replacement
 restore_mirror
 # Reload sources.list
-include sources.list
+#include sources.list
 
 # Kernel section. If you want to use a custom kernel, or configuration, replace
 # them in this section.

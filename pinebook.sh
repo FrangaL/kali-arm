@@ -193,7 +193,7 @@ disable_proxy
 # Mirror & suite replacement
 restore_mirror
 # Reload sources.list
-include sources.list
+#include sources.list
 
 # Set up some defaults for chromium, if the user ever installs it
 mkdir -p ${work_dir}/etc/chromium/
