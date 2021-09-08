@@ -80,8 +80,16 @@ install -m755 /bsp/scripts/monstop /usr/bin/
 # Install the kernel packages
 eatmydata apt-get install -y dkms linux-image-arm64 u-boot-menu u-boot-sunxi
 
-# Copy script rpi-resizerootfs
-install -m755 /bsp/scripts/rpi-resizerootfs /usr/sbin/
+# The pinebook seems to always claim the filesystem is in use when attempting to resize it, and this causes
+# parted to request a confirmation, but since we're doing this in a script, we don't actually get to.
+# Solution comes from a comment in https://bugs.launchpad.net/ubuntu/+source/parted/+bug/1270203.  This is
+# new with parted 3.3+.
+
+# Copy script pinebook-resizerootfs
+install -m755 /bsp/scripts/pinebook-resizerootfs /usr/sbin/
+
+# And since we handle it specially, sed the service so that we call pinebook-resizerootfs instead of rpi-resizerootfs.
+sed -i -e 's/rpi/pinebook/' /etc/systemd/system/rpi-resizerootfs.service
 
 # Enable rpi-resizerootfs first boot
 systemctl enable rpi-resizerootfs
