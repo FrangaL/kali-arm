@@ -103,8 +103,8 @@ function restore_mirror() {
   elif [[ -n "${replace_suite}" ]]; then
     export suite=${replace_suite}
   fi
-  echo "deb ${mirror} ${replace_suite} main contrib non-free" > "${work_dir}"/etc/apt/sources.list
-  echo "#deb-src ${mirror} ${replace_suite} main contrib non-free" >> "${work_dir}"/etc/apt/sources.list
+  echo "deb ${mirror} ${suite} main contrib non-free" > "${work_dir}"/etc/apt/sources.list
+  echo "#deb-src ${mirror} ${suite} main contrib non-free" >> "${work_dir}"/etc/apt/sources.list
 }
 
 # Limite use cpu function
