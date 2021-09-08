@@ -23,7 +23,7 @@ fi
 #flock $root_part sfdisk -f $root_part -N $root_part_num <<EOF
 #,+
 #EOF
-echo -e "yes\n100%" | parted -s $rootdev ---pretend-input-tty unit % resizepart $root_part_nr
+echo -e "yes\n100%" | parted $rootdev ---pretend-input-tty unit % resizepart $root_part_nr
 
 sleep 5
 udevadm settle
