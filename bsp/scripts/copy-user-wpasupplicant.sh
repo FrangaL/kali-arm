@@ -1,5 +1,10 @@
 #!/bin/bash -e
 
+# If the file doesn't exist, exit 0 so that we don't report an error and systemd is happy.
+if [ ! -f /boot/wpa_supplicant.conf ]; then
+  exit 0;
+fi
+
 if [ -f /boot/wpa_supplicant.conf ]; then
   ssid=$(awk -F = '{if($0 ~ /ssid/) print $2}' /boot/wpa_supplicant.conf | tr -d '"')
   psk=$(awk -F = '{if($0 ~ /#psk/) print $2}' /boot/wpa_supplicant.conf | tr -d '"')
