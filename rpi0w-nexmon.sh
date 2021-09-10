@@ -39,8 +39,8 @@ include hosts
 # Set hostname
 set_hostname "${hostname}"
 # Network configs
-include network
-add_interface wlan0
+#include network
+#add_interface wlan0
 # Copy directory bsp into build dir.
 cp -rp bsp "${work_dir}"
 
