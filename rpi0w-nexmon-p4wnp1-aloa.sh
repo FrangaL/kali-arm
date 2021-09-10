@@ -362,7 +362,7 @@ touch "${work_dir}"/etc/machine-id
 rm -f "${work_dir}"/var/lib/dbus/machine-id || true
 
 # Define DNS server after last running systemd-nspawn.
-echo "nameserver 8.8.8.8" > ${work_dir}/etc/resolv.conf
+echo "nameserver ${nameserver}" > ${work_dir}/etc/resolv.conf
 
 # Disable the use of http proxy in case it is enabled.
 if [ -n "$proxy_url" ]; then
