@@ -36,6 +36,8 @@ mirror=${mirror:-"http://http.kali.org/kali"}
 kaligit="https://gitlab.com/kalilinux"
 # Github raw url
 githubraw="https://raw.githubusercontent.com"
+# dns server
+nameserver=${nameserver:-"8.8.8.8"}
 
 # Check EUID=0 you can run any binary as root.
 if [[ $EUID -ne 0 ]]; then
@@ -186,7 +188,7 @@ iface eth0 inet dhcp
 EOF
 
 # DNS server
-echo "nameserver 8.8.8.8" > ${work_dir}/etc/resolv.conf
+echo "nameserver ${nameserver}" > ${work_dir}/etc/resolv.conf
 
 # Copy directory bsp into build dir.
 cp -rp bsp ${work_dir}
