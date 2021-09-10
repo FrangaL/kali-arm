@@ -35,6 +35,8 @@ mirror=${mirror:-"http://http.kali.org/kali"}
 kaligit="https://gitlab.com/kalilinux"
 # Github raw url
 githubraw="https://raw.githubusercontent.com"
+# dns server
+nameserver=${nameserver:-"8.8.8.8"}
 
 # Check EUID=0 you can run any binary as root.
 if [[ $EUID -ne 0 ]]; then
@@ -433,7 +435,7 @@ history -c
 EOF
 
 # Define DNS server after last running systemd-nspawn.
-echo "nameserver 8.8.8.8" > ${work_dir}/etc/resolv.conf
+echo "nameserver ${nameserver}" > ${work_dir}/etc/resolv.conf
 
 # Disable the use of http proxy in case it is enabled.
 if [ -n "$proxy_url" ]; then
