@@ -54,6 +54,8 @@ eatmydata apt-get -y install ${third_stage_pkgs}
 
 eatmydata apt-get install -y ${packages} || eatmydata apt-get install -y --fix-broken
 eatmydata apt-get install -y ${desktop_pkgs} ${extra} || eatmydata apt-get install -y --fix-broken
+# ntp doesn't always sync the date, but systemd's timesyncd does, so we remove ntp and reinstall it with this.
+eatmydata apt-get install -y systemd-timesyncd --autoremove
 
 eatmydata apt-get -y --purge autoremove
 
