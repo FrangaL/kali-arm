@@ -561,7 +561,7 @@ mount ${bootp} ${basedir}/root/boot
 
 # We do this down here to get rid of the build system's resolv.conf after running through the build.
 cat << EOF > kali-${architecture}/etc/resolv.conf
-nameserver 8.8.8.8
+nameserver ${nameserver}
 EOF
 
 # Because of the p4wnp1 script, we set the hostname down here, instead of using the machine name.
