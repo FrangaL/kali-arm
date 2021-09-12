@@ -294,6 +294,8 @@ mkdir -p /boot
 echo "dwc_otg.lpm_enable=0 console=serial0,115200 console=tty1 root=/dev/mmcblk0p2 rootfstype=$fstype elevator=deadline fsck.repair=yes rootwait" > /boot/cmdline.txt
 
 # Install P4wnP1 A.L.O.A.
+# p4wnP1 install script need sudo
+apt-get install --yes sudo
 cd /root/P4wnP1
 make installkali
 
