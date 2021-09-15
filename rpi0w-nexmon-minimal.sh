@@ -133,7 +133,7 @@ set_locale "$locale"
 # Clean system
 include clean_system
 # Define DNS server after last running systemd-nspawn.
-echo "nameserver 8.8.8.8" >"${work_dir}"/etc/resolv.conf
+echo "nameserver ${nameserver}" >"${work_dir}"/etc/resolv.conf
 # Disable the use of http proxy in case it is enabled.
 disable_proxy
 # Mirror & suite replacement

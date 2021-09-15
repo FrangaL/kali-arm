@@ -36,6 +36,8 @@ mirror=${mirror:-"http://http.kali.org/kali"}
 kaligit="https://gitlab.com/kalilinux"
 # Github raw url
 githubraw="https://raw.githubusercontent.com"
+# dns server
+nameserver=${nameserver:-"8.8.8.8"}
 
 # Check EUID=0 you can run any binary as root.
 if [[ $EUID -ne 0 ]]; then
@@ -186,7 +188,7 @@ iface eth0 inet dhcp
 EOF
 
 # DNS server
-echo "nameserver 8.8.8.8" > ${work_dir}/etc/resolv.conf
+echo "nameserver ${nameserver}" > ${work_dir}/etc/resolv.conf
 
 # Copy directory bsp into build dir.
 cp -rp bsp ${work_dir}
@@ -360,7 +362,7 @@ touch "${work_dir}"/etc/machine-id
 rm -f "${work_dir}"/var/lib/dbus/machine-id || true
 
 # Define DNS server after last running systemd-nspawn.
-echo "nameserver 8.8.8.8" > ${work_dir}/etc/resolv.conf
+echo "nameserver ${nameserver}" > ${work_dir}/etc/resolv.conf
 
 # Disable the use of http proxy in case it is enabled.
 if [ -n "$proxy_url" ]; then
@@ -559,7 +561,7 @@ mount ${bootp} ${basedir}/root/boot
 
 # We do this down here to get rid of the build system's resolv.conf after running through the build.
 cat << EOF > kali-${architecture}/etc/resolv.conf
-nameserver 8.8.8.8
+nameserver ${nameserver}
 EOF
 
 # Because of the p4wnp1 script, we set the hostname down here, instead of using the machine name.
