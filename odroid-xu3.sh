@@ -136,7 +136,7 @@ set_locale "$locale"
 # Clean system
 include clean_system
 # Define DNS server after last running systemd-nspawn.
-echo "nameserver 8.8.8.8" >"${work_dir}"/etc/resolv.conf
+echo "nameserver ${nameserver}" >"${work_dir}"/etc/resolv.conf
 # Disable the use of http proxy in case it is enabled.
 disable_proxy
 # Mirror & suite replacement
@@ -264,9 +264,7 @@ mkdir -p "${basedir}"/root/boot
 mount "${bootp}" "${basedir}"/root/boot
 
 # We do this down here to get rid of the build system's resolv.conf after running through the build.
-cat << EOF > ${work_dir}/etc/resolv.conf
-nameserver 8.8.8.8
-EOF
+echo "nameserver ${nameserver}" >"${work_dir}"/etc/resolv.conf
 
 # Create an fstab so that we don't mount / read-only.
 UUID=$(blkid -s UUID -o value ${rootp})
