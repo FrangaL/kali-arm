@@ -81,7 +81,7 @@ fi
 components="main,contrib,non-free"
 arm="fake-hwclock ntpdate u-boot-tools"
 tools="aircrack-ng crunch cewl dnsrecon dnsutils ethtool exploitdb hydra medusa metasploit-framework ncrack nmap passing-the-hash proxychains recon-ng sqlmap tcpdump theharvester tor tshark usbutils whois windows-binaries winexe wpscan"
-base="apt-transport-https apt-utils console-setup e2fsprogs firmware-linux firmware-realtek firmware-atheros ifupdown initramfs-tools iw kali-defaults man-db mlocate netcat-traditional net-tools parted psmisc rfkill screen snmpd snmp tftp tmux unrar usbutils vim wget zerofree"
+base="apt-transport-https apt-utils console-setup e2fsprogs firmware-linux firmware-realtek firmware-atheros ifupdown initramfs-tools iw kali-defaults man-db mlocate netcat-traditional net-tools parted psmisc rfkill screen snmpd snmp sudo tftp tmux unrar usbutils vim wget zerofree"
 services="apache2 atftpd openssh-server openvpn"
 # haveged: assure enough entropy data for hostapd on startup
 # avahi-daemon: allow mDNS resolution (apple bonjour) by remote hosts
