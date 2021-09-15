@@ -12,7 +12,7 @@ hw_model=${hw_model:-"rpi4"}
 # Architecture
 architecture=${architecture:-"arm64"}
 # Variant name for image and dir build
-variant=${variant:-"nexmon-${architecture}-lite"}
+variant=${variant:-"nexmon-minimal-${architecture}"}
 # Desktop manager (xfce, gnome, i3, kde, lxde, mate, e17 or none)
 desktop=${desktop:-"none"}
 
@@ -81,10 +81,6 @@ wget -qO /etc/apt/trusted.gpg.d/kali_pi-archive-keyring.gpg https://re4son-kerne
 eatmydata apt-get update
 eatmydata apt-get install -y kalipi-kernel kalipi-bootloader kalipi-re4son-firmware kalipi-kernel-headers firmware-raspberry kalipi-config kalipi-tft-config
 
-# Regenerated the shared-mime-info database on the first boot
-# since it fails to do so properly in a chroot.
-systemctl enable smi-hack
-
 # Copy script rpi-resizerootfs
 install -m755 /bsp/scripts/rpi-resizerootfs /usr/sbin/
 
@@ -107,10 +103,7 @@ cd /root
 apt download -o APT::Sandbox::User=root ca-certificates 2>/dev/null
 
 # Set a REGDOMAIN.  This needs to be done or wireless doesn't work correctly on the RPi 3B+
-sed -i -e 's/REGDOM.*/REGDOMAIN=00/g' /etc/default/crda
-
-# Enable login over serial
-echo "T0:23:respawn:/sbin/agetty -L ttyAMA0 115200 vt100" >> /etc/inittab
+sed -i -e 's/REGDOM.*/REGDOMAIN=00/g' /etc/default/crda || true
 
 # Try and make the console a bit nicer
 # Set the terminus font for a bit nicer display.
@@ -146,10 +139,10 @@ include clean_system
 echo "nameserver ${nameserver}" >"${work_dir}"/etc/resolv.conf
 # Disable the use of http proxy in case it is enabled.
 disable_proxy
-# Mirror & suite replacement
-restore_mirror
 # Reload sources.list
 #include sources.list
+# Mirror & suite replacement
+restore_mirror
 
 # systemd doesn't seem to be generating the fstab properly for some people, so let's create one.
 cat <<EOF >"${work_dir}"/etc/fstab
