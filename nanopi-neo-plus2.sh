@@ -1,6 +1,14 @@
-#!/bin/bash -e
-# This is the NanoPi NEO PLUS2 Kali ARM 64 bit build script - http://www.kali.org/get-kali
-# A trusted Kali Linux image created by Offensive Security - http://www.offensive-security.com
+#!/usr/bin/env bash
+#
+# Kali Linux ARM build-script for NanoPi NEO Plus2
+# https://gitlab.com/kalilinux/build-scripts/kali-arm
+#
+# This is a supported device - which you can find pre-generated images for
+# More information: https://www.kali.org/docs/arm/nanopi-neo-plus2/
+#
+
+# Stop on error
+set -e
 
 # shellcheck disable=SC2154
 # Load general functions

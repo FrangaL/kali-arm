@@ -1,7 +1,16 @@
-#!/bin/bash
+#!/usr/bin/env bash
+#
+# Kali Linux ARM build-script for CuBox-i4Pro - Freescale based NOT the original Marvell based
+# https://gitlab.com/kalilinux/build-scripts/kali-arm
+#
+# This is a community script - you will need to generate your own image to use
+# More information: https://www.kali.org/docs/arm/cubox-i4pro/
+#
+
+# Stop on error
 set -e
 
-# This is for the Cubox-i (Freescale based) NOT the Marvell based original.
+# This is for the Cubox-i
 
 # Uncomment to activate debug
 # debug=true

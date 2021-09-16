@@ -1,6 +1,14 @@
-#!/bin/bash -e
-# This is the Gateworks Ventana (Freescale based) Kali ARM 32 bit build script - http://www.kali.org/get-kali
-# A trusted Kali Linux image created by Offensive Security - http://www.offensive-security.com
+#!/usr/bin/env bash
+#
+# Kali Linux ARM build-script for Gateworks Ventana (32-bit) - Freescale based
+# https://gitlab.com/kalilinux/build-scripts/kali-arm
+#
+# This is a supported device - which you can find pre-generated images for
+# More information: https://www.kali.org/docs/arm/gateworks-ventana/
+#
+
+# Stop on error
+set -e
 
 # shellcheck disable=SC2154
 # Load general functions

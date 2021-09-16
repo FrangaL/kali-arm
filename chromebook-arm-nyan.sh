@@ -1,4 +1,13 @@
-#!/bin/bash
+#!/usr/bin/env bash
+#
+# Kali Linux ARM build-script for Chromebook (Acer - Nyan)
+# https://gitlab.com/kalilinux/build-scripts/kali-arm
+#
+# This is a community script - you will need to generate your own image to use
+# More information: https://www.kali.org/docs/arm/acer-tegra-chromebook-13/
+#
+
+# Stop on error
 set -e
 
 # Uncomment to activate debug

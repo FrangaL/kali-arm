@@ -1,6 +1,13 @@
-#!/bin/bash
-# This is the Raspberry Pi Kali 0-W Nexmon ARM build script - http://www.kali.org/downloads
-# A trusted Kali Linux image created by Offensive Security - http://www.offensive-security.com
+#!/usr/bin/env bash
+#
+# Kali Linux ARM build-script for Raspberry Pi Zero W (Pi-Tail)
+# https://gitlab.com/kalilinux/build-scripts/kali-arm
+#
+# This is a supported device - which you can find pre-generated images for
+# More information: https://www.kali.org/docs/arm/raspberry-pi-zero-w-pi-tail/
+#
+
+# Stop on error
 set -e
 
 # Uncomment to activate debug

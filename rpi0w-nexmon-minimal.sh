@@ -1,4 +1,15 @@
-#!/bin/bash -e
+#!/usr/bin/env bash
+#
+# Kali Linux ARM build-script for Raspberry Pi Zero W (32-bit) (Minimal)
+# https://gitlab.com/kalilinux/build-scripts/kali-arm
+#
+# This is a community script - you will need to generate your own image to use
+# More information: https://www.kali.org/docs/arm/raspberry-pi-zero-w/
+#
+
+# Stop on error
+set -e
+
 # This is the Raspberry Pi Zero W minimal Kali ARM 32 build script - http://www.kali.org/get-kali
 # A trusted Kali Linux image created by Offensive Security - http://www.offensive-security.com
 

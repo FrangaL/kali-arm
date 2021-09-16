@@ -1,6 +1,14 @@
-#!/bin/bash -e
-# This is the USBArmory MK2 Kali ARM 32 bit build script - http://www.kali.org/get-kali
-# A trusted Kali Linux image created by Offensive Security - http://www.offensive-security.com
+#!/usr/bin/env bash
+#
+# Kali Linux ARM build-script for USB Armory MKII (32-bit)
+# https://gitlab.com/kalilinux/build-scripts/kali-arm
+#
+# This is a community script - you will need to generate your own image to use
+# More information: https://www.kali.org/docs/arm/usb-armory-mkii/
+#
+
+# Stop on error
+set -e
 
 # shellcheck disable=SC2154
 # Load general functions

@@ -1,7 +1,14 @@
-#!/bin/bash
-set -e
+#!/usr/bin/env bash
+#
+# Kali Linux ARM build-script forCuBox - Original Marvell based NOT Freescale based
+# https://gitlab.com/kalilinux/build-scripts/kali-arm
+#
+# This is a community script - you will need to generate your own image to use
+# More information: https://www.kali.org/docs/arm/cubox/
+#
 
-# This is for the Original (Marvell based) NOT the Cubox-i (Freescale based)
+# Stop on error
+set -e
 
 # Uncomment to activate debug
 # debug=true

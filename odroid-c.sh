@@ -1,8 +1,14 @@
-#!/bin/bash
-set -e
+#!/usr/bin/env bash
+#
+# Kali Linux ARM build-script for ODROID-C0/C1/C1+
+# https://gitlab.com/kalilinux/build-scripts/kali-arm
+#
+# This is a community script - you will need to generate your own image to use
+# More information: https://www.kali.org/docs/arm/odroid-c/
+#
 
-# This is the HardKernel ODROID C Kali ARM build script - http://hardkernel.com/main/main.php
-# A trusted Kali Linux image created by Offensive Security - http://www.offensive-security.com
+# Stop on error
+set -e
 
 # Uncomment to activate debug
 # debug=true

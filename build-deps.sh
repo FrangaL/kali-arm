@@ -1,4 +1,11 @@
-#!/bin/bash -e
+#!/usr/bin/env bash
+#
+# Kali Linux ARM build-script
+# https://gitlab.com/kalilinux/build-scripts/kali-arm
+#
+
+# Stop on error
+set -e
 
 # Check permisions script.
 if [[ $EUID -ne 0 ]]; then

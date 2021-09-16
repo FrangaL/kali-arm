@@ -1,7 +1,16 @@
-#!/bin/bash
-set -e
-
+#!/usr/bin/env bash
+#
+# Kali Linux ARM build-script for Raspberry Pi Zero W (P4wnP1 A.L.O.A.)
+# https://gitlab.com/kalilinux/build-scripts/kali-arm
+#
+# This is a community script - you will need to generate your own image to use
+# More information: https://www.kali.org/docs/arm/raspberry-pi-zero-w/
+#
 # This script is purposely different from the others due to its heavily customized nature.
+#
+
+# Stop on error
+set -e
 
 # Uncomment to activate debug
 # debug=true

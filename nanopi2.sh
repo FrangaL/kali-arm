@@ -1,8 +1,14 @@
-#!/bin/bash
-set -e
+#!/usr/bin/env bash
+#
+# Kali Linux ARM build-script for NanoPi2
+# https://gitlab.com/kalilinux/build-scripts/kali-arm
+#
+# This is a community script - you will need to generate your own image to use
+# More information: https://www.kali.org/docs/arm/nanopi2/
+#
 
-# This is the FriendlyARM NanoPi2 Kali ARM build script - http://nanopi.io/
-# A trusted Kali Linux image created by Offensive Security - http://www.offensive-security.com
+# Stop on error
+set -e
 
 # Uncomment to activate debug
 # debug=true
