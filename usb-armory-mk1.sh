@@ -35,32 +35,32 @@ free_space="300"
 bootsize="128"
 # Select compression, xz or none
 compress="xz"
-# Choose filesystem format to format ( ext3 or ext4 )
+# Choose filesystem format to format (ext3 or ext4)
 fstype="ext3"
 # If you have your own preferred mirrors, set them here
 mirror=${mirror:-"http://http.kali.org/kali"}
-# Gitlab url Kali repository
+# GitLab URL Kali repository
 kaligit="https://gitlab.com/kalilinux"
-# Github raw url
+# GitHub raw URL
 githubraw="$githubraw"
 
 # Check EUID=0 you can run any binary as root
 if [[ $EUID -ne 0 ]]; then
-  echo "This script must be run as root or have super user permissions"
-  echo "Use: sudo $0 ${1:-2.0} ${2:-kali}"
+  echo "This script must be run as root or have super user permissions" >&2
+  echo "Use: sudo $0 ${1:-2.0} ${2:-kali}" >&2
   exit 1
 fi
 
 # Pass version number
 if [[ $# -eq 0 ]] ; then
-  echo "Please pass version number, e.g. $0 2.0, and (if you want) a hostname, default is kali"
+  echo "Please pass version number, e.g. $0 2.0, and (if you want) a hostname, default is kali" >&2
   exit 0
 fi
 
 # Check exist bsp directory
 if [ ! -e "bsp" ]; then
-  echo "Error: missing bsp directory structure"
-  echo "Please clone the full repository ${kaligit}/build-scripts/kali-arm"
+  echo "Error: missing bsp directory structure" >&2
+  echo "Please clone the full repository ${kaligit}/build-scripts/kali-arm" >&2
   exit 255
 fi
 
@@ -73,10 +73,10 @@ work_dir="${basedir}/kali-${architecture}"
 
 # Check directory build
 if [ -e "${basedir}" ]; then
-  echo "${basedir} directory exists, will not continue"
+  echo "${basedir} directory exists, will not continue" >&2
   exit 1
 elif [[ ${current_dir} =~ [[:space:]] ]]; then
-  echo "The directory "\"${current_dir}"\" contains whitespace. Not supported."
+  echo "The directory "\"${current_dir}"\" contains whitespace. Not supported." >&2
   exit 1
 else
   echo "The basedir thinks it is: ${basedir}"
@@ -571,9 +571,9 @@ dd if=u-boot.imx of=${loopdevice} bs=512 seek=2 conv=fsync
 
 losetup -d ${loopdevice}
 
-# Limite use cpu function
+# Limit CPU function
 limit_cpu (){
-  rand=$(tr -cd 'A-Za-z0-9' < /dev/urandom | head -c4 ; echo) # Randowm name group
+  rand=$(tr -cd 'A-Za-z0-9' < /dev/urandom | head -c4 ; echo) # Random name group
   cgcreate -g cpu:/cpulimit-${rand} # Name of group cpulimit
   cgset -r cpu.shares=800 cpulimit-${rand} # Max 1024
   cgset -r cpu.cfs_quota_us=80000 cpulimit-${rand} # Max 100000

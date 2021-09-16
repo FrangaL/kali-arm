@@ -227,9 +227,9 @@ umount ${rootp}
 kpartx -dv ${loopdevice}
 losetup -d ${loopdevice}
 
-# Limite use cpu function
+# Limit CPU function
 limit_cpu (){
-  rand=$(tr -cd 'A-Za-z0-9' < /dev/urandom | head -c4 ; echo) # Randowm name group
+  rand=$(tr -cd 'A-Za-z0-9' < /dev/urandom | head -c4 ; echo) # Random name group
   cgcreate -g cpu:/cpulimit-${rand} # Name of group cpulimit
   cgset -r cpu.shares=800 cpulimit-${rand} # Max 1024
   cgset -r cpu.cfs_quota_us=80000 cpulimit-${rand} # Max 100000

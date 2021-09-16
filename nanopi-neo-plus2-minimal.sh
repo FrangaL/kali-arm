@@ -234,7 +234,7 @@ cd ${current_dir}
 
 # Copy over the firmware for the ap6212 wifi
 # On the neo plus2 default install there are other firmware files installed for
-# p2p and apsta but I can't find them publicly posted to friendlyarm's github
+# p2p and apsta but I can't find them publicly posted to friendlyarm's GitHub
 # At some point, nexmon could work for the device, but the support would need to
 # be added to nexmon
 mkdir -p ${work_dir}/lib/firmware/ap6212/

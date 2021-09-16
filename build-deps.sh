@@ -9,13 +9,13 @@ set -e
 
 # Check permissions script
 if [[ $EUID -ne 0 ]]; then
-  echo "This script must be run as root"
+  echo "This script must be run as root" >&2
   exit 1
 fi
 
 # Check compatible systems
 if ! which dpkg > /dev/null; then
-   echo "Script only compatible with Debian-based systems"
+   echo "Script only compatible with Debian-based systems" >&2
    exit 1
 fi
 
