@@ -195,7 +195,7 @@ bootp="${loopdevice}p1"
 rootp="${loopdevice}p2"
 
 # Create file systems
-log "Formating partitions" green
+log "Formatting partitions" green
 if [[ "$fstype" == "ext4" ]]; then
   features="^64bit,^metadata_csum"
 elif [[ "$fstype" == "ext3" ]]; then

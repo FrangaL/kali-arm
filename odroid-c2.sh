@@ -186,7 +186,7 @@ loopdevice=$(losetup --show -fP "${current_dir}/${imagename}.img")
 rootp="${loopdevice}p1"
 
 # Create file systems
-log "Formating partitions" green
+log "Formatting partitions" green
 if [[ "$fstype" == "ext4" ]]; then
   features="^64bit,^metadata_csum"
 elif [[ "$fstype" == "ext3" ]]; then

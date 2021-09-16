@@ -228,7 +228,7 @@ loopdevice=$(losetup --show -fP "${current_dir}/${imagename}.img")
 rootp="${loopdevice}p1"
 
 # Create file systems
-log "Formating partitions" green
+log "Formatting partitions" green
 mkfs.ext2 ${rootp}
 
 # Create the dirs for the partitions and mount them

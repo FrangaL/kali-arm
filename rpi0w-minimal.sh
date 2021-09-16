@@ -171,7 +171,7 @@ bootp="${loopdevice}p1"
 rootp="${loopdevice}p2"
 
 # Create file systems
-log "Formating partitions" green
+log "Formatting partitions" green
 mkfs.vfat -n BOOT -F 32 "${bootp}"
 if [[ "$fstype" == "ext4" ]]; then
   features="^64bit,^metadata_csum"
