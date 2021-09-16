@@ -21,7 +21,7 @@ function usage() {
   echo "# Desktop manager (xfce, gnome, i3, kde, lxde, mate, e17 or none)"
   echo "$0 --desktop kde"
   echo ""
-  echo "# Enable debug & log file."
+  echo "# Enable debug & log file"
   echo "$0 --debug"
 }
 
@@ -203,7 +203,7 @@ function print_config() {
   echo -e "\n"
   log "Compilation info" bold
   if [[ "$hw_model" == *rpi* ]]; then
-    name_model="Raspberry PI 2/3/4/400"
+    name_model="Raspberry Pi 2/3/4/400"
     log "Hardware model: $(tput sgr0) $name_model" cyan
   else
     log "Hardware model: $(tput sgr0) $hw_model" cyan
