@@ -16,7 +16,7 @@ set -e
 source ./common.d/functions.sh
 
 # Hardware model
-hw_model=${hw_model:-"rpi"}
+hw_model=${hw_model:-"rpi1"}
 # Architecture
 architecture=${architecture:-"armel"}
 # Variant name for image and dir build

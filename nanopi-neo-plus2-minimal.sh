@@ -16,11 +16,11 @@ set -e
 source ./common.d/functions.sh
 
 # Hardware model
-hw_model=${hw_model:-"nanopi-neo-plus2-minimal"}
+hw_model=${hw_model:-"nanopi-neo-plus2"}
 # Architecture
 architecture=${architecture:-"arm64"}
 # Variant name for image and dir build
-variant=${variant:-"${architecture}"}
+variant=${variant:-"minimal-${architecture}"}
 # Desktop manager (xfce, gnome, i3, kde, lxde, mate, e17 or none)
 desktop=${desktop:-"none"}
 

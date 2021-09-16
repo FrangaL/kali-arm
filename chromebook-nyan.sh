@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 #
-# Kali Linux ARM build-script for USB Armory MKI
+# Kali Linux ARM build-script for Chromebook (Acer - Nyan)
 # https://gitlab.com/kalilinux/build-scripts/kali-arm
 #
 # This is a community script - you will need to generate your own image to use
-# More information: https://www.kali.org/docs/arm/usb-armory-mki/
+# More information: https://www.kali.org/docs/arm/acer-tegra-chromebook-13/
 #
 
 # Stop on error
@@ -25,7 +25,7 @@ machine=$(tr -cd 'A-Za-z0-9' < /dev/urandom | head -c16 ; echo)
 # Custom hostname variable
 hostname=${2:-kali}
 # Custom image file name variable - MUST NOT include .img at the end
-imagename=${3:-kali-linux-$1-usbarmory}
+imagename=${3:-kali-linux-$1-chromebook-nyan}
 # Suite to use, valid options are:
 # kali-rolling, kali-dev, kali-bleeding-edge, kali-dev-only, kali-experimental, kali-last-snapshot
 suite=${suite:-"kali-rolling"}
@@ -42,7 +42,7 @@ mirror=${mirror:-"http://http.kali.org/kali"}
 # GitLab URL Kali repository
 kaligit="https://gitlab.com/kalilinux"
 # GitHub raw URL
-githubraw="$githubraw"
+githubraw="https://raw.githubusercontent.com"
 
 # Check EUID=0 you can run any binary as root
 if [[ $EUID -ne 0 ]]; then
@@ -67,7 +67,7 @@ fi
 # Current directory
 current_dir="$(pwd)"
 # Base directory
-basedir=${current_dir}/usbarmory-"$1"
+basedir=${current_dir}/nyan-"$1"
 # Working directory
 work_dir="${basedir}/kali-${architecture}"
 
@@ -86,12 +86,14 @@ fi
 components="main,contrib,non-free"
 arm="kali-linux-arm ntpdate"
 base="apt-transport-https apt-utils bash-completion console-setup dialog e2fsprogs ifupdown initramfs-tools inxi iw man-db mlocate netcat-traditional net-tools parted pciutils psmisc rfkill screen tmux unrar usbutils vim wget whiptail zerofree"
-#desktop="kali-desktop-xfce kali-root-login xserver-xorg-video-fbdev xfonts-terminus xinput"
-tools="aircrack-ng cewl crunch dnsrecon dnsutils ethtool exploitdb hydra john libnfc-bin medusa metasploit-framework mfoc ncrack nmap passing-the-hash proxychains recon-ng sqlmap tcpdump theharvester tor tshark usbutils whois windows-binaries winexe wpscan"
-services="apache2 atftpd haveged isc-dhcp-server openssh-server openvpn tightvncserver"
-extras="alsa-utils bc bison bluez bluez-firmware cryptsetup kali-linux-core libnss-systemd libssl-dev lvm2 wpasupplicant"
+desktop="kali-desktop-xfce kali-root-login xserver-xorg-video-fbdev xserver-xorg-input-libinput xserver-xorg-input-synaptics xfonts-terminus xinput"
+tools="kali-linux-default"
+services="apache2 atftpd"
+extras="alsa-utils bc bison bluez bluez-firmware kali-linux-core libnss-systemd libssl-dev triggerhappy"
 
 packages="${arm} ${base} ${services}"
+
+kernel_release="R71-11151.B-# This is a community script - you will need to generate your own image to useos-3.10"
 
 # Automatic configuration to use an http proxy, such as apt-cacher-ng
 # You can turn off automatic settings by uncommenting apt_cacher=off
@@ -184,10 +186,6 @@ EOF
 cat << EOF > ${work_dir}/etc/network/interfaces
 auto lo
 iface lo inet loopback
-
-auto eth0
-allow-hotplug eth0
-iface eth0 inet dhcp
 EOF
 
 # DNS server
@@ -204,13 +202,13 @@ if [ -n "$proxy_url" ]; then
 fi
 
 # Third stage
-cat << EOF >  ${work_dir}/third-stage
+cat << EOF > ${work_dir}/third-stage
 #!/bin/bash -e
 export DEBIAN_FRONTEND=noninteractive
 
 eatmydata apt-get update
 
-eatmydata apt-get -y install binutils ca-certificates console-common git initramfs-tools less locales nano u-boot-tools
+eatmydata apt-get -y install binutils ca-certificates console-common cryptsetup-bin git initramfs-tools less locales nano u-boot-tools
 
 # Create kali user with kali password... but first, we need to manually make some groups because they don't yet exist..
 # This mirrors what we have on a pre-installed VM, until the script works properly to allow end users to set up their own... user
@@ -234,6 +232,7 @@ eatmydata apt-get install -y \$aptops ${packages} || eatmydata apt-get --yes --f
 eatmydata apt-get install -y \$aptops ${packages} || eatmydata apt-get --yes --fix-broken install
 eatmydata apt-get install -y \$aptops ${desktop} ${extras} ${tools} || eatmydata apt-get --yes --fix-broken install
 eatmydata apt-get install -y \$aptops ${desktop} ${extras} ${tools} || eatmydata apt-get --yes --fix-broken install
+eatmydata apt-get install -y \$aptops --autoremove systemd-timesyncd || eatmydata apt-get --yes --fix-broken install
 eatmydata apt-get dist-upgrade -y \$aptops
 
 eatmydata apt-get -y --allow-change-held-packages --purge autoremove
@@ -243,7 +242,7 @@ echo 'console-common console-data/keymap/policy select Select keymap from full l
 echo 'console-common console-data/keymap/full select en-latin1-nodeadkeys' | debconf-set-selections
 
 # Copy all services
-install -m644 /bsp/services/all/*.service /etc/systemd/system/
+cp -p /bsp/services/all/*.service /etc/systemd/system/
 
 # Regenerated the shared-mime-info database on the first boot
 # since it fails to do so properly in a chroot
@@ -253,9 +252,6 @@ systemctl enable smi-hack
 systemctl enable regenerate_ssh_host_keys
 # Enable sshd
 systemctl enable ssh
-
-# Enable dhcp server
-update-rc.d isc-dhcp-server enable
 
 # Allow users to use NM over ssh
 install -m644 /bsp/polkit/10-NetworkManager.pkla /var/lib/polkit-1/localauthority/50-local.d
@@ -268,6 +264,9 @@ cp /etc/skel/.bashrc /root/.bashrc
 
 # Set a REGDOMAIN.  This needs to be done or wireless doesn't work correctly on the RPi 3B+
 sed -i -e 's/REGDOM.*/REGDOMAIN=00/g' /etc/default/crda
+
+# Enable login over serial
+echo "T0:23:respawn:/sbin/agetty -L ttyAMA0 115200 vt100" >> /etc/inittab
 
 # Try and make the console a bit nicer
 # Set the terminus font for a bit nicer display
@@ -325,188 +324,185 @@ deb ${mirror} ${suite} ${components//,/ }
 #deb-src ${mirror} ${suite} ${components//,/ }
 EOF
 
-echo "Setting up modules.conf"
-# rm the symlink if it exists, and the original files if they exist
-rm ${work_dir}/etc/modules
-rm ${work_dir}/etc/modules-load.d/modules.conf
-cat << EOF > ${work_dir}/etc/modules-load.d/modules.conf
-ledtrig_heartbeat
-ci_hdrc_imx
-g_ether
-#g_mass_storage
-#g_multi
-EOF
+# Pull in the gcc 5.3 cross compiler to build the kernel
+# Debian uses a newer compiler and the # This is a community script - you will need to generate your own image to usebook kernel doesn't support
+# that
+cd "${basedir}"
+git clone --depth 1 https://gitlab.com/kalilinux/packages/gcc-arm-linux-gnueabihf-4-7.git gcc-arm-linux-gnueabihf-4.7
 
-echo "Setting up modprobe.d"
-cat << EOF > ${work_dir}/etc/modprobe.d/usbarmory.conf
-options g_ether use_eem=0 dev_addr=1a:55:89:a2:69:41 host_addr=1a:55:89:a2:69:42
-# To use either of the following, you should create the file /disk.img via dd
-# "dd if=/dev/zero of=/disk.img bs=1M count=2048" would create a 2GB disk.img file
-#options g_mass_storage file=disk.img
-#options g_multi use_eem=0 dev_addr=1a:55:89:a2:69:41 host_addr=1a:55:89:a2:69:42 file=disk.img
-EOF
-
-cat << EOF > ${work_dir}/etc/network/interfaces
-auto lo
-iface lo inet loopback
-
-allow-hotplug usb0
-iface usb0 inet static
-address 10.0.0.1
-netmask 255.255.255.0
-gateway 10.0.0.2
-EOF
-
-# Debian reads the config from inside /etc/dhcp
-cat << EOF > ${work_dir}/etc/dhcp/dhcpd.conf
-#
-# Sample configuration file for ISC dhcpd for Debian
-#
-# The ddns-updates-style parameter controls whether or not the server will
-# attempt to do a DNS update when a lease is confirmed. We default to the
-# behavior of the version 2 packages ('none', since DHCP v2 didn't
-# have support for DDNS.)
-ddns-update-style none;
-
-# option definitions common to all supported networks..
-#option domain-name "example.org";
-#option domain-name-servers ns1.example.org, ns2.example.org;
-
-default-lease-time 600;
-max-lease-time 7200;
-
-# If this DHCP server is the official DHCP server for the local
-# network, the authoritative directive should be uncommented
-#authoritative;
-
-# Use this to send dhcp log messages to a different log file (you also
-# have to hack syslog.conf to complete the redirection)
-log-facility local7;
-
-# A slightly different configuration for an internal subnet
-subnet 10.0.0.0 netmask 255.255.255.0 {
-  range 10.0.0.2 10.0.0.2;
-  default-lease-time 600;
-  max-lease-time 7200;
-}
-
-
-# No service will be given on this subnet, but declaring it helps the
-# DHCP server to understand the network topology
-
-#subnet 10.152.187.0 netmask 255.255.255.0 {
-#}
-
-# This is a very basic subnet declaration
-
-#subnet 10.254.239.0 netmask 255.255.255.224 {
-#  range 10.254.239.10 10.254.239.20;
-#  option routers rtr-239-0-1.example.org, rtr-239-0-2.example.org;
-#}
-
-# This declaration allows BOOTP clients to get dynamic addresses,
-# which we don't really recommend
-
-#subnet 10.254.239.32 netmask 255.255.255.224 {
-#  range dynamic-bootp 10.254.239.40 10.254.239.60;
-#  option broadcast-address 10.254.239.31;
-#  option routers rtr-239-32-1.example.org;
-#}
-
-# A slightly different configuration for an internal subnet
-#subnet 10.5.5.0 netmask 255.255.255.224 {
-#  range 10.5.5.26 10.5.5.30;
-#  option domain-name-servers ns1.internal.example.org;
-#  option domain-name "internal.example.org";
-#  option routers 10.5.5.1;
-#  option broadcast-address 10.5.5.31;
-#  default-lease-time 600;
-#  max-lease-time 7200;
-#}
-
-# Hosts which require special configuration options can be listed in
-# host statements.   If no address is specified, the address will be
-# allocated dynamically (if possible), but the host-specific information
-# will still come from the host declaration
-
-#host passacaglia {
-#  hardware ethernet 0:0:c0:5d:bd:95;
-#  filename "vmunix.passacaglia";
-#  server-name "toccata.fugue.com";
-#}
-
-# Fixed IP addresses can also be specified for hosts.   These addresses
-# should not also be listed as being available for dynamic assignment
-# Hosts for which fixed IP addresses have been specified can boot using
-# BOOTP or DHCP.   Hosts for which no fixed address is specified can only
-# be booted with DHCP, unless there is an address range on the subnet
-# to which a BOOTP client is connected which has the dynamic-bootp flag
-# set
-#host fantasia {
-#  hardware ethernet 08:00:07:26:c0:a5;
-#  fixed-address fantasia.fugue.com;
-#}
-
-# You can declare a class of clients and then do address allocation
-# based on that.   The example below shows a case where all clients
-# in a certain class get addresses on the 10.17.224/24 subnet, and all
-# other clients get addresses on the 10.0.29/24 subnet
-
-#class "foo" {
-#  match if substring (option vendor-class-identifier, 0, 4) = "SUNW";
-#}
-
-#shared-network 224-29 {
-#  subnet 10.17.224.0 netmask 255.255.255.0 {
-#    option routers rtr-224.example.org;
-#  }
-#  subnet 10.0.29.0 netmask 255.255.255.0 {
-#    option routers rtr-29.example.org;
-#  }
-#  pool {
-#    allow members of "foo";
-#    range 10.17.224.10 10.17.224.250;
-#  }
-#  pool {
-#    deny members of "foo";
-#    range 10.0.29.10 10.0.29.230;
-#  }
-#}
-EOF
-
-# Only listen on usb0
-sed -i 's/INTERFACES.*/INTERFACES="usb0"/g' ${work_dir}/etc/default/isc-dhcp-server
-
-# Kernel section. If you want to use a custom kernel, or configuration, replace
+# Kernel section.  If you want to use a custom kernel, or configuration, replace
 # them in this section
-git clone -b linux-5.4.y --depth 1 git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git ${work_dir}/usr/src/kernel
+cd "${basedir}"
+git clone --depth 1 https://chromium.googlesource.com/chromiumos/third_party/kernel -b release-${kernel_release} ${work_dir}/usr/src/kernel
 cd ${work_dir}/usr/src/kernel
+mkdir -p ${work_dir}/usr/src/kernel/firmware/nvidia/tegra124/
+cp ${work_dir}/lib/firmware/nvidia/tegra124/xusb.bin firmware/nvidia/tegra124/
+cp ${current_dir}/kernel-configs/# This is a community script - you will need to generate your own image to usebook-3.10.config .config
+cp ${current_dir}/kernel-configs/# This is a community script - you will need to generate your own image to usebook-3.10.config ${work_dir}/usr/src/nyan.config
 git rev-parse HEAD > ${work_dir}/usr/src/kernel-at-commit
-touch .scmversion
 export ARCH=arm
-export CROSS_COMPILE=arm-linux-gnueabihf-
-patch -p1 --no-backup-if-mismatch < ${current_dir}/patches/kali-wifi-injection-5.4.patch
-patch -p1 --no-backup-if-mismatch < ${current_dir}/patches/0001-wireless-carl9170-Enable-sniffer-mode-promisc-flag-t.patch
-wget $githubraw/inversepath/usbarmory/master/software/kernel_conf/mark-one/imx53-usbarmory-host.dts -O arch/arm/boot/dts/imx53-usbarmory-host.dts
-wget $githubraw/inversepath/usbarmory/master/software/kernel_conf/mark-one/imx53-usbarmory-gpio.dts -O arch/arm/boot/dts/imx53-usbarmory-gpio.dts
-wget $githubraw/inversepath/usbarmory/master/software/kernel_conf/mark-one/imx53-usbarmory-spi.dts -O arch/arm/boot/dts/imx53-usbarmory-spi.dts
-wget $githubraw/inversepath/usbarmory/master/software/kernel_conf/mark-one/imx53-usbarmory-i2c.dts -O arch/arm/boot/dts/imx53-usbarmory-i2c.dts
-wget $githubraw/inversepath/usbarmory/master/software/kernel_conf/mark-one/imx53-usbarmory-scc2.dts -O arch/arm/boot/dts/imx53-usbarmory-scc2.dts
-cp ${current_dir}/kernel-configs/usbarmory-5.4.config ${work_dir}/usr/src/kernel/.config
-cp ${current_dir}/kernel-configs/usbarmory-5.4.config ${work_dir}/usr/src/usbarmory-5.4.config
-make LOADADDR=0x70008000 -j $(grep -c processor /proc/cpuinfo) uImage modules imx53-usbarmory-gpio.dtb imx53-usbarmory-i2c.dtb imx53-usbarmory-spi.dtb imx53-usbarmory.dtb imx53-usbarmory-host.dtb imx53-usbarmory-scc2.dtb
-make modules_install INSTALL_MOD_PATH=${work_dir}
-cp arch/arm/boot/zImage ${work_dir}/boot/
-cp arch/arm/boot/dts/imx53-usbarmory*.dtb ${work_dir}/boot/
-make mrproper
-# Since these aren't integrated into the kernel yet, mrproper removes them
-cp ${current_dir}/kernel-configs/usbarmory-5.4.config ${work_dir}/usr/src/kernel/.config
-wget $githubraw/inversepath/usbarmory/master/software/kernel_conf/mark-one/imx53-usbarmory-host.dts -O arch/arm/boot/dts/imx53-usbarmory-host.dts
-wget $githubraw/inversepath/usbarmory/master/software/kernel_conf/mark-one/imx53-usbarmory-gpio.dts -O arch/arm/boot/dts/imx53-usbarmory-gpio.dts
-wget $githubraw/inversepath/usbarmory/master/software/kernel_conf/mark-one/imx53-usbarmory-spi.dts -O arch/arm/boot/dts/imx53-usbarmory-spi.dts
-wget $githubraw/inversepath/usbarmory/master/software/kernel_conf/mark-one/imx53-usbarmory-i2c.dts -O arch/arm/boot/dts/imx53-usbarmory-i2c.dts
-wget $githubraw/inversepath/usbarmory/master/software/kernel_conf/mark-one/imx53-usbarmory-scc2.dts -O arch/arm/boot/dts/imx53-usbarmory-scc2.dts
+# Edit the CROSS_COMPILE variable as needed
+export CROSS_COMPILE="${basedir}"/gcc-arm-linux-gnueabihf-4.7/bin/arm-linux-gnueabihf-
+patch -p1 --no-backup-if-mismatch < ${current_dir}/patches/mac80211-3.8.patch
+patch -p1 --no-backup-if-mismatch < ${work_dir}/patches/0001-mwifiex-do-not-create-AP-and-P2P-interfaces-upon-dri-3.8.patch
+patch -p1 --no-backup-if-mismatch < ${work_dir}/patches/0001-Comment-out-a-pr_debug-print.patch
+make WIFIVERSION="-3.8" oldconfig || die "Kernel config options added"
+make WIFIVERSION="-3.8" -j $(grep -c processor /proc/cpuinfo)
+make WIFIVERSION="-3.8" dtbs
+make WIFIVERSION="-3.8" modules_install INSTALL_MOD_PATH=${work_dir}
+cat << __EOF__ > ${work_dir}/usr/src/kernel/arch/arm/boot/kernel-nyan.its
+/dts-v1/;
 
+/ {
+    description = "# This is a community script - you will need to generate your own image to use OS kernel image with one or more FDT blobs";
+    #address-cells = <1>;
+    images {
+        kernel@1{
+   description = "kernel";
+            data = /incbin/("zImage");
+            type = "kernel_noload";
+            arch = "arm";
+            os = "linux";
+            compression = "none";
+            load = <0>;
+            entry = <0>;
+        };
+        fdt@1{
+            description = "tegra124-nyan-big-rev0_2.dtb";
+            data = /incbin/("dts/tegra124-nyan-big-rev0_2.dtb");
+            type = "flat_dt";
+            arch = "arm";
+            compression = "none";
+            hash@1{
+                algo = "sha1";
+            };
+        };
+        fdt@2{
+            description = "tegra124-nyan-big-rev3_7.dtb";
+            data = /incbin/("dts/tegra124-nyan-big-rev3_7.dtb");
+            type = "flat_dt";
+            arch = "arm";
+            compression = "none";
+            hash@1{
+                algo = "sha1";
+            };
+        };
+        fdt@3{
+            description = "tegra124-nyan-big-rev8_9.dtb";
+            data = /incbin/("dts/tegra124-nyan-big-rev8_9.dtb");
+            type = "flat_dt";
+            arch = "arm";
+            compression = "none";
+            hash@1{
+                algo = "sha1";
+            };
+        };
+        fdt@4{
+            description = "tegra124-nyan-blaze.dtb";
+            data = /incbin/("dts/tegra124-nyan-blaze.dtb");
+            type = "flat_dt";
+            arch = "arm";
+            compression = "none";
+            hash@1{
+                algo = "sha1";
+            };
+        };
+        fdt@5{
+            description = "tegra124-nyan-rev0.dtb";
+            data = /incbin/("dts/tegra124-nyan-rev0.dtb");
+            type = "flat_dt";
+            arch = "arm";
+            compression = "none";
+            hash@1{
+                algo = "sha1";
+            };
+        };
+        fdt@6{
+            description = "tegra124-nyan-rev1.dtb";
+            data = /incbin/("dts/tegra124-nyan-rev1.dtb");
+            type = "flat_dt";
+            arch = "arm";
+            compression = "none";
+            hash@1{
+                algo = "sha1";
+            };
+        };
+        fdt@7{
+            description = "tegra124-nyan-kitty-rev0_3.dtb";
+            data = /incbin/("dts/tegra124-nyan-kitty-rev0_3.dtb");
+            type = "flat_dt";
+            arch = "arm";
+            compression = "none";
+            hash@1{
+                algo = "sha1";
+            };
+        };
+        fdt@8{
+            description = "tegra124-nyan-kitty-rev8.dtb";
+            data = /incbin/("dts/tegra124-nyan-kitty-rev8.dtb");
+            type = "flat_dt";
+            arch = "arm";
+            compression = "none";
+            hash@1{
+                algo = "sha1";
+            };
+        };
+    };
+    configurations {
+        default = "conf@1";
+        conf@1{
+            kernel = "kernel@1";
+            fdt = "fdt@1";
+        };
+        conf@2{
+            kernel = "kernel@1";
+            fdt = "fdt@2";
+        };
+        conf@3{
+            kernel = "kernel@1";
+            fdt = "fdt@3";
+        };
+        conf@4{
+            kernel = "kernel@1";
+            fdt = "fdt@4";
+        };
+        conf@5{
+            kernel = "kernel@1";
+            fdt = "fdt@5";
+        };
+        conf@6{
+            kernel = "kernel@1";
+            fdt = "fdt@6";
+        };
+        conf@7{
+            kernel = "kernel@1";
+            fdt = "fdt@7";
+        };
+        conf@8{
+            kernel = "kernel@1";
+            fdt = "fdt@8";
+        };
+    };
+};
+__EOF__
+cd ${work_dir}/usr/src/kernel/arch/arm/boot
+mkimage -f kernel-nyan.its nyan-big-kernel
+
+# BEHOLD THE POWER OF PARTUUID/PARTNROFF
+echo "noinitrd console=tty1 quiet root=PARTUUID=%U/PARTNROFF=1 rootwait rw lsm.module_locking=0 net.ifnames=0 rootfstype=$fstype" > cmdline
+
+# Pulled from # This is a community script - you will need to generate your own image to useOS, this is exactly what they do because there's no
+# # bootloader in the kernel partition on ARM
+dd if=/dev/zero of=bootloader.bin bs=512 count=1
+
+vbutil_kernel --arch arm --pack "${basedir}"/kernel.bin --keyblock /usr/share/vboot/devkeys/kernel.keyblock --signprivate /usr/share/vboot/devkeys/kernel_data_key.vbprivk --version 1 --config cmdline --bootloader bootloader.bin --vmlinuz nyan-big-kernel
+
+cd ${work_dir}/usr/src/kernel
+# Clean up our build of the kernel, then copy the config and run make
+# modules_prepare so that users can more easily build kernel modules..
+make WIFIVERSION="-3.8"  mrproper
+cp ../nyan.config .config
+cd "${basedir}"
 
 # Fix up the symlink for building external modules
 # kernver is used so we don't need to keep track of what the current compiled
@@ -517,7 +513,58 @@ rm build
 rm source
 ln -s /usr/src/kernel build
 ln -s /usr/src/kernel source
-cd ${current_dir}
+cd "${basedir}"
+
+# Lid switch
+cat << EOF > ${work_dir}/etc/udev/rules.d/99-tegra-lid-switch.rules
+ACTION=="remove", GOTO="tegra_lid_switch_end"
+SUBSYSTEM=="input", KERNEL=="event*", SUBSYSTEMS=="platform", KERNELS=="gpio-keys.4", TAG+="power-switch"
+LABEL="tegra_lid_switch_end"
+EOF
+
+# Bit of a hack, this is so the eMMC doesn't show up on the desktop
+cat << EOF > ${work_dir}/etc/udev/rules.d/99-hide-emmc-partitions.rules
+KERNEL=="mmcblk0*", ENV{UDISKS_IGNORE}="1"
+EOF
+
+# Disable uap0 and p2p0 interfaces in NetworkManager
+mkdir -p ${work_dir}/etc/NetworkManager/
+printf '\n[keyfile]\nunmanaged-devices=interface-name:p2p0\n' >> ${work_dir}/etc/NetworkManager/NetworkManager.conf
+
+#nvidia device nodes
+cat << EOF > ${work_dir}/lib/udev/rules.d/51-nvrm.rules
+KERNEL=="knvmap", GROUP="video", MODE="0660"
+KERNEL=="nvhdcp1", GROUP="video", MODE="0660"
+KERNEL=="nvhost-as-gpu", GROUP="video", MODE="0660"
+KERNEL=="nvhost-ctrl", GROUP="video", MODE="0660"
+KERNEL=="nvhost-ctrl-gpu", GROUP="video", MODE="0660"
+KERNEL=="nvhost-dbg-gpu", GROUP="video", MODE="0660"
+KERNEL=="nvhost-gpu", GROUP="video", MODE="0660"
+KERNEL=="nvhost-msenc", GROUP="video", MODE="0660"
+KERNEL=="nvhost-prof-gpu", GROUP="video", MODE="0660"
+KERNEL=="nvhost-tsec", GROUP="video", MODE="0660"
+KERNEL=="nvhost-vic", GROUP="video", MODE="0660"
+KERNEL=="nvmap", GROUP="video", MODE="0660"
+KERNEL=="tegra_dc_0", GROUP="video", MODE="0660"
+KERNEL=="tegra_dc_1", GROUP="video", MODE="0660"
+KERNEL=="tegra_dc_ctrl", GROUP="video", MODE="0660"
+EOF
+
+# Touchpad configuration
+mkdir -p ${work_dir}/etc/X11/xorg.conf.d
+cp ${current_dir}/bsp/xorg/10-synaptics-# This is a community script - you will need to generate your own image to usebook.conf ${work_dir}/etc/X11/xorg.conf.d/
+
+# lp0 resume firmware..
+# Check https://chromium.googlesource.com/chromiumos/overlays/chromiumos-overlay/+/master/sys-kernel/tegra_lp0_resume/
+# to find the lastest commit to use (note: CROS_WORKON_COMMIT )
+cd "${basedir}"
+git clone https://chromium.googlesource.com/chromiumos/third_party/coreboot
+cd "${basedir}"/coreboot
+git checkout fb840ee4195f9c365375e8914e243ce2f5e4f7bf
+make -C src/soc/nvidia/tegra124/lp0 GCC_PREFIX=arm-linux-gnueabihf-
+mkdir -p ${work_dir}/lib/firmware/tegra12x/
+cp src/soc/nvidia/tegra124/lp0/tegra_lp0_resume.fw ${work_dir}/lib/firmware/tegra12x/
+cd "${basedir}"
 
 # Calculate the space to create the image
 root_size=$(du -s -B1 ${work_dir} --exclude=${work_dir}/boot | cut -f1)
@@ -527,20 +574,27 @@ raw_size=$(($((${free_space}*1024))+${root_extra}+$((${bootsize}*1024))+4096))
 # Create the disk and partition it
 echo "Creating image file ${imagename}.img"
 fallocate -l $(echo ${raw_size}Ki | numfmt --from=iec-i --to=si) ${current_dir}/${imagename}.img
-parted -s ${current_dir}/${imagename}.img mklabel msdos
-parted -s -a minimal ${current_dir}/${imagename}.img mkpart primary ext2 5MiB 100%
+parted -s ${current_dir}/${imagename}.img mklabel gpt
+cgpt create -z ${current_dir}/${imagename}.img
+cgpt create ${current_dir}/${imagename}.img
 
-# Set the partition variables
+cgpt add -i 1 -t kernel -b 8192 -s 32768 -l kernel -S 1 -T 5 -P 10 ${current_dir}/${imagename}.img
+cgpt add -i 2 -t data -b 40960 -s `expr $(cgpt show ${current_dir}/${imagename}.img | grep 'Sec GPT table' | awk '{ print \$1 }')  - 40960` -l Root ${current_dir}/${imagename}.img
+
 loopdevice=`losetup -f --show ${current_dir}/${imagename}.img`
 device=`kpartx -va ${loopdevice} | sed 's/.*\(loop[0-9]\+\)p.*/\1/g' | head -1`
 sleep 5
 device="/dev/mapper/${device}"
-rootp=${device}p1
+bootp=${device}p1
+rootp=${device}p2
 
-# Create file systems
-mkfs.ext2 ${rootp}
+if [[ $fstype == ext4 ]]; then
+  features="-O ^64bit,^metadata_csum"
+elif [[ $fstype == ext3 ]]; then
+  features="-O ^64bit"
+fi
+mkfs $features -t $fstype -L ROOTFS ${rootp}
 
-# Create the dirs for the partitions and mount them
 mkdir -p "${basedir}"/root
 mount ${rootp} "${basedir}"/root
 
@@ -559,17 +613,14 @@ rsync -HPavz -q ${work_dir}/ ${basedir}/root/
 # Unmount partitions
 sync
 umount ${rootp}
+
+dd if="${basedir}"/kernel.bin of=${bootp}
+
+cgpt repair ${loopdevice}
+
 kpartx -dv ${loopdevice}
-
-cd "${basedir}"
-wget ftp://ftp.denx.de/pub/u-boot/u-boot-2018.05.tar.bz2
-tar xvf u-boot-2018.05.tar.bz2 && cd u-boot-2018.05
-make distclean
-make usbarmory_config
-make ARCH=arm
-dd if=u-boot.imx of=${loopdevice} bs=512 seek=2 conv=fsync
-
 losetup -d ${loopdevice}
+
 
 # Limit CPU function
 limit_cpu (){
@@ -606,5 +657,5 @@ fi
 
 # Clean up all the temporary build stuff and remove the directories
 # Comment this out to keep things around if you want to see what may have gone wrong
-echo "Removing build directory"
+echo "Removing temporary build files"
 rm -rf "${basedir}"

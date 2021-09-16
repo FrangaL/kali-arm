@@ -16,7 +16,7 @@ set -e
 source ./common.d/functions.sh
 
 # Hardware model
-hw_model=${hw_model:-"nanopi3"}
+hw_model=${hw_model:-"nanopc-t"}
 # Architecture
 architecture=${architecture:-"arm64"}
 # Variant name for image and dir build

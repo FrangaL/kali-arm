@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 #
-# Kali Linux ARM build-script for Raspberry Pi Zero W (32-bit) (Minimal)
+# Kali Linux ARM build-script for Raspberry Pi Zero W (32-bit)
 # https://gitlab.com/kalilinux/build-scripts/kali-arm
 #
-# This is a community script - you will need to generate your own image to use
+# This is a supported device - which you can find pre-generated images for
 # More information: https://www.kali.org/docs/arm/raspberry-pi-zero-w/
 #
 
@@ -20,9 +20,9 @@ hw_model=${hw_model:-"rpi0w"}
 # Architecture
 architecture=${architecture:-"armel"}
 # Variant name for image and dir build
-variant=${variant:-"nexmon-${architecture}-lite"}
+variant=${variant:-"${architecture}"}
 # Desktop manager (xfce, gnome, i3, kde, lxde, mate, e17 or none)
-desktop=${desktop:-"none"}
+desktop=${desktop:-"xfce"}
 
 # Load common variables
 include variables
@@ -47,8 +47,8 @@ include hosts
 # Set hostname
 set_hostname "${hostname}"
 # Network configs
-include network
-add_interface wlan0
+#include network
+#add_interface wlan0
 # Copy directory bsp into build dir
 cp -rp bsp "${work_dir}"
 
@@ -62,6 +62,8 @@ eatmydata apt-get -y install ${third_stage_pkgs}
 
 eatmydata apt-get install -y ${packages} || eatmydata apt-get install -y --fix-broken
 eatmydata apt-get install -y ${desktop_pkgs} ${extra} || eatmydata apt-get install -y --fix-broken
+# ntp doesn't always sync the date, but systemd's timesyncd does, so we remove ntp and reinstall it with this
+eatmydata apt-get install -y systemd-timesyncd --autoremove
 
 eatmydata apt-get -y --purge autoremove
 
@@ -119,6 +121,9 @@ sed -i -e 's/FONTSIZE=.*/FONTSIZE="6x12"/' /etc/default/console-setup
 
 # Fix startup time from 5 minutes to 15 secs on raise interface wlan0
 sed -i 's/^TimeoutStartSec=5min/TimeoutStartSec=15/g' "/usr/lib/systemd/system/networking.service"
+
+# Disable haveged daemon
+systemctl disable haveged
 
 # Enable runonce
 install -m755 /bsp/scripts/runonce /usr/sbin/

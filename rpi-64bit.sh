@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 #
-# Kali Linux ARM build-script for Raspberry Pi 2/3/4/400 (32-bit)
+# Kali Linux ARM build-script for Raspberry Pi 2 1.2/3/4/400 (64-bit)
 # https://gitlab.com/kalilinux/build-scripts/kali-arm
 #
 # This is a supported device - which you can find pre-generated images for
-# More information: https://www.kali.org/docs/arm/raspberry-pi-2/
+# More information: https://www.kali.org/docs/arm/raspberry-pi-2-1.2/
 #
 
 # Stop on error
@@ -16,11 +16,11 @@ set -e
 source ./common.d/functions.sh
 
 # Hardware model
-hw_model=${hw_model:-"rpi4"}
+hw_model=${hw_model:-"rpi"}
 # Architecture
-architecture=${architecture:-"armhf"}
+architecture=${architecture:-"arm64"}
 # Variant name for image and dir build
-variant=${variant:-"nexmon-${architecture}"}
+variant=${variant:-"${architecture}"}
 # Desktop manager (xfce, gnome, i3, kde, lxde, mate, e17 or none)
 desktop=${desktop:-"xfce"}
 
@@ -62,8 +62,7 @@ eatmydata apt-get -y install ${third_stage_pkgs}
 
 eatmydata apt-get install -y ${packages} || eatmydata apt-get install -y --fix-broken
 eatmydata apt-get install -y ${desktop_pkgs} ${extra} || eatmydata apt-get install -y --fix-broken
-# ntp doesn't always sync the date, but systemd's timesyncd does, so we remove ntp and reinstall it with this
-eatmydata apt-get install -y systemd-timesyncd --autoremove
+
 eatmydata apt-get -y --purge autoremove
 
 # Linux console/Keyboard configuration
@@ -83,6 +82,8 @@ echo "deb http://http.re4son-kernel.com/re4son kali-pi main" > /etc/apt/sources.
 wget -qO /etc/apt/trusted.gpg.d/kali_pi-archive-keyring.gpg https://re4son-kernel.com/keys/http/kali_pi-archive-keyring.gpg
 eatmydata apt-get update
 eatmydata apt-get install -y kalipi-kernel kalipi-bootloader kalipi-re4son-firmware kalipi-kernel-headers kalipi-config kalipi-tft-config firmware-raspberry
+# ntp doesn't always sync the date, but systemd's timesyncd does, so we remove ntp and reinstall it with this
+eatmydata apt-get install -y systemd-timesyncd --autoremove
 
 # Copy script rpi-resizerootfs
 install -m755 /bsp/scripts/rpi-resizerootfs /usr/sbin/
@@ -121,9 +122,6 @@ sed -i -e 's/FONTSIZE=.*/FONTSIZE="6x12"/' /etc/default/console-setup
 # Fix startup time from 5 minutes to 15 secs on raise interface wlan0
 sed -i 's/^TimeoutStartSec=5min/TimeoutStartSec=15/g' "/usr/lib/systemd/system/networking.service"
 
-# Disable haveged daemon
-systemctl disable haveged
-
 # Enable runonce
 install -m755 /bsp/scripts/runonce /usr/sbin/
 cp -rf /bsp/runonce.d /etc
@@ -140,6 +138,8 @@ systemd-nspawn_exec /third-stage
 
 #Configure RaspberryPi firmware (set config.txt to 64bit)
 include rpi_firmware
+# Compile RaspberryPi userland
+include rpi_userland
 # Choose a locale
 set_locale "$locale"
 # Clean system
@@ -148,10 +148,10 @@ include clean_system
 echo "nameserver 8.8.8.8" >"${work_dir}"/etc/resolv.conf
 # Disable the use of http proxy in case it is enabled
 disable_proxy
-# Reload sources.list
-include sources.list
 # Mirror & suite replacement
 restore_mirror
+# Reload sources.list
+#include sources.list
 
 # systemd doesn't seem to be generating the fstab properly for some people, so let's create one
 cat <<EOF >"${work_dir}"/etc/fstab

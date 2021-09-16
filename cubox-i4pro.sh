@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 #
-# Kali Linux ARM build-script for Chromebook (ASUS - Veyron)
+# Kali Linux ARM build-script for CuBox-i4Pro - Freescale based NOT the original Marvell based
 # https://gitlab.com/kalilinux/build-scripts/kali-arm
 #
 # This is a community script - you will need to generate your own image to use
-# More information: https://www.kali.org/docs/arm/asus-chromebook-flip/
+# More information: https://www.kali.org/docs/arm/cubox-i4pro/
 #
 
 # Stop on error
@@ -25,7 +25,7 @@ machine=$(tr -cd 'A-Za-z0-9' < /dev/urandom | head -c16 ; echo)
 # Custom hostname variable
 hostname=${2:-kali}
 # Custom image file name variable - MUST NOT include .img at the end
-imagename=${3:-kali-linux-$1-veyron}
+imagename=${3:-kali-linux-$1-cubox-i4pro}
 # Suite to use, valid options are:
 # kali-rolling, kali-dev, kali-bleeding-edge, kali-dev-only, kali-experimental, kali-last-snapshot
 suite=${suite:-"kali-rolling"}
@@ -67,7 +67,7 @@ fi
 # Current directory
 current_dir="$(pwd)"
 # Base directory
-basedir=${current_dir}/veyron-"$1"
+basedir=${current_dir}/cuboxi-"$1"
 # Working directory
 work_dir="${basedir}/kali-${architecture}"
 
@@ -85,15 +85,13 @@ fi
 
 components="main,contrib,non-free"
 arm="kali-linux-arm ntpdate"
-base="apt-transport-https apt-utils bash-completion console-setup dialog e2fsprogs ifupdown initramfs-tools inxi iw man-db mlocate netcat-traditional net-tools parted pciutils psmisc rfkill screen tmux unrar usbutils vim wget zerofree"
-desktop="kali-desktop-xfce kali-root-login xserver-xorg-video-fbdev xserver-xorg-input-libinput xserver-xorg-input-synaptics xfonts-terminus xinput"
+base="apt-transport-https apt-utils bash-completion console-setup dialog e2fsprogs ifupdown initramfs-tools inxi iw man-db linux-image-armmp mlocate netcat-traditional net-tools parted pciutils psmisc rfkill screen tmux u-boot-menu u-boot-imx unrar usbutils vim wget whiptail zerofree"
+desktop="kali-desktop-xfce kali-root-login xserver-xorg-video-fbdev xfonts-terminus xinput"
 tools="kali-linux-default"
 services="apache2 atftpd"
-extras="alsa-utils bc bison bluez bluez-firmware florence kali-linux-core libnss-systemd libssl-dev triggerhappy"
+extras="alsa-utils bc bison bluez bluez-firmware kali-linux-core libnss-systemd libssl-dev triggerhappy"
 
 packages="${arm} ${base} ${services}"
-
-kernel_release="R83-13020.B-chromeos-4.19"
 
 # Automatic configuration to use an http proxy, such as apt-cacher-ng
 # You can turn off automatic settings by uncommenting apt_cacher=off
@@ -205,13 +203,14 @@ if [ -n "$proxy_url" ]; then
   echo "Acquire::http { Proxy \"$proxy_url\" };" > ${work_dir}/etc/apt/apt.conf.d/66proxy
 fi
 
-cat << EOF > ${work_dir}/third-stage
+# Third stage
+cat << EOF >  ${work_dir}/third-stage
 #!/bin/bash -e
 export DEBIAN_FRONTEND=noninteractive
 
 eatmydata apt-get update
 
-eatmydata apt-get -y install git-core binutils ca-certificates cryptsetup-bin initramfs-tools locales console-common less nano git u-boot-tools
+eatmydata apt-get -y install binutils ca-certificates console-common cryptsetup-bin git initramfs-tools less locales nano u-boot-tools
 
 # Create kali user with kali password... but first, we need to manually make some groups because they don't yet exist..
 # This mirrors what we have on a pre-installed VM, until the script works properly to allow end users to set up their own... user
@@ -235,8 +234,8 @@ eatmydata apt-get install -y \$aptops ${packages} || eatmydata apt-get --yes --f
 eatmydata apt-get install -y \$aptops ${packages} || eatmydata apt-get --yes --fix-broken install
 eatmydata apt-get install -y \$aptops ${desktop} ${extras} ${tools} || eatmydata apt-get --yes --fix-broken install
 eatmydata apt-get install -y \$aptops ${desktop} ${extras} ${tools} || eatmydata apt-get --yes --fix-broken install
-eatmydata apt-get install -y \$aptops systemd-timesyncd || eatmydata apt-get --yes --fix-broken install
-eatmydata apt-get dist-upgrade
+eatmydata apt-get install -y \$aptops --autoremove systemd-timesyncd || eatmydata apt-get --yes --fix-broken install
+eatmydata apt-get dist-upgrade -y \$aptops
 
 eatmydata apt-get -y --allow-change-held-packages --purge autoremove
 
@@ -245,7 +244,7 @@ echo 'console-common console-data/keymap/policy select Select keymap from full l
 echo 'console-common console-data/keymap/full select en-latin1-nodeadkeys' | debconf-set-selections
 
 # Copy all services
-cp -p /bsp/services/all/*.service /etc/systemd/system/
+install -m644 /bsp/services/all/*.service /etc/systemd/system/
 
 # Regenerated the shared-mime-info database on the first boot
 # since it fails to do so properly in a chroot
@@ -253,10 +252,8 @@ systemctl enable smi-hack
 
 # Generate SSH host keys on first run
 systemctl enable regenerate_ssh_host_keys
+# Enable sshd
 systemctl enable ssh
-
-# Copy over the default bashrc
-cp  /etc/skel/.bashrc /root/.bashrc
 
 # Allow users to use NM over ssh
 install -m644 /bsp/polkit/10-NetworkManager.pkla /var/lib/polkit-1/localauthority/50-local.d
@@ -264,10 +261,28 @@ install -m644 /bsp/polkit/10-NetworkManager.pkla /var/lib/polkit-1/localauthorit
 cd /root
 apt download -o APT::Sandbox::User=root ca-certificates 2>/dev/null
 
+# Copy bashrc
+cp  /etc/skel/.bashrc /root/.bashrc
+
+# Set a REGDOMAIN.  This needs to be done or wireless doesn't work correctly on the RPi 3B+
+sed -i -e 's/REGDOM.*/REGDOMAIN=00/g' /etc/default/crda
+
+# Enable serial console
+echo 'T1:12345:respawn:/sbin/agetty 115200 ttymxc0 vt100' >> /etc/inittab
+
 # Try and make the console a bit nicer
 # Set the terminus font for a bit nicer display
 sed -i -e 's/FONTFACE=.*/FONTFACE="Terminus"/' /etc/default/console-setup
 sed -i -e 's/FONTSIZE=.*/FONTSIZE="6x12"/' /etc/default/console-setup
+
+# Fix startup time from 5 minutes to 15 secs on raise interface wlan0
+sed -i 's/^TimeoutStartSec=5min/TimeoutStartSec=15/g' "/usr/lib/systemd/system/networking.service"
+
+# We replace the u-boot menu defaults here so we can make sure the build system doesn't poison it
+# We use _EOF_ so that the third-stage script doesn't end prematurely
+cat << '_EOF_' > /etc/default/u-boot
+U_BOOT_PARAMETERS="console=ttyS0,115200 console=tty1 root=/dev/mmcblk0p1 rootwait panic=10 rw rootfstype=$fstype net.ifnames=0"
+_EOF_
 
 rm -f /usr/bin/dpkg
 EOF
@@ -311,232 +326,22 @@ if [[ ! -z "${4}" || ! -z "${5}" ]]; then
   suite=${5}
 fi
 
-cat << EOF > ${work_dir}/etc/resolv.conf
-nameserver 8.8.8.8
-EOF
-
 # Define sources.list
 cat << EOF > ${work_dir}/etc/apt/sources.list
 deb ${mirror} ${suite} ${components//,/ }
 #deb-src ${mirror} ${suite} ${components//,/ }
 EOF
 
+# For some reason the brcm firmware doesn't work properly in linux-firmware git
+# so we grab the ones from OpenELEC
 cd ${basedir}
+git clone https://github.com/OpenELEC/wlan-firmware
+cd wlan-firmware
+rm -rf ${work_dir}/lib/firmware/brcm
+cp -a firmware/brcm ${work_dir}/lib/firmware/
 
-# Kernel section.  If you want to use a custom kernel, or configuration, replace
-# them in this section
-# Mainline kernel branch
-git clone https://kernel.googlesource.com/pub/scm/linux/kernel/git/stable/linux.git -b linux-4.19.y ${work_dir}/usr/src/kernel
-# ChromeOS kernel branch
-#git clone --depth 1 https://chromium.googlesource.com/chromiumos/third_party/kernel.git -b release-${kernel_release} ${work_dir}/usr/src/kernel
-cd ${work_dir}/usr/src/kernel
-# Check out 4.19.133 which was known to work..
-git checkout 17a87580a8856170d59aab302226811a4ae69149
-# Mainline kernel config
-cp ${basedir}/../kernel-configs/veyron-4.19.config .config
-# (Currently not working) chromeos-based kernel config
-#cp ${basedir}/../kernel-configs/veyron-4.19-cros.config .config
-cp .config ${work_dir}/usr/src/veyron.config
-export ARCH=arm
-# Edit the CROSS_COMPILE variable as needed
-export CROSS_COMPILE=arm-linux-gnueabihf-
-# This allows us to patch the kernel without it adding -dirty to the kernel version
-touch .scmversion
-patch -p1 --no-backup-if-mismatch < ${basedir}/../patches/veyron/4.19/kali-wifi-injection.patch
-patch -p1 --no-backup-if-mismatch < ${basedir}/../patches/veyron/4.19/wireless-carl9170-Enable-sniffer-mode-promisc-flag-t.patch
-make -j$(grep -c processor /proc/cpuinfo)
-make dtbs
-make modules_install INSTALL_MOD_PATH=${work_dir}
-cat << __EOF__ > ${work_dir}/usr/src/kernel/arch/arm/boot/kernel-veyron.its
-/dts-v1/;
-
-/ {
-    description = "Chrome OS kernel image with one or more FDT blobs";
-    images {
-        kernel@1{
-            description = "kernel";
-            data = /incbin/("zImage");
-            type = "kernel_noload";
-            arch = "arm";
-            os = "linux";
-            compression = "none";
-            load = <0>;
-            entry = <0>;
-        };
-        fdt@1{
-            description = "rk3288-veyron-brain.dtb";
-            data = /incbin/("dts/rk3288-veyron-brain.dtb");
-            type = "flat_dt";
-            arch = "arm";
-            compression = "none";
-            hash@1{
-                algo = "sha1";
-            };
-        };
-        fdt@2{
-            description = "rk3288-veyron-jaq.dtb";
-            data = /incbin/("dts/rk3288-veyron-jaq.dtb");
-            type = "flat_dt";
-            arch = "arm";
-            compression = "none";
-            hash@1{
-                algo = "sha1";
-            };
-        };
-        fdt@3{
-            description = "rk3288-veyron-jerry.dtb";
-            data = /incbin/("dts/rk3288-veyron-jerry.dtb");
-            type = "flat_dt";
-            arch = "arm";
-            compression = "none";
-            hash@1{
-                algo = "sha1";
-            };
-        };
-        fdt@4{
-            description = "rk3288-veyron-mickey.dtb";
-            data = /incbin/("dts/rk3288-veyron-mickey.dtb");
-            type = "flat_dt";
-            arch = "arm";
-            compression = "none";
-            hash@1{
-                algo = "sha1";
-            };
-        };
-        fdt@5{
-            description = "rk3288-veyron-minnie.dtb";
-            data = /incbin/("dts/rk3288-veyron-minnie.dtb");
-            type = "flat_dt";
-            arch = "arm";
-            compression = "none";
-            hash@1{
-                algo = "sha1";
-            };
-        };
-        fdt@6{
-	    description = "rk3288-veyron-pinky.dtb";
-	    data = /incbin/("dts/rk3288-veyron-pinky.dtb");
-	    type = "flat_dt";
-	    arch = "arm";
-	    compression = "none";
-	    hash@1{
-		algo = "sha1";
-	    };
-	};
-        fdt@7{
-	    description = "rk3288-veyron-speedy.dtb";
-	    data = /incbin/("dts/rk3288-veyron-speedy.dtb");
-	    type = "flat_dt";
-	    arch = "arm";
-	    compression = "none";
-	    hash@1{
-		algo = "sha1";
-	    };
-	};
-    };
-    configurations {
-        default = "conf@1";
-        conf@1{
-            kernel = "kernel@1";
-            fdt = "fdt@1";
-        };
-        conf@2{
-            kernel = "kernel@1";
-            fdt = "fdt@2";
-        };
-        conf@3{
-            kernel = "kernel@1";
-            fdt = "fdt@3";
-        };
-        conf@4{
-            kernel = "kernel@1";
-            fdt = "fdt@4";
-        };
-        conf@5{
-            kernel = "kernel@1";
-            fdt = "fdt@5";
-        };
-	    conf@6{
-	        kernel = "kernel@1";
-	        fdt = "fdt@6";
-	    };
-	    conf@7{
-	        kernel = "kernel@1";
-	        fdt = "fdt@7";
-	    };
-    };
-};
-__EOF__
-cd ${work_dir}/usr/src/kernel/arch/arm/boot
-mkimage -D "-I dts -O dtb -p 2048" -f kernel-veyron.its veyron-kernel
-
-# BEHOLD THE MAGIC OF PARTUUID/PARTNROFF
-echo 'noinitrd console=tty1 quiet root=PARTUUID=%U/PARTNROFF=1 rootwait rw lsm.module_locking=0 net.ifnames=0 rootfstype=$fstype' > cmdline
-
-# Pulled from ChromeOS, this is exactly what they do because there's no
-# bootloader in the kernel partition on ARM
-dd if=/dev/zero of=bootloader.bin bs=512 count=1
-
-vbutil_kernel --arch arm --pack "${basedir}"/kernel.bin --keyblock /usr/share/vboot/devkeys/kernel.keyblock --signprivate /usr/share/vboot/devkeys/kernel_data_key.vbprivk --version 1 --config cmdline --bootloader bootloader.bin --vmlinuz veyron-kernel
-cd ${work_dir}/usr/src/kernel
-make mrproper
-cp ${basedir}/../kernel-configs/veyron-4.19.config .config
-#cp ${basedir}/../kernel-configs/veyron-4.19-cros.config .config
-cd ${basedir}
-
-# Fix up the symlink for building external modules
-# kernver is used so we don't need to keep track of what the current compiled
-# version is
-kernver=$(ls ${work_dir}/lib/modules/)
-cd ${work_dir}/lib/modules/${kernver}
-rm build
-rm source
-ln -s /usr/src/kernel build
-ln -s /usr/src/kernel source
-cd ${basedir}
-
-# Disable uap0 and p2p0 interfaces in NetworkManager
-mkdir -p ${work_dir}/etc/NetworkManager/
-echo -e '\n[keyfile]\nunmanaged-devices=interface-name:p2p0\n' >> ${work_dir}/etc/NetworkManager/NetworkManager.conf
-
-# Create these if they don't exist, to make sure we have proper audio with pulse
-mkdir -p ${work_dir}/var/lib/alsa/
-cp ${basedir}/../bsp/audio/veyron/asound.state ${work_dir}/var/lib/alsa/asound.state
-cp ${basedir}/../bsp/audio/veyron/default.pa ${work_dir}/etc/pulse/default.pa
-
-# mali rules so users can access the mali0 driver..
-cp ${basedir}/../bsp/udev/50-mali.rules ${work_dir}/etc/udev/rules.d/50-mali.rules
-cp ${basedir}/../bsp/udev/50-media.rules ${work_dir}/etc/udev/rules.d/50-media.rules
-# EHCI is apparently quirky
-cp ${basedir}/../bsp/udev/99-rk3288-ehci-persist.rules ${work_dir}/etc/udev/rules.d/99-rk3288-ehci-persist.rules
-# Avoid gpio charger wakeup system
-cp ${basedir}/../bsp/udev/99-rk3288-gpio-charger.rules ${work_dir}/etc/udev/rules.d/99-rk3288-gpio-charger.rules
-# Rule used to kick start the bluetooth/wifi chip
-cp ${basedir}/../bsp/udev/80-brcm-sdio-added.rules ${work_dir}/etc/udev/rules.d/80-brcm-sdio-added.rules
-# Hide the eMMC partitions from udisks
-cp ${basedir}/../bsp/udev/99-hide-emmc-partitions.rules ${work_dir}/etc/udev/rules.d/99-hide-emmc-partitions.rules
-
-# disable btdsio
-mkdir -p ${work_dir}/etc/modprobe.d/
-cat << EOF > ${work_dir}/etc/modprobe.d/blacklist-btsdio.conf
-blacklist btsdio
-EOF
-
-# Touchpad configuration
-mkdir -p ${work_dir}/etc/X11/xorg.conf.d
-cp ${basedir}/../bsp/xorg/10-synaptics-chromebook.conf ${work_dir}/etc/X11/xorg.conf.d/
-
-# Copy the broadcom firmware files in
-mkdir -p ${work_dir}/lib/firmware/brcm/
-cp ${basedir}/../bsp/firmware/veyron/brcm* ${work_dir}/lib/firmware/brcm/
-cp ${basedir}/../bsp/firmware/veyron/BCM* ${work_dir}/lib/firmware/brcm/
-# Copy in the touchpad firmwares - same as above
-cp ${basedir}/../bsp/firmware/veyron/elan* ${work_dir}/lib/firmware/
-cp ${basedir}/../bsp/firmware/veyron/max* ${work_dir}/lib/firmware/
-cd ${basedir}
-
-# We need to kick start the sdio chip to get bluetooth/wifi going
-cp ${basedir}/../bsp/firmware/veyron/brcm_patchram_plus ${work_dir}/usr/sbin/
+# Ensure we don't have root=/dev/sda3 in the extlinux.conf which comes from running u-boot-menu in a cross chroot
+sed -i -e 's/append.*/append root=\/dev\/mmcblk1p1 rootfstype=$fstype video=mxcfb0:dev=hdmi,1920x1080M@60,if=RGB24,bpp=32 console=ttymxc0,115200n8 console=tty1 consoleblank=0 rw rootwait/g' ${work_dir}/boot/extlinux/extlinux.conf
 
 # Calculate the space to create the image
 root_size=$(du -s -B1 ${work_dir} --exclude=${work_dir}/boot | cut -f1)
@@ -546,19 +351,15 @@ raw_size=$(($((${free_space}*1024))+${root_extra}+$((${bootsize}*1024))+4096))
 # Create the disk and partition it
 echo "Creating image file ${imagename}.img"
 fallocate -l $(echo ${raw_size}Ki | numfmt --from=iec-i --to=si) ${current_dir}/${imagename}.img
-parted -s ${current_dir}/${imagename}.img mklabel gpt
-cgpt create -z ${current_dir}/${imagename}.img
-cgpt create ${current_dir}/${imagename}.img
+parted -s ${current_dir}/${imagename}.img mklabel msdos
+parted -s -a minimal ${current_dir}/${imagename}.img mkpart primary $fstype 1MiB 100%
 
-cgpt add -i 1 -t kernel -b 8192 -s 32768 -l kernel -S 1 -T 5 -P 10 ${current_dir}/${imagename}.img
-cgpt add -i 2 -t data -b 40960 -s `expr $(cgpt show ${current_dir}/${imagename}.img | grep 'Sec GPT table' | awk '{ print \$1 }')  - 40960` -l Root ${current_dir}/${imagename}.img
-
+# Set the partition variables
 loopdevice=`losetup -f --show ${current_dir}/${imagename}.img`
 device=`kpartx -va ${loopdevice} | sed 's/.*\(loop[0-9]\+\)p.*/\1/g' | head -1`
 sleep 5
 device="/dev/mapper/${device}"
-bootp=${device}p1
-rootp=${device}p2
+rootp=${device}p1
 
 if [[ $fstype == ext4 ]]; then
   features="-O ^64bit,^metadata_csum"
@@ -567,8 +368,14 @@ elif [[ $fstype == ext3 ]]; then
 fi
 mkfs $features -t $fstype -L ROOTFS ${rootp}
 
+# Create the dirs for the partitions and mount them
 mkdir -p "${basedir}"/root
 mount ${rootp} "${basedir}"/root
+
+# We do this down here to get rid of the build system's resolv.conf after running through the build
+cat << EOF > ${work_dir}/etc/resolv.conf
+nameserver 8.8.8.8
+EOF
 
 # Create an fstab so that we don't mount / read-only
 UUID=$(blkid -s UUID -o value ${rootp})
@@ -577,16 +384,29 @@ echo "UUID=$UUID /               $fstype    errors=remount-ro 0       1" >> ${wo
 echo "Rsyncing rootfs into image file"
 rsync -HPavz -q ${work_dir}/ ${basedir}/root/
 
+dd conv=fsync,notrunc if=${work_dir}/usr/lib/u-boot/mx6cuboxi/SPL of=${loopdevice} bs=1k seek=1
+dd conv=fsync,notrunc if=${work_dir}/usr/lib/u-boot/mx6cuboxi/u-boot.img of=${loopdevice} bs=1k seek=69
+
 # Unmount partitions
 sync
 umount ${rootp}
 
-dd if=${basedir}/kernel.bin of=${bootp}
+# We need an older cross compiler for compiling u-boot so check out the 4.7
+# cross compiler
+#git clone https://github.com/offensive-security/gcc-arm-linux-gnueabihf-4.7
 
-cgpt repair ${loopdevice}
+#git clone https://github.com/SolidRun/u-boot-imx6.git
+#cd "${basedir}"/u-boot-imx6
+#make CROSS_COMPILE="${basedir}"/gcc-arm-linux-gnueabihf-4.7/bin/arm-linux-gnueabihf- mx6_cubox-i_config
+#make CROSS_COMPILE="${basedir}"/gcc-arm-linux-gnueabihf-4.7/bin/arm-linux-gnueabihf-
+
+#dd if=SPL of=${loopdevice} bs=1K seek=1
+#dd if=u-boot.img of=${loopdevice} bs=1K seek=42
 
 kpartx -dv ${loopdevice}
 losetup -d ${loopdevice}
+
+cd ${current_dir}
 
 # Limit CPU function
 limit_cpu (){

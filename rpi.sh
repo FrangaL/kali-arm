@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 #
-# Kali Linux ARM build-script for Raspberry Pi Zero W (32-bit)
+# Kali Linux ARM build-script for Raspberry Pi 2/3/4/400 (32-bit)
 # https://gitlab.com/kalilinux/build-scripts/kali-arm
 #
 # This is a supported device - which you can find pre-generated images for
-# More information: https://www.kali.org/docs/arm/raspberry-pi-zero-w/
+# More information: https://www.kali.org/docs/arm/raspberry-pi-2/
 #
 
 # Stop on error
@@ -16,11 +16,11 @@ set -e
 source ./common.d/functions.sh
 
 # Hardware model
-hw_model=${hw_model:-"rpi0w"}
+hw_model=${hw_model:-"rpi"}
 # Architecture
-architecture=${architecture:-"armel"}
+architecture=${architecture:-"armhf"}
 # Variant name for image and dir build
-variant=${variant:-"nexmon-${architecture}"}
+variant=${variant:-"${architecture}"}
 # Desktop manager (xfce, gnome, i3, kde, lxde, mate, e17 or none)
 desktop=${desktop:-"xfce"}
 
@@ -47,8 +47,8 @@ include hosts
 # Set hostname
 set_hostname "${hostname}"
 # Network configs
-#include network
-#add_interface wlan0
+include network
+add_interface eth0
 # Copy directory bsp into build dir
 cp -rp bsp "${work_dir}"
 
@@ -64,7 +64,6 @@ eatmydata apt-get install -y ${packages} || eatmydata apt-get install -y --fix-b
 eatmydata apt-get install -y ${desktop_pkgs} ${extra} || eatmydata apt-get install -y --fix-broken
 # ntp doesn't always sync the date, but systemd's timesyncd does, so we remove ntp and reinstall it with this
 eatmydata apt-get install -y systemd-timesyncd --autoremove
-
 eatmydata apt-get -y --purge autoremove
 
 # Linux console/Keyboard configuration
@@ -149,10 +148,10 @@ include clean_system
 echo "nameserver 8.8.8.8" >"${work_dir}"/etc/resolv.conf
 # Disable the use of http proxy in case it is enabled
 disable_proxy
+# Reload sources.list
+include sources.list
 # Mirror & suite replacement
 restore_mirror
-# Reload sources.list
-#include sources.list
 
 # systemd doesn't seem to be generating the fstab properly for some people, so let's create one
 cat <<EOF >"${work_dir}"/etc/fstab

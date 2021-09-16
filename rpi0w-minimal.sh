@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 #
-# Kali Linux ARM build-script for Raspberry Pi 2 1.2/3/4/400 (64-bit) (Minimal)
+# Kali Linux ARM build-script for Raspberry Pi Zero W (32-bit) (Minimal)
 # https://gitlab.com/kalilinux/build-scripts/kali-arm
 #
 # This is a community script - you will need to generate your own image to use
-# More information: https://www.kali.org/docs/arm/raspberry-pi-2-1.2/
+# More information: https://www.kali.org/docs/arm/raspberry-pi-zero-w/
 #
 
 # Stop on error
@@ -16,11 +16,11 @@ set -e
 source ./common.d/functions.sh
 
 # Hardware model
-hw_model=${hw_model:-"rpi4"}
+hw_model=${hw_model:-"rpi0w"}
 # Architecture
-architecture=${architecture:-"arm64"}
+architecture=${architecture:-"armel"}
 # Variant name for image and dir build
-variant=${variant:-"nexmon-${architecture}-lite"}
+variant=${variant:-"ninimal-${architecture}"}
 # Desktop manager (xfce, gnome, i3, kde, lxde, mate, e17 or none)
 desktop=${desktop:-"none"}
 
@@ -48,7 +48,7 @@ include hosts
 set_hostname "${hostname}"
 # Network configs
 include network
-add_interface eth0
+add_interface wlan0
 # Copy directory bsp into build dir
 cp -rp bsp "${work_dir}"
 
@@ -73,28 +73,20 @@ echo 'console-common console-data/keymap/full select en-latin1-nodeadkeys' | deb
 cp -p /bsp/services/all/*.service /etc/systemd/system/
 cp -p /bsp/services/rpi/*.service /etc/systemd/system/
 
-# Re4son's rpi-tft configurator
-install -m755 /bsp/scripts/kalipi-tft-config /usr/bin/
-/usr/bin/kalipi-tft-config -u
-
 # Script mode wlan monitor START/STOP
 install -m755 /bsp/scripts/monstart /usr/bin/
 install -m755 /bsp/scripts/monstop /usr/bin/
-# Copy script for handling wpa_supplicant file
-install -m755 /bsp/scripts/copy-user-wpasupplicant.sh /usr/bin/
 
 # Install the kernel packages
 echo "deb http://http.re4son-kernel.com/re4son kali-pi main" > /etc/apt/sources.list.d/re4son.list
 wget -qO /etc/apt/trusted.gpg.d/kali_pi-archive-keyring.gpg https://re4son-kernel.com/keys/http/kali_pi-archive-keyring.gpg
 eatmydata apt-get update
-eatmydata apt-get install -y kalipi-kernel kalipi-bootloader kalipi-re4son-firmware kalipi-kernel-headers firmware-raspberry kalipi-config kalipi-tft-config
-
-# Regenerated the shared-mime-info database on the first boot
-# since it fails to do so properly in a chroot
-systemctl enable smi-hack
+eatmydata apt-get install -y kalipi-kernel kalipi-bootloader kalipi-re4son-firmware kalipi-kernel-headers kalipi-config kalipi-tft-config firmware-raspberry
 
 # Copy script rpi-resizerootfs
 install -m755 /bsp/scripts/rpi-resizerootfs /usr/sbin/
+# Copy script for handling wpa_supplicant file
+install -m755 /bsp/scripts/copy-user-wpasupplicant.sh /usr/bin/
 
 # Enable rpi-resizerootfs first boot
 systemctl enable rpi-resizerootfs
@@ -142,10 +134,8 @@ EOF
 chmod 755 "${work_dir}"/third-stage
 systemd-nspawn_exec /third-stage
 
-# Configure Raspberry PI firmware
+#Configure RaspberryPi firmware (set config.txt to 64bit)
 include rpi_firmware
-# Compile Raspberry PI userland
-include rpi_userland
 # Choose a locale
 set_locale "$locale"
 # Clean system

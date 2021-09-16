@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 #
-# Kali Linux ARM build-script for Chromebook (Acer - Nyan)
+# Kali Linux ARM build-script for Chromebook (Samsung - Exynos)
 # https://gitlab.com/kalilinux/build-scripts/kali-arm
 #
 # This is a community script - you will need to generate your own image to use
-# More information: https://www.kali.org/docs/arm/acer-tegra-chromebook-13/
+# More information: https://www.kali.org/docs/arm/samsung-chromebook/
 #
 
 # Stop on error
@@ -25,7 +25,7 @@ machine=$(tr -cd 'A-Za-z0-9' < /dev/urandom | head -c16 ; echo)
 # Custom hostname variable
 hostname=${2:-kali}
 # Custom image file name variable - MUST NOT include .img at the end
-imagename=${3:-kali-linux-$1-nyan}
+imagename=${3:-kali-linux-$1-chromebook-exynos}
 # Suite to use, valid options are:
 # kali-rolling, kali-dev, kali-bleeding-edge, kali-dev-only, kali-experimental, kali-last-snapshot
 suite=${suite:-"kali-rolling"}
@@ -67,7 +67,7 @@ fi
 # Current directory
 current_dir="$(pwd)"
 # Base directory
-basedir=${current_dir}/nyan-"$1"
+basedir=${current_dir}/exynos-"$1"
 # Working directory
 work_dir="${basedir}/kali-${architecture}"
 
@@ -85,7 +85,7 @@ fi
 
 components="main,contrib,non-free"
 arm="kali-linux-arm ntpdate"
-base="apt-transport-https apt-utils bash-completion console-setup dialog e2fsprogs ifupdown initramfs-tools inxi iw man-db mlocate netcat-traditional net-tools parted pciutils psmisc rfkill screen tmux unrar usbutils vim wget whiptail zerofree"
+base="apt-transport-https apt-utils bash-completion console-setup dialog e2fsprogs firmware-samsung ifupdown initramfs-tools inxi iw man-db mlocate netcat-traditional net-tools parted psmisc rfkill screen tmux unrar usbutils vim wget whiptail zerofree"
 desktop="kali-desktop-xfce kali-root-login xserver-xorg-video-fbdev xserver-xorg-input-libinput xserver-xorg-input-synaptics xfonts-terminus xinput"
 tools="kali-linux-default"
 services="apache2 atftpd"
@@ -93,7 +93,7 @@ extras="alsa-utils bc bison bluez bluez-firmware kali-linux-core libnss-systemd 
 
 packages="${arm} ${base} ${services}"
 
-kernel_release="R71-11151.B-# This is a community script - you will need to generate your own image to useos-3.10"
+kernel_release="R71-11151.B-chromeos-3.8"
 
 # Automatic configuration to use an http proxy, such as apt-cacher-ng
 # You can turn off automatic settings by uncommenting apt_cacher=off
@@ -202,7 +202,7 @@ if [ -n "$proxy_url" ]; then
 fi
 
 # Third stage
-cat << EOF > ${work_dir}/third-stage
+cat << EOF >  ${work_dir}/third-stage
 #!/bin/bash -e
 export DEBIAN_FRONTEND=noninteractive
 
@@ -265,9 +265,6 @@ cp /etc/skel/.bashrc /root/.bashrc
 # Set a REGDOMAIN.  This needs to be done or wireless doesn't work correctly on the RPi 3B+
 sed -i -e 's/REGDOM.*/REGDOMAIN=00/g' /etc/default/crda
 
-# Enable login over serial
-echo "T0:23:respawn:/sbin/agetty -L ttyAMA0 115200 vt100" >> /etc/inittab
-
 # Try and make the console a bit nicer
 # Set the terminus font for a bit nicer display
 sed -i -e 's/FONTFACE=.*/FONTFACE="Terminus"/' /etc/default/console-setup
@@ -324,41 +321,39 @@ deb ${mirror} ${suite} ${components//,/ }
 #deb-src ${mirror} ${suite} ${components//,/ }
 EOF
 
-# Pull in the gcc 5.3 cross compiler to build the kernel
-# Debian uses a newer compiler and the # This is a community script - you will need to generate your own image to usebook kernel doesn't support
-# that
+# Pull in the gcc 4.7 cross compiler to build the kernel
+# Debian uses a gcc that the chromebook kernel doesn't have support for
 cd "${basedir}"
 git clone --depth 1 https://gitlab.com/kalilinux/packages/gcc-arm-linux-gnueabihf-4-7.git gcc-arm-linux-gnueabihf-4.7
 
 # Kernel section.  If you want to use a custom kernel, or configuration, replace
 # them in this section
-cd "${basedir}"
 git clone --depth 1 https://chromium.googlesource.com/chromiumos/third_party/kernel -b release-${kernel_release} ${work_dir}/usr/src/kernel
 cd ${work_dir}/usr/src/kernel
-mkdir -p ${work_dir}/usr/src/kernel/firmware/nvidia/tegra124/
-cp ${work_dir}/lib/firmware/nvidia/tegra124/xusb.bin firmware/nvidia/tegra124/
-cp ${current_dir}/kernel-configs/# This is a community script - you will need to generate your own image to usebook-3.10.config .config
-cp ${current_dir}/kernel-configs/# This is a community script - you will need to generate your own image to usebook-3.10.config ${work_dir}/usr/src/nyan.config
+cp ${current_dir}/kernel-configs/chromebook-3.8.config .config
+cp ${current_dir}/kernel-configs/chromebook-3.8.config ../exynos.config
+cp ${current_dir}/kernel-configs/chromebook-3.8_wireless-3.4.config exynos_wifi34.config
 git rev-parse HEAD > ${work_dir}/usr/src/kernel-at-commit
 export ARCH=arm
 # Edit the CROSS_COMPILE variable as needed
 export CROSS_COMPILE="${basedir}"/gcc-arm-linux-gnueabihf-4.7/bin/arm-linux-gnueabihf-
-patch -p1 --no-backup-if-mismatch < ${current_dir}/patches/mac80211-3.8.patch
-patch -p1 --no-backup-if-mismatch < ${work_dir}/patches/0001-mwifiex-do-not-create-AP-and-P2P-interfaces-upon-dri-3.8.patch
-patch -p1 --no-backup-if-mismatch < ${work_dir}/patches/0001-Comment-out-a-pr_debug-print.patch
-make WIFIVERSION="-3.8" oldconfig || die "Kernel config options added"
-make WIFIVERSION="-3.8" -j $(grep -c processor /proc/cpuinfo)
-make WIFIVERSION="-3.8" dtbs
-make WIFIVERSION="-3.8" modules_install INSTALL_MOD_PATH=${work_dir}
-cat << __EOF__ > ${work_dir}/usr/src/kernel/arch/arm/boot/kernel-nyan.its
+patch -p1 --no-backup-if-mismatch < ${current_dir}/patches/mac80211.patch
+patch -p1 --no-backup-if-mismatch < ${current_dir}/patches/0001-exynos-drm-smem-start-len.patch
+patch -p1 --no-backup-if-mismatch < ${current_dir}/patches/0001-mwifiex-do-not-create-AP-and-P2P-interfaces-upon-dri.patch
+patch -p1 --no-backup-if-mismatch < ${current_dir}/patches/0001-Commented-out-pr_debug-line.patch
+patch -p1 --no-backup-if-mismatch < ${current_dir}/patches/0002-Fix-udl_connector-include.patch
+make oldconfig || die "Kernel config options added"
+make -j $(grep -c processor /proc/cpuinfo)
+make dtbs
+make modules_install INSTALL_MOD_PATH=${work_dir}
+cat << __EOF__ > ${work_dir}/usr/src/kernel/arch/arm/boot/kernel-exynos.its
 /dts-v1/;
 
 / {
-    description = "# This is a community script - you will need to generate your own image to use OS kernel image with one or more FDT blobs";
-    #address-cells = <1>;
+    description = "Chrome OS kernel image with one or more FDT blobs";
     images {
         kernel@1{
-   description = "kernel";
+            description = "kernel";
             data = /incbin/("zImage");
             type = "kernel_noload";
             arch = "arm";
@@ -368,8 +363,8 @@ cat << __EOF__ > ${work_dir}/usr/src/kernel/arch/arm/boot/kernel-nyan.its
             entry = <0>;
         };
         fdt@1{
-            description = "tegra124-nyan-big-rev0_2.dtb";
-            data = /incbin/("dts/tegra124-nyan-big-rev0_2.dtb");
+            description = "exynos5250-skate.dtb";
+            data = /incbin/("dts/exynos5250-skate.dtb");
             type = "flat_dt";
             arch = "arm";
             compression = "none";
@@ -378,8 +373,8 @@ cat << __EOF__ > ${work_dir}/usr/src/kernel/arch/arm/boot/kernel-nyan.its
             };
         };
         fdt@2{
-            description = "tegra124-nyan-big-rev3_7.dtb";
-            data = /incbin/("dts/tegra124-nyan-big-rev3_7.dtb");
+            description = "exynos5250-smdk5250.dtb";
+            data = /incbin/("dts/exynos5250-smdk5250.dtb");
             type = "flat_dt";
             arch = "arm";
             compression = "none";
@@ -388,8 +383,8 @@ cat << __EOF__ > ${work_dir}/usr/src/kernel/arch/arm/boot/kernel-nyan.its
             };
         };
         fdt@3{
-            description = "tegra124-nyan-big-rev8_9.dtb";
-            data = /incbin/("dts/tegra124-nyan-big-rev8_9.dtb");
+            description = "exynos5250-snow-rev4.dtb";
+            data = /incbin/("dts/exynos5250-snow-rev4.dtb");
             type = "flat_dt";
             arch = "arm";
             compression = "none";
@@ -398,8 +393,8 @@ cat << __EOF__ > ${work_dir}/usr/src/kernel/arch/arm/boot/kernel-nyan.its
             };
         };
         fdt@4{
-            description = "tegra124-nyan-blaze.dtb";
-            data = /incbin/("dts/tegra124-nyan-blaze.dtb");
+            description = "exynos5250-snow-rev5.dtb";
+            data = /incbin/("dts/exynos5250-snow-rev5.dtb");
             type = "flat_dt";
             arch = "arm";
             compression = "none";
@@ -408,8 +403,8 @@ cat << __EOF__ > ${work_dir}/usr/src/kernel/arch/arm/boot/kernel-nyan.its
             };
         };
         fdt@5{
-            description = "tegra124-nyan-rev0.dtb";
-            data = /incbin/("dts/tegra124-nyan-rev0.dtb");
+            description = "exynos5250-spring.dtb";
+            data = /incbin/("dts/exynos5250-spring.dtb");
             type = "flat_dt";
             arch = "arm";
             compression = "none";
@@ -418,8 +413,8 @@ cat << __EOF__ > ${work_dir}/usr/src/kernel/arch/arm/boot/kernel-nyan.its
             };
         };
         fdt@6{
-            description = "tegra124-nyan-rev1.dtb";
-            data = /incbin/("dts/tegra124-nyan-rev1.dtb");
+            description = "exynos5420-peach-kirby.dtb";
+            data = /incbin/("dts/exynos5420-peach-kirby.dtb");
             type = "flat_dt";
             arch = "arm";
             compression = "none";
@@ -428,8 +423,8 @@ cat << __EOF__ > ${work_dir}/usr/src/kernel/arch/arm/boot/kernel-nyan.its
             };
         };
         fdt@7{
-            description = "tegra124-nyan-kitty-rev0_3.dtb";
-            data = /incbin/("dts/tegra124-nyan-kitty-rev0_3.dtb");
+            description = "exynos5420-peach-pit-rev3_5.dtb";
+            data = /incbin/("dts/exynos5420-peach-pit-rev3_5.dtb");
             type = "flat_dt";
             arch = "arm";
             compression = "none";
@@ -438,8 +433,58 @@ cat << __EOF__ > ${work_dir}/usr/src/kernel/arch/arm/boot/kernel-nyan.its
             };
         };
         fdt@8{
-            description = "tegra124-nyan-kitty-rev8.dtb";
-            data = /incbin/("dts/tegra124-nyan-kitty-rev8.dtb");
+            description = "exynos5420-peach-pit-rev4.dtb";
+            data = /incbin/("dts/exynos5420-peach-pit-rev4.dtb");
+            type = "flat_dt";
+            arch = "arm";
+            compression = "none";
+            hash@1{
+                algo = "sha1";
+            };
+        };
+        fdt@9{
+            description = "exynos5420-peach-pit.dtb";
+            data = /incbin/("dts/exynos5420-peach-pit.dtb");
+            type = "flat_dt";
+            arch = "arm";
+            compression = "none";
+            hash@1{
+                algo = "sha1";
+            };
+        };
+        fdt@10{
+            description = "exynos5420-smdk5420.dtb";
+            data = /incbin/("dts/exynos5420-smdk5420.dtb");
+            type = "flat_dt";
+            arch = "arm";
+            compression = "none";
+            hash@1{
+                algo = "sha1";
+            };
+        };
+        fdt@11{
+            description = "exynos5420-smdk5420-evt0.dtb";
+            data = /incbin/("dts/exynos5420-smdk5420-evt0.dtb");
+            type = "flat_dt";
+            arch = "arm";
+            compression = "none";
+            hash@1{
+                algo = "sha1";
+            };
+        };
+        fdt@12{
+            description = "exynos5422-peach-pi.dtb";
+            data = /incbin/("dts/exynos5422-peach-pi.dtb");
+            type = "flat_dt";
+            arch = "arm";
+            compression = "none";
+            hash@1{
+                algo = "sha1";
+            };
+        };
+        fdt@13{
+            description = "exynos5440-ssdk5440.dtb";
+            data = /incbin/("dts/exynos5440-ssdk5440.dtb");
             type = "flat_dt";
             arch = "arm";
             compression = "none";
@@ -482,26 +527,44 @@ cat << __EOF__ > ${work_dir}/usr/src/kernel/arch/arm/boot/kernel-nyan.its
             kernel = "kernel@1";
             fdt = "fdt@8";
         };
+        conf@9{
+            kernel = "kernel@1";
+            fdt = "fdt@9";
+        };
+        conf@10{
+            kernel = "kernel@1";
+            fdt = "fdt@10";
+        };
+        conf@11{
+            kernel = "kernel@1";
+            fdt = "fdt@11";
+        };
+        conf@12{
+            kernel = "kernel@1";
+            fdt = "fdt@12";
+        };
+        conf@13{
+            kernel = "kernel@1";
+            fdt = "fdt@13";
+        };
     };
 };
 __EOF__
 cd ${work_dir}/usr/src/kernel/arch/arm/boot
-mkimage -f kernel-nyan.its nyan-big-kernel
+mkimage -D "-I dts -O dtb -p 2048" -f kernel-exynos.its exynos-kernel
 
-# BEHOLD THE POWER OF PARTUUID/PARTNROFF
-echo "noinitrd console=tty1 quiet root=PARTUUID=%U/PARTNROFF=1 rootwait rw lsm.module_locking=0 net.ifnames=0 rootfstype=$fstype" > cmdline
+# microSD Card
+echo 'noinitrd console=tty1 quiet root=PARTUUID=%U/PARTNROFF=1 rootwait rw lsm.module_locking=0 net.ifnames=0 rootfstype=$fstype' > cmdline
 
-# Pulled from # This is a community script - you will need to generate your own image to useOS, this is exactly what they do because there's no
-# # bootloader in the kernel partition on ARM
+# Pulled from ChromeOS, this is exactly what they do because there's no
+# bootloader in the kernel partition on ARM
 dd if=/dev/zero of=bootloader.bin bs=512 count=1
 
-vbutil_kernel --arch arm --pack "${basedir}"/kernel.bin --keyblock /usr/share/vboot/devkeys/kernel.keyblock --signprivate /usr/share/vboot/devkeys/kernel_data_key.vbprivk --version 1 --config cmdline --bootloader bootloader.bin --vmlinuz nyan-big-kernel
+vbutil_kernel --arch arm --pack "${basedir}"/kernel.bin --keyblock /usr/share/vboot/devkeys/kernel.keyblock --signprivate /usr/share/vboot/devkeys/kernel_data_key.vbprivk --version 1 --config cmdline --bootloader bootloader.bin --vmlinuz exynos-kernel
 
-cd ${work_dir}/usr/src/kernel
-# Clean up our build of the kernel, then copy the config and run make
-# modules_prepare so that users can more easily build kernel modules..
-make WIFIVERSION="-3.8"  mrproper
-cp ../nyan.config .config
+cd ${work_dir}/usr/src/kernel/
+make mrproper
+cp ../exynos.config .config
 cd "${basedir}"
 
 # Fix up the symlink for building external modules
@@ -513,16 +576,9 @@ rm build
 rm source
 ln -s /usr/src/kernel build
 ln -s /usr/src/kernel source
-cd "${basedir}"
+cd ${current_dir}
 
-# Lid switch
-cat << EOF > ${work_dir}/etc/udev/rules.d/99-tegra-lid-switch.rules
-ACTION=="remove", GOTO="tegra_lid_switch_end"
-SUBSYSTEM=="input", KERNEL=="event*", SUBSYSTEMS=="platform", KERNELS=="gpio-keys.4", TAG+="power-switch"
-LABEL="tegra_lid_switch_end"
-EOF
-
-# Bit of a hack, this is so the eMMC doesn't show up on the desktop
+# Bit of a hack to hide eMMC partitions from XFCE
 cat << EOF > ${work_dir}/etc/udev/rules.d/99-hide-emmc-partitions.rules
 KERNEL=="mmcblk0*", ENV{UDISKS_IGNORE}="1"
 EOF
@@ -531,40 +587,79 @@ EOF
 mkdir -p ${work_dir}/etc/NetworkManager/
 printf '\n[keyfile]\nunmanaged-devices=interface-name:p2p0\n' >> ${work_dir}/etc/NetworkManager/NetworkManager.conf
 
-#nvidia device nodes
-cat << EOF > ${work_dir}/lib/udev/rules.d/51-nvrm.rules
-KERNEL=="knvmap", GROUP="video", MODE="0660"
-KERNEL=="nvhdcp1", GROUP="video", MODE="0660"
-KERNEL=="nvhost-as-gpu", GROUP="video", MODE="0660"
-KERNEL=="nvhost-ctrl", GROUP="video", MODE="0660"
-KERNEL=="nvhost-ctrl-gpu", GROUP="video", MODE="0660"
-KERNEL=="nvhost-dbg-gpu", GROUP="video", MODE="0660"
-KERNEL=="nvhost-gpu", GROUP="video", MODE="0660"
-KERNEL=="nvhost-msenc", GROUP="video", MODE="0660"
-KERNEL=="nvhost-prof-gpu", GROUP="video", MODE="0660"
-KERNEL=="nvhost-tsec", GROUP="video", MODE="0660"
-KERNEL=="nvhost-vic", GROUP="video", MODE="0660"
-KERNEL=="nvmap", GROUP="video", MODE="0660"
-KERNEL=="tegra_dc_0", GROUP="video", MODE="0660"
-KERNEL=="tegra_dc_1", GROUP="video", MODE="0660"
-KERNEL=="tegra_dc_ctrl", GROUP="video", MODE="0660"
-EOF
-
 # Touchpad configuration
 mkdir -p ${work_dir}/etc/X11/xorg.conf.d
-cp ${current_dir}/bsp/xorg/10-synaptics-# This is a community script - you will need to generate your own image to usebook.conf ${work_dir}/etc/X11/xorg.conf.d/
+cp ${current_dir}/bsp/xorg/10-synaptics-chromebook.conf ${work_dir}/etc/X11/xorg.conf.d/
 
-# lp0 resume firmware..
-# Check https://chromium.googlesource.com/chromiumos/overlays/chromiumos-overlay/+/master/sys-kernel/tegra_lp0_resume/
-# to find the lastest commit to use (note: CROS_WORKON_COMMIT )
-cd "${basedir}"
-git clone https://chromium.googlesource.com/chromiumos/third_party/coreboot
-cd "${basedir}"/coreboot
-git checkout fb840ee4195f9c365375e8914e243ce2f5e4f7bf
-make -C src/soc/nvidia/tegra124/lp0 GCC_PREFIX=arm-linux-gnueabihf-
-mkdir -p ${work_dir}/lib/firmware/tegra12x/
-cp src/soc/nvidia/tegra124/lp0/tegra_lp0_resume.fw ${work_dir}/lib/firmware/tegra12x/
-cd "${basedir}"
+# Turn off Accel
+cat << EOF > ${work_dir}/etc/X11/xorg.conf.d/20-modesetting.conf
+Section "Device"
+    Identifier  "Exynos Video"
+    Driver      "modesetting"
+    Option      "AccelMethod"   "none"
+EndSection
+EOF
+
+# Mali GPU rules aka mali-rules package in ChromeOS
+cat << EOF > ${work_dir}/etc/udev/rules.d/50-mali.rules
+KERNEL=="mali0", MODE="0660", GROUP="video"
+EOF
+
+# Video rules aka media-rules package in ChromeOS
+cat << EOF > ${work_dir}/etc/udev/rules.d/50-media.rules
+ATTR{name}=="s5p-mfc-dec", SYMLINK+="video-dec"
+ATTR{name}=="s5p-mfc-enc", SYMLINK+="video-enc"
+ATTR{name}=="s5p-jpeg-dec", SYMLINK+="jpeg-dec"
+ATTR{name}=="exynos-gsc.0*", SYMLINK+="image-proc0"
+ATTR{name}=="exynos-gsc.1*", SYMLINK+="image-proc1"
+ATTR{name}=="exynos-gsc.2*", SYMLINK+="image-proc2"
+ATTR{name}=="exynos-gsc.3*", SYMLINK+="image-proc3"
+ATTR{name}=="rk3288-vpu-dec", SYMLINK+="video-dec"
+ATTR{name}=="rk3288-vpu-enc", SYMLINK+="video-enc"
+ATTR{name}=="go2001-dec", SYMLINK+="video-dec"
+ATTR{name}=="go2001-enc", SYMLINK+="video-enc"
+ATTR{name}=="mt81xx-vcodec-dec", SYMLINK+="video-dec"
+ATTR{name}=="mt81xx-vcodec-enc", SYMLINK+="video-enc"
+ATTR{name}=="mt81xx-image-proc", SYMLINK+="image-proc0"
+EOF
+
+# This is for Peach - kinda a hack, never really worked properly they say
+# Ambient light sensor
+cat << EOF > ${work_dir}/lib/udev/light-sensor-set-multiplier.sh
+#!/bin/sh
+
+# Copyright (c) 2012 The Chromium OS Authors. All rights reserved
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file
+
+# In iio/devices, find device0 on 3.0.x kernels and iio:device0 on 3.2 kernels
+for FILE in /sys/bus/iio/devices/*/in_illuminance0_calibscale; do
+  # Set the light sensor calibration value
+  echo 5.102040 > \$FILE && break;
+done
+
+for FILE in /sys/bus/iio/devices/*/in_illuminance1_calibscale; do
+  # Set the IR compensation calibration value
+  echo 0.053425 > \$FILE && break;
+done
+
+for FILE in /sys/bus/iio/devices/*/range; do
+  # Set the light sensor range value (max lux)
+  echo 16000 > \$FILE && break;
+done
+
+for FILE in /sys/bus/iio/devices/*/continuous; do
+  # Change the measurement mode to the continuous mode
+  echo als > \$FILE && break;
+done
+EOF
+
+cat << EOF > ${work_dir}/etc/udev/rules.d/99-light-sensor.rules
+# Calibrate the light sensor when the isl29018 driver is installed
+ACTION=="add", SUBSYSTEM=="drivers", KERNEL=="isl29018", RUN+="light-sensor-set-multiplier.sh"
+EOF
+
+cd ${current_dir}
 
 # Calculate the space to create the image
 root_size=$(du -s -B1 ${work_dir} --exclude=${work_dir}/boot | cut -f1)
@@ -610,7 +705,7 @@ echo "UUID=$UUID /               $fstype    errors=remount-ro 0       1" >> ${wo
 echo "Rsyncing rootfs into image file"
 rsync -HPavz -q ${work_dir}/ ${basedir}/root/
 
-# Unmount partitions
+# Unmount partition
 sync
 umount ${rootp}
 
@@ -620,7 +715,6 @@ cgpt repair ${loopdevice}
 
 kpartx -dv ${loopdevice}
 losetup -d ${loopdevice}
-
 
 # Limit CPU function
 limit_cpu (){

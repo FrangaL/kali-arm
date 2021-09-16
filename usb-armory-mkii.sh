@@ -16,7 +16,7 @@ set -e
 source ./common.d/functions.sh
 
 # Hardware model
-hw_model=${hw_model:-"usbarmory-mk2"}
+hw_model=${hw_model:-"usbarmory-mkii"}
 # Architecture
 architecture=${architecture:-"armhf"}
 # Variant name for image and dir build
