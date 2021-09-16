@@ -26,7 +26,7 @@ desktop=${desktop:-"xfce"}
 
 # Load common variables
 include variables
-# Checks script enviroment
+# Checks script environment
 include check
 # Packages build list
 include packages
@@ -49,7 +49,7 @@ set_hostname "${hostname}"
 # Network configs
 include network
 add_interface eth0
-# Copy directory bsp into build dir.
+# Copy directory bsp into build dir
 cp -rp bsp "${work_dir}"
 
 # Third stage
@@ -97,7 +97,7 @@ __EOF__
 cat << __EOF__ > /etc/modprobe.d/usbarmory.conf
 options g_ether use_eem=0 dev_addr=1a:55:89:a2:69:41 host_addr=1a:55:89:a2:69:42
 # To use either of the following, you should create the file /disk.img via dd
-# "dd if=/dev/zero of=/disk.img bs=1M count=2048" would create a 2GB disk.img file.
+# "dd if=/dev/zero of=/disk.img bs=1M count=2048" would create a 2GB disk.img file
 #options g_mass_storage file=disk.img
 #options g_multi use_eem=0 dev_addr=1a:55:89:a2:69:41 host_addr=1a:55:89:a2:69:42 file=disk.img
 __EOF__
@@ -110,7 +110,7 @@ netmask 255.255.255.0
 gateway 10.0.0.2
 __EOF__
 
-# Debian reads the config from inside /etc/dhcp.
+# Debian reads the config from inside /etc/dhcp
 cp /etc/dhcp/dhcpd.conf /etc/dhcp/dhcpd.conf.old
 cat << __EOF__ > /etc/dhcp/dhcpd.conf
 # Sample configuration file for ISC dhcpd for Debian
@@ -143,7 +143,7 @@ apt download -o APT::Sandbox::User=root ca-certificates 2>/dev/null
 sed -i -e 's/REGDOM.*/REGDOMAIN=00/g' /etc/default/crda
 
 # Try and make the console a bit nicer
-# Set the terminus font for a bit nicer display.
+# Set the terminus font for a bit nicer display
 sed -i -e 's/FONTFACE=.*/FONTFACE="Terminus"/' /etc/default/console-setup
 sed -i -e 's/FONTSIZE=.*/FONTSIZE="6x12"/' /etc/default/console-setup
 
@@ -168,9 +168,9 @@ systemd-nspawn_exec /third-stage
 set_locale "$locale"
 # Clean system
 include clean_system
-# Define DNS server after last running systemd-nspawn.
+# Define DNS server after last running systemd-nspawn
 echo "nameserver 8.8.8.8" >"${work_dir}"/etc/resolv.conf
-# Disable the use of http proxy in case it is enabled.
+# Disable the use of http proxy in case it is enabled
 disable_proxy
 # Mirror & suite replacement
 restore_mirror
@@ -178,7 +178,7 @@ restore_mirror
 #include sources.list
 
 # Kernel section. If you want to use a custom kernel, or configuration, replace
-# them in this section.
+# them in this section
 git clone -b linux-5.4.y --depth 1 git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git ${work_dir}/usr/src/kernel
 cd ${work_dir}/usr/src/kernel
 git rev-parse HEAD > ${work_dir}/usr/src/kernel-at-commit
@@ -197,7 +197,7 @@ make modules_install INSTALL_MOD_PATH=${work_dir}
 cp arch/arm/boot/zImage ${work_dir}/boot/
 cp arch/arm/boot/dts/imx6*-usbarmory*.dtb ${work_dir}/boot/
 make mrproper
-# Since these aren't integrated into the kernel yet, mrproper removes them.
+# Since these aren't integrated into the kernel yet, mrproper removes them
 cp ../usbarmory_linux-5.4.config ${work_dir}/usr/src/kernel/.config
 wget $githubraw/inversepath/usbarmory/master/software/kernel_conf/mark-two/imx6ul-usbarmory.dts -O arch/arm/boot/dts/imx6ul-usbarmory.dts
 wget $githubraw/inversepath/usbarmory/master/software/kernel_conf/mark-two/imx6ull-usbarmory.dts -O arch/arm/boot/dts/imx6ull-usbarmory.dts
@@ -216,7 +216,7 @@ ln -s /usr/src/kernel source
 
 cd ${current_dir}
 
-# Calculate the space to create the image and create.
+# Calculate the space to create the image and create
 make_image
 
 # Create the disk and partition it
@@ -235,7 +235,7 @@ mkfs.ext2 ${rootp}
 mkdir -p "${basedir}"/root
 mount ${rootp} "${basedir}"/root
 
-# Create an fstab so that we don't mount / read-only.
+# Create an fstab so that we don't mount / read-only
 UUID=$(blkid -s UUID -o value ${rootp})
 echo "UUID=$UUID /               $fstype    errors=remount-ro 0       1" >> ${work_dir}/etc/fstab
 
@@ -267,6 +267,6 @@ losetup -d "${loopdevice}"
 # Compress image compilation
 include compress_img
 
-# Clean up all the temporary build stuff and remove the directories.
-# Comment this out to keep things around if you want to see what may have gone wrong.
+# Clean up all the temporary build stuff and remove the directories
+# Comment this out to keep things around if you want to see what may have gone wrong
 clean_build

@@ -26,7 +26,7 @@ desktop=${desktop:-"xfce"}
 
 # Load common variables
 include variables
-# Checks script enviroment
+# Checks script environment
 include check
 # Packages build list
 include packages
@@ -49,10 +49,10 @@ set_hostname "${hostname}"
 # Network configs
 include network
 add_interface eth0
-# Copy directory bsp into build dir.
+# Copy directory bsp into build dir
 cp -rp bsp "${work_dir}"
 
-# Disable RESUME (suspend/resume is currently broken anyway!) which speeds up boot massively.
+# Disable RESUME (suspend/resume is currently broken anyway!) which speeds up boot massively
 mkdir -p ${work_dir}/etc/initramfs-tools/conf.d/
 cat << EOF > ${work_dir}/etc/initramfs-tools/conf.d/resume
 RESUME=none
@@ -100,7 +100,7 @@ sed -i -e 's/REGDOM.*/REGDOMAIN=00/g' /etc/default/crda
 echo "T0:23:respawn:/sbin/agetty -L ttySAC2 115200 vt100" >> /etc/inittab
 
 # Try and make the console a bit nicer
-# Set the terminus font for a bit nicer display.
+# Set the terminus font for a bit nicer display
 sed -i -e 's/FONTFACE=.*/FONTFACE="Terminus"/' /etc/default/console-setup
 sed -i -e 's/FONTSIZE=.*/FONTSIZE="6x12"/' /etc/default/console-setup
 
@@ -117,12 +117,12 @@ ttySAC1
 ttySAC2
 _EOF_
 
-# Serial console settings.
+# Serial console settings
 # (Auto login on serial console)
 #T1:12345:respawn:/sbin/agetty 115200 ttySAC2 vt100 >> /etc/inittab
 # (No auto login)
 #T1:12345:respawn:/bin/login -f root ttySAC2 /dev/ttySAC2 2>&1' >> /etc/inittab
-# Make sure ttySACX is in root/etc/securetty so root can login on serial console below.
+# Make sure ttySACX is in root/etc/securetty so root can login on serial console below
 echo 'T1:12345:respawn:/bin/login -f root ttySAC2 /dev/ttySAC2 2>&1' >> /etc/inittab
 
 # Enable runonce
@@ -143,9 +143,9 @@ systemd-nspawn_exec /third-stage
 set_locale "$locale"
 # Clean system
 include clean_system
-# Define DNS server after last running systemd-nspawn.
+# Define DNS server after last running systemd-nspawn
 echo "nameserver 8.8.8.8" >"${work_dir}"/etc/resolv.conf
-# Disable the use of http proxy in case it is enabled.
+# Disable the use of http proxy in case it is enabled
 disable_proxy
 # Mirror & suite replacement
 restore_mirror
@@ -153,7 +153,7 @@ restore_mirror
 #include sources.list
 
 # Kernel section. If you want to use a custom kernel, or configuration, replace
-# them in this section.
+# them in this section
 git clone --depth 1 https://github.com/hardkernel/linux.git -b odroidxu4-4.14.y ${work_dir}/usr/src/kernel
 cd ${work_dir}/usr/src/kernel
 git rev-parse HEAD > ${work_dir}/usr/src/kernel-at-commit
@@ -197,7 +197,7 @@ setenv fdt_high "0xffffffff"
 setenv macaddr "00:1e:06:61:7a:39"
 
 #------------------------------------------------------------------------------------------------------
-# Basic Ubuntu Setup. Don't touch unless you know what you are doing.
+# Basic Ubuntu Setup. Don't touch unless you know what you are doing
 # --------------------------------
 setenv bootrootfs "console=tty1 console=ttySAC2,115200n8 root=/dev/mmcblk0p2 rootwait rootfstype=$fstype net.ifnames=0 rw"
 
@@ -209,7 +209,7 @@ setenv bootcmd "fatload mmc 0:1 0x40008000 zImage; fatload mmc 0:1 0x42000000 uI
 
 # --- Screen Configuration for HDMI --- #
 # ---------------------------------------
-# Uncomment only ONE line! Leave all commented for automatic selection.
+# Uncomment only ONE line! Leave all commented for automatic selection
 # Uncomment only the setenv line!
 # ---------------------------------------
 # ODROID-VU forced resolution
@@ -241,7 +241,7 @@ EOF
 
 cd ${current_dir}
 
-# Calculate the space to create the image and create.
+# Calculate the space to create the image and create
 make_image
 
 # Create the disk and partition it
@@ -271,12 +271,12 @@ mount "${rootp}" "${basedir}"/root
 mkdir -p "${basedir}"/root/boot
 mount "${bootp}" "${basedir}"/root/boot
 
-# We do this down here to get rid of the build system's resolv.conf after running through the build.
+# We do this down here to get rid of the build system's resolv.conf after running through the build
 cat << EOF > ${work_dir}/etc/resolv.conf
 nameserver 8.8.8.8
 EOF
 
-# Create an fstab so that we don't mount / read-only.
+# Create an fstab so that we don't mount / read-only
 UUID=$(blkid -s UUID -o value ${rootp})
 echo "UUID=$UUID /               $fstype    errors=remount-ro 0       1" >> ${work_dir}/etc/fstab
 
@@ -284,7 +284,7 @@ log "Rsyncing rootfs into image file" green
 rsync -HPavz -q "${work_dir}"/ "${basedir}"/root/
 sync
 
-# Write the signed u-boot binary to the image so that it will boot.
+# Write the signed u-boot binary to the image so that it will boot
 cd "${basedir}"
 git clone https://github.com/hardkernel/u-boot.git -b odroidxu4-v2017.05
 cd "${basedir}"/u-boot
@@ -308,6 +308,6 @@ losetup -d "${loopdevice}"
 # Compress image compilation
 include compress_img
 
-# Clean up all the temporary build stuff and remove the directories.
-# Comment this out to keep things around if you want to see what may have gone wrong.
+# Clean up all the temporary build stuff and remove the directories
+# Comment this out to keep things around if you want to see what may have gone wrong
 clean_build

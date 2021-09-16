@@ -26,7 +26,7 @@ desktop=${desktop:-"xfce"}
 
 # Load common variables
 include variables
-# Checks script enviroment
+# Checks script environment
 include check
 # Packages build list
 include packages
@@ -49,7 +49,7 @@ set_hostname "${hostname}"
 # Network configs
 #include network
 #add_interface wlan0
-# Copy directory bsp into build dir.
+# Copy directory bsp into build dir
 cp -rp bsp "${work_dir}"
 
 # Third stage
@@ -62,7 +62,7 @@ eatmydata apt-get -y install ${third_stage_pkgs}
 
 eatmydata apt-get install -y ${packages} || eatmydata apt-get install -y --fix-broken
 eatmydata apt-get install -y ${desktop_pkgs} ${extra} || eatmydata apt-get install -y --fix-broken
-# ntp doesn't always sync the date, but systemd's timesyncd does, so we remove ntp and reinstall it with this.
+# ntp doesn't always sync the date, but systemd's timesyncd does, so we remove ntp and reinstall it with this
 eatmydata apt-get install -y systemd-timesyncd --autoremove
 
 eatmydata apt-get -y --purge autoremove
@@ -115,7 +115,7 @@ sed -i -e 's/REGDOM.*/REGDOMAIN=00/g' /etc/default/crda
 echo "T0:23:respawn:/sbin/agetty -L ttyAMA0 115200 vt100" >> /etc/inittab
 
 # Try and make the console a bit nicer
-# Set the terminus font for a bit nicer display.
+# Set the terminus font for a bit nicer display
 sed -i -e 's/FONTFACE=.*/FONTFACE="Terminus"/' /etc/default/console-setup
 sed -i -e 's/FONTSIZE=.*/FONTSIZE="6x12"/' /etc/default/console-setup
 
@@ -145,16 +145,16 @@ include rpi_firmware
 set_locale "$locale"
 # Clean system
 include clean_system
-# Define DNS server after last running systemd-nspawn.
+# Define DNS server after last running systemd-nspawn
 echo "nameserver 8.8.8.8" >"${work_dir}"/etc/resolv.conf
-# Disable the use of http proxy in case it is enabled.
+# Disable the use of http proxy in case it is enabled
 disable_proxy
 # Mirror & suite replacement
 restore_mirror
 # Reload sources.list
 #include sources.list
 
-# systemd doesn't seem to be generating the fstab properly for some people, so let's create one.
+# systemd doesn't seem to be generating the fstab properly for some people, so let's create one
 cat <<EOF >"${work_dir}"/etc/fstab
 # <file system> <mount point>   <type>  <options>       <dump>  <pass>
 proc            /proc           proc    defaults          0       0
@@ -162,7 +162,7 @@ proc            /proc           proc    defaults          0       0
 /dev/mmcblk0p2  /               $fstype    defaults,noatime  0       1
 EOF
 
-# Calculate the space to create the image and create.
+# Calculate the space to create the image and create
 make_image
 
 # Create the disk partitions it
@@ -210,6 +210,6 @@ losetup -d "${loopdevice}"
 # Compress image compilation
 include compress_img
 
-# Clean up all the temporary build stuff and remove the directories.
-# Comment this out to keep things around if you want to see what may have gone wrong.
+# Clean up all the temporary build stuff and remove the directories
+# Comment this out to keep things around if you want to see what may have gone wrong
 clean_build

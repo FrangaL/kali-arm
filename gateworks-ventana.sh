@@ -26,7 +26,7 @@ desktop=${desktop:-"xfce"}
 
 # Load common variables
 include variables
-# Checks script enviroment
+# Checks script environment
 include check
 # Packages build list
 include packages
@@ -49,7 +49,7 @@ set_hostname "${hostname}"
 # Network configs
 include network
 add_interface eth0
-# Copy directory bsp into build dir.
+# Copy directory bsp into build dir
 cp -rp bsp "${work_dir}"
 
 # Third stage
@@ -97,7 +97,7 @@ sed -i -e 's/REGDOM.*/REGDOMAIN=00/g' /etc/default/crda
 echo "T1:12345:respawn:/sbin/getty -L ttymxc1 115200 vt100" >> /etc/inittab
 
 # Try and make the console a bit nicer
-# Set the terminus font for a bit nicer display.
+# Set the terminus font for a bit nicer display
 sed -i -e 's/FONTFACE=.*/FONTFACE="Terminus"/' /etc/default/console-setup
 sed -i -e 's/FONTSIZE=.*/FONTSIZE="6x12"/' /etc/default/console-setup
 
@@ -125,9 +125,9 @@ systemd-nspawn_exec /third-stage
 set_locale "$locale"
 # Clean system
 include clean_system
-# Define DNS server after last running systemd-nspawn.
+# Define DNS server after last running systemd-nspawn
 echo "nameserver 8.8.8.8" >"${work_dir}"/etc/resolv.conf
-# Disable the use of http proxy in case it is enabled.
+# Disable the use of http proxy in case it is enabled
 disable_proxy
 # Mirror & suite replacement
 restore_mirror
@@ -164,10 +164,10 @@ EOF
 
 cd "${basedir}"
 
-# Do the kernel stuff...
+# Do the kernel stuff..
 git clone --depth 1 -b gateworks_4.20.7 https://github.com/gateworks/linux-imx6 ${work_dir}/usr/src/kernel
 cd ${work_dir}/usr/src/kernel
-# Don't change the version because of our patches.
+# Don't change the version because of our patches
 touch .scmversion
 export ARCH=arm
 export CROSS_COMPILE=arm-linux-gnueabihf- mrproper
@@ -186,7 +186,7 @@ cp arch/arm/boot/uImage ${work_dir}/boot/
 cd ${work_dir}/usr/src/kernel
 make mrproper
 
-# Pull in imx6 smda/vpu firmware for vpu.
+# Pull in imx6 smda/vpu firmware for vpu
 mkdir -p ${work_dir}/lib/firmware/vpu
 mkdir -p ${work_dir}/lib/firmware/imx/sdma
 wget 'https://github.com/armbian/firmware/blob/master/vpu/v4l-coda960-imx6dl.bin?raw=true' -O ${work_dir}/lib/firmware/vpu/v4l-coda960-imx6dl.bin
@@ -195,13 +195,13 @@ wget 'https://github.com/armbian/firmware/blob/master/vpu/vpu_fw_imx6d.bin?raw=t
 wget 'https://github.com/armbian/firmware/blob/master/vpu/vpu_fw_imx6q.bin?raw=true' -O ${work_dir}/lib/firmware/vpu_fw_imx6q.bin
 wget 'https://github.com/armbian/firmware/blob/master/imx/sdma/sdma-imx6q.bin?raw=true' -O ${work_dir}/lib/firmware/imx/sdma/sdma-imx6q.bin
 
-# Not using extlinux.conf just yet...
-# Ensure we don't have root=/dev/sda3 in the extlinux.conf which comes from running u-boot-menu in a cross chroot.
+# Not using extlinux.conf just yet..
+# Ensure we don't have root=/dev/sda3 in the extlinux.conf which comes from running u-boot-menu in a cross chroot
 #sed -i -e 's/append.*/append root=\/dev\/mmcblk0p1 rootfstype=$fstype video=mxcfb0:dev=hdmi,1920x1080M@60,if=RGB24,bpp=32 console=ttymxc0,115200n8 console=tty1 consoleblank=0 rw rootwait/g' ${work_dir}/boot/extlinux/extlinux.conf
 
 cd ${current_dir}
 
-# Calculate the space to create the image and create.
+# Calculate the space to create the image and create
 make_image
 
 # Create the disk partitions it
@@ -225,8 +225,8 @@ mkfs -O "$features" -t "$fstype" -L ROOTFS "${rootp}"
 mkdir -p "${basedir}"/root/
 mount "${rootp}" "${basedir}"/root
 
-# We do this here because we don't want to hardcode the UUID for the partition during creation.
-# systemd doesn't seem to be generating the fstab properly for some people, so let's create one.
+# We do this here because we don't want to hardcode the UUID for the partition during creation
+# systemd doesn't seem to be generating the fstab properly for some people, so let's create one
 cat <<EOF >"${work_dir}"/etc/fstab
 # <file system> <mount point>   <type>  <options>       <dump>  <pass>
 proc            /proc           proc    defaults          0       0
@@ -250,6 +250,6 @@ losetup -d "${loopdevice}"
 # Compress image compilation
 include compress_img
 
-# Clean up all the temporary build stuff and remove the directories.
-# Comment this out to keep things around if you want to see what may have gone wrong.
+# Clean up all the temporary build stuff and remove the directories
+# Comment this out to keep things around if you want to see what may have gone wrong
 clean_build

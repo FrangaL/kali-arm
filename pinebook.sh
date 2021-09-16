@@ -26,7 +26,7 @@ desktop=${desktop:-"xfce"}
 
 # Load common variables
 include variables
-# Checks script enviroment
+# Checks script environment
 include check
 # Packages build list
 include packages
@@ -48,13 +48,13 @@ include hosts
 set_hostname "${hostname}"
 # Network configs
 include network
-# Do not include wlan0 on a wireless only device, otherwise NetworkManager won't run.
+# Do not include wlan0 on a wireless only device, otherwise NetworkManager won't run
 # wlan0 requires special editing of the /etc/network/interfaces.d/wlan0 file, to add the wireless network and ssid
 #add_interface wlan0
-# Copy directory bsp into build dir.
+# Copy directory bsp into build dir
 cp -rp bsp "${work_dir}"
 
-# Disable RESUME (suspend/resume is currently broken anyway!) which speeds up boot massively.
+# Disable RESUME (suspend/resume is currently broken anyway!) which speeds up boot massively
 mkdir -p ${work_dir}/etc/initramfs-tools/conf.d/
 cat << EOF > ${work_dir}/etc/initramfs-tools/conf.d/resume
 RESUME=none
@@ -89,14 +89,14 @@ install -m755 /bsp/scripts/monstop /usr/bin/
 eatmydata apt-get install -y dkms linux-image-arm64 u-boot-menu u-boot-sunxi
 
 # The pinebook seems to always claim the filesystem is in use when attempting to resize it, and this causes
-# parted to request a confirmation, but since we're doing this in a script, we don't actually get to.
+# parted to request a confirmation, but since we're doing this in a script, we don't actually get to
 # Solution comes from a comment in https://bugs.launchpad.net/ubuntu/+source/parted/+bug/1270203.  This is
-# new with parted 3.3+.
+# new with parted 3.3+
 
 # Copy script pinebook-resizerootfs
 install -m755 /bsp/scripts/pinebook-resizerootfs /usr/sbin/
 
-# And since we handle it specially, sed the service so that we call pinebook-resizerootfs instead of rpi-resizerootfs.
+# And since we handle it specially, sed the service so that we call pinebook-resizerootfs instead of rpi-resizerootfs
 sed -i -e 's/rpi/pinebook/' /etc/systemd/system/rpi-resizerootfs.service
 
 # Enable rpi-resizerootfs first boot
@@ -121,7 +121,7 @@ sed -i -e 's/REGDOM.*/REGDOMAIN=00/g' /etc/default/crda
 echo "T0:23:respawn:/sbin/agetty -L ttyAMA0 115200 vt100" >> /etc/inittab
 
 # Try and make the console a bit nicer
-# Set the terminus font for a bit nicer display.
+# Set the terminus font for a bit nicer display
 sed -i -e 's/FONTFACE=.*/FONTFACE="Terminus"/' /etc/default/console-setup
 sed -i -e 's/FONTSIZE=.*/FONTSIZE="6x12"/' /etc/default/console-setup
 
@@ -137,15 +137,15 @@ systemctl enable runonce
 install -m644 /bsp/xorg/50-pine64-pinebook.touchpad.conf /etc/X11/xorg.conf.d/
 
 # Add wifi firmware and driver, and attempt to build, so we don't need to build on
-# first boot, which causes issues if people log in too soon...
-# Pull in the wifi and bluetooth firmware from anarsoul's git repository.
+# first boot, which causes issues if people log in too soon..
+# Pull in the wifi and bluetooth firmware from anarsoul's git repository
 git clone https://github.com/anarsoul/rtl8723bt-firmware
 cd rtl8723bt-firmware
 cp -a rtl_bt /lib/firmware/
 
 # Need to package up the wifi driver (it's a Realtek 8723cs, with the usual
 # Realtek driver quality) still, so for now, we clone it and then build it
-# inside the chroot.
+# inside the chroot
 cd /usr/src/
 git clone https://github.com/icenowy/rtl8723cs rtl8723cs-2020.02.27
 cat << __EOF__ > /usr/src/rtl8723cs-2020.02.27/dkms.conf.orig
@@ -202,9 +202,9 @@ systemd-nspawn_exec /third-stage
 set_locale "$locale"
 # Clean system
 include clean_system
-# Define DNS server after last running systemd-nspawn.
+# Define DNS server after last running systemd-nspawn
 echo "nameserver 8.8.8.8" >"${work_dir}"/etc/resolv.conf
-# Disable the use of http proxy in case it is enabled.
+# Disable the use of http proxy in case it is enabled
 disable_proxy
 # Mirror & suite replacement
 restore_mirror
@@ -227,7 +227,7 @@ EOF
 
 cd ${current_dir}
 
-# Calculate the space to create the image and create.
+# Calculate the space to create the image and create
 make_image
 
 # Create the disk partitions it
@@ -251,16 +251,16 @@ mkfs -O "$features" -t "$fstype" -L ROOTFS "${rootp}"
 mkdir -p "${basedir}"/root/
 mount "${rootp}" "${basedir}"/root
 
-# We do this here because we don't want to hardcode the UUID for the partition during creation.
-# systemd doesn't seem to be generating the fstab properly for some people, so let's create one.
+# We do this here because we don't want to hardcode the UUID for the partition during creation
+# systemd doesn't seem to be generating the fstab properly for some people, so let's create one
 cat <<EOF >"${work_dir}"/etc/fstab
 # <file system> <mount point>   <type>  <options>       <dump>  <pass>
 proc            /proc           proc    defaults          0       0
 UUID=$(blkid -s UUID -o value ${rootp})  /               $fstype    defaults,noatime  0       1
 EOF
 
-# Ensure we don't have root=/dev/sda3 in the extlinux.conf which comes from running u-boot-menu in a cross chroot.
-# We do this down here because we don't know the UUID until after the image is created.
+# Ensure we don't have root=/dev/sda3 in the extlinux.conf which comes from running u-boot-menu in a cross chroot
+# We do this down here because we don't know the UUID until after the image is created
 sed -i -e "0,/root=.*/s//root=UUID=$(blkid -s UUID -o value ${rootp}) rootfstype=$fstype console=ttyS0,115200 console=tty1 consoleblank=0 rw quiet rootwait/g" ${work_dir}/boot/extlinux/extlinux.conf
 # And we remove the "Debian GNU/Linux because we're Kali"
 sed -i -e "s/Debian GNU\/Linux/Kali Linux/g" ${work_dir}/boot/extlinux/extlinux.conf
@@ -289,6 +289,6 @@ losetup -d "${loopdevice}"
 # Compress image compilation
 include compress_img
 
-# Clean up all the temporary build stuff and remove the directories.
-# Comment this out to keep things around if you want to see what may have gone wrong.
+# Clean up all the temporary build stuff and remove the directories
+# Comment this out to keep things around if you want to see what may have gone wrong
 clean_build

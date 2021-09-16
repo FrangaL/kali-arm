@@ -6,7 +6,7 @@
 # This is a community script - you will need to generate your own image to use
 # More information: https://www.kali.org/docs/arm/raspberry-pi-zero-w/
 #
-# This script is purposely different from the others due to its heavily customized nature.
+# This script is purposely different from the others due to its heavily customized nature
 #
 
 # Stop on error
@@ -22,11 +22,11 @@ fi
 
 # Architecture
 architecture=${architecture:-"armel"}
-# Generate a random machine name to be used.
+# Generate a random machine name to be used
 machine=$(tr -cd 'A-Za-z0-9' < /dev/urandom | head -c16 ; echo)
 # Custom hostname variable
 hostname=${2:-kali}
-# Custom image file name variable - MUST NOT include .img at the end.
+# Custom image file name variable - MUST NOT include .img at the end
 imagename=${3:-kali-linux-$1-rpi0w-p4wnp1}
 # Suite to use, valid options are:
 # kali-rolling, kali-dev, kali-bleeding-edge, kali-dev-only, kali-experimental, kali-last-snapshot
@@ -39,14 +39,14 @@ bootsize="128"
 compress="xz"
 # Choose filesystem format to format ( ext3 or ext4 )
 fstype="ext3"
-# If you have your own preferred mirrors, set them here.
+# If you have your own preferred mirrors, set them here
 mirror=${mirror:-"http://http.kali.org/kali"}
 # Gitlab url Kali repository
 kaligit="https://gitlab.com/kalilinux"
 # Github raw url
 githubraw="https://raw.githubusercontent.com"
 
-# Check EUID=0 you can run any binary as root.
+# Check EUID=0 you can run any binary as root
 if [[ $EUID -ne 0 ]]; then
   echo "This script must be run as root or have super user permissions"
   echo "Use: sudo $0 ${1:-2.0} ${2:-kali}"
@@ -59,7 +59,7 @@ if [[ $# -eq 0 ]] ; then
   exit 0
 fi
 
-# Check exist bsp directory.
+# Check exist bsp directory
 if [ ! -e "bsp" ]; then
   echo "Error: missing bsp directory structure"
   echo "Please clone the full repository ${kaligit}/build-scripts/kali-arm"
@@ -103,16 +103,16 @@ extras="autossh avahi-daemon bash-completion bluez bluez-firmware dhcpcd5 dnsmas
 packages="${arm} ${base} ${services} ${extras}"
 
 # Check to ensure that the architecture is set to ARMEL since the RPi is the
-# only board that is armel.
+# only board that is armel
 if [[ ${architecture} != "armel" ]] ; then
     echo "The Raspberry Pi cannot run Debian armhf binaries"
     exit 0
 fi
 
-# Automatic configuration to use an http proxy, such as apt-cacher-ng.
-# You can turn off automatic settings by uncommenting apt_cacher=off.
+# Automatic configuration to use an http proxy, such as apt-cacher-ng
+# You can turn off automatic settings by uncommenting apt_cacher=off
 # apt_cacher=off
-# By default the proxy settings are local, but you can define an external proxy.
+# By default the proxy settings are local, but you can define an external proxy
 # proxy_url="http://external.intranet.local"
 apt_cacher=${apt_cacher:-"$(lsof -i :3142|cut -d ' ' -f3 | uniq | sed '/^\s*$/d')"}
 if [ -n "$proxy_url" ]; then
@@ -124,7 +124,7 @@ elif [ "$apt_cacher" = "apt-cacher-ng" ] ; then
   fi
 fi
 
-# create the rootfs - not much to modify here, except maybe throw in some more packages if you want.
+# create the rootfs - not much to modify here, except maybe throw in some more packages if you want
 debootstrap --foreign --keyring=/usr/share/keyrings/kali-archive-keyring.gpg --include=kali-archive-keyring \
   --components=${components} --include=${arm// /,} --arch ${architecture} ${suite} ${work_dir} http://http.kali.org/kali
 
@@ -152,7 +152,7 @@ else
   extra_args="-q"
 fi
 
-# systemd-nspawn enviroment
+# systemd-nspawn environment
 systemd-nspawn_exec() {
   ENV="RUNLEVEL=1,LANG=C,DEBIAN_FRONTEND=noninteractive,DEBCONF_NOWARNINGS=yes"
   systemd-nspawn --bind-ro "$qemu_bin" $extra_args --capability=cap_setfcap -E $ENV -M "$machine" -D "$work_dir" "$@"
@@ -197,19 +197,19 @@ EOF
 # DNS server
 echo "nameserver 8.8.8.8" > ${work_dir}/etc/resolv.conf
 
-# Copy directory bsp into build dir.
+# Copy directory bsp into build dir
 cp -rp bsp ${work_dir}
 
 export MALLOC_CHECK_=0 # workaround for LP: #520465
 
-# Enable the use of http proxy in third-stage in case it is enabled.
+# Enable the use of http proxy in third-stage in case it is enabled
 if [ -n "$proxy_url" ]; then
   echo "Acquire::http { Proxy \"$proxy_url\" };" > ${work_dir}/etc/apt/apt.conf.d/66proxy
 fi
 
 
 # Copy a default config, with everything commented out so people find it when
-# they go to add something when they are following instructions on a website.
+# they go to add something when they are following instructions on a website
 cp "${basedir}"/../bsp/firmware/rpi/config.txt ${work_dir}/boot/config.txt
 
 # move P4wnP1 in (change to release blob when ready)
@@ -238,7 +238,7 @@ apt-get --yes --allow-change-held-packages -o dpkg::options::=--force-confnew di
 apt-get --yes --allow-change-held-packages -o dpkg::options::=--force-confnew autoremove
 
 # Because copying in authorized_keys is hard for people to do, let's make the
-# image insecure and enable root login with a password.
+# image insecure and enable root login with a password
 echo "Allow root login..."
 sed -i -e 's/^#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
 
@@ -247,7 +247,7 @@ sed -i -e 's/^#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/
 # Note: Removing this should be considered, as enabling the monitor interface once
 # and using wpa_supplicant afterwards, crashs the WiFi firmware (even if the monitor
 # interface is removed). Afterwards the 'brcmfmac' module has to be removed and
-# loaded again (the driver push the firmware and restarts the fmac chip on init).
+# loaded again (the driver push the firmware and restarts the fmac chip on init)
 # Sometimes only a reboot works
 install -m755 /bsp/scripts/monstart /usr/bin/
 install -m755 /bsp/scripts/monstop /usr/bin/
@@ -260,7 +260,7 @@ install -m644 /bsp/services/rpi/*.service /etc/systemd/system/
 install -m644 /bsp/bluetooth/rpi/50-bluetooth-hci-auto-poweron.rules /etc/udev/rules.d/
 
 # Regenerated the shared-mime-info database on the first boot
-# since it fails to do so properly in a chroot.
+# since it fails to do so properly in a chroot
 systemctl enable smi-hack
 
 # Resize FS on first run (hopefully)
@@ -300,7 +300,7 @@ systemctl enable fake-hwclock
 mkdir -p /boot
 echo "dwc_otg.lpm_enable=0 console=serial0,115200 console=tty1 root=/dev/mmcblk0p2 rootfstype=$fstype elevator=deadline fsck.repair=yes rootwait" > /boot/cmdline.txt
 
-# Install P4wnP1 A.L.O.A.
+# Install P4wnP1 A.L.O.A
 cd /root/P4wnP1
 make installkali
 
@@ -363,15 +363,15 @@ for logs in $(find /var/log -type f); do > $logs; done
 history -c
 EOF
 
-# Newer systemd requires that /etc/machine-id exists but is empty.
+# Newer systemd requires that /etc/machine-id exists but is empty
 rm -f "${work_dir}"/etc/machine-id || true
 touch "${work_dir}"/etc/machine-id
 rm -f "${work_dir}"/var/lib/dbus/machine-id || true
 
-# Define DNS server after last running systemd-nspawn.
+# Define DNS server after last running systemd-nspawn
 echo "nameserver 8.8.8.8" > ${work_dir}/etc/resolv.conf
 
-# Disable the use of http proxy in case it is enabled.
+# Disable the use of http proxy in case it is enabled
 if [ -n "$proxy_url" ]; then
   unset http_proxy
   rm -rf ${work_dir}/etc/apt/apt.conf.d/66proxy
@@ -392,11 +392,11 @@ deb ${mirror} ${suite} ${components//,/ }
 #deb-src ${mirror} ${suite} ${components//,/ }
 EOF
 
-# Uncomment this if you use apt-cacher-ng otherwise git clones will fail.
+# Uncomment this if you use apt-cacher-ng otherwise git clones will fail
 #unset http_proxy
 
 # Kernel section. If you want to use a custom kernel, or configuration, replace
-# them in this section.
+# them in this section
 
 cd ${TOPDIR}
 
@@ -407,7 +407,7 @@ cp -rf rpi-firmware/boot/* ${work_dir}/boot/
 cp -rf rpi-firmware/opt/* ${work_dir}/opt/
 rm -rf rpi-firmware
 
-# Build nexmon firmware outside the build system, if we can (use repository with driver and firmware for P4wnP1).
+# Build nexmon firmware outside the build system, if we can (use repository with driver and firmware for P4wnP1)
 cd "${basedir}"
 git clone https://github.com/mame82/nexmon_wifi_covert_channel.git -b p4wnp1 "${basedir}"/nexmon --depth 1
 
@@ -421,25 +421,25 @@ cd ${work_dir}/usr/src/kernel
 # Remove redundant yyloc global declaration
 patch -p1 --no-backup-if-mismatch < ${basedir}/../patches/11647f99b4de6bc460e106e876f72fc7af3e54a6.patch
 # Note: Compiling the kernel in /usr/src/kernel of the target file system is problematic, as the binaries of the compiling host architecture
-# get deployed to the /usr/src/kernel/scripts subfolder (in this case linux-x64 binaries), which is symlinked to /usr/src/build later on.
-# This would f.e. hinder rebuilding single modules, like nexmon's brcmfmac driver, on the Pi itself (online compilation).
+# get deployed to the /usr/src/kernel/scripts subfolder (in this case linux-x64 binaries), which is symlinked to /usr/src/build later on
+# This would f.e. hinder rebuilding single modules, like nexmon's brcmfmac driver, on the Pi itself (online compilation)
 # The cause:building of modules relies on the pre-built binaries in /usr/src/build folder. But the helper binaries are compiled with the
 # HOST toolchain and not with the crosscompiler toolchain (f.e. /usr/src/kernel/script/basic/fixdep would end up as x64 binary, as this helper
 # is not compiled with the CROSS toolchain). As those scripts are used druing module build, it wouldn't work to build on the pi, later on,
-# without recompiling the helper binaries with the proper crosscompiler toolchain.
+# without recompiling the helper binaries with the proper crosscompiler toolchain
 #
-# To account for that, the 'script' subfolder could be rebuild on the target (online) by running `make scripts/` from /usr/src/kernel folder.
-# Rebuilding the script, again, depends on additional tooling, like `bc` binary, which has to be installed.
+# To account for that, the 'script' subfolder could be rebuild on the target (online) by running `make scripts/` from /usr/src/kernel folder
+# Rebuilding the script, again, depends on additional tooling, like `bc` binary, which has to be installed
 #
 # Currently the step of recompiling the kernel/scripts folder has to be done manually online, but it should be possible to do it after kernel
-# build, by setting the host compiler (CC) to the gcc of the linaro-arm-linux-gnueabihf-raspbian-x64 toolchain (not only the CROSS_COMPILE).
+# build, by setting the host compiler (CC) to the gcc of the linaro-arm-linux-gnueabihf-raspbian-x64 toolchain (not only the CROSS_COMPILE)
 # The problem is, that the used linaro toolchain builds for armhf (not a problem for kernel, as there're no dependencies on hf librearies),
-# but the debian packages (and the provided gcc) are armel.
+# but the debian packages (and the provided gcc) are armel
 #
 # To clean up this whole "armel" vs "armhf" mess, the kernel should be compiled with a armel toolchain (best choice would be the toolchain
 # which is used to build the kali armel packages itself, which is hopefully available for linux-x64)
 #
-# For now this is left as manual step, as the normal user shouldn't have a need to recompile kernel parts on the Pi itself.
+# For now this is left as manual step, as the normal user shouldn't have a need to recompile kernel parts on the Pi itself
 
 
 # Set default defconfig
@@ -477,7 +477,7 @@ ln -s /usr/src/kernel source
 cd "${basedir}"
 
 # Copy a default config, with everything commented out so people find it when
-# they go to add something when they are following instructions on a website.
+# they go to add something when they are following instructions on a website
 cp "${basedir}"/../bsp/firmware/rpi/config.txt ${work_dir}/boot/config.txt
 
 cat << EOF >> ${work_dir}/boot/config.txt
@@ -485,7 +485,7 @@ dtoverlay=dwc2
 EOF
 
 # systemd doesn't seem to be generating the fstab properly for some people, so
-# let's create one.
+# let's create one
 cat << EOF > ${work_dir}/etc/fstab
 # <file system> <mount point>   <type>  <options>       <dump>  <pass>
 proc            /proc           proc    defaults          0       0
@@ -515,7 +515,7 @@ make
 sed -i -e 's/all:.*/all: $(RAM_FILE)/g' ${NEXMON_ROOT}/patches/bcm43430a1/7_45_41_46/nexmon/Makefile
 cd ${NEXMON_ROOT}/patches/bcm43430a1/7_45_41_46/nexmon
 make clean
-# We do this so we don't have to install the ancient isl version into /usr/local/lib on systems.
+# We do this so we don't have to install the ancient isl version into /usr/local/lib on systems
 LD_LIBRARY_PATH=${NEXMON_ROOT}/buildtools/isl-0.10/.libs make ARCH=arm CC=${NEXMON_ROOT}/buildtools/gcc-arm-none-eabi-5_4-2016q2-linux-x86/bin/arm-none-eabi-
 # RPi0w->3B firmware
 # disable nexmon by default
@@ -523,8 +523,8 @@ mkdir -p ${work_dir}/lib/firmware/brcm
 cp ${NEXMON_ROOT}/patches/bcm43430a1/7_45_41_46/nexmon/brcmfmac43430-sdio.bin ${work_dir}/lib/firmware/brcm/brcmfmac43430-sdio.nexmon.bin
 cp ${NEXMON_ROOT}/patches/bcm43430a1/7_45_41_46/nexmon/brcmfmac43430-sdio.bin ${work_dir}/lib/firmware/brcm/brcmfmac43430-sdio.bin
 wget https://raw.githubusercontent.com/RPi-Distro/firmware-nonfree/master/brcm/brcmfmac43430-sdio.txt -O ${work_dir}/lib/firmware/brcm/brcmfmac43430-sdio.txt
-# Make a backup copy of the rpi firmware in case people don't want to use the nexmon firmware.
-# The firmware used on the RPi is not the same firmware that is in the firmware-brcm package which is why we do this.
+# Make a backup copy of the rpi firmware in case people don't want to use the nexmon firmware
+# The firmware used on the RPi is not the same firmware that is in the firmware-brcm package which is why we do this
 wget https://raw.githubusercontent.com/RPi-Distro/firmware-nonfree/master/brcm/brcmfmac43430-sdio.bin -O ${work_dir}/lib/firmware/brcm/brcmfmac43430-sdio.rpi.bin
 #cp ${work_dir}/lib/firmware/brcm/brcmfmac43430-sdio.rpi.bin ${work_dir}/lib/firmware/brcm/brcmfmac43430-sdio.bin
 
@@ -534,7 +534,7 @@ cd "${basedir}"
 
 sed -i -e 's/^#PermitRootLogin.*/PermitRootLogin yes/' ${work_dir}/etc/ssh/sshd_config
 
-# Calculate the space to create the image.
+# Calculate the space to create the image
 root_size=$(du -s -B1 ${work_dir} --exclude=${work_dir}/boot | cut -f1)
 root_extra=$((${root_size}/1024/1000*5*1024/5))
 raw_size=$(($((${free_space}*1024))+${root_extra}+$((${bootsize}*1024))+4096))
@@ -566,12 +566,12 @@ mount ${rootp} ${basedir}/root
 mkdir -p ${basedir}/root/boot
 mount ${bootp} ${basedir}/root/boot
 
-# We do this down here to get rid of the build system's resolv.conf after running through the build.
+# We do this down here to get rid of the build system's resolv.conf after running through the build
 cat << EOF > kali-${architecture}/etc/resolv.conf
 nameserver 8.8.8.8
 EOF
 
-# Because of the p4wnp1 script, we set the hostname down here, instead of using the machine name.
+# Because of the p4wnp1 script, we set the hostname down here, instead of using the machine name
 # Set hostname
 echo "${hostname}" > ${work_dir}/etc/hostname
 
@@ -629,7 +629,7 @@ else
   chmod 644 ${current_dir}/${imagename}.img
 fi
 
-# Clean up all the temporary build stuff and remove the directories.
-# Comment this out to keep things around if you want to see what may have gone wrong.
+# Clean up all the temporary build stuff and remove the directories
+# Comment this out to keep things around if you want to see what may have gone wrong
 echo "Cleaning up the temporary build files..."
 rm -rf "${basedir}"

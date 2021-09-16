@@ -26,7 +26,7 @@ desktop=${desktop:-"xfce"}
 
 # Load common variables
 include variables
-# Checks script enviroment
+# Checks script environment
 include check
 # Packages build list
 include packages
@@ -49,7 +49,7 @@ set_hostname "${hostname}"
 # Network configs
 include network
 add_interface eth0
-# Copy directory bsp into build dir.
+# Copy directory bsp into build dir
 cp -rp bsp "${work_dir}"
 
 # Third stage
@@ -91,8 +91,8 @@ apt download -o APT::Sandbox::User=root ca-certificates 2>/dev/null
 # Set a REGDOMAIN.  This needs to be done or wireless doesn't work correctly on the RPi 3B+
 sed -i -e 's/REGDOM.*/REGDOMAIN=00/g' /etc/default/crda
 
-# We replace the u-boot menu defaults here so we can make sure the build system doesn't poison it.
-# We use _EOF_ so that the third-stage script doesn't end prematurely.
+# We replace the u-boot menu defaults here so we can make sure the build system doesn't poison it
+# We use _EOF_ so that the third-stage script doesn't end prematurely
 cat << '_EOF_' > /etc/default/u-boot
 U_BOOT_PARAMETERS="console=ttyS0,115200 console=tty1 root=/dev/mmcblk0p1 rootwait panic=10 rw rootfstype=$fstype net.ifnames=0"
 _EOF_
@@ -101,7 +101,7 @@ _EOF_
 echo "T1:12345:respawn:/sbin/getty -L ttymxc1 115200 vt100" >> /etc/inittab
 
 # Try and make the console a bit nicer
-# Set the terminus font for a bit nicer display.
+# Set the terminus font for a bit nicer display
 sed -i -e 's/FONTFACE=.*/FONTFACE="Terminus"/' /etc/default/console-setup
 sed -i -e 's/FONTSIZE=.*/FONTSIZE="6x12"/' /etc/default/console-setup
 
@@ -126,9 +126,9 @@ systemd-nspawn_exec /third-stage
 set_locale "$locale"
 # Clean system
 include clean_system
-# Define DNS server after last running systemd-nspawn.
+# Define DNS server after last running systemd-nspawn
 echo "nameserver 8.8.8.8" >"${work_dir}"/etc/resolv.conf
-# Disable the use of http proxy in case it is enabled.
+# Disable the use of http proxy in case it is enabled
 disable_proxy
 # Mirror & suite replacement
 restore_mirror
@@ -136,10 +136,10 @@ restore_mirror
 #include sources.list
 
 cd "${basedir}"
-# Do the kernel stuff...
+# Do the kernel stuff..
 git clone --depth 1 -b v5.4.45-newport https://github.com/gateworks/linux-newport ${work_dir}/usr/src/kernel
 cd ${work_dir}/usr/src/kernel
-# Don't change the version because of our patches.
+# Don't change the version because of our patches
 touch .scmversion
 export ARCH=arm64
 export CROSS_COMPILE=aarch64-linux-gnu- 
@@ -182,7 +182,7 @@ done
 EOF
 chmod +x ${work_dir}/lib/systemd/system-shutdown/gsc-poweroff
 
-# Calculate the space to create the image.
+# Calculate the space to create the image
 root_size=$(du -s -B1 ${work_dir} --exclude=${work_dir}/boot | cut -f1)
 root_extra=$((${root_size}/1024/1000*5*1024/5))
 raw_size=$(($((${free_space}*1024))+${root_extra}))
@@ -213,7 +213,7 @@ mkfs $features -t $fstype -L ROOTFS ${rootp}
 mkdir -p "${basedir}"/root
 mount ${rootp} "${basedir}"/root
 
-# Create an fstab so that we don't mount / read-only.
+# Create an fstab so that we don't mount / read-only
 UUID=$(blkid -s UUID -o value ${rootp})
 echo "UUID=$UUID /               $fstype    errors=remount-ro 0       1" >> ${work_dir}/etc/fstab
 
@@ -261,7 +261,7 @@ else
   chmod 644 ${current_dir}/${imagename}.img
 fi
 
-# Clean up all the temporary build stuff and remove the directories.
-# Comment this out to keep things around if you want to see what may have gone wrong.
+# Clean up all the temporary build stuff and remove the directories
+# Comment this out to keep things around if you want to see what may have gone wrong
 echo "Removing temporary build files"
 rm -rf "${basedir}"

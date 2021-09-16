@@ -26,7 +26,7 @@ desktop=${desktop:-"none"}
 
 # Load common variables
 include variables
-# Checks script enviroment
+# Checks script environment
 include check
 # Packages build list
 include packages
@@ -49,11 +49,11 @@ set_hostname "${hostname}"
 # Network configs
 include network
 add_interface eth0
-# Copy directory bsp into build dir.
+# Copy directory bsp into build dir
 cp -rp bsp "${work_dir}"
 
 # Eventually this should become a systemd service, but for now, we use the same
-# init.d file that they provide and we let systemd handle the conversion.
+# init.d file that they provide and we let systemd handle the conversion
 mkdir -p ${work_dir}/etc/init.d/
 cat << 'EOF' > ${work_dir}/etc/init.d/brcm_patchram_plus
 #!/bin/bash
@@ -172,7 +172,7 @@ apt download -o APT::Sandbox::User=root ca-certificates 2>/dev/null
 sed -i -e 's/REGDOM.*/REGDOMAIN=00/g' /etc/default/crda || true
 
 # Try and make the console a bit nicer
-# Set the terminus font for a bit nicer display.
+# Set the terminus font for a bit nicer display
 sed -i -e 's/FONTFACE=.*/FONTFACE="Terminus"/' /etc/default/console-setup
 sed -i -e 's/FONTSIZE=.*/FONTSIZE="6x12"/' /etc/default/console-setup
 
@@ -197,9 +197,9 @@ systemd-nspawn_exec /third-stage
 set_locale "$locale"
 # Clean system
 include clean_system
-# Define DNS server after last running systemd-nspawn.
+# Define DNS server after last running systemd-nspawn
 echo "nameserver 8.8.8.8" >"${work_dir}"/etc/resolv.conf
-# Disable the use of http proxy in case it is enabled.
+# Disable the use of http proxy in case it is enabled
 disable_proxy
 # Mirror & suite replacement
 restore_mirror
@@ -207,7 +207,7 @@ restore_mirror
 include sources.list
 
 # Kernel section. If you want to use a custom kernel, or configuration, replace
-# them in this section.
+# them in this section
 git clone --depth 1 https://github.com/friendlyarm/linux -b sunxi-4.x.y ${work_dir}/usr/src/kernel
 cd ${work_dir}/usr/src/kernel
 git rev-parse HEAD > ${work_dir}/usr/src/kernel-at-commit
@@ -232,11 +232,11 @@ cp arch/arm64/boot/dts/allwinner/overlays/*.dtb ${work_dir}/boot/overlays/
 make mrproper
 cd ${current_dir}
 
-# Copy over the firmware for the ap6212 wifi.
+# Copy over the firmware for the ap6212 wifi
 # On the neo plus2 default install there are other firmware files installed for
-# p2p and apsta but I can't find them publicly posted to friendlyarm's github.
+# p2p and apsta but I can't find them publicly posted to friendlyarm's github
 # At some point, nexmon could work for the device, but the support would need to
-# be added to nexmon.
+# be added to nexmon
 mkdir -p ${work_dir}/lib/firmware/ap6212/
 wget https://raw.githubusercontent.com/friendlyarm/android_vendor_broadcom_nanopi2/nanopi2-lollipop-mr1/proprietary/nvram_ap6212.txt -O ${work_dir}/lib/firmware/ap6212/nvram.txt
 wget https://raw.githubusercontent.com/friendlyarm/android_vendor_broadcom_nanopi2/nanopi2-lollipop-mr1/proprietary/nvram_ap6212a.txt -O ${work_dir}/lib/firmware/ap6212/nvram_ap6212.txt
@@ -248,10 +248,10 @@ wget https://raw.githubusercontent.com/friendlyarm/android_vendor_broadcom_nanop
 wget https://raw.githubusercontent.com/friendlyarm/android_vendor_broadcom_nanopi2/nanopi2-lollipop-mr1/proprietary/config_ap6212.txt -O ${work_dir}/lib/firmware/ap6212/config.txt
 
 # The way the base system comes, the firmware seems to be a symlink into the
-# ap6212 directory so let's do the same here.
+# ap6212 directory so let's do the same here
 # NOTE: This means we can't install firmware-brcm80211 firmware package because
 # the firmware will conflict, and based on testing the firmware in the package
-# *will not* work with this device.
+# *will not* work with this device
 mkdir -p ${work_dir}/lib/firmware/brcm
 cd ${work_dir}/lib/firmware/brcm
 ln -s /lib/firmware/ap6212/fw_bcm43438a1.bin brcmfmac43430a1-sdio.bin
@@ -316,7 +316,7 @@ mkimage -C none -A arm -T script -d ${work_dir}/boot/boot.cmd ${work_dir}/boot/b
 
 cd ${current_dir}
 
-# Calculate the space to create the image and create.
+# Calculate the space to create the image and create
 make_image
 
 # Create the disk partitions it
@@ -340,8 +340,8 @@ mkfs -O "$features" -t "$fstype" -L ROOTFS "${rootp}"
 mkdir -p "${basedir}"/root/
 mount "${rootp}" "${basedir}"/root
 
-# We do this here because we don't want to hardcode the UUID for the partition during creation.
-# systemd doesn't seem to be generating the fstab properly for some people, so let's create one.
+# We do this here because we don't want to hardcode the UUID for the partition during creation
+# systemd doesn't seem to be generating the fstab properly for some people, so let's create one
 cat <<EOF >"${work_dir}"/etc/fstab
 # <file system> <mount point>   <type>  <options>       <dump>  <pass>
 proc            /proc           proc    defaults          0       0
@@ -377,6 +377,6 @@ losetup -d "${loopdevice}"
 # Compress image compilation
 include compress_img
 
-# Clean up all the temporary build stuff and remove the directories.
-# Comment this out to keep things around if you want to see what may have gone wrong.
+# Clean up all the temporary build stuff and remove the directories
+# Comment this out to keep things around if you want to see what may have gone wrong
 clean_build

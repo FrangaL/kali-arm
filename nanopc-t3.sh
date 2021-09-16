@@ -26,7 +26,7 @@ desktop=${desktop:-"xfce"}
 
 # Load common variables
 include variables
-# Checks script enviroment
+# Checks script environment
 include check
 # Packages build list
 include packages
@@ -50,10 +50,10 @@ set_hostname "${hostname}"
 include network
 add_interface eth0
 #add_interface wlan0
-# Copy directory bsp into build dir.
+# Copy directory bsp into build dir
 cp -rp bsp "${work_dir}"
 
-# Disable RESUME (suspend/resume is currently broken anyway!) which speeds up boot massively.
+# Disable RESUME (suspend/resume is currently broken anyway!) which speeds up boot massively
 mkdir -p ${work_dir}/etc/initramfs-tools/conf.d/
 cat << EOF > ${work_dir}/etc/initramfs-tools/conf.d/resume
 RESUME=none
@@ -101,7 +101,7 @@ sed -i -e 's/REGDOM.*/REGDOMAIN=00/g' /etc/default/crda
 echo "T0:23:respawn:/sbin/agetty -L ttyAMA0 115200 vt100" >> /etc/inittab
 
 # Try and make the console a bit nicer
-# Set the terminus font for a bit nicer display.
+# Set the terminus font for a bit nicer display
 sed -i -e 's/FONTFACE=.*/FONTFACE="Terminus"/' /etc/default/console-setup
 sed -i -e 's/FONTSIZE=.*/FONTSIZE="6x12"/' /etc/default/console-setup
 
@@ -126,9 +126,9 @@ systemd-nspawn_exec /third-stage
 set_locale "$locale"
 # Clean system
 include clean_system
-# Define DNS server after last running systemd-nspawn.
+# Define DNS server after last running systemd-nspawn
 echo "nameserver 8.8.8.8" >"${work_dir}"/etc/resolv.conf
-# Disable the use of http proxy in case it is enabled.
+# Disable the use of http proxy in case it is enabled
 disable_proxy
 # Mirror & suite replacement
 restore_mirror
@@ -136,7 +136,7 @@ restore_mirror
 #include sources.list
 
 # Kernel section. If you want to use a custom kernel, or configuration, replace
-# them in this section.
+# them in this section
 git clone --depth 1 https://github.com/friendlyarm/linux -b nanopi2-v4.4.y ${work_dir}/usr/src/kernel
 cd ${work_dir}/usr/src/kernel
 git rev-parse HEAD > ${work_dir}/usr/src/kernel-at-commit
@@ -154,9 +154,9 @@ make mrproper
 make nanopi3_linux_defconfig
 cd ${current_dir}
 
-# Copy over the firmware for the nanopi3 wifi.
+# Copy over the firmware for the nanopi3 wifi
 # At some point, nexmon could work for the device, but the support would need to
-# be added to nexmon.
+# be added to nexmon
 mkdir -p ${work_dir}/lib/firmware/ap6212/
 wget https://raw.githubusercontent.com/friendlyarm/android_vendor_broadcom_nanopi2/nanopi2-lollipop-mr1/proprietary/nvram_ap6212.txt -O ${work_dir}/lib/firmware/ap6212/nvram.txt
 wget https://raw.githubusercontent.com/friendlyarm/android_vendor_broadcom_nanopi2/nanopi2-lollipop-mr1/proprietary/nvram_ap6212a.txt -O ${work_dir}/lib/firmware/ap6212/nvram_ap6212.txt
@@ -181,7 +181,7 @@ cd ${current_dir}
 
 cd ${current_dir}
 
-# Calculate the space to create the image and create.
+# Calculate the space to create the image and create
 make_image
 
 # Create the disk partitions it
@@ -210,8 +210,8 @@ mount "${rootp}" "${basedir}"/root
 mkdir -p "${basedir}"/root/boot
 mount "${bootp}" "${basedir}"/root/boot
 
-# We do this here because we don't want to hardcode the UUID for the partition during creation.
-# systemd doesn't seem to be generating the fstab properly for some people, so let's create one.
+# We do this here because we don't want to hardcode the UUID for the partition during creation
+# systemd doesn't seem to be generating the fstab properly for some people, so let's create one
 cat <<EOF >"${work_dir}"/etc/fstab
 # <file system> <mount point>   <type>  <options>       <dump>  <pass>
 proc            /proc           proc    defaults          0       0
@@ -222,7 +222,7 @@ log "Rsyncing rootfs into image file" green
 rsync -HPavz -q "${work_dir}"/ "${basedir}"/root/
 sync
 
-# Samsung bootloaders must be signed.
+# Samsung bootloaders must be signed
 # These are the same steps that are done by
 # https://github.com/friendlyarm/sd-fuse_nanopi2/blob/master/fusing.sh
 cd "${basedir}"
@@ -244,7 +244,7 @@ dd if="${basedir}"/bootloader/fip-nonsecure.img of=${loopdevice} bs=512 seek=384
 cat << EOF > "${basedir}"/bootloader/env.conf
 # U-Boot environment for Debian, Ubuntu
 #
-# Copyright (C) Guangzhou FriendlyARM Computer Tech. Co., Ltd.
+# Copyright (C) Guangzhou FriendlyARM Computer Tech. Co., Ltd
 # (http://www.friendlyarm.com)
 #
 
@@ -256,7 +256,7 @@ EOF
 sync
 
 # It should be possible to build your own u-boot, as part of this, if you
-# prefer, it will only generate the fip-nonsecure.img however.
+# prefer, it will only generate the fip-nonsecure.img however
 #git clone https://github.com/friendlyarm/u-boot -b nanopi2-v2016.01
 #cd u-boot
 #make CROSS_COMPILE=aarch64-linux-gnu- s5p6818_nanopi3_defconfig
@@ -278,6 +278,6 @@ losetup -d "${loopdevice}"
 # Compress image compilation
 include compress_img
 
-# Clean up all the temporary build stuff and remove the directories.
-# Comment this out to keep things around if you want to see what may have gone wrong.
+# Clean up all the temporary build stuff and remove the directories
+# Comment this out to keep things around if you want to see what may have gone wrong
 clean_build

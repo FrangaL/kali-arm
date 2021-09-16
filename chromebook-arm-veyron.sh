@@ -20,11 +20,11 @@ fi
 
 # Architecture
 architecture=${architecture:-"armhf"}
-# Generate a random machine name to be used.
+# Generate a random machine name to be used
 machine=$(tr -cd 'A-Za-z0-9' < /dev/urandom | head -c16 ; echo)
 # Custom hostname variable
 hostname=${2:-kali}
-# Custom image file name variable - MUST NOT include .img at the end.
+# Custom image file name variable - MUST NOT include .img at the end
 imagename=${3:-kali-linux-$1-veyron}
 # Suite to use, valid options are:
 # kali-rolling, kali-dev, kali-bleeding-edge, kali-dev-only, kali-experimental, kali-last-snapshot
@@ -37,14 +37,14 @@ bootsize="128"
 compress="xz"
 # Choose filesystem format to format ( ext3 or ext4 )
 fstype="ext3"
-# If you have your own preferred mirrors, set them here.
+# If you have your own preferred mirrors, set them here
 mirror=${mirror:-"http://http.kali.org/kali"}
 # Gitlab url Kali repository
 kaligit="https://gitlab.com/kalilinux"
 # Github raw url
 githubraw="https://raw.githubusercontent.com"
 
-# Check EUID=0 you can run any binary as root.
+# Check EUID=0 you can run any binary as root
 if [[ $EUID -ne 0 ]]; then
   echo "This script must be run as root or have super user permissions"
   echo "Use: sudo $0 ${1:-2.0} ${2:-kali}"
@@ -57,7 +57,7 @@ if [[ $# -eq 0 ]] ; then
   exit 0
 fi
 
-# Check exist bsp directory.
+# Check exist bsp directory
 if [ ! -e "bsp" ]; then
   echo "Error: missing bsp directory structure"
   echo "Please clone the full repository ${kaligit}/build-scripts/kali-arm"
@@ -95,10 +95,10 @@ packages="${arm} ${base} ${services}"
 
 kernel_release="R83-13020.B-chromeos-4.19"
 
-# Automatic configuration to use an http proxy, such as apt-cacher-ng.
-# You can turn off automatic settings by uncommenting apt_cacher=off.
+# Automatic configuration to use an http proxy, such as apt-cacher-ng
+# You can turn off automatic settings by uncommenting apt_cacher=off
 # apt_cacher=off
-# By default the proxy settings are local, but you can define an external proxy.
+# By default the proxy settings are local, but you can define an external proxy
 # proxy_url="http://external.intranet.local"
 apt_cacher=${apt_cacher:-"$(lsof -i :3142|cut -d ' ' -f3 | uniq | sed '/^\s*$/d')"}
 if [ -n "$proxy_url" ]; then
@@ -122,16 +122,16 @@ elif [[ "${architecture}" == "armel" ]]; then
         lib_arch="arm-linux-gnueabi"
 fi
 
-# create the rootfs - not much to modify here, except maybe throw in some more packages if you want.
+# create the rootfs - not much to modify here, except maybe throw in some more packages if you want
 eatmydata debootstrap --foreign --keyring=/usr/share/keyrings/kali-archive-keyring.gpg --include=kali-archive-keyring,eatmydata \
   --components=${components} --arch ${architecture} ${suite} ${work_dir} http://http.kali.org/kali
 
-# systemd-nspawn enviroment
+# systemd-nspawn environment
 systemd-nspawn_exec(){
   LANG=C systemd-nspawn -q --bind-ro ${qemu_bin} -M ${machine} -D ${work_dir} "$@"
 }
 
-# We need to manually extract eatmydata to use it for the second stage.
+# We need to manually extract eatmydata to use it for the second stage
 for archive in ${work_dir}/var/cache/apt/archives/*eatmydata*.deb; do
   dpkg-deb --fsys-tarfile "$archive" > ${work_dir}/eatmydata
   tar -xkf ${work_dir}/eatmydata -C ${work_dir}
@@ -195,12 +195,12 @@ EOF
 # DNS server
 echo "nameserver 8.8.8.8" > ${work_dir}/etc/resolv.conf
 
-# Copy directory bsp into build dir.
+# Copy directory bsp into build dir
 cp -rp bsp ${work_dir}
 
 export MALLOC_CHECK_=0 # workaround for LP: #520465
 
-# Enable the use of http proxy in third-stage in case it is enabled.
+# Enable the use of http proxy in third-stage in case it is enabled
 if [ -n "$proxy_url" ]; then
   echo "Acquire::http { Proxy \"$proxy_url\" };" > ${work_dir}/etc/apt/apt.conf.d/66proxy
 fi
@@ -213,12 +213,12 @@ eatmydata apt-get update
 
 eatmydata apt-get -y install git-core binutils ca-certificates cryptsetup-bin initramfs-tools locales console-common less nano git u-boot-tools
 
-# Create kali user with kali password... but first, we need to manually make some groups because they don't yet exist...
-# This mirrors what we have on a pre-installed VM, until the script works properly to allow end users to set up their own... user.
+# Create kali user with kali password... but first, we need to manually make some groups because they don't yet exist..
+# This mirrors what we have on a pre-installed VM, until the script works properly to allow end users to set up their own... user
 # However we leave off floppy, because who a) still uses them, and b) attaches them to an SBC!?
-# And since a lot of these have serial devices of some sort, dialout is added as well.
+# And since a lot of these have serial devices of some sort, dialout is added as well
 # scanner, lpadmin and bluetooth have to be added manually because they don't
-# yet exist in /etc/group at this point.
+# yet exist in /etc/group at this point
 groupadd -r -g 118 bluetooth
 groupadd -r -g 113 lpadmin
 groupadd -r -g 122 scanner
@@ -230,7 +230,7 @@ echo "kali:kali" | chpasswd
 aptops="--allow-change-held-packages -o dpkg::options::=--force-confnew -o Acquire::Retries=3"
 
 # This looks weird, but we do it twice because every so often, there's a failure to download from the mirror
-# So to workaround it, we attempt to install them twice.
+# So to workaround it, we attempt to install them twice
 eatmydata apt-get install -y \$aptops ${packages} || eatmydata apt-get --yes --fix-broken install
 eatmydata apt-get install -y \$aptops ${packages} || eatmydata apt-get --yes --fix-broken install
 eatmydata apt-get install -y \$aptops ${desktop} ${extras} ${tools} || eatmydata apt-get --yes --fix-broken install
@@ -248,7 +248,7 @@ echo 'console-common console-data/keymap/full select en-latin1-nodeadkeys' | deb
 cp -p /bsp/services/all/*.service /etc/systemd/system/
 
 # Regenerated the shared-mime-info database on the first boot
-# since it fails to do so properly in a chroot.
+# since it fails to do so properly in a chroot
 systemctl enable smi-hack
 
 # Generate SSH host keys on first run
@@ -265,7 +265,7 @@ cd /root
 apt download -o APT::Sandbox::User=root ca-certificates 2>/dev/null
 
 # Try and make the console a bit nicer
-# Set the terminus font for a bit nicer display.
+# Set the terminus font for a bit nicer display
 sed -i -e 's/FONTFACE=.*/FONTFACE="Terminus"/' /etc/default/console-setup
 sed -i -e 's/FONTSIZE=.*/FONTSIZE="6x12"/' /etc/default/console-setup
 
@@ -299,7 +299,7 @@ for logs in $(find /var/log -type f); do > $logs; done
 history -c
 EOF
 
-# Disable the use of http proxy in case it is enabled.
+# Disable the use of http proxy in case it is enabled
 if [ -n "$proxy_url" ]; then
   unset http_proxy
   rm -rf ${work_dir}/etc/apt/apt.conf.d/66proxy
@@ -324,13 +324,13 @@ EOF
 cd ${basedir}
 
 # Kernel section.  If you want to use a custom kernel, or configuration, replace
-# them in this section.
+# them in this section
 # Mainline kernel branch
 git clone https://kernel.googlesource.com/pub/scm/linux/kernel/git/stable/linux.git -b linux-4.19.y ${work_dir}/usr/src/kernel
 # ChromeOS kernel branch
 #git clone --depth 1 https://chromium.googlesource.com/chromiumos/third_party/kernel.git -b release-${kernel_release} ${work_dir}/usr/src/kernel
 cd ${work_dir}/usr/src/kernel
-# Check out 4.19.133 which was known to work...
+# Check out 4.19.133 which was known to work..
 git checkout 17a87580a8856170d59aab302226811a4ae69149
 # Mainline kernel config
 cp ${basedir}/../kernel-configs/veyron-4.19.config .config
@@ -338,9 +338,9 @@ cp ${basedir}/../kernel-configs/veyron-4.19.config .config
 #cp ${basedir}/../kernel-configs/veyron-4.19-cros.config .config
 cp .config ${work_dir}/usr/src/veyron.config
 export ARCH=arm
-# Edit the CROSS_COMPILE variable as needed.
+# Edit the CROSS_COMPILE variable as needed
 export CROSS_COMPILE=arm-linux-gnueabihf-
-# This allows us to patch the kernel without it adding -dirty to the kernel version.
+# This allows us to patch the kernel without it adding -dirty to the kernel version
 touch .scmversion
 patch -p1 --no-backup-if-mismatch < ${basedir}/../patches/veyron/4.19/kali-wifi-injection.patch
 patch -p1 --no-backup-if-mismatch < ${basedir}/../patches/veyron/4.19/wireless-carl9170-Enable-sniffer-mode-promisc-flag-t.patch
@@ -474,7 +474,7 @@ mkimage -D "-I dts -O dtb -p 2048" -f kernel-veyron.its veyron-kernel
 echo 'noinitrd console=tty1 quiet root=PARTUUID=%U/PARTNROFF=1 rootwait rw lsm.module_locking=0 net.ifnames=0 rootfstype=$fstype' > cmdline
 
 # Pulled from ChromeOS, this is exactly what they do because there's no
-# bootloader in the kernel partition on ARM.
+# bootloader in the kernel partition on ARM
 dd if=/dev/zero of=bootloader.bin bs=512 count=1
 
 vbutil_kernel --arch arm --pack "${basedir}"/kernel.bin --keyblock /usr/share/vboot/devkeys/kernel.keyblock --signprivate /usr/share/vboot/devkeys/kernel_data_key.vbprivk --version 1 --config cmdline --bootloader bootloader.bin --vmlinuz veyron-kernel
@@ -504,14 +504,14 @@ mkdir -p ${work_dir}/var/lib/alsa/
 cp ${basedir}/../bsp/audio/veyron/asound.state ${work_dir}/var/lib/alsa/asound.state
 cp ${basedir}/../bsp/audio/veyron/default.pa ${work_dir}/etc/pulse/default.pa
 
-# mali rules so users can access the mali0 driver...
+# mali rules so users can access the mali0 driver..
 cp ${basedir}/../bsp/udev/50-mali.rules ${work_dir}/etc/udev/rules.d/50-mali.rules
 cp ${basedir}/../bsp/udev/50-media.rules ${work_dir}/etc/udev/rules.d/50-media.rules
-# EHCI is apparently quirky.
+# EHCI is apparently quirky
 cp ${basedir}/../bsp/udev/99-rk3288-ehci-persist.rules ${work_dir}/etc/udev/rules.d/99-rk3288-ehci-persist.rules
 # Avoid gpio charger wakeup system
 cp ${basedir}/../bsp/udev/99-rk3288-gpio-charger.rules ${work_dir}/etc/udev/rules.d/99-rk3288-gpio-charger.rules
-# Rule used to kick start the bluetooth/wifi chip.
+# Rule used to kick start the bluetooth/wifi chip
 cp ${basedir}/../bsp/udev/80-brcm-sdio-added.rules ${work_dir}/etc/udev/rules.d/80-brcm-sdio-added.rules
 # Hide the eMMC partitions from udisks
 cp ${basedir}/../bsp/udev/99-hide-emmc-partitions.rules ${work_dir}/etc/udev/rules.d/99-hide-emmc-partitions.rules
@@ -526,19 +526,19 @@ EOF
 mkdir -p ${work_dir}/etc/X11/xorg.conf.d
 cp ${basedir}/../bsp/xorg/10-synaptics-chromebook.conf ${work_dir}/etc/X11/xorg.conf.d/
 
-# Copy the broadcom firmware files in.
+# Copy the broadcom firmware files in
 mkdir -p ${work_dir}/lib/firmware/brcm/
 cp ${basedir}/../bsp/firmware/veyron/brcm* ${work_dir}/lib/firmware/brcm/
 cp ${basedir}/../bsp/firmware/veyron/BCM* ${work_dir}/lib/firmware/brcm/
-# Copy in the touchpad firmwares - same as above.
+# Copy in the touchpad firmwares - same as above
 cp ${basedir}/../bsp/firmware/veyron/elan* ${work_dir}/lib/firmware/
 cp ${basedir}/../bsp/firmware/veyron/max* ${work_dir}/lib/firmware/
 cd ${basedir}
 
-# We need to kick start the sdio chip to get bluetooth/wifi going.
+# We need to kick start the sdio chip to get bluetooth/wifi going
 cp ${basedir}/../bsp/firmware/veyron/brcm_patchram_plus ${work_dir}/usr/sbin/
 
-# Calculate the space to create the image.
+# Calculate the space to create the image
 root_size=$(du -s -B1 ${work_dir} --exclude=${work_dir}/boot | cut -f1)
 root_extra=$((${root_size}/1024/1000*5*1024/5))
 raw_size=$(($((${free_space}*1024))+${root_extra}+$((${bootsize}*1024))+4096))
@@ -570,7 +570,7 @@ mkfs $features -t $fstype -L ROOTFS ${rootp}
 mkdir -p "${basedir}"/root
 mount ${rootp} "${basedir}"/root
 
-# Create an fstab so that we don't mount / read-only.
+# Create an fstab so that we don't mount / read-only
 UUID=$(blkid -s UUID -o value ${rootp})
 echo "UUID=$UUID /               $fstype    errors=remount-ro 0       1" >> ${work_dir}/etc/fstab
 
@@ -621,7 +621,7 @@ else
   chmod 644 ${current_dir}/${imagename}.img
 fi
 
-# Clean up all the temporary build stuff and remove the directories.
-# Comment this out to keep things around if you want to see what may have gone wrong.
+# Clean up all the temporary build stuff and remove the directories
+# Comment this out to keep things around if you want to see what may have gone wrong
 echo "Removing temporary build files"
 rm -rf "${basedir}"

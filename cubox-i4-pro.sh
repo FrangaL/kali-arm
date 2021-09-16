@@ -10,8 +10,6 @@
 # Stop on error
 set -e
 
-# This is for the Cubox-i
-
 # Uncomment to activate debug
 # debug=true
 
@@ -22,11 +20,11 @@ fi
 
 # Architecture
 architecture=${architecture:-"armhf"}
-# Generate a random machine name to be used.
+# Generate a random machine name to be used
 machine=$(tr -cd 'A-Za-z0-9' < /dev/urandom | head -c16 ; echo)
 # Custom hostname variable
 hostname=${2:-kali}
-# Custom image file name variable - MUST NOT include .img at the end.
+# Custom image file name variable - MUST NOT include .img at the end
 imagename=${3:-kali-linux-$1-cuboxi}
 # Suite to use, valid options are:
 # kali-rolling, kali-dev, kali-bleeding-edge, kali-dev-only, kali-experimental, kali-last-snapshot
@@ -39,14 +37,14 @@ bootsize="128"
 compress="xz"
 # Choose filesystem format to format ( ext3 or ext4 )
 fstype="ext3"
-# If you have your own preferred mirrors, set them here.
+# If you have your own preferred mirrors, set them here
 mirror=${mirror:-"http://http.kali.org/kali"}
 # Gitlab url Kali repository
 kaligit="https://gitlab.com/kalilinux"
 # Github raw url
 githubraw="https://raw.githubusercontent.com"
 
-# Check EUID=0 you can run any binary as root.
+# Check EUID=0 you can run any binary as root
 if [[ $EUID -ne 0 ]]; then
   echo "This script must be run as root or have super user permissions"
   echo "Use: sudo $0 ${1:-2.0} ${2:-kali}"
@@ -59,7 +57,7 @@ if [[ $# -eq 0 ]] ; then
   exit 0
 fi
 
-# Check exist bsp directory.
+# Check exist bsp directory
 if [ ! -e "bsp" ]; then
   echo "Error: missing bsp directory structure"
   echo "Please clone the full repository ${kaligit}/build-scripts/kali-arm"
@@ -95,10 +93,10 @@ extras="alsa-utils bc bison bluez bluez-firmware kali-linux-core libnss-systemd 
 
 packages="${arm} ${base} ${services}"
 
-# Automatic configuration to use an http proxy, such as apt-cacher-ng.
-# You can turn off automatic settings by uncommenting apt_cacher=off.
+# Automatic configuration to use an http proxy, such as apt-cacher-ng
+# You can turn off automatic settings by uncommenting apt_cacher=off
 # apt_cacher=off
-# By default the proxy settings are local, but you can define an external proxy.
+# By default the proxy settings are local, but you can define an external proxy
 # proxy_url="http://external.intranet.local"
 apt_cacher=${apt_cacher:-"$(lsof -i :3142|cut -d ' ' -f3 | uniq | sed '/^\s*$/d')"}
 if [ -n "$proxy_url" ]; then
@@ -122,16 +120,16 @@ elif [[ "${architecture}" == "armel" ]]; then
         lib_arch="arm-linux-gnueabi"
 fi
 
-# create the rootfs - not much to modify here, except maybe throw in some more packages if you want.
+# create the rootfs - not much to modify here, except maybe throw in some more packages if you want
 eatmydata debootstrap --foreign --keyring=/usr/share/keyrings/kali-archive-keyring.gpg --include=kali-archive-keyring,eatmydata \
   --components=${components} --arch ${architecture} ${suite} ${work_dir} http://http.kali.org/kali
 
-# systemd-nspawn enviroment
+# systemd-nspawn environment
 systemd-nspawn_exec(){
   LANG=C systemd-nspawn -q --bind-ro ${qemu_bin} -M ${machine} -D ${work_dir} "$@"
 }
 
-# We need to manually extract eatmydata to use it for the second stage.
+# We need to manually extract eatmydata to use it for the second stage
 for archive in ${work_dir}/var/cache/apt/archives/*eatmydata*.deb; do
   dpkg-deb --fsys-tarfile "$archive" > ${work_dir}/eatmydata
   tar -xkf ${work_dir}/eatmydata -C ${work_dir}
@@ -195,12 +193,12 @@ EOF
 # DNS server
 echo "nameserver 8.8.8.8" > ${work_dir}/etc/resolv.conf
 
-# Copy directory bsp into build dir.
+# Copy directory bsp into build dir
 cp -rp bsp ${work_dir}
 
 export MALLOC_CHECK_=0 # workaround for LP: #520465
 
-# Enable the use of http proxy in third-stage in case it is enabled.
+# Enable the use of http proxy in third-stage in case it is enabled
 if [ -n "$proxy_url" ]; then
   echo "Acquire::http { Proxy \"$proxy_url\" };" > ${work_dir}/etc/apt/apt.conf.d/66proxy
 fi
@@ -214,12 +212,12 @@ eatmydata apt-get update
 
 eatmydata apt-get -y install binutils ca-certificates console-common cryptsetup-bin git initramfs-tools less locales nano u-boot-tools
 
-# Create kali user with kali password... but first, we need to manually make some groups because they don't yet exist...
-# This mirrors what we have on a pre-installed VM, until the script works properly to allow end users to set up their own... user.
+# Create kali user with kali password... but first, we need to manually make some groups because they don't yet exist..
+# This mirrors what we have on a pre-installed VM, until the script works properly to allow end users to set up their own... user
 # However we leave off floppy, because who a) still uses them, and b) attaches them to an SBC!?
-# And since a lot of these have serial devices of some sort, dialout is added as well.
+# And since a lot of these have serial devices of some sort, dialout is added as well
 # scanner, lpadmin and bluetooth have to be added manually because they don't
-# yet exist in /etc/group at this point.
+# yet exist in /etc/group at this point
 groupadd -r -g 118 bluetooth
 groupadd -r -g 113 lpadmin
 groupadd -r -g 122 scanner
@@ -231,7 +229,7 @@ echo "kali:kali" | chpasswd
 aptops="--allow-change-held-packages -o dpkg::options::=--force-confnew -o Acquire::Retries=3"
 
 # This looks weird, but we do it twice because every so often, there's a failure to download from the mirror
-# So to workaround it, we attempt to install them twice.
+# So to workaround it, we attempt to install them twice
 eatmydata apt-get install -y \$aptops ${packages} || eatmydata apt-get --yes --fix-broken install
 eatmydata apt-get install -y \$aptops ${packages} || eatmydata apt-get --yes --fix-broken install
 eatmydata apt-get install -y \$aptops ${desktop} ${extras} ${tools} || eatmydata apt-get --yes --fix-broken install
@@ -249,7 +247,7 @@ echo 'console-common console-data/keymap/full select en-latin1-nodeadkeys' | deb
 install -m644 /bsp/services/all/*.service /etc/systemd/system/
 
 # Regenerated the shared-mime-info database on the first boot
-# since it fails to do so properly in a chroot.
+# since it fails to do so properly in a chroot
 systemctl enable smi-hack
 
 # Generate SSH host keys on first run
@@ -273,15 +271,15 @@ sed -i -e 's/REGDOM.*/REGDOMAIN=00/g' /etc/default/crda
 echo 'T1:12345:respawn:/sbin/agetty 115200 ttymxc0 vt100' >> /etc/inittab
 
 # Try and make the console a bit nicer
-# Set the terminus font for a bit nicer display.
+# Set the terminus font for a bit nicer display
 sed -i -e 's/FONTFACE=.*/FONTFACE="Terminus"/' /etc/default/console-setup
 sed -i -e 's/FONTSIZE=.*/FONTSIZE="6x12"/' /etc/default/console-setup
 
 # Fix startup time from 5 minutes to 15 secs on raise interface wlan0
 sed -i 's/^TimeoutStartSec=5min/TimeoutStartSec=15/g' "/usr/lib/systemd/system/networking.service"
 
-# We replace the u-boot menu defaults here so we can make sure the build system doesn't poison it.
-# We use _EOF_ so that the third-stage script doesn't end prematurely.
+# We replace the u-boot menu defaults here so we can make sure the build system doesn't poison it
+# We use _EOF_ so that the third-stage script doesn't end prematurely
 cat << '_EOF_' > /etc/default/u-boot
 U_BOOT_PARAMETERS="console=ttyS0,115200 console=tty1 root=/dev/mmcblk0p1 rootwait panic=10 rw rootfstype=$fstype net.ifnames=0"
 _EOF_
@@ -316,7 +314,7 @@ for logs in $(find /var/log -type f); do > $logs; done
 history -c
 EOF
 
-# Disable the use of http proxy in case it is enabled.
+# Disable the use of http proxy in case it is enabled
 if [ -n "$proxy_url" ]; then
   unset http_proxy
   rm -rf ${work_dir}/etc/apt/apt.conf.d/66proxy
@@ -342,10 +340,10 @@ cd wlan-firmware
 rm -rf ${work_dir}/lib/firmware/brcm
 cp -a firmware/brcm ${work_dir}/lib/firmware/
 
-# Ensure we don't have root=/dev/sda3 in the extlinux.conf which comes from running u-boot-menu in a cross chroot.
+# Ensure we don't have root=/dev/sda3 in the extlinux.conf which comes from running u-boot-menu in a cross chroot
 sed -i -e 's/append.*/append root=\/dev\/mmcblk1p1 rootfstype=$fstype video=mxcfb0:dev=hdmi,1920x1080M@60,if=RGB24,bpp=32 console=ttymxc0,115200n8 console=tty1 consoleblank=0 rw rootwait/g' ${work_dir}/boot/extlinux/extlinux.conf
 
-# Calculate the space to create the image.
+# Calculate the space to create the image
 root_size=$(du -s -B1 ${work_dir} --exclude=${work_dir}/boot | cut -f1)
 root_extra=$((${root_size}/1024/1000*5*1024/5))
 raw_size=$(($((${free_space}*1024))+${root_extra}+$((${bootsize}*1024))+4096))
@@ -374,12 +372,12 @@ mkfs $features -t $fstype -L ROOTFS ${rootp}
 mkdir -p "${basedir}"/root
 mount ${rootp} "${basedir}"/root
 
-# We do this down here to get rid of the build system's resolv.conf after running through the build.
+# We do this down here to get rid of the build system's resolv.conf after running through the build
 cat << EOF > ${work_dir}/etc/resolv.conf
 nameserver 8.8.8.8
 EOF
 
-# Create an fstab so that we don't mount / read-only.
+# Create an fstab so that we don't mount / read-only
 UUID=$(blkid -s UUID -o value ${rootp})
 echo "UUID=$UUID /               $fstype    errors=remount-ro 0       1" >> ${work_dir}/etc/fstab
 
@@ -394,7 +392,7 @@ sync
 umount ${rootp}
 
 # We need an older cross compiler for compiling u-boot so check out the 4.7
-# cross compiler.
+# cross compiler
 #git clone https://github.com/offensive-security/gcc-arm-linux-gnueabihf-4.7
 
 #git clone https://github.com/SolidRun/u-boot-imx6.git
@@ -443,7 +441,7 @@ else
   chmod 644 ${current_dir}/${imagename}.img
 fi
 
-# Clean up all the temporary build stuff and remove the directories.
-# Comment this out to keep things around if you want to see what may have gone wrong.
+# Clean up all the temporary build stuff and remove the directories
+# Comment this out to keep things around if you want to see what may have gone wrong
 echo "Removing temporary build files"
 rm -rf "${basedir}"

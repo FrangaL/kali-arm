@@ -26,7 +26,7 @@ desktop=${desktop:-"xfce"}
 
 # Load common variables
 include variables
-# Checks script enviroment
+# Checks script environment
 include check
 # Packages build list
 include packages
@@ -48,9 +48,9 @@ include hosts
 set_hostname "${hostname}"
 # Network configs
 include network
-# Do *NOT* include wlan0 if using a desktop otherwise NetworkManager will ignore it.
+# Do *NOT* include wlan0 if using a desktop otherwise NetworkManager will ignore it
 #add_interface wlan0
-# Copy directory bsp into build dir.
+# Copy directory bsp into build dir
 cp -rp bsp "${work_dir}"
 
 # Third stage
@@ -64,7 +64,7 @@ eatmydata apt-get -y install ${third_stage_pkgs}
 eatmydata apt-get install -y ${packages} || eatmydata apt-get install -y --fix-broken
 eatmydata apt-get install -y ${desktop_pkgs} ${extra} || eatmydata apt-get install -y --fix-broken
 # Commented out for now, we don't want to install them due to the wifi device crashing
-# and causing kernel panics, even with the latest from unstable Debian.
+# and causing kernel panics, even with the latest from unstable Debian
 #eatmydata apt-get install -y dkms linux-image-arm64 u-boot-menu u-boot-rockchip
 eatmydata apt-get -y --purge autoremove
 
@@ -110,7 +110,7 @@ sed -i -e 's/REGDOM.*/REGDOMAIN=00/g' /etc/default/crda
 echo "T0:23:respawn:/sbin/agetty -L ttyAMA0 115200 vt100" >> /etc/inittab
 
 # Try and make the console a bit nicer
-# Set the terminus font for a bit nicer display.
+# Set the terminus font for a bit nicer display
 sed -i -e 's/FONTFACE=.*/FONTFACE="Terminus"/' /etc/default/console-setup
 sed -i -e 's/FONTSIZE=.*/FONTSIZE="6x12"/' /etc/default/console-setup
 
@@ -135,16 +135,16 @@ systemd-nspawn_exec /third-stage
 set_locale "$locale"
 # Clean system
 include clean_system
-# Define DNS server after last running systemd-nspawn.
+# Define DNS server after last running systemd-nspawn
 echo "nameserver 8.8.8.8" >"${work_dir}"/etc/resolv.conf
-# Disable the use of http proxy in case it is enabled.
+# Disable the use of http proxy in case it is enabled
 disable_proxy
 # Mirror & suite replacement
 restore_mirror
 # Reload sources.list
 #include sources.list
 
-# Pull in the wifi and bluetooth firmware from manjaro's git repository.
+# Pull in the wifi and bluetooth firmware from manjaro's git repository
 cd ${work_dir}
 git clone https://gitlab.manjaro.org/manjaro-arm/packages/community/ap6256-firmware.git
 cd ap6256-firmware
@@ -210,7 +210,7 @@ make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- LOCALVERSION= INSTALL_MOD_PATH=
 cp arch/arm64/boot/Image ${work_dir}/boot
 cp arch/arm64/boot/dts/rockchip/rk3399-pinebook-pro.dtb ${work_dir}/boot
 # clean up because otherwise we leave stuff around that causes external modules
-# to fail to build.
+# to fail to build
 make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- mrproper
 ## And re-setup the .config file, and make a backup in the previous directory
 cp ${current_dir}/kernel-configs/pinebook-pro-5.14.config .config
@@ -270,7 +270,7 @@ evdev:input:b0003v258Ap001E*
   EVDEV_ABS_36=::15
 EOF
 
-# Calculate the space to create the image and create.
+# Calculate the space to create the image and create
 make_image
 
 # Create the disk partitions it
@@ -294,17 +294,17 @@ mkfs -O "$features" -t "$fstype" -L ROOTFS "${rootp}"
 mkdir -p "${basedir}"/root/
 mount "${rootp}" "${basedir}"/root
 
-# We do this here because we don't want to hardcode the UUID for the partition during creation.
-# systemd doesn't seem to be generating the fstab properly for some people, so let's create one.
+# We do this here because we don't want to hardcode the UUID for the partition during creation
+# systemd doesn't seem to be generating the fstab properly for some people, so let's create one
 cat <<EOF >"${work_dir}"/etc/fstab
 # <file system> <mount point>   <type>  <options>       <dump>  <pass>
 proc            /proc           proc    defaults          0       0
 UUID=$(blkid -s UUID -o value ${rootp})  /               $fstype    defaults,noatime  0       1
 EOF
 
-# FUTURE: Move to debian u-boot when it works properly.
-# Ensure we don't have root=/dev/sda3 in the extlinux.conf which comes from running u-boot-menu in a cross chroot.
-# We do this down here because we don't know the UUID until after the image is created.
+# FUTURE: Move to debian u-boot when it works properly
+# Ensure we don't have root=/dev/sda3 in the extlinux.conf which comes from running u-boot-menu in a cross chroot
+# We do this down here because we don't know the UUID until after the image is created
 #sed -i -e "0,/root=.*/s//root=UUID=$(blkid -s UUID -o value ${rootp}) rootfstype=$fstype console=ttyS0,115200 console=tty1 consoleblank=0 rw quiet rootwait/g" ${work_dir}/boot/extlinux/extlinux.conf
 
 log "Rsyncing rootfs into image file" green
@@ -312,7 +312,7 @@ rsync -HPavz -q "${work_dir}"/ "${basedir}"/root/
 sync
 
 ## Nick the u-boot from Manjaro ARM to see if my compilation was somehow
-## screwing things up.
+## screwing things up
 cp ${current_dir}/bsp/bootloader/pinebook-pro/idbloader.img ${current_dir}/bsp/bootloader/pinebook-pro/trust.img ${current_dir}/bsp/bootloader/pinebook-pro/uboot.img ${basedir}/root/boot/
 dd if=${current_dir}/bsp/bootloader/pinebook-pro/idbloader.img of=${loopdevice} seek=64 conv=notrunc
 dd if=${current_dir}/bsp/bootloader/pinebook-pro/uboot.img of=${loopdevice} seek=16384 conv=notrunc
@@ -333,6 +333,6 @@ losetup -d "${loopdevice}"
 # Compress image compilation
 include compress_img
 
-# Clean up all the temporary build stuff and remove the directories.
-# Comment this out to keep things around if you want to see what may have gone wrong.
+# Clean up all the temporary build stuff and remove the directories
+# Comment this out to keep things around if you want to see what may have gone wrong
 clean_build
