@@ -1,8 +1,16 @@
 #!/bin/bash
-set -e
+#
+# Kali Linux ARM build-script for ODROID-W
+# https://gitlab.com/kalilinux/build-scripts/kali-arm
+#
+# This is now at End of Life - there will be no support going forward
+# More information: https://www.kali.org/docs/arm/
+#
 
-# This is ODROID-W Kali ARM build script - http://www.kali.org/downloads
-# A trusted Kali Linux image created by Offensive Security - http://www.offensive-security.com
+echo "This script is now deprecated" >&2
+sleep 5s
+
+set -e
 
 # Uncomment to activate debug
 # debug=true
