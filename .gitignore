@@ -1,5 +1,6 @@
 *[0-9]*/
 *.log
+.build/
 kali-armhf/
 .DS_Store
 *.img.xz

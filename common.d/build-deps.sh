@@ -17,10 +17,10 @@ apt-wait() {
   if [ "$1" == "update" ]; then
     apt-get update
   elif [ "$1" == "install_deps" ]; then
-    echo "Installing $deps..."
+    echo -e "\n[i] Installing $deps..."
     apt-get install -y -qq $deps
   elif [ "$1" == "remove" ]; then
-    echo "Removing $@..."
+    echo -e "\n[i] Removing $@..."
     apt-get -y --purge "$@"
   fi
 }
@@ -28,13 +28,22 @@ apt-wait() {
 
 # Function create script to clean system packages
 clean-system() {
-  echo "Cleaning up..."
-  cat << EOF > clean_system${backup_packages//list-debs/}.sh
-#!/bin/bash -e
+  mkdir -p ./.build/
+  clean_script=${backup_packages/list-pkgs/remove-pkgs}.sh
+  echo -e "\n[i] Cleaning up (${clean_script})..."
+  cat << EOF > ${clean_script}
+#!/usr/bin/env bash
+
+set -e
+
+if [[ \$EUID -ne 0 ]]; then
+  echo "[-] This script must be run as root" >&2
+  exit 1
+fi
 
 clean_system () {
   dpkg --clear-selections
-  dpkg --set-selections < $(cat ${backup_packages})
+  dpkg --set-selections < ${backup_packages}
   apt-get -y dselect-upgrade
   apt-get -y remove --purge \$(dpkg -l | grep "^rc" | awk '{print \$2}')
   ${del_arch_i386}
@@ -49,7 +58,9 @@ case \$yn in
       * ) echo "Please enter Y or N!";;
 esac
 EOF
-  chmod 0755 clean_system${backup_packages//list-debs/}.sh
+  chmod 0755 ${clean_script}
+
+  #rm -f "${backup_packages}"
 }
 
 trap clean-system ERR SIGTERM SIGINT
@@ -58,20 +69,21 @@ trap clean-system ERR SIGTERM SIGINT
 
 # Check permissions script
 if [[ $EUID -ne 0 ]]; then
-  echo "This script must be run as root" >&2
+  echo "[-] This script must be run as root" >&2
   exit 1
 fi
 
 # Check compatible systems
 if ! which dpkg > /dev/null; then
-   echo "Script only compatible with Debian-based systems" >&2
+   echo "[-] Script only compatible with Debian-based systems" >&2
    exit 1
 fi
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 # List of installed packages file
-backup_packages=$(mktemp)
+backup_packages=./.build/build-deps-list-pkgs-$(date +"%H_%M_%m_%d_%Y")
+mkdir -p ./.build/
 
 # Create a current list of installed packages
 dpkg --get-selections > ${backup_packages}
@@ -94,14 +106,14 @@ apt-wait install_deps
 # Check minimum version debootstrap
 debootstrap_ver=$(debootstrap --version | grep -o '[0-9.]\+' | head -1)
 if dpkg --compare-versions "$debootstrap_ver" lt "1.0.105"; then
-  echo "Currently your version of debootstrap ($debootstrap_ver) does not support the script" >&2
-  echo "The minimum version of debootstrap is 1.0.105" >&2
+  echo "[-] Currently your version of debootstrap ($debootstrap_ver) does not support the script" >&2
+  echo "[-] The minimum version of debootstrap is 1.0.105" >&2
   exit 1
 fi
 
 # Install kali-archive-keyring
 if [ ! -f /usr/share/keyrings/kali-archive-keyring.gpg ]; then
-  echo "Installing kali-archive-keyring..."
+  echo -e "\n[i] Installing kali-archive-keyring..."
   temp_key="$(mktemp -d)"
   git clone https://gitlab.com/kalilinux/packages/kali-archive-keyring.git $temp_key
   cd $temp_key/
@@ -111,11 +123,11 @@ if [ ! -f /usr/share/keyrings/kali-archive-keyring.gpg ]; then
   rm -rf $temp_key
 fi
 
-echo "Waiting for other software manager to finish..."
+echo -e "\n[i] Waiting for other software manager to finish..."
 
 # Install packages i386
 if [ $(arch) == 'x86_64' ]; then
-  echo "Detected x64"
+  echo -e "\n[i] Detected x64"
   if [ -z $(dpkg --print-foreign-architectures | grep i386) ]; then
     dpkg --add-architecture i386
     apt-wait update
