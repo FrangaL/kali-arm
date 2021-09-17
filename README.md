@@ -33,4 +33,31 @@ sudo ./rpi.sh 2021.3
 
 - - -
 
-Thu Sep 16 18:13:18 UTC 2021
+### Help
+
+```
+$ ./rpi.sh --help
+ Usage commands:
+# Desktop manager (xfce, gnome, i3, kde, lxde, mate, e17 or none)
+./rpi.sh --desktop kde
+
+# Enable debug & log file
+./rpi.sh --debug
+$
+```
+
+- - -
+
+### Custom Values
+
+An example of using a custom local LAN mirror:
+
+```
+$ echo 'mirror="http://192.168.1.100/kali"' > ./common.d/builder.txt
+...OR...
+$ sed 's_^#__' ./common.d/builder.txt.example > ./common.d/builder.txt
+```
+
+- - -
+
+Fri Sep 17 14:59:38 UTC 2021
