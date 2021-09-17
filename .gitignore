@@ -1,13 +1,9 @@
 # Folders
-# ./common.d/build-deps.sh
-*[0-9]*/
 .build/
-chroot/
-images/
-kali-armhf/
+base/
+working/
 local/
 # Files
-*.img
-*.img.xz
+common.d/builder.txt
 *.log
 .DS_Store
