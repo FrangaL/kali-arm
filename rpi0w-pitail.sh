@@ -521,6 +521,10 @@ rsync -HPavz -q --exclude boot ${work_dir}/ ${basedir}/root/
 rsync -rtx -q ${work_dir}/boot ${basedir}/root
 sync
 
+# Flush buffers and bytes - this is nicked from the Devuan arm-sdk.
+blockdev --flushbufs "${loopdevice}"
+python -c 'import os; os.fsync(open("'${loopdevice}'", "r+b"))'
+
 # Unmount partitions
 umount -l ${bootp}
 umount -l ${rootp}

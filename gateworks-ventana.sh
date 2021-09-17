@@ -227,7 +227,10 @@ EOF
 
 log "Rsyncing rootfs into image file" green
 rsync -HPavz -q "${work_dir}"/ "${basedir}"/root/
-sync
+
+# Flush buffers and bytes - this is nicked from the Devuan arm-sdk.
+blockdev --flushbufs "${loopdevice}"
+python -c 'import os; os.fsync(open("'${loopdevice}'", "r+b"))'
 
 # Umount filesystem
 umount -l "${rootp}"

@@ -170,9 +170,12 @@ mount ${rootp} "${basedir}"/root
 echo "Rsyncing rootfs to image file"
 rsync -HPavz -q ${work_dir}/ ${basedir}/root/
 
+# Flush buffers and bytes - this is nicked from the Devuan arm-sdk.
+blockdev --flushbufs "${loopdevice}"
+python -c 'import os; os.fsync(open("'${loopdevice}'", "r+b"))'
+
 # Unmount partitions
-sync
-umount ${rootp}
+umount -l ${rootp}
 
 dd if=${work_dir}/usr/lib/u-boot/Bananapro/u-boot-sunxi-with-spl.bin of=${loopdevice} bs=1024 seek=8
 

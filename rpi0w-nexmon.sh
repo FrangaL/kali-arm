@@ -75,7 +75,7 @@ install -m755 /bsp/scripts/monstop /usr/bin/
 echo "deb http://http.re4son-kernel.com/re4son kali-pi main" > /etc/apt/sources.list.d/re4son.list
 wget -qO /etc/apt/trusted.gpg.d/kali_pi-archive-keyring.gpg https://re4son-kernel.com/keys/http/kali_pi-archive-keyring.gpg
 eatmydata apt-get update
-eatmydata apt-get install -y kalipi-kernel kalipi-bootloader kalipi-re4son-firmware kalipi-kernel-headers kalipi-config kalipi-tft-config firmware-raspberry
+eatmydata apt-get install -y kalipi-kernel kalipi-bootloader kalipi-re4son-firmware kalipi-kernel-headers kalipi-config kalipi-tft-config firmware-raspberry pi-bluetooth
 
 # Copy script rpi-resizerootfs
 install -m755 /bsp/scripts/rpi-resizerootfs /usr/sbin/
@@ -187,6 +187,10 @@ log "Rsyncing rootfs into image file" green
 rsync -HPavz -q --exclude boot "${work_dir}"/ "${basedir}"/root/
 rsync -rtx -q "${work_dir}"/boot "${basedir}"/root
 sync
+
+# Flush buffers and bytes - this is nicked from the Devuan arm-sdk.
+blockdev --flushbufs "${loopdevice}"
+python -c 'import os; os.fsync(open("'${loopdevice}'", "r+b"))'
 
 # Umount filesystem
 umount -l "${bootp}"

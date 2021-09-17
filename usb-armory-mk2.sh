@@ -247,6 +247,11 @@ make ARCH=arm
 dd if=u-boot.imx of=${loopdevice} bs=512 seek=2 conv=fsync
 
 cd "${current_dir}"
+
+# Flush buffers and bytes - this is nicked from the Devuan arm-sdk.
+blockdev --flushbufs "${loopdevice}"
+python -c 'import os; os.fsync(open("'${loopdevice}'", "r+b"))'
+
 # Umount filesystem
 umount -l "${rootp}"
 
