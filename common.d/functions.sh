@@ -230,7 +230,7 @@ function make_image() {
   img_size=$(echo "${raw_size}"Ki | numfmt --from=iec-i --to=si)
   # Create the disk image
   log "Creating image file ${imagename}.img $img_size" green
-  fallocate -l "$img_size" "${current_dir}"/"${imagename}".img
+  fallocate -l "$img_size" "${image_dir}"/"${imagename}".img
 }
 
 # Clean up all the temporary build stuff and remove the directories.

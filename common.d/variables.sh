@@ -4,9 +4,11 @@
 # Current directory
 current_dir="$(pwd)"
 # Base directory
-basedir=${current_dir}/${hw_model}-${variant}
+basedir=${current_dir}/chroot/${hw_model}-${variant}
 # Working directory
-work_dir="${basedir}/kali-${architecture}"
+work_dir="${basedir}/local/kali-${architecture}"
+# Image directory
+image_dir="${basedir}/images/"
 # Custom image file name variable - MUST NOT include .img at the end
 imagename=${imagename:-"kali-linux-${version}-${hw_model}-${variant}"}
 # Generate a random machine name to be used
@@ -59,3 +61,7 @@ if [ -f "${current_dir}"/common.d/builder.txt ]; then
   # shellcheck source=/dev/null
   source "${current_dir}"/common.d/builder.txt
 fi
+
+mkdir -p "${basedir}" \
+         "${work_dir}" \
+         "${image_dir}"

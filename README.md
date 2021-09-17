@@ -27,8 +27,8 @@ sudo ./rpi.sh 2021.3
 ```
 
 - Depending on your system hardware & network connectivity, will depend on how long it will take to build
-- On x64 systems, after the script finishes running, you will have an image files located in `~/kali-arm/` called `kali-linux-2021.3-rpi-armhf.img.xz`
-- On x86 systems, as they do not have enough RAM to compress the image, after the script finishes running, you will have an image file located in `~/kali-arm/` called `kali-linux-2021.3-rpi-armhf.img`
+- On x64 systems, after the script finishes running, you will have an image files located in `~/kali-arm/images/` called `kali-linux-2021.3-rpi-armhf.img.xz`
+- On x86 systems, as they do not have enough RAM to compress the image, after the script finishes running, you will have an image file located in `~/kali-arm/images/` called `kali-linux-2021.3-rpi-armhf.img`
   - _Should you want to try and shrink the file to make it easier to distribute, you will need to use **your own preferred compression**_.
 
 - - -
