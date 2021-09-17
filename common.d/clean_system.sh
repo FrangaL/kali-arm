@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+log "clean system" green
+
 # Clean system
 systemd-nspawn_exec <<'EOF'
 rm -f /0

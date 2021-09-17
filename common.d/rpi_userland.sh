@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 # shellcheck disable=SC2154
 
+log "rpi userland" green
+
 git clone https://github.com/raspberrypi/userland.git "${basedir}"/userland
 
 cd "${basedir}"/userland && mkdir build

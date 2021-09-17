@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 
-# This is the bare minimimum if you want to start from very scratch.
+log "selecting packages" green
+
+# This is the bare minimum if you want to start from very scratch.
 minimal_pkgs="ca-certificates iw parted ssh wpasupplicant"
 
 # This is the list of minimal common packages

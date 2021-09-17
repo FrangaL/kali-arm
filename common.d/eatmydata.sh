@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+log "eatmydata" green
+
 # We need to manually extract eatmydata to use it for the second stage.
 for archive in "${work_dir}"/var/cache/apt/archives/*eatmydata*.deb; do
   dpkg-deb --fsys-tarfile "$archive" >"${work_dir}"/eatmydata
