@@ -131,7 +131,7 @@ dpkg-divert --remove --rename /usr/bin/dpkg
 EOF
 
 # Run third stage
-chmod 755 "${work_dir}"/third-stage
+chmod 0755 "${work_dir}"/third-stage
 systemd-nspawn_exec /third-stage
 
 # Choose a locale
@@ -163,7 +163,7 @@ if [[ "$resolution" == "1366x768" ]]; then
     xrandr --output HDMI-1 --mode  1360x768_60.00
 fi
 EOF
-chmod 755 ${work_dir}/usr/local/bin/xrandrscript.sh
+chmod 0755 ${work_dir}/usr/local/bin/xrandrscript.sh
 
 mkdir -p ${work_dir}/usr/share/lightdm/lightdm.conf.d/
 cat << EOF > ${work_dir}/usr/share/lightdm/lightdm.conf.d/60-xrandrscript.conf

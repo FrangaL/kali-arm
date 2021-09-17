@@ -131,7 +131,7 @@ case "$1" in
         ;;
 esac
 EOF
-chmod 755 ${work_dir}/etc/init.d/brcm_patchram_plus
+chmod 0755 ${work_dir}/etc/init.d/brcm_patchram_plus
 
 # Third stage
 cat <<EOF >"${work_dir}"/third-stage
@@ -190,7 +190,7 @@ dpkg-divert --remove --rename /usr/bin/dpkg
 EOF
 
 # Run third stage
-chmod 755 "${work_dir}"/third-stage
+chmod 0755 "${work_dir}"/third-stage
 systemd-nspawn_exec /third-stage
 
 # Choose a locale

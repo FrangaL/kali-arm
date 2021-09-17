@@ -1677,7 +1677,7 @@ Please check your Internet connection and try again.
             return 1
         fi
     fi
-    chmod 755 /usr/bin/hyperpixel-init
+    chmod 0755 /usr/bin/hyperpixel-init
     if [ ! -f /etc/systemd/system/hyperpixel-init.service ]; then
         cat >> /etc/systemd/system/hyperpixel-init.service <<EOF
 [Unit]
@@ -1710,7 +1710,7 @@ Please check your Internet connection and try again.
             return 1
         fi
     fi
-    chmod 755 /usr/bin/hyperpixel-touch
+    chmod 0755 /usr/bin/hyperpixel-touch
     if [ ! -f /etc/systemd/system/hyperpixel-touch.service ]; then
         cat >> /etc/systemd/system/hyperpixel-touch.service <<EOF
 [Unit]
@@ -1835,7 +1835,7 @@ Please check your Internet connection and try again.
             return 1
         fi
     fi
-    chmod 755 /usr/bin/hyperpixel4-init
+    chmod 0755 /usr/bin/hyperpixel4-init
     if [ ! -f /etc/systemd/system/hyperpixel4-init.service ]; then
         cat >> /etc/systemd/system/hyperpixel4-init.service <<EOF
 [Unit]
@@ -1865,7 +1865,7 @@ EOF
 modprobe ${MODALIAS} || modprobe "of:N${OF_NAME}T<NULL>C\${OF_COMPATIBLE_0}"
 EOF
 
-    chmod 755 /usr/lib/kalipi-sys-mods/i2cprobe
+    chmod 0755 /usr/lib/kalipi-sys-mods/i2cprobe
     fi
 
     if [ ! -f /lib/udev/rules.d/15-i2c-modprobe.rules ]; then

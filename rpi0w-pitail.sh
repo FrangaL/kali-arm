@@ -170,7 +170,7 @@ done
 export LD_PRELOAD
 exec "\$0-eatmydata" --force-unsafe-io "\$@"
 EOF
-chmod 755 ${work_dir}/usr/bin/dpkg
+chmod 0755 ${work_dir}/usr/bin/dpkg
 
 # debootstrap second stage
 systemd-nspawn_exec eatmydata /debootstrap/debootstrap --second-stage
@@ -246,10 +246,10 @@ wget -O ${work_dir}/opt/Kali-Pi/Menus/RAS-AP/ras-ap.conf https://raw.githubuserc
 wget -O ${work_dir}/usr/local/bin/mon0up https://raw.githubusercontent.com/Re4son/RPi-Tweaks/master/pi-tail/mon0up
 wget -O ${work_dir}/usr/local/bin/mon0down https://raw.githubusercontent.com/Re4son/RPi-Tweaks/master/pi-tail/mon0down
 wget -O ${work_dir}/lib/systemd/system/vncserver@.service https://github.com/Re4son/vncservice/raw/master/vncserver@.service
-chmod 755 ${work_dir}/usr/local/bin/mon0up ${work_dir}/usr/local/bin/mon0down
+chmod 0755 ${work_dir}/usr/local/bin/mon0up ${work_dir}/usr/local/bin/mon0down
 mkdir ${work_dir}/etc/skel/.vnc
 wget -O ${work_dir}/etc/skel/.vnc/xstartup https://raw.githubusercontent.com/Re4son/RPi-Tweaks/master/vncservice/xstartup
-chmod 750 ${work_dir}/etc/skel/.vnc/xstartup
+chmod 0750 ${work_dir}/etc/skel/.vnc/xstartup
 
 
 cat << EOF > ${work_dir}/third-stage
@@ -407,7 +407,7 @@ dpkg-divert --remove --rename /usr/bin/dpkg
 EOF
 
 # Run third stage
-chmod 755 ${work_dir}/third-stage
+chmod 0755 ${work_dir}/third-stage
 systemd-nspawn_exec /third-stage
 
 ## Fix the the infamous “Authentication Required to Create Managed Color Device” in vnc
@@ -561,10 +561,10 @@ if [ "$compress" == "xz" ]; then
     echo "Compressing ${imagename}.img"
     [ $(nproc) \< 3 ] || cpu_cores=3 # cpu_cores = Number of cores to use
     limit_cpu pixz -p ${cpu_cores:-2} ${current_dir}/${imagename}.img # -p Nº cpu cores use
-    chmod 644 ${current_dir}/${imagename}.img.xz
+    chmod 0644 ${current_dir}/${imagename}.img.xz
   fi
 else
-  chmod 644 ${current_dir}/${imagename}.img
+  chmod 0644 ${current_dir}/${imagename}.img
 fi
 
 # Clean up all the temporary build stuff and remove the directories

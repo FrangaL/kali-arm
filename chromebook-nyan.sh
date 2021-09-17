@@ -154,7 +154,7 @@ done
 export LD_PRELOAD
 exec "\$0-eatmydata" --force-unsafe-io "\$@"
 EOF
-chmod 755 ${work_dir}/usr/bin/dpkg
+chmod 0755 ${work_dir}/usr/bin/dpkg
 
 # debootstrap second stage
 systemd-nspawn_exec eatmydata /debootstrap/debootstrap --second-stage
@@ -280,7 +280,7 @@ rm -f /usr/bin/dpkg
 EOF
 
 # Run third stage
-chmod 755 ${work_dir}/third-stage
+chmod 0755 ${work_dir}/third-stage
 systemd-nspawn_exec /third-stage
 
 # Clean up eatmydata
@@ -649,10 +649,10 @@ if [ $compress = xz ]; then
     echo "Compressing ${imagename}.img"
     [ $(nproc) \< 3 ] || cpu_cores=3 # cpu_cores = Number of cores to use
     limit_cpu pixz -p ${cpu_cores:-2} ${current_dir}/${imagename}.img # -p Nº cpu cores use
-    chmod 644 ${current_dir}/${imagename}.img.xz
+    chmod 0644 ${current_dir}/${imagename}.img.xz
   fi
 else
-  chmod 644 ${current_dir}/${imagename}.img
+  chmod 0644 ${current_dir}/${imagename}.img
 fi
 
 # Clean up all the temporary build stuff and remove the directories

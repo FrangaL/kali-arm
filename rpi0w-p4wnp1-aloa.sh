@@ -221,7 +221,7 @@ set -e
 dpkg-divert --add --local --divert /usr/sbin/invoke-rc.d.chroot --rename /usr/sbin/invoke-rc.d
 cp /bin/true /usr/sbin/invoke-rc.d
 echo -e "#!/bin/sh\nexit 101" > /usr/sbin/policy-rc.d
-chmod 755 /usr/sbin/policy-rc.d
+chmod 0755 /usr/sbin/policy-rc.d
 
 apt-get update
 apt-get --yes --allow-change-held-packages install locales-all
@@ -333,7 +333,7 @@ dpkg-divert --remove --rename /usr/sbin/invoke-rc.d
 rm -f /third-stage
 EOF
 
-chmod 755 ${basedir}/kali-${architecture}/third-stage
+chmod 0755 ${basedir}/kali-${architecture}/third-stage
 LANG=C systemd-nspawn -M ${machine} -D ${basedir}/kali-${architecture} /third-stage
 if [[ $? > 0 ]]; then
   echo "Third stage failed"
@@ -497,7 +497,7 @@ EOF
 # rpi-wiggle
 mkdir -p ${work_dir}/root/scripts
 wget https://raw.github.com/steev/rpiwiggle/master/rpi-wiggle -O ${work_dir}/root/scripts/rpi-wiggle.sh
-chmod 755 ${work_dir}/root/scripts/rpi-wiggle.sh
+chmod 0755 ${work_dir}/root/scripts/rpi-wiggle.sh
 
 # git clone of nexmon moved in front of kernel compilation, to have poper brcmfmac driver ready
 cd "${basedir}"/nexmon
@@ -623,10 +623,10 @@ if [ $compress = xz ]; then
     echo "Compressing ${imagename}.img"
     [ $(nproc) \< 3 ] || cpu_cores=3 # cpu_cores = Number of cores to use
     pixz -p ${cpu_cores:-2} ${current_dir}/${imagename}.img # -p Nº cpu cores use
-    chmod 644 ${current_dir}/${imagename}.img.xz
+    chmod 0644 ${current_dir}/${imagename}.img.xz
   fi
 else
-  chmod 644 ${current_dir}/${imagename}.img
+  chmod 0644 ${current_dir}/${imagename}.img
 fi
 
 # Clean up all the temporary build stuff and remove the directories

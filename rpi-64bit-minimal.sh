@@ -139,7 +139,7 @@ dpkg-divert --remove --rename /usr/bin/dpkg
 EOF
 
 # Run third stage
-chmod 755 "${work_dir}"/third-stage
+chmod 0755 "${work_dir}"/third-stage
 systemd-nspawn_exec /third-stage
 
 # Configure Raspberry PI firmware

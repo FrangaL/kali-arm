@@ -152,7 +152,7 @@ done
 export LD_PRELOAD
 exec "\$0-eatmydata" --force-unsafe-io "\$@"
 EOF
-chmod 755 ${work_dir}/usr/bin/dpkg
+chmod 0755 ${work_dir}/usr/bin/dpkg
 
 # debootstrap second stage
 systemd-nspawn_exec eatmydata /debootstrap/debootstrap --second-stage
@@ -293,7 +293,7 @@ rm -f /usr/bin/dpkg
 EOF
 
 # Run third stage
-chmod 755 ${work_dir}/third-stage
+chmod 0755 ${work_dir}/third-stage
 systemd-nspawn_exec /third-stage
 
 # Clean up eatmydata
@@ -447,12 +447,12 @@ cd "${basedir}"
 # Unused currently, but this script is a part of using the usb as an ethernet
 # device
 wget -c https://raw.github.com/RobertCNelson/tools/master/scripts/beaglebone-black-g-ether-load.sh -O ${work_dir}/root/beaglebone-black-g-ether-load.sh
-chmod 755 ${work_dir}/root/beaglebone-black-g-ether-load.sh
+chmod 0755 ${work_dir}/root/beaglebone-black-g-ether-load.sh
 
 # rpi-wiggle
 mkdir -p ${work_dir}/root/scripts
 wget https://raw.github.com/steev/rpiwiggle/master/rpi-wiggle -O ${work_dir}/root/scripts/rpi-wiggle.sh
-chmod 755 ${work_dir}/root/scripts/rpi-wiggle.sh
+chmod 0755 ${work_dir}/root/scripts/rpi-wiggle.sh
 
 # Calculate the space to create the image
 root_size=$(du -s -B1 ${work_dir} --exclude=${work_dir}/boot | cut -f1)
@@ -539,10 +539,10 @@ if [ $compress = xz ]; then
     echo "Compressing ${imagename}.img"
     [ $(nproc) \< 3 ] || cpu_cores=3 # cpu_cores = Number of cores to use
     limit_cpu pixz -p ${cpu_cores:-2} ${current_dir}/${imagename}.img # -p Nº cpu cores use
-    chmod 644 ${current_dir}/${imagename}.img.xz
+    chmod 0644 ${current_dir}/${imagename}.img.xz
   fi
 else
-  chmod 644 ${current_dir}/${imagename}.img
+  chmod 0644 ${current_dir}/${imagename}.img
 fi
 
 # Clean up all the temporary build stuff and remove the directories

@@ -119,7 +119,7 @@ dpkg-divert --remove --rename /usr/bin/dpkg
 EOF
 
 # Run third stage
-chmod 755 "${work_dir}"/third-stage
+chmod 0755 "${work_dir}"/third-stage
 systemd-nspawn_exec /third-stage
 
 # Choose a locale
@@ -255,10 +255,10 @@ if [ $compress = xz ]; then
     [ $(nproc) \< 3 ] || cpu_cores=3 # cpu_cores = Number of cores to use
 #    limit_cpu pixz -p ${cpu_cores:-2} ${current_dir}/${imagename}.img # -p Nº cpu cores use
     pixz -p ${cpu_cores:-2} ${current_dir}/${imagename}.img # -p Nº cpu cores use
-    chmod 644 ${current_dir}/${imagename}.img.xz
+    chmod 0644 ${current_dir}/${imagename}.img.xz
   fi
 else
-  chmod 644 ${current_dir}/${imagename}.img
+  chmod 0644 ${current_dir}/${imagename}.img
 fi
 
 # Clean up all the temporary build stuff and remove the directories
