@@ -83,7 +83,7 @@ function systemd-nspawn_exec() {
   systemd-nspawn --bind-ro "$qemu_bin" $extra_args --capability=cap_setfcap -E $ENV -M "$machine" -D "$work_dir" "$@"
 }
 
-# create the rootfs - not much to modify here, except maybe throw in some more packages if you want.
+# Create the rootfs - not much to modify here, except maybe throw in some more packages if you want.
 function debootstrap_exec() {
   log "debootstrap_exec" green
   eatmydata debootstrap --foreign --keyring=/usr/share/keyrings/kali-archive-keyring.gpg --components="${components}" \
@@ -113,7 +113,7 @@ function restore_mirror() {
   echo "#deb-src http://http.kali.org/kali kali-rolling main contrib non-free" >> "${work_dir}"/etc/apt/sources.list
 }
 
-# Limite use cpu function
+# Limit CPU function
 function limit_cpu() {
   if [[ ${cpu_limit:=} -eq "0" || -z $cpu_limit ]]; then
     local cpu_shares=$((num_cores * 1024))

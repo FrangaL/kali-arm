@@ -52,7 +52,7 @@ else
   extra_args="-q"
 fi
 
-# Check cpu cores to use
+# Check CPU cores to use
 if [ "$cpu_cores" = "0" ]; then
   num_cores=$(nproc --all)
 elif [[ "$cpu_cores" =~ ^[0-9]{1,2}$ ]]; then

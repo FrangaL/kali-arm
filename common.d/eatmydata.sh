@@ -25,4 +25,4 @@ done
 export LD_PRELOAD
 exec "\$0-eatmydata" --force-unsafe-io "\$@"
 EOF
-chmod 755 "${work_dir}"/usr/bin/dpkg
+chmod 0755 "${work_dir}"/usr/bin/dpkg

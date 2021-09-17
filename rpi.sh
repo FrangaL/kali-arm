@@ -138,7 +138,7 @@ EOF
 chmod 0755 "${work_dir}"/third-stage
 systemd-nspawn_exec /third-stage
 
-#Configure RaspberryPi firmware (set config.txt to 64bit)
+# Configure RaspberryPi firmware (set config.txt to 64bit)
 include rpi_firmware
 # Choose a locale
 set_locale "$locale"
