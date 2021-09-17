@@ -13,7 +13,7 @@ For more information, please see: https://www.kali.org/docs/arm/
 ### Building
 
 - These scripts are tested on Kali Linux x64 and x86 installations only _(We **recommend x64**)_
-- Make sure you run the `build-deps.sh` script before trying to build an image, as this installs all required dependencies
+- Make sure you run the `./common.d/build-deps.sh` script before trying to build an image, as this installs all required dependencies
 - You will need at **least 8GB of RAM or use SWAP file**
 
 An example workflow to build a _[Raspberry Pi 4](https://www.kali.org/docs/arm/raspberry-pi-4/) Kali Linux 2021.3 image_ would look like:
@@ -22,7 +22,7 @@ An example workflow to build a _[Raspberry Pi 4](https://www.kali.org/docs/arm/r
 cd ~/
 git clone https://gitlab.com/kalilinux/build-scripts/kali-arm
 cd ~/kali-arm/
-sudo ./build-deps.sh
+sudo ./common.d/build-deps.sh
 sudo ./rpi.sh 2021.3
 ```
 

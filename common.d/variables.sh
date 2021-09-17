@@ -4,7 +4,7 @@
 # Generate a random machine name to be used.
 machine=$(dbus-uuidgen)
 # Version Kali release
-version=${version:-$(cat .release)}
+version=${version:-$(cat ./common.d/.release)}
 # Custom hostname variable
 hostname=${hostname:-kali}
 # Suite to use, valid options are:
@@ -55,7 +55,7 @@ export MALLOC_CHECK_=0
 # proxy_url="http://external.intranet.local"
 
 # Load build configuration
-if [ -f "${current_dir}"/builder.txt ]; then
+if [ -f "${current_dir}"/common.d/builder.txt ]; then
   # shellcheck source=/dev/null
-  source "${current_dir}"/builder.txt
+  source "${current_dir}"/common.d/builder.txt
 fi
