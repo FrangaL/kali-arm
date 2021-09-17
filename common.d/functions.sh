@@ -207,7 +207,6 @@ function make_swap() {
 
 # Print current config.
 function print_config() {
-  clear
   echo -e "\n"
   log "Compilation info" bold
   if [[ "$hw_model" == *rpi* ]]; then
