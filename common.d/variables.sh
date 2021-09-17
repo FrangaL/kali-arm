@@ -12,7 +12,7 @@ imagename=${imagename:-"kali-linux-${version}-${hw_model}-${variant}"}
 # Generate a random machine name to be used
 machine=$(dbus-uuidgen)
 # Version Kali release
-version=${version:-$(cat ${current_dir}.release)}
+version=${version:-$(cat ${current_dir}/common.d/.release)}
 # Custom hostname variable
 hostname=${hostname:-kali}
 # Suite to use, valid options are:
