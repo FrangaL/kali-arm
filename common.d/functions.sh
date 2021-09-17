@@ -42,7 +42,10 @@ function arguments() {
         exit 0
         ;;
       -d | --debug)
-        exec > >(tee -a "${0%.*}.log") 2>&1
+        log="${0%.*}.log"
+        echo -e "\n[i] Debug enable. Output: ${log}"
+        exec &> >(tee -a "${log}") 2>&1
+        # Print all commands inside of script
         set -x
         shift 0
         break
