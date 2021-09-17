@@ -168,6 +168,8 @@ cp "${basedir}"/../bsp/xorg/20-fbdev.conf ${work_dir}/etc/X11/xorg.conf.d/
 # device itself
 sed -i -e 's/append.*/append console=ttyS0,115200 console=tty1 root=\/dev\/mmcblk0p1 rootwait panic=10 rw rootfstype=$fstype net.ifnames=0/g' ${work_dir}/boot/extlinux/extlinux.conf
 
+# Create the disk partitions
+log "Create the disk partitions" green
 parted -s ${current_dir}/${imagename}.img mklabel msdos
 parted -s -a minimal ${current_dir}/${imagename}.img mkpart primary $fstype 4MiB 100%
 
@@ -205,6 +207,8 @@ umount -l ${rootp}
 
 dd if=${work_dir}/usr/lib/u-boot/Bananapi/u-boot-sunxi-with-spl.bin of=${loopdevice} bs=1024 seek=8
 
+# Check filesystem
+log "Check filesystem" green
 e2fsck -y -f "$rootp"
 
 # Remove loop devices
