@@ -27,7 +27,7 @@ apt-wait() {
 
 
 # Function create script to clean system packages
-clean-system() {
+clean_system() {
   mkdir -p ./.build/
   clean_script=${backup_packages/list-pkgs/remove-pkgs}.sh
   echo -e "\n[i] Cleaning up (${clean_script})..."
@@ -63,7 +63,7 @@ EOF
   #rm -f "${backup_packages}"
 }
 
-trap clean-system ERR SIGTERM SIGINT
+trap clean_system ERR SIGTERM SIGINT
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -144,4 +144,4 @@ elif [ $(arch) == 'i386' ]; then
 fi
 
 # Create the script to clean the system
-clean-system
+clean_system
