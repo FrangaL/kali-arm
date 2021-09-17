@@ -3,3 +3,4 @@
 kali-armhf/
 .DS_Store
 *.img.xz
+builder.txt
