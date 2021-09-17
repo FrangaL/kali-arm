@@ -154,6 +154,7 @@ include rpi_userland
 set_locale "$locale"
 # Clean system
 include clean_system
+trap clean_build ERR SIGTERM SIGINT
 # Define DNS server after last running systemd-nspawn
 echo "nameserver 8.8.8.8" >"${work_dir}"/etc/resolv.conf
 # Disable the use of http proxy in case it is enabled
