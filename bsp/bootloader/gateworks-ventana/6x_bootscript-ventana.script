@@ -140,11 +140,11 @@ elif itest.s "x${dtype}" == "xmmc" ; then
 elif itest.s "x${dtype}" == "xusb" ; then
   echo "Booting from USB Mass Storage..."
   setenv root "root=/dev/sda1 rootwait"
-  setenv fsload "ext3load $dtype 0:1"
+  setenv fsload "ext4load $dtype 0:1"
 elif itest.s "x${dtype}" == "xsata" ; then
   echo "Booting from SATA..."
   setenv root "root=/dev/sda1 rootwait"
-  setenv fsload "ext3load $dtype 0:1"
+  setenv fsload "ext4load $dtype 0:1"
   setenv rd_addr # ramdisk not needed for IMX6 AHCI SATA
 fi
 
