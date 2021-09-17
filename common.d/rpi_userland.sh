@@ -5,7 +5,7 @@ log "rpi userland" green
 
 git clone https://github.com/raspberrypi/userland.git "${basedir}"/userland
 
-cd "${basedir}"/userland && mkdir build
+cd "${basedir}"/userland && mkdir -p build/
 pushd "${basedir}"/userland/build || exit
 
 case ${architecture} in
@@ -24,7 +24,7 @@ case ${architecture} in
 esac
 
 make -j"$(nproc)" 2>/dev/null
-mkdir "${work_dir}"/opt/vc
+mkdir -p "${work_dir}"/opt/vc
 mv {bin,lib,inc} "${work_dir}"/opt/vc
 
 cd "${current_dir}" || exit

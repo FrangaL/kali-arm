@@ -49,12 +49,15 @@ set_hostname "${hostname}"
 # Network configs
 include network
 add_interface eth0
+
 # Copy directory bsp into build dir
+log "Copy directory bsp into build dir" green
 cp -rp bsp "${work_dir}"
 
 # Third stage
 cat <<EOF >"${work_dir}"/third-stage
-#!/bin/bash -e
+#!/usr/bin/env bash
+set -e
 
 export DEBIAN_FRONTEND=noninteractive
 eatmydata apt-get update
@@ -162,6 +165,7 @@ EOF
 
 # Run third stage
 chmod 0755 "${work_dir}"/third-stage
+log "Run third stage" green
 systemd-nspawn_exec /third-stage
 
 # Choose a locale
@@ -179,7 +183,8 @@ restore_mirror
 
 # Kernel section. If you want to use a custom kernel, or configuration, replace
 # them in this section
-git clone -b linux-5.4.y --depth 1 git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git ${work_dir}/usr/src/kernel
+log "Kernel stuff" green
+git clone --depth 1 -b linux-5.4.y git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git ${work_dir}/usr/src/kernel
 cd ${work_dir}/usr/src/kernel
 git rev-parse HEAD > ${work_dir}/usr/src/kernel-at-commit
 touch .scmversion
@@ -207,6 +212,7 @@ wget $githubraw/inversepath/usbarmory/master/software/kernel_conf/mark-two/imx6u
 # Fix up the symlink for building external modules
 # kernver is used so we don't need to keep track of what the current compiled
 # version is
+log "building external modules" green
 kernver=$(ls ${work_dir}/lib/modules/)
 cd ${work_dir}/lib/modules/${kernver}
 rm build
@@ -214,12 +220,13 @@ rm source
 ln -s /usr/src/kernel build
 ln -s /usr/src/kernel source
 
-cd ${current_dir}
+cd "${current_dir}/"
 
 # Calculate the space to create the image and create
 make_image
 
-# Create the disk and partition it
+# Create the disk partitions
+log "Create the disk partitions" green
 parted -s ${current_dir}/${imagename}.img mklabel msdos
 parted -s -a minimal ${current_dir}/${imagename}.img mkpart primary ext2 5MiB 100%
 
@@ -232,10 +239,12 @@ log "Formatting partitions" green
 mkfs.ext2 ${rootp}
 
 # Create the dirs for the partitions and mount them
+log "Create the dirs for the partitions and mount them" green
 mkdir -p "${basedir}"/root
 mount ${rootp} "${basedir}"/root
 
 # Create an fstab so that we don't mount / read-only
+log "/etc/fstab" green
 UUID=$(blkid -s UUID -o value ${rootp})
 echo "UUID=$UUID /               $fstype    errors=remount-ro 0       1" >> ${work_dir}/etc/fstab
 
@@ -243,9 +252,7 @@ log "Rsyncing rootfs into image file" green
 rsync -HPavz -q "${work_dir}"/ "${basedir}"/root/
 sync
 
-# Unmount partitions
-sync
-
+log "u-Boot" green
 cd "${work_dir}"
 wget ftp://ftp.denx.de/pub/u-boot/u-boot-2020.10.tar.bz2
 tar xvf u-boot-2020.10.tar.bz2 && cd u-boot-2020.10
@@ -254,14 +261,18 @@ make usbarmory_config
 make ARCH=arm
 dd if=u-boot.imx of=${loopdevice} bs=512 seek=2 conv=fsync
 
-cd "${current_dir}"
+cd "${current_dir}/"
+
 # Umount filesystem
+log "Umount filesystem" green
 umount -l "${rootp}"
 
 # Check filesystem
+log "Check filesystem" green
 e2fsck -y -f "$rootp"
 
 # Remove loop devices
+log "Remove loop devices" green
 losetup -d "${loopdevice}"
 
 # Compress image compilation

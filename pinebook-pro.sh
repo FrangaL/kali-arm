@@ -50,12 +50,15 @@ set_hostname "${hostname}"
 include network
 # Do *NOT* include wlan0 if using a desktop otherwise NetworkManager will ignore it
 #add_interface wlan0
+
 # Copy directory bsp into build dir
-cp -rp bsp "${work_dir}"
+log "Copy directory bsp into build dir" green
+cp -rp bsp "${work_dir}"-rp bsp "${work_dir}"
 
 # Third stage
 cat <<EOF >"${work_dir}"/third-stage
-#!/bin/bash -e
+#!/usr/bin/env bash
+set -e
 
 export DEBIAN_FRONTEND=noninteractive
 eatmydata apt-get update
@@ -129,6 +132,7 @@ EOF
 
 # Run third stage
 chmod 0755 "${work_dir}"/third-stage
+log "Run third stage" green
 systemd-nspawn_exec /third-stage
 
 # Choose a locale
@@ -145,10 +149,11 @@ restore_mirror
 #include sources.list
 
 # Pull in the wifi and bluetooth firmware from manjaro's git repository
-cd ${work_dir}
-git clone https://gitlab.manjaro.org/manjaro-arm/packages/community/ap6256-firmware.git
-cd ap6256-firmware
-mkdir brcm
+log "WiFi & bluetooth firmware" green
+cd ${work_dir}/
+git clone --depth 1 https://gitlab.manjaro.org/manjaro-arm/packages/community/ap6256-firmware.git
+cd ap6256-firmware/
+mkdir -p brcm/
 cp BCM4345C5.hcd brcm/BCM.hcd
 cp BCM4345C5.hcd brcm/BCM4345C5.hcd
 cp nvram_ap6256.txt brcm/brcmfmac43456-sdio.pine64,pinebook-pro.txt
@@ -159,14 +164,15 @@ cp fw_bcm43456c5_ag.bin brcm/brcmfmac43456-sdio.bin
 cp brcmfmac43456-sdio.clm_blob brcm/brcmfmac43456-sdio.clm_blob
 mkdir -p ${work_dir}/lib/firmware/brcm/
 cp -a brcm/* ${work_dir}/lib/firmware/brcm/
-cd ${current_dir}
+cd "${current_dir}/"
 rm -rf ${work_dir}/ap6256-firmware
 
 # Time to build the kernel
 # 5.14.1 from linux-stable
-cd ${work_dir}/usr/src
-git clone  -b linux-5.14.y --depth 1 git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git ${work_dir}/usr/src/linux
-cd linux
+log "Build kernel" green
+cd ${work_dir}/usr/src/
+git clone --depth 1 -b linux-5.14.y git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git ${work_dir}/usr/src/linux
+cd linux/
 touch .scmversion
 # Lots o patches, for added support nicked from Manjaro
 #patch -p1 --no-backup-if-mismatch < ${current_dir}/patches/kali-wifi-injection-5.9.patch
@@ -220,13 +226,14 @@ cp ${current_dir}/kernel-configs/pinebook-pro-5.14.config ../pinebook-pro-5.14.c
 # Fix up the symlink for building external modules
 # kernver is used to we don't need to keep track of what the current compiled
 # version is
+log "building external modules" green
 kernver=$(ls ${work_dir}/lib/modules)
 cd ${work_dir}/lib/modules/${kernver}/
-rm build
-rm source
+rm -f build
+rm -f source
 ln -s /usr/src/linux build
 ln -s /usr/src/linux source
-cd ${current_dir}
+cd "${current_dir}/"
 
 cat << '__EOF__' > ${work_dir}/boot/boot.txt
 # MAC address (use spaces instead of colons)
@@ -250,15 +257,16 @@ if load ${devtype} ${devnum}:${bootpart} ${kernel_addr_r} /boot/Image; then
   fi;
 fi
 __EOF__
-cd ${work_dir}/boot
+cd ${work_dir}/boot/
 mkimage -A arm -O linux -T script -C none -n "U-Boot boot script" -d boot.txt boot.scr
 
-cd ${current_dir}
+cd "${current_dir}/"
 
 # Enable brightness up/down and sleep hotkeys and attempt to improve
 # touchpad performance
+log "Keyboard hotkeys" green
 mkdir -p ${work_dir}/etc/udev/hwdb.d/
-cat << 'EOF' > ${work_dir}/etc/udev/hwdb.d/10-usb-kbd.hwdb
+cat << EOF > ${work_dir}/etc/udev/hwdb.d/10-usb-kbd.hwdb
 evdev:input:b0003v258Ap001E*
   KEYBOARD_KEY_700a5=brightnessdown
   KEYBOARD_KEY_700a6=brightnessup
@@ -273,7 +281,8 @@ EOF
 # Calculate the space to create the image and create
 make_image
 
-# Create the disk partitions it
+# Create the disk partitions
+log "Create the disk partitions" green
 parted -s ${current_dir}/${imagename}.img mklabel msdos
 parted -s -a minimal ${current_dir}/${imagename}.img mkpart primary $fstype 32MiB 100%
 
@@ -291,11 +300,13 @@ fi
 mkfs -O "$features" -t "$fstype" -L ROOTFS "${rootp}"
 
 # Create the dirs for the partitions and mount them
+log "Create the dirs for the partitions and mount them" green
 mkdir -p "${basedir}"/root/
 mount "${rootp}" "${basedir}"/root
 
 # We do this here because we don't want to hardcode the UUID for the partition during creation
 # systemd doesn't seem to be generating the fstab properly for some people, so let's create one
+log "/etc/fstab" green
 cat <<EOF >"${work_dir}"/etc/fstab
 # <file system> <mount point>   <type>  <options>       <dump>  <pass>
 proc            /proc           proc    defaults          0       0
@@ -321,12 +332,15 @@ dd if=${current_dir}/bsp/bootloader/pinebook-pro/trust.img of=${loopdevice} seek
 #TARGET="/usr/lib/u-boot/pinebook-pro-rk3399" /usr/bin/u-boot-install-rockchip ${loopdevice}
 
 # Umount filesystem
+log "Umount filesystem" green
 umount -l "${rootp}"
 
 # Check filesystem
+log "Check filesystem" green
 e2fsck -y -f "$rootp"
 
 # Remove loop devices
+log "Remove loop devices" green
 kpartx -dv "${loopdevice}" 
 losetup -d "${loopdevice}"
 

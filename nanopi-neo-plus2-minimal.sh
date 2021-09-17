@@ -49,13 +49,15 @@ set_hostname "${hostname}"
 # Network configs
 include network
 add_interface eth0
+
 # Copy directory bsp into build dir
+log "Copy directory bsp into build dir" green
 cp -rp bsp "${work_dir}"
 
 # Eventually this should become a systemd service, but for now, we use the same
 # init.d file that they provide and we let systemd handle the conversion
 mkdir -p ${work_dir}/etc/init.d/
-cat << 'EOF' > ${work_dir}/etc/init.d/brcm_patchram_plus
+cat << EOF > ${work_dir}/etc/init.d/brcm_patchram_plus
 #!/bin/bash
 
 ### BEGIN INIT INFO
@@ -135,7 +137,8 @@ chmod 0755 ${work_dir}/etc/init.d/brcm_patchram_plus
 
 # Third stage
 cat <<EOF >"${work_dir}"/third-stage
-#!/bin/bash -e
+#!/usr/bin/env bash
+set -e
 
 export DEBIAN_FRONTEND=noninteractive
 eatmydata apt-get update
@@ -191,6 +194,7 @@ EOF
 
 # Run third stage
 chmod 0755 "${work_dir}"/third-stage
+log "Run third stage" green
 systemd-nspawn_exec /third-stage
 
 # Choose a locale
@@ -208,6 +212,7 @@ include sources.list
 
 # Kernel section. If you want to use a custom kernel, or configuration, replace
 # them in this section
+log "Kernel stuff" green
 git clone --depth 1 https://github.com/friendlyarm/linux -b sunxi-4.x.y ${work_dir}/usr/src/kernel
 cd ${work_dir}/usr/src/kernel
 git rev-parse HEAD > ${work_dir}/usr/src/kernel-at-commit
@@ -230,13 +235,14 @@ cp arch/arm64/boot/dts/allwinner/*.dtb ${work_dir}/boot/
 mkdir -p ${work_dir}/boot/overlays/
 cp arch/arm64/boot/dts/allwinner/overlays/*.dtb ${work_dir}/boot/overlays/
 make mrproper
-cd ${current_dir}
+cd "${current_dir}/"
 
 # Copy over the firmware for the ap6212 wifi
 # On the neo plus2 default install there are other firmware files installed for
 # p2p and apsta but I can't find them publicly posted to friendlyarm's GitHub
 # At some point, nexmon could work for the device, but the support would need to
 # be added to nexmon
+log "WiFi firmware" green
 mkdir -p ${work_dir}/lib/firmware/ap6212/
 wget https://raw.githubusercontent.com/friendlyarm/android_vendor_broadcom_nanopi2/nanopi2-lollipop-mr1/proprietary/nvram_ap6212.txt -O ${work_dir}/lib/firmware/ap6212/nvram.txt
 wget https://raw.githubusercontent.com/friendlyarm/android_vendor_broadcom_nanopi2/nanopi2-lollipop-mr1/proprietary/nvram_ap6212a.txt -O ${work_dir}/lib/firmware/ap6212/nvram_ap6212.txt
@@ -258,19 +264,21 @@ ln -s /lib/firmware/ap6212/fw_bcm43438a1.bin brcmfmac43430a1-sdio.bin
 ln -s /lib/firmware/ap6212/nvram_ap6212.txt brcmfmac43430a1-sdio.txt
 ln -s /lib/firmware/ap6212/fw_bcm43438a0.bin brcmfmac43430-sdio.bin
 ln -s /lib/firmware/ap6212/nvram.txt brcmfmac43430-sdio.txt
-cd ${current_dir}
+cd "${current_dir}/"
 
 # Fix up the symlink for building external modules
 # kernver is used so we don't need to keep track of what the current compiled
 # version is
+log "building external modules" green
 kernver=$(ls ${work_dir}/lib/modules/)
 cd ${work_dir}/lib/modules/${kernver}
 rm build
 rm source
 ln -s /usr/src/kernel build
 ln -s /usr/src/kernel source
-cd ${current_dir}
+cd "${current_dir}/"
 
+log "/boot/boot.cmd" green
 cat << EOF > ${work_dir}/boot/boot.cmd
 # Recompile with:
 # mkimage -C none -A arm -T script -d boot.cmd boot.scr
@@ -314,12 +322,13 @@ booti \${kernel_addr} - \${dtb_addr}
 EOF
 mkimage -C none -A arm -T script -d ${work_dir}/boot/boot.cmd ${work_dir}/boot/boot.scr
 
-cd ${current_dir}
+cd "${current_dir}/"
 
 # Calculate the space to create the image and create
 make_image
 
-# Create the disk partitions it
+# Create the disk partitions
+log "Create the disk partitions" green
 parted -s ${current_dir}/${imagename}.img mklabel msdos
 parted -s -a minimal ${current_dir}/${imagename}.img mkpart primary $fstype 32MiB 100%
 
@@ -337,11 +346,13 @@ fi
 mkfs -O "$features" -t "$fstype" -L ROOTFS "${rootp}"
 
 # Create the dirs for the partitions and mount them
+log "Create the dirs for the partitions and mount them" green
 mkdir -p "${basedir}"/root/
 mount "${rootp}" "${basedir}"/root
 
 # We do this here because we don't want to hardcode the UUID for the partition during creation
 # systemd doesn't seem to be generating the fstab properly for some people, so let's create one
+log "/etc/fstab" green
 cat <<EOF >"${work_dir}"/etc/fstab
 # <file system> <mount point>   <type>  <options>       <dump>  <pass>
 proc            /proc           proc    defaults          0       0
@@ -352,8 +363,9 @@ log "Rsyncing rootfs into image file" green
 rsync -HPavz -q "${work_dir}"/ "${basedir}"/root/
 sync
 
+log "u-Boot" green
 cd "${basedir}"
-git clone https://github.com/friendlyarm/u-boot.git
+git clone --depth 1 https://github.com/friendlyarm/u-boot.git
 cd u-boot
 git checkout sunxi-v2017.x
 make nanopi_h5_defconfig
@@ -362,15 +374,18 @@ dd if=spl/sunxi-spl.bin of=${loopdevice} bs=1024 seek=8
 dd if=u-boot.itb of=${loopdevice} bs=1024 seek=40
 sync
 
-cd ${current_dir}
+cd "${current_dir}/"
 
 # Umount filesystem
+log "Umount filesystem" green
 umount -l "${rootp}"
 
 # Check filesystem
+log "Check filesystem" green
 e2fsck -y -f "$rootp"
 
 # Remove loop devices
+log "Remove loop devices" green
 kpartx -dv "${loopdevice}" 
 losetup -d "${loopdevice}"
 

@@ -49,12 +49,15 @@ set_hostname "${hostname}"
 # Network configs
 include network
 add_interface eth0
+
 # Copy directory bsp into build dir
+log "Copy directory bsp into build dir" green
 cp -rp bsp "${work_dir}"
 
 # Third stage
 cat <<EOF >"${work_dir}"/third-stage
-#!/bin/bash -e
+#!/usr/bin/env bash
+set -e
 
 export DEBIAN_FRONTEND=noninteractive
 eatmydata apt-get update
@@ -127,6 +130,7 @@ EOF
 
 # Run third stage
 chmod 0755 "${work_dir}"/third-stage
+log "Run third stage" green
 systemd-nspawn_exec /third-stage
 
 # Choose a locale
@@ -143,6 +147,7 @@ restore_mirror
 #include sources.list
 
 # Create an fstab so that we don't mount / read-only
+log "/etc/fstab" green
 UUID=$(blkid -s UUID -o value ${rootp})
 echo "UUID=$UUID /               $fstype    errors=remount-ro 0       1" >> ${work_dir}/etc/fstab
 
@@ -154,13 +159,15 @@ make_image
 # device itself
 sed -i -e 's/append.*/append console=ttyS0,115200 console=tty1 root=\/dev\/mmcblk0p1 rootwait panic=10 rw rootfstype=$fstype net.ifnames=0/g' ${work_dir}/boot/extlinux/extlinux.conf
 
+# Create the disk partitions
+log "Create the disk partitions" green
 parted -s "${current_dir}"/"${imagename}".img mklabel msdos
 parted -s -a minimal "${current_dir}"/"${imagename}".img mkpart primary "$fstype" 4MiB 100%
 
 # Set the partition variables
-loopdevice=`losetup -f --show ${current_dir}/${imagename}.img`
-device=`kpartx -va ${loopdevice} | sed 's/.*\(loop[0-9]\+\)p.*/\1/g' | head -1`
-sleep 5
+loopdevice=$(losetup -f --show ${current_dir}/${imagename}.img)
+device=$(kpartx -va ${loopdevice} | sed 's/.*\(loop[0-9]\+\)p.*/\1/g' | head -1)
+sleep 5s
 device="/dev/mapper/${device}"
 rootp=${device}p1
 
@@ -169,24 +176,29 @@ if [[ $fstype == ext4 ]]; then
 elif [[ $fstype == ext3 ]]; then
   features="-O ^64bit"
 fi
-mkfs $features -t $fstype -L ROOTFS ${rootp}
+mkfs -O "$features" -t "$fstype" -L ROOTFS "${rootp}"
 
 # Create the dirs for the partitions and mount them
+log "Create the dirs for the partitions and mount them" green
 mkdir -p "${basedir}"/root
 mount ${rootp} "${basedir}"/root
 
-echo "Rsyncing rootfs to image file"
+log "Rsyncing rootfs into image file" green
 rsync -HPavz -q ${work_dir}/ ${basedir}/root/
-
-# Unmount partitions
 sync
+
+# Unmount filesystem
+log "Umount filesystem" green
 umount ${rootp}
 
 dd if=${work_dir}/usr/lib/u-boot/Bananapro/u-boot-sunxi-with-spl.bin of=${loopdevice} bs=1024 seek=8
 
+# Check filesystem
+log "Check filesystem" green
 e2fsck -y -f "$rootp"
 
 # Remove loop devices
+log "Remove loop devices" green
 kpartx -dv ${loopdevice}
 losetup -d "${loopdevice}"
 

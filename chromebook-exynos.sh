@@ -203,7 +203,8 @@ fi
 
 # Third stage
 cat << EOF >  ${work_dir}/third-stage
-#!/bin/bash -e
+#!/usr/bin/env bash
+set -e
 export DEBIAN_FRONTEND=noninteractive
 
 eatmydata apt-get update

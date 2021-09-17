@@ -51,8 +51,10 @@ include network
 # Do not include wlan0 on a wireless only device, otherwise NetworkManager won't run
 # wlan0 requires special editing of the /etc/network/interfaces.d/wlan0 file, to add the wireless network and ssid
 #add_interface wlan0
+
 # Copy directory bsp into build dir
-cp -rp bsp "${work_dir}"
+log "Copy directory bsp into build dir" green
+cp -rp bsp "${work_dir}"-rp bsp "${work_dir}"
 
 # Disable RESUME (suspend/resume is currently broken anyway!) which speeds up boot massively
 mkdir -p ${work_dir}/etc/initramfs-tools/conf.d/
@@ -62,7 +64,8 @@ EOF
 
 # Third stage
 cat <<EOF >"${work_dir}"/third-stage
-#!/bin/bash -e
+#!/usr/bin/env bash
+set -e
 
 export DEBIAN_FRONTEND=noninteractive
 eatmydata apt-get update
@@ -196,6 +199,7 @@ EOF
 
 # Run third stage
 chmod 0755 "${work_dir}"/third-stage
+log "Run third stage" green
 systemd-nspawn_exec /third-stage
 
 # Choose a locale
@@ -225,12 +229,13 @@ CHROMIUM_FLAGS="\
 "
 EOF
 
-cd ${current_dir}
+cd "${current_dir}/"
 
 # Calculate the space to create the image and create
 make_image
 
-# Create the disk partitions it
+# Create the disk partitions
+log "Create the disk partitions" green
 parted -s ${current_dir}/${imagename}.img mklabel msdos
 parted -s -a minimal ${current_dir}/${imagename}.img mkpart primary $fstype 32MiB 100%
 
@@ -248,11 +253,13 @@ fi
 mkfs -O "$features" -t "$fstype" -L ROOTFS "${rootp}"
 
 # Create the dirs for the partitions and mount them
+log "Create the dirs for the partitions and mount them" green
 mkdir -p "${basedir}"/root/
 mount "${rootp}" "${basedir}"/root
 
 # We do this here because we don't want to hardcode the UUID for the partition during creation
 # systemd doesn't seem to be generating the fstab properly for some people, so let's create one
+log "/etc/fstab" green
 cat <<EOF >"${work_dir}"/etc/fstab
 # <file system> <mount point>   <type>  <options>       <dump>  <pass>
 proc            /proc           proc    defaults          0       0
@@ -274,15 +281,18 @@ dd conv=notrunc if=${work_dir}/usr/lib/u-boot/pinebook/sunxi-spl.bin of=${loopde
 dd conv=notrunc if=${work_dir}/usr/lib/u-boot/pinebook/u-boot-sunxi-with-spl.fit.itb of=${loopdevice} bs=8k seek=5
 sync
 
-cd ${current_dir}
+cd "${current_dir}/"
 
 # Umount filesystem
+log "Umount filesystem" green
 umount -l "${rootp}"
 
 # Check filesystem
+log "Check filesystem" green
 e2fsck -y -f "$rootp"
 
 # Remove loop devices
+log "Remove loop devices" green
 kpartx -dv "${loopdevice}" 
 losetup -d "${loopdevice}"
 

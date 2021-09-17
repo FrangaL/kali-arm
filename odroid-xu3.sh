@@ -49,7 +49,9 @@ set_hostname "${hostname}"
 # Network configs
 include network
 add_interface eth0
+
 # Copy directory bsp into build dir
+log "Copy directory bsp into build dir" green
 cp -rp bsp "${work_dir}"
 
 # Disable RESUME (suspend/resume is currently broken anyway!) which speeds up boot massively
@@ -60,7 +62,8 @@ EOF
 
 # Third stage
 cat <<EOF >"${work_dir}"/third-stage
-#!/bin/bash -e
+#!/usr/bin/env bash
+set -e
 
 export DEBIAN_FRONTEND=noninteractive
 eatmydata apt-get update
@@ -137,6 +140,7 @@ EOF
 
 # Run third stage
 chmod 0755 "${work_dir}"/third-stage
+log "Run third stage" green
 systemd-nspawn_exec /third-stage
 
 # Choose a locale
@@ -154,7 +158,8 @@ restore_mirror
 
 # Kernel section. If you want to use a custom kernel, or configuration, replace
 # them in this section
-git clone --depth 1 https://github.com/hardkernel/linux.git -b odroidxu4-4.14.y ${work_dir}/usr/src/kernel
+log "Kernel stuff" green
+git clone --depth 1 -b odroidxu4-4.14.y https://github.com/hardkernel/linux.git ${work_dir}/usr/src/kernel
 cd ${work_dir}/usr/src/kernel
 git rev-parse HEAD > ${work_dir}/usr/src/kernel-at-commit
 patch -p1 --no-backup-if-mismatch < ${current_dir}/patches/kali-wifi-injection-4.14.patch
@@ -186,6 +191,7 @@ rm source
 ln -s /usr/src/kernel build
 ln -s /usr/src/kernel source
 
+log "/boot/boot.ini" green
 cat << EOF > ${work_dir}/boot/boot.ini
 ODROIDXU-UBOOT-CONFIG
 
@@ -230,7 +236,6 @@ setenv bootcmd "fatload mmc 0:1 0x40008000 zImage; fatload mmc 0:1 0x42000000 uI
 # 1024x768 without monitor data using generic information
 # setenv videoconfig "drm_kms_helper.edid_firmware=edid/1024x768.bin"
 
-
 # final boot args
 setenv bootargs "\${bootrootfs} \${videoconfig} smsc95xx.macaddr=\${macaddr}"
 # drm.debug=0xff
@@ -239,7 +244,7 @@ boot
 EOF
 
 
-cd ${current_dir}
+cd "${current_dir}/"
 
 # Calculate the space to create the image and create
 make_image
@@ -266,17 +271,17 @@ mkfs -O "$features" -t "$fstype" -L BOOT "${bootp}"
 mkfs -O "$features" -t "$fstype" -L ROOTFS "${rootp}"
 
 # Create the dirs for the partitions and mount them
+log "Create the dirs for the partitions and mount them" green
 mkdir -p "${basedir}"/root/
 mount "${rootp}" "${basedir}"/root
 mkdir -p "${basedir}"/root/boot
 mount "${bootp}" "${basedir}"/root/boot
 
 # We do this down here to get rid of the build system's resolv.conf after running through the build
-cat << EOF > ${work_dir}/etc/resolv.conf
-nameserver 8.8.8.8
-EOF
+echo "nameserver 8.8.8.8" > ${work_dir}/etc/resolv.conf
 
 # Create an fstab so that we don't mount / read-only
+log "/etc/fstab" green
 UUID=$(blkid -s UUID -o value ${rootp})
 echo "UUID=$UUID /               $fstype    errors=remount-ro 0       1" >> ${work_dir}/etc/fstab
 
@@ -285,23 +290,27 @@ rsync -HPavz -q "${work_dir}"/ "${basedir}"/root/
 sync
 
 # Write the signed u-boot binary to the image so that it will boot
+log "u-Boot" green
 cd "${basedir}"
-git clone https://github.com/hardkernel/u-boot.git -b odroidxu4-v2017.05
+git clone --depth 1 -b odroidxu4-v2017.05 https://github.com/hardkernel/u-boot.git
 cd "${basedir}"/u-boot
 make odroid-xu4_defconfig
 make
 cd sd_fuse
 sh sd_fusing.sh ${loopdevice}
 
-cd ${current_dir}
+cd "${current_dir}/"
 
 # Umount filesystem
+log "Umount filesystem" green
 umount -l "${rootp}"
 
 # Check filesystem
+log "Check filesystem" green
 e2fsck -y -f "$rootp"
 
 # Remove loop devices
+log "Remove loop devices" green
 kpartx -dv "${loopdevice}" 
 losetup -d "${loopdevice}"
 

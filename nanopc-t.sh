@@ -50,7 +50,9 @@ set_hostname "${hostname}"
 include network
 add_interface eth0
 #add_interface wlan0
+
 # Copy directory bsp into build dir
+log "Copy directory bsp into build dir" green
 cp -rp bsp "${work_dir}"
 
 # Disable RESUME (suspend/resume is currently broken anyway!) which speeds up boot massively
@@ -61,7 +63,8 @@ EOF
 
 # Third stage
 cat <<EOF >"${work_dir}"/third-stage
-#!/bin/bash -e
+#!/usr/bin/env bash
+set -e
 
 export DEBIAN_FRONTEND=noninteractive
 eatmydata apt-get update
@@ -120,6 +123,7 @@ EOF
 
 # Run third stage
 chmod 0755 "${work_dir}"/third-stage
+log "Run third stage" green
 systemd-nspawn_exec /third-stage
 
 # Choose a locale
@@ -137,8 +141,9 @@ restore_mirror
 
 # Kernel section. If you want to use a custom kernel, or configuration, replace
 # them in this section
+log "Kernel section" green
 git clone --depth 1 https://github.com/friendlyarm/linux -b nanopi2-v4.4.y ${work_dir}/usr/src/kernel
-cd ${work_dir}/usr/src/kernel
+cd ${work_dir}/usr/src/kernel/
 git rev-parse HEAD > ${work_dir}/usr/src/kernel-at-commit
 touch .scmversion
 export ARCH=arm64
@@ -152,11 +157,12 @@ cp arch/arm64/boot/Image ${work_dir}/boot
 cp arch/arm64/boot/dts/nexell/*.dtb ${work_dir}/boot/
 make mrproper
 make nanopi3_linux_defconfig
-cd ${current_dir}
+cd "${current_dir}/"
 
 # Copy over the firmware for the nanopi3 wifi
 # At some point, nexmon could work for the device, but the support would need to
 # be added to nexmon
+log "WiFi firmware" green
 mkdir -p ${work_dir}/lib/firmware/ap6212/
 wget https://raw.githubusercontent.com/friendlyarm/android_vendor_broadcom_nanopi2/nanopi2-lollipop-mr1/proprietary/nvram_ap6212.txt -O ${work_dir}/lib/firmware/ap6212/nvram.txt
 wget https://raw.githubusercontent.com/friendlyarm/android_vendor_broadcom_nanopi2/nanopi2-lollipop-mr1/proprietary/nvram_ap6212a.txt -O ${work_dir}/lib/firmware/ap6212/nvram_ap6212.txt
@@ -166,25 +172,25 @@ wget https://raw.githubusercontent.com/friendlyarm/android_vendor_broadcom_nanop
 wget https://raw.githubusercontent.com/friendlyarm/android_vendor_broadcom_nanopi2/nanopi2-lollipop-mr1/proprietary/bcm43438a0.hcd -O ${work_dir}/lib/firmware/ap6212/bcm43438a0.hcd
 wget https://raw.githubusercontent.com/friendlyarm/android_vendor_broadcom_nanopi2/nanopi2-lollipop-mr1/proprietary/bcm43438a1.hcd -O ${work_dir}/lib/firmware/ap6212/bcm43438a1.hcd
 wget https://raw.githubusercontent.com/friendlyarm/android_vendor_broadcom_nanopi2/nanopi2-lollipop-mr1/proprietary/config_ap6212.txt -O ${work_dir}/lib/firmware/ap6212/config.txt
-cd ${current_dir}
+cd "${current_dir}/"
 
 # Fix up the symlink for building external modules
 # kernver is used so we don't need to keep track of what the current compiled
 # version is
+log "building external modules" green
 kernver=$(ls ${work_dir}/lib/modules/)
-cd ${work_dir}/lib/modules/${kernver}
+cd ${work_dir}/lib/modules/${kernver}/
 rm build
 rm source
 ln -s /usr/src/kernel build
 ln -s /usr/src/kernel source
-cd ${current_dir}
-
-cd ${current_dir}
+cd "${current_dir}/"
 
 # Calculate the space to create the image and create
 make_image
 
-# Create the disk partitions it
+# Create the disk partitions
+log "Create the disk partitions" green
 parted -s "${current_dir}"/"${imagename}".img mklabel msdos
 parted -s "${current_dir}"/"${imagename}".img mkpart primary ext3 4MiB "${bootsize}"MiB
 parted -s -a minimal "${current_dir}"/"${imagename}".img mkpart primary "$fstype" "${bootsize}"MiB 100%
@@ -205,6 +211,7 @@ mkfs -O "$features" -t "$fstype" -L BOOT "${bootp}"
 mkfs -O "$features" -t "$fstype" -L ROOTFS "${rootp}"
 
 # Create the dirs for the partitions and mount them
+log "Create the dirs for the partitions and mount them" green
 mkdir -p "${basedir}"/root/
 mount "${rootp}" "${basedir}"/root
 mkdir -p "${basedir}"/root/boot
@@ -212,6 +219,7 @@ mount "${bootp}" "${basedir}"/root/boot
 
 # We do this here because we don't want to hardcode the UUID for the partition during creation
 # systemd doesn't seem to be generating the fstab properly for some people, so let's create one
+log "/etc/fstab" green
 cat <<EOF >"${work_dir}"/etc/fstab
 # <file system> <mount point>   <type>  <options>       <dump>  <pass>
 proc            /proc           proc    defaults          0       0
@@ -225,9 +233,9 @@ sync
 # Samsung bootloaders must be signed
 # These are the same steps that are done by
 # https://github.com/friendlyarm/sd-fuse_nanopi2/blob/master/fusing.sh
-cd "${basedir}"
-mkdir -p bootloader
-cd "${basedir}"/bootloader
+log "Samsung bootloaders" green
+mkdir -p "${basedir}"/bootloader/
+cd "${basedir}"/bootloader/
 wget 'https://github.com/friendlyarm/sd-fuse_s5p6818/blob/master/prebuilt/bl1-mmcboot.bin?raw=true' -O "${basedir}"/bootloader/bl1-mmcboot.bin
 wget 'https://github.com/friendlyarm/sd-fuse_s5p6818/blob/master/prebuilt/fip-loader.img?raw=true' -O "${basedir}"/bootloader/fip-loader.img
 wget 'https://github.com/friendlyarm/sd-fuse_s5p6818/blob/master/prebuilt/fip-secure.img?raw=true' -O "${basedir}"/bootloader/fip-secure.img
@@ -263,15 +271,18 @@ sync
 #make CROSS_COMPILE=aarch64-linux-gnu-
 #dd if=fip-nonsecure.img of=$loopdevice bs=512 seek=3841
 
-cd ${current_dir}
+cd "${current_dir}/"
 
 # Umount filesystem
+log "Umount filesystem" green
 umount -l "${rootp}"
 
 # Check filesystem
+log "Check filesystem" green
 e2fsck -y -f "$rootp"
 
 # Remove loop devices
+log "Remove loop devices" green
 kpartx -dv "${loopdevice}" 
 losetup -d "${loopdevice}"
 

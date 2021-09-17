@@ -219,7 +219,7 @@ if [ -n "$proxy_url" ]; then
 fi
 
 # Download Pi-Tail files
-sudo git clone https://github.com/re4son/Kali-Pi ${work_dir}/opt/Kali-Pi
+git clone --depth 1 https://github.com/re4son/Kali-Pi ${work_dir}/opt/Kali-Pi
 wget -O ${work_dir}/etc/systemd/system/pi-tail.service https://raw.githubusercontent.com/Re4son/RPi-Tweaks/master/pi-tail/pi-tail.service
 wget -O ${work_dir}/etc/systemd/system/pi-tailbt.service https://raw.githubusercontent.com/Re4son/RPi-Tweaks/master/pi-tail/pi-tailbt.service
 wget -O ${work_dir}/etc/systemd/system/pi-tailms.service https://raw.githubusercontent.com/Re4son/RPi-Tweaks/master/pi-tail/pi-tailms.service
@@ -247,13 +247,14 @@ wget -O ${work_dir}/usr/local/bin/mon0up https://raw.githubusercontent.com/Re4so
 wget -O ${work_dir}/usr/local/bin/mon0down https://raw.githubusercontent.com/Re4son/RPi-Tweaks/master/pi-tail/mon0down
 wget -O ${work_dir}/lib/systemd/system/vncserver@.service https://github.com/Re4son/vncservice/raw/master/vncserver@.service
 chmod 0755 ${work_dir}/usr/local/bin/mon0up ${work_dir}/usr/local/bin/mon0down
-mkdir ${work_dir}/etc/skel/.vnc
+mkdir -p ${work_dir}/etc/skel/.vnc/
 wget -O ${work_dir}/etc/skel/.vnc/xstartup https://raw.githubusercontent.com/Re4son/RPi-Tweaks/master/vncservice/xstartup
 chmod 0750 ${work_dir}/etc/skel/.vnc/xstartup
 
 
 cat << EOF > ${work_dir}/third-stage
-#!/bin/bash -e
+#!/usr/bin/env bash
+set -e
 export DEBIAN_FRONTEND=noninteractive
 
 eatmydata apt-get update
@@ -488,7 +489,7 @@ cp ./bsp/firmware/rpi/config.txt ${work_dir}/boot/config.txt
 # Remove repeat conditional filters [all] in config.txt
 sed -i "59,66d" ${work_dir}/boot/config.txt
 
-cd ${current_dir}
+cd "${current_dir}/"
 
 # Calculate the space to create the image
 root_size=$(du -s -B1 ${work_dir} --exclude=${work_dir}/boot | cut -f1)

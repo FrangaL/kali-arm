@@ -49,12 +49,15 @@ set_hostname "${hostname}"
 # Network configs
 include network
 add_interface eth0
+
 # Copy directory bsp into build dir
+log "Copy directory bsp into build dir" green
 cp -rp bsp "${work_dir}"
 
 # Third stage
 cat <<EOF >"${work_dir}"/third-stage
-#!/bin/bash -e
+#!/usr/bin/env bash
+set -e
 
 export DEBIAN_FRONTEND=noninteractive
 eatmydata apt-get update
@@ -73,7 +76,6 @@ echo 'console-common console-data/keymap/full select en-latin1-nodeadkeys' | deb
 
 # Copy all services
 cp -p /bsp/services/all/*.service /etc/systemd/system/
-
 
 # Copy script rpi-resizerootfs
 install -m755 /bsp/scripts/rpi-resizerootfs /usr/sbin/
@@ -119,6 +121,7 @@ EOF
 
 # Run third stage
 chmod 0755 "${work_dir}"/third-stage
+log "Run third stage" green
 systemd-nspawn_exec /third-stage
 
 # Choose a locale
@@ -164,7 +167,8 @@ EOF
 
 cd "${basedir}"
 
-# Do the kernel stuff..
+# Do the kernel stuff
+log "Kernel stuff" green
 git clone --depth 1 -b gateworks_4.20.7 https://github.com/gateworks/linux-imx6 ${work_dir}/usr/src/kernel
 cd ${work_dir}/usr/src/kernel
 # Don't change the version because of our patches
@@ -187,6 +191,7 @@ cd ${work_dir}/usr/src/kernel
 make mrproper
 
 # Pull in imx6 smda/vpu firmware for vpu
+log "vpu" green
 mkdir -p ${work_dir}/lib/firmware/vpu
 mkdir -p ${work_dir}/lib/firmware/imx/sdma
 wget 'https://github.com/armbian/firmware/blob/master/vpu/v4l-coda960-imx6dl.bin?raw=true' -O ${work_dir}/lib/firmware/vpu/v4l-coda960-imx6dl.bin
@@ -199,12 +204,13 @@ wget 'https://github.com/armbian/firmware/blob/master/imx/sdma/sdma-imx6q.bin?ra
 # Ensure we don't have root=/dev/sda3 in the extlinux.conf which comes from running u-boot-menu in a cross chroot
 #sed -i -e 's/append.*/append root=\/dev\/mmcblk0p1 rootfstype=$fstype video=mxcfb0:dev=hdmi,1920x1080M@60,if=RGB24,bpp=32 console=ttymxc0,115200n8 console=tty1 consoleblank=0 rw rootwait/g' ${work_dir}/boot/extlinux/extlinux.conf
 
-cd ${current_dir}
+cd "${current_dir}/"
 
 # Calculate the space to create the image and create
 make_image
 
-# Create the disk partitions it
+# Create the disk partitions
+log "Create the disk partitions" green
 parted -s ${current_dir}/${imagename}.img mklabel msdos
 parted -s -a minimal ${current_dir}/${imagename}.img mkpart primary $fstype 4MiB 100%
 
@@ -222,11 +228,13 @@ fi
 mkfs -O "$features" -t "$fstype" -L ROOTFS "${rootp}"
 
 # Create the dirs for the partitions and mount them
+log "Create the dirs for the partitions and mount them" green
 mkdir -p "${basedir}"/root/
 mount "${rootp}" "${basedir}"/root
 
 # We do this here because we don't want to hardcode the UUID for the partition during creation
 # systemd doesn't seem to be generating the fstab properly for some people, so let's create one
+log "/etc/fstab" green
 cat <<EOF >"${work_dir}"/etc/fstab
 # <file system> <mount point>   <type>  <options>       <dump>  <pass>
 proc            /proc           proc    defaults          0       0
@@ -238,12 +246,15 @@ rsync -HPavz -q "${work_dir}"/ "${basedir}"/root/
 sync
 
 # Umount filesystem
+log "Umount filesystem" green
 umount -l "${rootp}"
 
 # Check filesystem
+log "Check filesystem" green
 e2fsck -y -f "$rootp"
 
 # Remove loop devices
+log "Remove loop devices" green
 kpartx -dv "${loopdevice}" 
 losetup -d "${loopdevice}"
 

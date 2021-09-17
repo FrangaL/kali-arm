@@ -49,12 +49,15 @@ set_hostname "${hostname}"
 # Network configs
 #include network
 #add_interface wlan0
+
 # Copy directory bsp into build dir
+log "Copy directory bsp into build dir" green
 cp -rp bsp "${work_dir}"
 
 # Third stage
 cat <<EOF >"${work_dir}"/third-stage
-#!/bin/bash -e
+#!/usr/bin/env bash
+set -e
 
 export DEBIAN_FRONTEND=noninteractive
 eatmydata apt-get update
@@ -137,9 +140,10 @@ EOF
 
 # Run third stage
 chmod 0755 "${work_dir}"/third-stage
+log "Run third stage" green
 systemd-nspawn_exec /third-stage
 
-#Configure RaspberryPi firmware (set config.txt to 64bit)
+# Configure RaspberryPi firmware (set config.txt to 64bit)
 include rpi_firmware
 # Choose a locale
 set_locale "$locale"
@@ -155,6 +159,7 @@ restore_mirror
 #include sources.list
 
 # systemd doesn't seem to be generating the fstab properly for some people, so let's create one
+log "/etc/fstab" green
 cat <<EOF >"${work_dir}"/etc/fstab
 # <file system> <mount point>   <type>  <options>       <dump>  <pass>
 proc            /proc           proc    defaults          0       0
@@ -165,7 +170,8 @@ EOF
 # Calculate the space to create the image and create
 make_image
 
-# Create the disk partitions it
+# Create the disk partitions
+log "Create the disk partitions" green
 parted -s "${current_dir}"/"${imagename}".img mklabel msdos
 parted -s "${current_dir}"/"${imagename}".img mkpart primary fat32 1MiB "${bootsize}"MiB
 parted -s -a minimal "${current_dir}"/"${imagename}".img mkpart primary "$fstype" "${bootsize}"MiB 100%
@@ -186,6 +192,7 @@ fi
 mkfs -O "$features" -t "$fstype" -L ROOTFS "${rootp}"
 
 # Create the dirs for the partitions and mount them
+log "Create the dirs for the partitions and mount them" green
 mkdir -p "${basedir}"/root/
 mount "${rootp}" "${basedir}"/root
 mkdir -p "${basedir}"/root/boot
@@ -193,18 +200,22 @@ mount "${bootp}" "${basedir}"/root/boot
 
 log "Rsyncing rootfs into image file" green
 rsync -HPavz -q --exclude boot "${work_dir}"/ "${basedir}"/root/
+log "Rsyncing rootfs into image file (/boot)" green
 rsync -rtx -q "${work_dir}"/boot "${basedir}"/root
 sync
 
 # Umount filesystem
+log "Umount filesystem" green
 umount -l "${bootp}"
 umount -l "${rootp}"
 
 # Check filesystem
+log "Check filesystem" green
 dosfsck -w -r -a -t "$bootp"
 e2fsck -y -f "$rootp"
 
 # Remove loop devices
+log "Remove loop devices" green
 losetup -d "${loopdevice}"
 
 # Compress image compilation

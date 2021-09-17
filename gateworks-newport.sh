@@ -49,12 +49,15 @@ set_hostname "${hostname}"
 # Network configs
 include network
 add_interface eth0
+
 # Copy directory bsp into build dir
+log "Copy directory bsp into build dir" green
 cp -rp bsp "${work_dir}"
 
 # Third stage
 cat <<EOF >"${work_dir}"/third-stage
-#!/bin/bash -e
+#!/usr/bin/env bash
+set -e
 
 export DEBIAN_FRONTEND=noninteractive
 eatmydata apt-get update
@@ -120,6 +123,7 @@ EOF
 
 # Run third stage
 chmod 0755 "${work_dir}"/third-stage
+log "Run third stage" green
 systemd-nspawn_exec /third-stage
 
 # Choose a locale
@@ -135,8 +139,10 @@ restore_mirror
 # Reload sources.list
 #include sources.list
 
-cd "${basedir}"
-# Do the kernel stuff..
+cd "${basedir}/"
+
+# Do the kernel stuff
+log "Kernel stuff" green
 git clone --depth 1 -b v5.4.45-newport https://github.com/gateworks/linux-newport ${work_dir}/usr/src/kernel
 cd ${work_dir}/usr/src/kernel
 # Don't change the version because of our patches
@@ -169,11 +175,13 @@ cd ${work_dir}/usr/src/kernel
 make mrproper
 
 # U-boot script
+log "U-boot script" green
 install -m644 ${current_dir}/bsp/bootloader/gateworks-newport/newport.scr ${work_dir}/boot/newport.script
 mkimage -A arm64 -T script -C none -d ${work_dir}/boot/newport.script ${work_dir}/boot/newport.scr
 rm ${work_dir}/boot/newport.script
 
 # reboot script
+log "Reboot script" green
 cat << EOF > ${work_dir}/lib/systemd/system-shutdown/gsc-poweroff
 #!/bin/bash
 # use GSC to power cycle the system
@@ -188,15 +196,15 @@ root_extra=$((${root_size}/1024/1000*5*1024/5))
 raw_size=$(($((${free_space}*1024))+${root_extra}))
 
 # Weird Boot Partition
-echo "Creating image file ${imagename}.img"
+log "Creating image file ${imagename}.img" green
 wget http://dev.gateworks.com/newport/boot_firmware/firmware-newport.img -O ${current_dir}/${imagename}.img
 fallocate -l $(echo ${raw_size}Ki | numfmt --from=iec-i --to=si) ${base_dir}/${imagename}.img
 dd if=${base_dir}/${imagename}.img of=${current_dir}/${imagename}.img bs=16M seek=1
 echo ", +" | sfdisk -N 2 ${current_dir}/${imagename}.img
 
 # Set the partition variables
-loopdevice=`losetup -f --show ${current_dir}/${imagename}.img`
-device=`kpartx -va ${loopdevice} | sed 's/.*\(loop[0-9]\+\)p.*/\1/g' | head -1`
+loopdevice=$(losetup -f --show ${current_dir}/${imagename}.img)
+device=$(kpartx -va ${loopdevice} | sed 's/.*\(loop[0-9]\+\)p.*/\1/g' | head -1)
 sleep 5
 device="/dev/mapper/${device}"
 rootp=${device}p2
@@ -207,23 +215,28 @@ if [[ $fstype == ext4 ]]; then
 elif [[ $fstype == ext3 ]]; then
   features="-O ^64bit"
 fi
-mkfs $features -t $fstype -L ROOTFS ${rootp}
+mkfs -O "$features" -t "$fstype" -L ROOTFS "${rootp}"
 
 # Create the dirs for the partitions and mount them
+log "Create the dirs for the partitions and mount them" green
 mkdir -p "${basedir}"/root
 mount ${rootp} "${basedir}"/root
 
 # Create an fstab so that we don't mount / read-only
+log "/etc/fstab" green
 UUID=$(blkid -s UUID -o value ${rootp})
 echo "UUID=$UUID /               $fstype    errors=remount-ro 0       1" >> ${work_dir}/etc/fstab
 
-echo "Rsyncing rootfs into image file"
+log "Rsyncing rootfs into image file" green
 rsync -HPavz -q ${work_dir}/ ${basedir}/root/
-
-# Unmount partitions
 sync
-umount ${rootp}
 
+# Umount filesystem
+log "Umount filesystem" green
+umount -l ${rootp}
+
+# Remove loop devices
+log "Remove loop devices" green
 kpartx -dv ${loopdevice}
 losetup -d ${loopdevice}
 
@@ -251,7 +264,7 @@ limit_cpu (){
 
 if [ $compress = xz ]; then
   if [ $(arch) == 'x86_64' ]; then
-    echo "Compressing ${imagename}.img"
+    log "Compressing ${imagename}.img" green
     [ $(nproc) \< 3 ] || cpu_cores=3 # cpu_cores = Number of cores to use
 #    limit_cpu pixz -p ${cpu_cores:-2} ${current_dir}/${imagename}.img # -p Nº cpu cores use
     pixz -p ${cpu_cores:-2} ${current_dir}/${imagename}.img # -p Nº cpu cores use
@@ -263,5 +276,5 @@ fi
 
 # Clean up all the temporary build stuff and remove the directories
 # Comment this out to keep things around if you want to see what may have gone wrong
-echo "Removing temporary build files"
+log "Removing temporary build files" green
 rm -rf "${basedir}"

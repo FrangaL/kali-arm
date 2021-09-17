@@ -49,12 +49,15 @@ set_hostname "${hostname}"
 # Network configs
 include network
 add_interface eth0
+
 # Copy directory bsp into build dir
+log "Copy directory bsp into build dir" green
 cp -rp bsp "${work_dir}"
 
 # Third stage
 cat <<EOF >"${work_dir}"/third-stage
-#!/bin/bash -e
+#!/usr/bin/env bash
+set -e
 
 export DEBIAN_FRONTEND=noninteractive
 eatmydata apt-get update
@@ -127,6 +130,7 @@ EOF
 
 # Run third stage
 chmod 0755 "${work_dir}"/third-stage
+log "Run third stage" green
 systemd-nspawn_exec /third-stage
 
 # Choose a locale
@@ -143,6 +147,7 @@ restore_mirror
 #include sources.list
 
 # Create an fstab so that we don't mount / read-only
+log "/etc/fstab" green
 UUID=$(blkid -s UUID -o value ${rootp})
 echo "UUID=$UUID /               $fstype    errors=remount-ro 0       1" >> ${work_dir}/etc/fstab
 
@@ -150,6 +155,7 @@ echo "UUID=$UUID /               $fstype    errors=remount-ro 0       1" >> ${wo
 make_image
 
 # Enable the serial console
+log "serial console" green
 echo "T1:12345:respawn:/sbin/agetty -L ttyS0 115200 vt100" >> ${work_dir}/etc/inittab
 # Load the ethernet module since it doesn't load automatically at boot
 echo "sunxi_emac" >> ${work_dir}/etc/modules
@@ -166,8 +172,8 @@ parted -s ${current_dir}/${imagename}.img mklabel msdos
 parted -s -a minimal ${current_dir}/${imagename}.img mkpart primary $fstype 4MiB 100%
 
 # Set the partition variables
-loopdevice=`losetup -f --show ${current_dir}/${imagename}.img`
-device=`kpartx -va ${loopdevice} | sed 's/.*\(loop[0-9]\+\)p.*/\1/g' | head -1`
+loopdevice=$(losetup -f --show ${current_dir}/${imagename}.img)
+device=$(kpartx -va ${loopdevice} | sed 's/.*\(loop[0-9]\+\)p.*/\1/g' | head -1)
 sleep 5
 device="/dev/mapper/${device}"
 rootp=${device}p1
@@ -177,28 +183,32 @@ if [[ $fstype == ext4 ]]; then
 elif [[ $fstype == ext3 ]]; then
   features="-O ^64bit"
 fi
-mkfs $features -t $fstype -L ROOTFS ${rootp}
+mkfs -O "$features" -t "$fstype" -L ROOTFS "${rootp}"
 
 # Create the dirs for the partitions and mount them
+log "Create the dirs for the partitions and mount them" green
 mkdir -p ${basedir}/root
 mount ${rootp} ${basedir}/root
 
 # Create an fstab so that we don't mount / read-only
+log "/etc/fstab" green
 UUID=$(blkid -s UUID -o value ${rootp})
 echo "UUID=$UUID /               $fstype    errors=remount-ro 0       1" >> ${work_dir}/etc/fstab
 
 echo "Rsyncing rootfs to image file"
 rsync -HPavz -q ${work_dir}/ ${basedir}/root/
-
-# Unmount partitions
 sync
-umount ${rootp}
+
+# Umount filesystem
+log "Umount filesystem" green
+umount -l ${rootp}
 
 dd if=${work_dir}/usr/lib/u-boot/Bananapi/u-boot-sunxi-with-spl.bin of=${loopdevice} bs=1024 seek=8
 
 e2fsck -y -f "$rootp"
 
 # Remove loop devices
+log "Remove loop devices" green
 kpartx -dv ${loopdevice}
 losetup -d "${loopdevice}"
 

@@ -4,9 +4,9 @@
 # Current directory
 current_dir="$(pwd)"
 # Base directory
-basedir=${current_dir}/chroot/${hw_model}-${variant}
+basedir=${current_dir}/base/${hw_model}-${variant}
 # Working directory
-work_dir="${basedir}/local/kali-${architecture}"
+work_dir="${basedir}/working/kali-${architecture}"
 # Image directory
 image_dir="${basedir}/images/"
 # Custom image file name variable - MUST NOT include .img at the end
@@ -61,7 +61,3 @@ if [ -f "${current_dir}"/common.d/builder.txt ]; then
   # shellcheck source=/dev/null
   source "${current_dir}"/common.d/builder.txt
 fi
-
-mkdir -p "${basedir}" \
-         "${work_dir}" \
-         "${image_dir}"
