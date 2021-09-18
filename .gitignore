@@ -1,8 +1,8 @@
 # Folders
 base/
-working/
 local/
+logs/
+working/
 # Files
 common.d/builder.txt
-*.log
 .DS_Store
