@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# shellcheck disable=SC2154
 
 # Clean system
 systemd-nspawn_exec <<'EOF'
@@ -23,10 +24,21 @@ for logs in $(find /var/log -type f); do > $logs; done
 history -c
 EOF
 
+# Choose a locale
+set_locale "$locale"
+
+# Disable the use of http proxy in case it is enabled.
+disable_proxy
+
+# Mirror & suite replacement
+restore_mirror
+
+# Reload sources.list
+#include sources.list
+
 # Newer systemd requires that /etc/machine-id exists but is empty.
 rm -f "${work_dir}"/etc/machine-id || true
 touch "${work_dir}"/etc/machine-id
 rm -f "${work_dir}"/var/lib/dbus/machine-id || true
-
-# Runonce requires it exists so make sure it does.
-mkdir -p "${work_dir}"/var/cache/runonce
+# Define DNS server after last running systemd-nspawn.
+echo "nameserver ${nameserver}" >"${work_dir}"/etc/resolv.conf

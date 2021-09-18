@@ -85,7 +85,7 @@ function systemd-nspawn_exec() {
 # create the rootfs - not much to modify here, except maybe throw in some more packages if you want.
 function debootstrap_exec() {
   eatmydata debootstrap --foreign --keyring=/usr/share/keyrings/kali-archive-keyring.gpg --components="${components}" \
-    --include=kali-archive-keyring,eatmydata --arch "${architecture}" "${suite}" "${work_dir}" "$@"
+    --include="${debootstrap_base}" --arch "${architecture}" "${suite}" "${work_dir}" "$@"
 }
 
 # Disable the use of http proxy in case it is enabled.
@@ -150,7 +150,7 @@ function limit_cpu() {
 function set_locale() {
   LOCALES="$1"
   sed -i "s/^# *\($LOCALES\)/\1/" "${work_dir}"/etc/locale.gen
-  systemd-nspawn_exec locale-gen
+  #systemd-nspawn_exec locale-gen
   echo "LANG=$LOCALES" >"${work_dir}"/etc/locale.conf
   echo "LC_ALL=$LOCALES" >>"${work_dir}"/etc/locale.conf
   cat <<'EOM' >"${work_dir}"/etc/profile.d/default-lang.sh

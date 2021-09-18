@@ -132,14 +132,6 @@ include rpi_firmware
 set_locale "$locale"
 # Clean system
 include clean_system
-# Define DNS server after last running systemd-nspawn.
-echo "nameserver ${nameserver}" >"${work_dir}"/etc/resolv.conf
-# Disable the use of http proxy in case it is enabled.
-disable_proxy
-# Mirror & suite replacement
-restore_mirror
-# Reload sources.list
-#include sources.list
 
 # systemd doesn't seem to be generating the fstab properly for some people, so let's create one.
 cat <<EOF >"${work_dir}"/etc/fstab
