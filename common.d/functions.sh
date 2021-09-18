@@ -35,7 +35,8 @@ function usage() {
 
 # Debug function
 function debug_enable() {
-  log="${log_dir}/${0%.*}-$(date +"%H-%M-%m-%d-%Y").log"
+  log="./logs/${0%.*}-$(date +"%Y-%m-%d-%H-%M").log"
+  mkdir -p ./logs/
   log "Debug enable. Output: ${log}" green
   exec &> >(tee -a "${log}") 2>&1
   # Print all commands inside of script
