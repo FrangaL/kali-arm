@@ -8,7 +8,7 @@ basedir=${current_dir}/base/${hw_model}-${variant}
 # Working directory
 work_dir="${basedir}/working/kali-${architecture}"
 # Image directory
-image_dir="${basedir}/images/"
+image_dir="${current_dir}/images/"
 # Custom image file name variable - MUST NOT include .img at the end
 imagename=${imagename:-"kali-linux-${version}-${hw_model}-${variant}"}
 # Generate a random machine name to be used
