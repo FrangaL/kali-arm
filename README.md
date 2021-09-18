@@ -16,14 +16,14 @@ For more information, please see: https://www.kali.org/docs/arm/
 - Make sure you run the `./common.d/build-deps.sh` script before trying to build an image, as this installs all required dependencies
 - You will need at **least 8GB of RAM or use SWAP file**
 
-An example workflow to build a _[Raspberry Pi 4](https://www.kali.org/docs/arm/raspberry-pi-4/) Kali Linux 2021.3 image_ would look like:
+An example workflow to build a _[Raspberry Pi 4](https://www.kali.org/docs/arm/raspberry-pi-4/) Kali Linux image_ would look like:
 
 ```
 cd ~/
 git clone https://gitlab.com/kalilinux/build-scripts/kali-arm
 cd ~/kali-arm/
 sudo ./common.d/build-deps.sh
-sudo ./rpi.sh 2021.3
+sudo ./rpi.sh
 ```
 
 - Depending on your system hardware & network connectivity, will depend on how long it will take to build
@@ -37,12 +37,17 @@ sudo ./rpi.sh 2021.3
 
 ```
 $ ./rpi.sh --help
- Usage commands:
-# Desktop manager (xfce, gnome, i3, kde, lxde, mate, e17 or none)
+# Architecture (arm64, armel, armhf)
+./rpi.sh --arch arm64
+
+# Desktop manager (xfce, gnome, kde, i3, lxde, mate, e17 or none)
 ./rpi.sh --desktop kde
 
 # Enable debug & log file
 ./rpi.sh --debug
+
+# Help screen (this)
+./rpi.sh --help
 $
 ```
 

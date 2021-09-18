@@ -18,51 +18,55 @@ function log() {
 # Usage function
 function usage() {
   log "Usage commands:" bold
-  echo "# Desktop manager (xfce, gnome, i3, kde, lxde, mate, e17 or none)"
+  echo "# Architecture (arm64, armel, armhf)"
+  echo "$0 --arch arm64"
+  echo ""
+  echo "# Desktop manager (xfce, gnome, kde, i3, lxde, mate, e17 or none)"
   echo "$0 --desktop kde"
   echo ""
   echo "# Enable debug & log file"
   echo "$0 --debug"
+  echo ""
+  echo "# Help screen (this)"
+  echo "$0 --help"
+
+  exit 0
+}
+
+# Debug function
+function debug_enable() {
+  log="${0%.*}.log"
+  log "Debug enable. Output: ${log}" green
+  exec &> >(tee -a "${log}") 2>&1
+  # Print all commands inside of script
+  set -x
 }
 
 # Arguments function
 function arguments() {
-  while true; do
-    case "$1" in
+  while [[ $# -gt 0 ]]; do
+    opt="$1";
+    shift;
+    case "$(echo ${opt} | tr '[:upper:]' '[:lower:]')" in
+      "--") break 2;;
       -a | --arch)
-        architecture="$2"
-        shift 2
-        ;;
+        architecture="$1"; shift;;
+      --arch=*)
+        architecture="${opt#*=}";;
       --desktop)
-        desktop="$2"
-        shift 2
-        ;;
-      -h | --h | -help | --help)
-        usage
-        exit 0
-        ;;
+        desktop="$1"; shift;;
+      --desktop=*)
+        desktop="${opt#*=}";;
       -d | --debug)
-        log="${0%.*}.log"
-        echo -e "\n[i] Debug enable. Output: ${log}"
-        exec &> >(tee -a "${log}") 2>&1
-        # Print all commands inside of script
-        set -x
-        shift 0
-        break
-        ;;
-      -\* | --\*)
-        log "Unknown option $1" red
-        exit 1
-        ;;
-      --)
-        shift
-        break
-        ;;
-      *) break ;;
+        debug_enable;;
+      -h | --help)
+        usage;;
+      *)
+        log "Unknown option: ${opt}" red; exit 1;;
     esac
   done
 }
-arguments "$*"
+arguments $*
 
 # Function to include common files
 function include() {
