@@ -12,7 +12,7 @@ For more information, please see: https://www.kali.org/docs/arm/
 
 ### Building
 
-- These scripts are tested on Kali Linux x64 and x86 installations only _(We **recommend x64**)_
+- These scripts are tested on Kali Linux arm64, x64 and x86 installations only _(We **recommend x64**)_
 - Make sure you run the `./common.d/build-deps.sh` script before trying to build an image, as this installs all required dependencies
 - You will need at **least 8GB of RAM or use SWAP file**
 
