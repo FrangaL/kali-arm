@@ -131,9 +131,7 @@ systemd-nspawn_exec /third-stage
 include rpi_firmware
 # Compile Raspberry PI userland
 include rpi_userland
-# Choose a locale
-set_locale "$locale"
-# Clean system
+# Finish tunning and clean system
 include clean_system
 
 # systemd doesn't seem to be generating the fstab properly for some people, so let's create one.

@@ -150,7 +150,7 @@ function limit_cpu() {
 function set_locale() {
   LOCALES="$1"
   sed -i "s/^# *\($LOCALES\)/\1/" "${work_dir}"/etc/locale.gen
-  systemd-nspawn_exec locale-gen
+  #systemd-nspawn_exec locale-gen
   echo "LANG=$LOCALES" >"${work_dir}"/etc/locale.conf
   echo "LC_ALL=$LOCALES" >>"${work_dir}"/etc/locale.conf
   cat <<'EOM' >"${work_dir}"/etc/profile.d/default-lang.sh
