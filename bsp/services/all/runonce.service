@@ -6,6 +6,8 @@ DefaultDependencies=no
 
 [Service]
 Type=oneshot
+RuntimeDirectory=/var/cache/runonce
+RuntimeDirectoryMode=0775
 RemainAfterExit=yes
 ExecStart=/usr/sbin/runonce
 

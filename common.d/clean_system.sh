@@ -27,6 +27,3 @@ EOF
 rm -f "${work_dir}"/etc/machine-id || true
 touch "${work_dir}"/etc/machine-id
 rm -f "${work_dir}"/var/lib/dbus/machine-id || true
-
-# Runonce requires it exists so make sure it does.
-mkdir -p "${work_dir}"/var/cache/runonce
