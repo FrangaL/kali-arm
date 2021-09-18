@@ -3,7 +3,7 @@
 log "clean system" green
 
 # Clean system
-systemd-nspawn_exec <<EOF
+systemd-nspawn_exec <<'EOF'
 rm -f /0
 rm -rf /bsp
 command fc-cache && fc-cache -frs
