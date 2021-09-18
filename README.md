@@ -58,11 +58,12 @@ $
 An example of using a custom local LAN mirror:
 
 ```
-$ echo 'mirror="http://192.168.1.100/kali"' > ./common.d/builder.txt
+$ echo 'mirror="http://192.168.1.100/kali"' > ./builder.txt
 ...OR...
-$ sed 's_^#__' ./common.d/builder.txt.example > ./common.d/builder.txt
+$ sed 's_^#__' ./builder.txt.example > ./builder.txt
 ```
 
 - - -
 
-Fri Sep 17 14:59:38 UTC 2021
+Sat Sep 18 04:58:37 UTC 2021
+

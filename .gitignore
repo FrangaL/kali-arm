@@ -4,5 +4,5 @@ local/
 logs/
 working/
 # Files
-common.d/builder.txt
+builder.txt
 .DS_Store

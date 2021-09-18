@@ -14,7 +14,7 @@ imagename=${imagename:-"kali-linux-${version}-${hw_model}-${variant}"}
 # Generate a random machine name to be used
 machine=$(dbus-uuidgen)
 # Version Kali release
-version=${version:-$(cat ${current_dir}/common.d/.release)}
+version=${version:-$(cat ${current_dir}/.release)}
 # Custom hostname variable
 hostname=${hostname:-kali}
 # Suite to use, valid options are:
@@ -59,7 +59,8 @@ export MALLOC_CHECK_=0
 # proxy_url="http://external.intranet.local"
 
 # Load build configuration
-if [ -f "${current_dir}"/common.d/builder.txt ]; then
+if [ -f "${current_dir}"/builder.txt ]; then
+  echo "Reading: "${current_dir}"/builder.txt"
   # shellcheck source=/dev/null
-  source "${current_dir}"/common.d/builder.txt
+  source "${current_dir}"/builder.txt
 fi
