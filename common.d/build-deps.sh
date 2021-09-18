@@ -82,7 +82,7 @@ fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 # List of installed packages file
-backup_packages=./local/build-deps-list-pkgs-$(date +"%H-%M-%m-%d-%Y")
+backup_packages=./local/build-deps-list-pkgs-$(date +"%Y-%m-%d-%H-%M")
 mkdir -p ./local/
 
 # Create a current list of installed packages
