@@ -6,7 +6,7 @@ log "clean system" green
 systemd-nspawn_exec <<EOF
 rm -f /0
 rm -rf /bsp
-fc-cache -frs
+command fc-cache && fc-cache -frs
 rm -rf /tmp/*
 rm -rf /etc/*-
 rm -rf /hs_err*
