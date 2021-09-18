@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# shellcheck disable=SC2154
 
 # Clean system
 systemd-nspawn_exec <<'EOF'
@@ -27,3 +28,13 @@ EOF
 rm -f "${work_dir}"/etc/machine-id || true
 touch "${work_dir}"/etc/machine-id
 rm -f "${work_dir}"/var/lib/dbus/machine-id || true
+
+# Disable the use of http proxy in case it is enabled.
+disable_proxy
+# Mirror & suite replacement
+restore_mirror
+# Reload sources.list
+#include sources.list
+
+# Define DNS server after last running systemd-nspawn.
+echo "nameserver ${nameserver}" >"${work_dir}"/etc/resolv.conf

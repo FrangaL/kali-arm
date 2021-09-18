@@ -203,14 +203,6 @@ systemd-nspawn_exec /third-stage
 set_locale "$locale"
 # Clean system
 include clean_system
-# Define DNS server after last running systemd-nspawn.
-echo "nameserver ${nameserver}" >"${work_dir}"/etc/resolv.conf
-# Disable the use of http proxy in case it is enabled.
-disable_proxy
-# Mirror & suite replacement
-restore_mirror
-# Reload sources.list
-#include sources.list
 
 # Kernel section. If you want to use a custom kernel, or configuration, replace
 # them in this section.
@@ -381,7 +373,7 @@ umount -l "${rootp}"
 e2fsck -y -f "$rootp"
 
 # Remove loop devices
-kpartx -dv "${loopdevice}" 
+kpartx -dv "${loopdevice}"
 losetup -d "${loopdevice}"
 
 # Compress image compilation

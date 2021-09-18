@@ -118,14 +118,7 @@ systemd-nspawn_exec /third-stage
 set_locale "$locale"
 # Clean system
 include clean_system
-# Define DNS server after last running systemd-nspawn.
-echo "nameserver ${nameserver}" >"${work_dir}"/etc/resolv.conf
-# Disable the use of http proxy in case it is enabled.
-disable_proxy
-# Mirror & suite replacement
-restore_mirror
-# Reload sources.list
-#include sources.list
+
 
 cd "${basedir}"
 # Do the kernel stuff...
@@ -134,7 +127,7 @@ cd ${work_dir}/usr/src/kernel
 # Don't change the version because of our patches.
 touch .scmversion
 export ARCH=arm64
-export CROSS_COMPILE=aarch64-linux-gnu- 
+export CROSS_COMPILE=aarch64-linux-gnu-
 patch -p1 < ${current_dir}/patches/kali-wifi-injection-5.4.patch
 patch -p1 < ${current_dir}/patches/0001-wireless-carl9170-Enable-sniffer-mode-promisc-flag-t.patch
 cp ${current_dir}/kernel-configs/gateworks-newport-5.4.45.config .config
