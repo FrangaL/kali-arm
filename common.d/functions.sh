@@ -85,7 +85,7 @@ function systemd-nspawn_exec() {
 # create the rootfs - not much to modify here, except maybe throw in some more packages if you want.
 function debootstrap_exec() {
   eatmydata debootstrap --foreign --keyring=/usr/share/keyrings/kali-archive-keyring.gpg --components="${components}" \
-    --include=kali-archive-keyring,eatmydata --arch "${architecture}" "${suite}" "${work_dir}" "$@"
+    --include="${debootstrap_base}" --arch "${architecture}" "${suite}" "${work_dir}" "$@"
 }
 
 # Disable the use of http proxy in case it is enabled.
