@@ -193,7 +193,7 @@ iface eth0 inet dhcp
 EOF
 
 # DNS server
-echo "nameserver 8.8.8.8" > ${work_dir}/etc/resolv.conf
+echo "nameserver ${nameserver}" > "${work_dir}"/etc/resolv.conf
 
 # Copy directory bsp into build dir
 cp -rp bsp ${work_dir}
@@ -311,9 +311,7 @@ if [[ ! -z "${4}" || ! -z "${5}" ]]; then
   suite=${5}
 fi
 
-cat << EOF > ${work_dir}/etc/resolv.conf
-nameserver 8.8.8.8
-EOF
+echo "nameserver ${nameserver}" > "${work_dir}"/etc/resolv.conf
 
 # Define sources.list
 cat << EOF > ${work_dir}/etc/apt/sources.list

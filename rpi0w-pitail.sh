@@ -43,6 +43,8 @@ mirror=${mirror:-"http://http.kali.org/kali"}
 kaligit="https://gitlab.com/kalilinux"
 # GitHub raw URL
 githubraw="https://raw.githubusercontent.com"
+# DNS server
+nameserver=${nameserver:-"8.8.8.8"}
 
 # Check EUID=0 you can run any binary as root
 if [[ $EUID -ne 0 ]]; then
@@ -442,7 +444,7 @@ history -c
 EOF
 
 # Define DNS server after last running systemd-nspawn
-echo "nameserver 8.8.8.8" > ${work_dir}/etc/resolv.conf
+echo "nameserver ${nameserver}" > ${work_dir}/etc/resolv.conf
 
 # Disable the use of http proxy in case it is enabled
 if [ -n "$proxy_url" ]; then
@@ -527,6 +529,10 @@ echo "Rsyncing rootfs into image file"
 rsync -HPavz -q --exclude boot ${work_dir}/ ${basedir}/root/
 rsync -rtx -q ${work_dir}/boot ${basedir}/root
 sync
+
+# Flush buffers and bytes - this is nicked from the Devuan arm-sdk.
+blockdev --flushbufs "${loopdevice}"
+python -c 'import os; os.fsync(open("'${loopdevice}'", "r+b"))'
 
 # Unmount partitions
 umount -l ${bootp}

@@ -48,6 +48,8 @@ components="main,contrib,non-free"
 kaligit="https://gitlab.com/kalilinux"
 # GitHub raw URL
 githubraw="https://raw.githubusercontent.com"
+# DNS server
+nameserver=${nameserver:-"8.8.8.8"}
 # workaround for LP: #520465
 export MALLOC_CHECK_=0
 # Proxy

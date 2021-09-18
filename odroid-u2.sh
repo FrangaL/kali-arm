@@ -191,7 +191,7 @@ iface eth0 inet dhcp
 EOF
 
 # DNS server
-echo "nameserver 8.8.8.8" > ${work_dir}/etc/resolv.conf
+echo "nameserver ${nameserver}" > "${work_dir}"/etc/resolv.conf
 
 # Copy directory bsp into build dir
 cp -rp bsp ${work_dir}
@@ -457,9 +457,7 @@ mkdir -p "${basedir}"/root/boot
 mount ${bootp} "${basedir}"/root/boot
 
 # We do this down here to get rid of the build system's resolv.conf after running through the build
-cat << EOF > ${work_dir}/etc/resolv.conf
-nameserver 8.8.8.8
-EOF
+echo "nameserver ${nameserver}" > "${work_dir}"/etc/resolv.conf
 
 echo "Rsyncing rootfs into image file"
 rsync -HPavz -q ${work_dir}/ ${basedir}/root/

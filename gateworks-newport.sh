@@ -132,7 +132,7 @@ set_locale "$locale"
 include clean_system
 trap clean_build ERR SIGTERM SIGINT
 # Define DNS server after last running systemd-nspawn
-echo "nameserver 8.8.8.8" >"${work_dir}"/etc/resolv.conf
+echo "nameserver ${nameserver}" > "${work_dir}"/etc/resolv.conf
 # Disable the use of http proxy in case it is enabled
 disable_proxy
 # Mirror & suite replacement
@@ -231,6 +231,9 @@ echo "UUID=$UUID /               $fstype    errors=remount-ro 0       1" >> ${wo
 log "Rsyncing rootfs into image file" green
 rsync -HPavz -q ${work_dir}/ ${basedir}/root/
 sync
+# Flush buffers and bytes - this is nicked from the Devuan arm-sdk.
+blockdev --flushbufs "${loopdevice}"
+python -c 'import os; os.fsync(open("'${loopdevice}'", "r+b"))'
 
 # Umount filesystem
 log "Umount filesystem" green

@@ -92,10 +92,6 @@ wget -qO /etc/apt/trusted.gpg.d/kali_pi-archive-keyring.gpg https://re4son-kerne
 eatmydata apt-get update
 eatmydata apt-get install -y kalipi-kernel kalipi-bootloader kalipi-re4son-firmware kalipi-kernel-headers firmware-raspberry kalipi-config kalipi-tft-config
 
-# Regenerated the shared-mime-info database on the first boot
-# since it fails to do so properly in a chroot
-systemctl enable smi-hack
-
 # Copy script rpi-resizerootfs
 install -m755 /bsp/scripts/rpi-resizerootfs /usr/sbin/
 
@@ -118,10 +114,7 @@ cd /root
 apt download -o APT::Sandbox::User=root ca-certificates 2>/dev/null
 
 # Set a REGDOMAIN.  This needs to be done or wireless doesn't work correctly on the RPi 3B+
-sed -i -e 's/REGDOM.*/REGDOMAIN=00/g' /etc/default/crda
-
-# Enable login over serial
-echo "T0:23:respawn:/sbin/agetty -L ttyAMA0 115200 vt100" >> /etc/inittab
+sed -i -e 's/REGDOM.*/REGDOMAIN=00/g' /etc/default/crda || true
 
 # Try and make the console a bit nicer
 # Set the terminus font for a bit nicer display
@@ -156,7 +149,7 @@ set_locale "$locale"
 include clean_system
 trap clean_build ERR SIGTERM SIGINT
 # Define DNS server after last running systemd-nspawn
-echo "nameserver 8.8.8.8" >"${work_dir}"/etc/resolv.conf
+echo "nameserver ${nameserver}" > "${work_dir}"/etc/resolv.conf
 # Disable the use of http proxy in case it is enabled
 disable_proxy
 # Mirror & suite replacement
@@ -209,6 +202,10 @@ rsync -HPavz -q --exclude boot "${work_dir}"/ "${basedir}"/root/
 log "Rsyncing rootfs into image file (/boot)" green
 rsync -rtx -q "${work_dir}"/boot "${basedir}"/root
 sync
+
+# Flush buffers and bytes - this is nicked from the Devuan arm-sdk.
+blockdev --flushbufs "${loopdevice}"
+python -c 'import os; os.fsync(open("'${loopdevice}'", "r+b"))'
 
 # Umount filesystem
 log "Umount filesystem" green

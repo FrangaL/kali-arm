@@ -45,6 +45,8 @@ mirror=${mirror:-"http://http.kali.org/kali"}
 kaligit="https://gitlab.com/kalilinux"
 # GitHub raw URL
 githubraw="https://raw.githubusercontent.com"
+# DNS server
+nameserver=${nameserver:-"8.8.8.8"}
 
 # Check EUID=0 you can run any binary as root
 if [[ $EUID -ne 0 ]]; then
@@ -88,7 +90,7 @@ fi
 components="main,contrib,non-free"
 arm="fake-hwclock ntpdate u-boot-tools"
 tools="aircrack-ng crunch cewl dnsrecon dnsutils ethtool exploitdb hydra medusa metasploit-framework ncrack nmap passing-the-hash proxychains recon-ng sqlmap tcpdump theharvester tor tshark usbutils whois windows-binaries winexe wpscan"
-base="apt-transport-https apt-utils console-setup e2fsprogs firmware-linux firmware-realtek firmware-atheros ifupdown initramfs-tools iw kali-defaults man-db mlocate netcat-traditional net-tools parted psmisc rfkill screen snmpd snmp tftp tmux unrar usbutils vim wget zerofree"
+base="apt-transport-https apt-utils console-setup e2fsprogs firmware-linux firmware-realtek firmware-atheros ifupdown initramfs-tools iw kali-defaults man-db mlocate netcat-traditional net-tools parted psmisc rfkill screen snmpd snmp sudo tftp tmux unrar usbutils vim wget zerofree"
 services="apache2 atftpd openssh-server openvpn"
 # haveged: assure enough entropy data for hostapd on startup
 # avahi-daemon: allow mDNS resolution (apple bonjour) by remote hosts
@@ -195,7 +197,7 @@ iface eth0 inet dhcp
 EOF
 
 # DNS server
-echo "nameserver 8.8.8.8" > ${work_dir}/etc/resolv.conf
+echo "nameserver ${nameserver}" > ${work_dir}/etc/resolv.conf
 
 # Copy directory bsp into build dir
 cp -rp bsp ${work_dir}
@@ -369,7 +371,7 @@ touch "${work_dir}"/etc/machine-id
 rm -f "${work_dir}"/var/lib/dbus/machine-id || true
 
 # Define DNS server after last running systemd-nspawn
-echo "nameserver 8.8.8.8" > ${work_dir}/etc/resolv.conf
+echo "nameserver ${nameserver}" > ${work_dir}/etc/resolv.conf
 
 # Disable the use of http proxy in case it is enabled
 if [ -n "$proxy_url" ]; then
@@ -568,7 +570,7 @@ mount ${bootp} ${basedir}/root/boot
 
 # We do this down here to get rid of the build system's resolv.conf after running through the build
 cat << EOF > kali-${architecture}/etc/resolv.conf
-nameserver 8.8.8.8
+nameserver ${nameserver}
 EOF
 
 # Because of the p4wnp1 script, we set the hostname down here, instead of using the machine name
@@ -589,6 +591,10 @@ echo "Rsyncing rootfs into image file"
 rsync -HPavz -q --exclude boot ${work_dir}/ ${basedir}/root/
 rsync -rtx -q ${work_dir}/boot ${basedir}/root
 sync
+
+# Flush buffers and bytes - this is nicked from the Devuan arm-sdk.
+blockdev --flushbufs "${loopdevice}"
+python -c 'import os; os.fsync(open("'${loopdevice}'", "r+b"))'
 
 # Unmount partitions
 umount ${bootp}

@@ -149,7 +149,7 @@ set_locale "$locale"
 include clean_system
 trap clean_build ERR SIGTERM SIGINT
 # Define DNS server after last running systemd-nspawn
-echo "nameserver 8.8.8.8" >"${work_dir}"/etc/resolv.conf
+echo "nameserver ${nameserver}" > "${work_dir}"/etc/resolv.conf
 # Disable the use of http proxy in case it is enabled
 disable_proxy
 # Mirror & suite replacement
@@ -279,7 +279,7 @@ mkdir -p "${basedir}"/root/boot
 mount "${bootp}" "${basedir}"/root/boot
 
 # We do this down here to get rid of the build system's resolv.conf after running through the build
-echo "nameserver 8.8.8.8" > ${work_dir}/etc/resolv.conf
+echo "nameserver ${nameserver}" > "${work_dir}"/etc/resolv.conf
 
 # Create an fstab so that we don't mount / read-only
 log "/etc/fstab" green
@@ -301,6 +301,10 @@ cd sd_fuse
 sh sd_fusing.sh ${loopdevice}
 
 cd "${current_dir}/"
+
+# Flush buffers and bytes - this is nicked from the Devuan arm-sdk.
+blockdev --flushbufs "${loopdevice}"
+python -c 'import os; os.fsync(open("'${loopdevice}'", "r+b"))'
 
 # Umount filesystem
 log "Umount filesystem" green
