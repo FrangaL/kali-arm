@@ -45,7 +45,7 @@ packages="$common_pkgs $cli_tools_pkgs $services $extra_custom_pkgs"
 if [[ "$hw_model" == *rpi* ]]; then
   extra+=" $gpio_pkgs $rpi_pkgs"
 fi
-if [[ "$variant" == *lite* ]]; then
+if [[ "$variant" == *minimal* ]]; then
   packages="$common_min_pkgs $cli_min_tools $services $extra_custom_pkgs"
 fi
 
