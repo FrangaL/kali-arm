@@ -28,7 +28,7 @@ apt-wait() {
 
 # Function create script to clean system packages
 clean_system() {
-  mkdir -p ./.build/
+  mkdir -p ./local/
   clean_script=${backup_packages/list-pkgs/remove-pkgs}.sh
   echo -e "\n[i] Cleaning up (${clean_script})..."
   cat << EOF > ${clean_script}
@@ -82,8 +82,8 @@ fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 # List of installed packages file
-backup_packages=./.build/build-deps-list-pkgs-$(date +"%H_%M_%m_%d_%Y")
-mkdir -p ./.build/
+backup_packages=./local/build-deps-list-pkgs-$(date +"%H-%M-%m-%d-%Y")
+mkdir -p ./local/
 
 # Create a current list of installed packages
 dpkg --get-selections > ${backup_packages}
