@@ -15,15 +15,15 @@ if [ ! -e "bsp" ]; then
 fi
 
 # Check directory build
-if [ -e "${basedir}" ]; then
-  log "${basedir} directory exists, will not continue" red
+if [ -e "${base_dir}" ]; then
+  log "${base_dir} directory exists, will not continue" red
   exit 1
 elif [[ ${current_dir} =~ [[:space:]] ]]; then
   log "The directory "\"${current_dir}"\" contains whitespace. Not supported." red
   exit 1
 else
   print_config
-  mkdir -p ${basedir}
+  mkdir -p ${base_dir}
 fi
 
 # Detect architecture
@@ -52,7 +52,7 @@ else
   extra_args="-q"
 fi
 
-# Check cpu cores to use
+# Check CPU cores to use
 if [ "$cpu_cores" = "0" ]; then
   num_cores=$(nproc --all)
 elif [[ "$cpu_cores" =~ ^[0-9]{1,2}$ ]]; then

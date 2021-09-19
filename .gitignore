@@ -1,6 +1,7 @@
-*[0-9]*/
-*.log
-kali-armhf/
-.DS_Store
-*.img.xz
+# Folders
+base/
+local/
+logs/
+# Files
 builder.txt
+.DS_Store

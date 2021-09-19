@@ -1,14 +1,15 @@
 #!/usr/bin/env bash
 
+log "compress image" green
+
 if [ "${compress:=}" = xz ]; then
-  log "Compressing file: $(tput sgr0) ${imagename:=}.img" green
+  log "Compressing file: $(tput sgr0) ${image_dir}/${image_name}.img" green
   if [ "$(arch)" == 'x86_64' ] || [ "$(arch)" == 'aarch64' ]; then
-    limit_cpu pixz -p "${num_cores:=}" "${current_dir:=}"/"${imagename}".img # -p Nº cpu cores use
-    chmod 644 "${current_dir}"/"${imagename}".img.xz
+    limit_cpu pixz -p "${num_cores:=}" "${image_dir}/${image_name}.img" # -p Nº cpu cores use
   else
-    xz --memlimit-compress=50% -T "$num_cores" "${current_dir}"/"${imagename}".img # -T Nº cpu cores use
-    chmod 644 "${current_dir}"/"${imagename}".img.xz
+    xz --memlimit-compress=50% -T "$num_cores" "${image_dir}/${image_name}.img" # -T Nº cpu cores use
   fi
-else
-  chmod 644 "${current_dir}"/"${imagename}".img
 fi
+
+chmod 0644 "${image_dir}/${image_name}.img"*
+stat "${image_dir}/${image_name}.img"*

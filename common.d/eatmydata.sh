@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+log "eatmydata" green
+
 # We need to manually extract eatmydata to use it for the second stage.
 for archive in "${work_dir}"/var/cache/apt/archives/*eatmydata*.deb; do
   dpkg-deb --fsys-tarfile "$archive" >"${work_dir}"/eatmydata
@@ -23,4 +25,4 @@ done
 export LD_PRELOAD
 exec "\$0-eatmydata" --force-unsafe-io "\$@"
 EOF
-chmod 755 "${work_dir}"/usr/bin/dpkg
+chmod 0755 "${work_dir}"/usr/bin/dpkg

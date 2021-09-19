@@ -1,4 +1,15 @@
 #!/bin/bash
+#
+# Kali Linux ARM build-script for KaliTAP
+# https://gitlab.com/kalilinux/build-scripts/kali-arm
+#
+# This is now at End of Life - there will be no support going forward
+# More information: https://www.kali.org/docs/arm/
+#
+
+echo "This script is now deprecated" >&2
+sleep 5s
+
 set -e
 
 # Uncomment to activate debug

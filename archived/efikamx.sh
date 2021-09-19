@@ -1,4 +1,16 @@
 #!/bin/bash
+#
+# Kali Linux ARM build-script for EfikaMX
+# https://gitlab.com/kalilinux/build-scripts/kali-arm
+#
+# This is now at End of Life - there will be no support going forward
+# More information: https://www.kali.org/docs/arm/efikamx/
+#
+
+echo "This script is now deprecated" >&2
+echo "The kernel is too old to run systemd" >&2
+sleep 5s
+
 set -e
 
 if [[ $EUID -ne 0 ]]; then
@@ -10,8 +22,6 @@ if [[ $# -eq 0 ]] ; then
     echo "Please pass version number, e.g. $0 1.0.1"
     exit 0
 fi
-
-echo "This script is now deprecated.  The kernel is too old to run systemd"
 
 basedir=`pwd`/efikamx-$1
 

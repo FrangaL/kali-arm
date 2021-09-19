@@ -1,10 +1,18 @@
-#!/bin/bash
-# This is the Raspberry Pi Kali 0-W Nexmon ARM build script - http://www.kali.org/downloads
-# A trusted Kali Linux image created by Offensive Security - http://www.offensive-security.com
+#!/usr/bin/env bash
+#
+# Kali Linux ARM build-script for Raspberry Pi Zero W (Pi-Tail)
+# https://gitlab.com/kalilinux/build-scripts/kali-arm
+#
+# This is a supported device - which you can find pre-generated images for
+# More information: https://www.kali.org/docs/arm/raspberry-pi-zero-w-pi-tail/
+#
+
+# Stop on error
 set -e
 
 # Uncomment to activate debug
 # debug=true
+
 if [ "$debug" = true ]; then
   exec > >(tee -a -i "${0%.*}.log") 2>&1
   set -x
@@ -12,12 +20,12 @@ fi
 
 # Architecture
 architecture=${architecture:-"armel"}
-# Generate a random machine name to be used.
+# Generate a random machine name to be used
 machine=$(dbus-uuidgen)
 # Custom hostname variable
 hostname=pi-tail
-# Custom image file name variable - MUST NOT include .img at the end.
-imagename=${3:-kali-linux-$1-rpi0w-pitail}
+# Custom image file name variable - MUST NOT include .img at the end
+image_name=${3:-kali-linux-$1-rpi0w-pitail}
 # Suite to use, valid options are:
 # kali-rolling, kali-dev, kali-bleeding-edge, kali-dev-only, kali-experimental, kali-last-snapshot
 suite=${suite:-"kali-rolling"}
@@ -27,21 +35,21 @@ free_space="300"
 bootsize="128"
 # Select compression, xz or none
 compress="xz"
-# Choose filesystem format to format ( ext3 or ext4 )
+# Choose filesystem format to format (ext3 or ext4)
 fstype="ext4"
-# If you have your own preferred mirrors, set them here.
+# If you have your own preferred mirrors, set them here
 mirror=${mirror:-"http://http.kali.org/kali"}
-# Gitlab url Kali repository
+# GitLab URL Kali repository
 kaligit="https://gitlab.com/kalilinux"
-# Github raw url
+# GitHub raw URL
 githubraw="https://raw.githubusercontent.com"
-# dns server
+# DNS server
 nameserver=${nameserver:-"8.8.8.8"}
 
-# Check EUID=0 you can run any binary as root.
+# Check EUID=0 you can run any binary as root
 if [[ $EUID -ne 0 ]]; then
-  echo "This script must be run as root or have super user permissions"
-  echo "Use: sudo $0 ${1:-2.0} ${2:-kali}"
+  echo "This script must be run as root or have super user permissions" >&2
+  echo "Use: sudo $0 ${1:-2.0} ${2:-kali}" >&2
   exit 1
 fi
 
@@ -51,30 +59,30 @@ if [[ $# -eq 0 ]] ; then
   exit 0
 fi
 
-# Check exist bsp directory.
+# Check exist bsp directory
 if [ ! -e "bsp" ]; then
-  echo "Error: missing bsp directory structure"
-  echo "Please clone the full repository ${kaligit}/build-scripts/kali-arm"
+  echo "Error: missing bsp directory structure" >&2
+  echo "Please clone the full repository ${kaligit}/build-scripts/kali-arm" >&2
   exit 255
 fi
 
 # Current directory
 current_dir="$(pwd)"
 # Base directory
-basedir=${current_dir}/rpi0w-pitail-"$1"
+base_dir=${current_dir}/rpi0w-pitail-"$1"
 # Working directory
-work_dir="${basedir}/kali-${architecture}"
+work_dir="${base_dir}/kali-${architecture}"
 
 # Check directory build
-if [ -e "${basedir}" ]; then
-  echo "${basedir} directory exists, will not continue"
+if [ -e "${base_dir}" ]; then
+  echo "${base_dir} directory exists, will not continue" >&2
   exit 1
 elif [[ ${current_dir} =~ [[:space:]] ]]; then
-  echo "The directory "\"${current_dir}"\" contains whitespace. Not supported."
+  echo "The directory "\"${current_dir}"\" contains whitespace. Not supported." >&2
   exit 1
 else
-  echo "The basedir thinks it is: ${basedir}"
-  mkdir -p ${basedir}
+  echo "The base_dir thinks it is: ${base_dir}"
+  mkdir -p ${base_dir}
 fi
 
 components="main,contrib,non-free"
@@ -88,16 +96,16 @@ pitail="bluelog bluesnarfer blueranger bluez-tools bridge-utils wifiphisher cmak
 packages="${arm} ${base} ${services} ${pitail}"
 
 # Check to ensure that the architecture is set to ARMEL since the RPi is the
-# only board that is armel.
+# only board that is armel
 if [[ ${architecture} != "armel" ]] ; then
     echo "The Raspberry Pi cannot run the Debian armhf binaries"
     exit 0
 fi
 
-# Automatic configuration to use an http proxy, such as apt-cacher-ng.
-# You can turn off automatic settings by uncommenting apt_cacher=off.
+# Automatic configuration to use an http proxy, such as apt-cacher-ng
+# You can turn off automatic settings by uncommenting apt_cacher=off
 # apt_cacher=off
-# By default the proxy settings are local, but you can define an external proxy.
+# By default the proxy settings are local, but you can define an external proxy
 # proxy_url="http://external.intranet.local"
 apt_cacher=${apt_cacher:-"$(lsof -i :3142|cut -d ' ' -f3 | uniq | sed '/^\s*$/d')"}
 if [ -n "$proxy_url" ]; then
@@ -122,7 +130,7 @@ case ${architecture} in
     lib_arch="arm-linux-gnueabi" ;;
 esac
 
-# create the rootfs - not much to modify here, except maybe throw in some more packages if you want.
+# create the rootfs - not much to modify here, except maybe throw in some more packages if you want
 eatmydata debootstrap --foreign --keyring=/usr/share/keyrings/kali-archive-keyring.gpg --include=kali-archive-keyring,eatmydata \
   --components=${components} --arch ${architecture} ${suite} ${work_dir} http://http.kali.org/kali
 
@@ -136,12 +144,12 @@ else
   extra_args="-q"
 fi
 
-# systemd-nspawn enviroment
+# systemd-nspawn environment
 systemd-nspawn_exec() {
   systemd-nspawn --bind-ro "$qemu_bin" $extra_args --capability=cap_setfcap -E RUNLEVEL=1,LANG=C -M "$machine" -D "$work_dir" "$@"
 }
 
-# We need to manually extract eatmydata to use it for the second stage.
+# We need to manually extract eatmydata to use it for the second stage
 for archive in ${work_dir}/var/cache/apt/archives/*eatmydata*.deb; do
   dpkg-deb --fsys-tarfile "$archive" > ${work_dir}/eatmydata
   tar -xkf ${work_dir}/eatmydata -C ${work_dir}
@@ -164,7 +172,7 @@ done
 export LD_PRELOAD
 exec "\$0-eatmydata" --force-unsafe-io "\$@"
 EOF
-chmod 755 ${work_dir}/usr/bin/dpkg
+chmod 0755 ${work_dir}/usr/bin/dpkg
 
 # debootstrap second stage
 systemd-nspawn_exec eatmydata /debootstrap/debootstrap --second-stage
@@ -202,18 +210,18 @@ allow-hotplug eth0
 iface eth0 inet dhcp
 EOF
 
-# Copy directory bsp into build dir.
+# Copy directory bsp into build dir
 cp -rp bsp ${work_dir}
 
 export MALLOC_CHECK_=0 # workaround for LP: #520465
 
-# Enable the use of http proxy in third-stage in case it is enabled.
+# Enable the use of http proxy in third-stage in case it is enabled
 if [ -n "$proxy_url" ]; then
   echo "Acquire::http { Proxy \"$proxy_url\" };" > ${work_dir}/etc/apt/apt.conf.d/66proxy
 fi
 
 # Download Pi-Tail files
-sudo git clone https://github.com/re4son/Kali-Pi ${work_dir}/opt/Kali-Pi
+git clone --depth 1 https://github.com/re4son/Kali-Pi ${work_dir}/opt/Kali-Pi
 wget -O ${work_dir}/etc/systemd/system/pi-tail.service https://raw.githubusercontent.com/Re4son/RPi-Tweaks/master/pi-tail/pi-tail.service
 wget -O ${work_dir}/etc/systemd/system/pi-tailbt.service https://raw.githubusercontent.com/Re4son/RPi-Tweaks/master/pi-tail/pi-tailbt.service
 wget -O ${work_dir}/etc/systemd/system/pi-tailms.service https://raw.githubusercontent.com/Re4son/RPi-Tweaks/master/pi-tail/pi-tailms.service
@@ -240,26 +248,27 @@ wget -O ${work_dir}/opt/Kali-Pi/Menus/RAS-AP/ras-ap.conf https://raw.githubuserc
 wget -O ${work_dir}/usr/local/bin/mon0up https://raw.githubusercontent.com/Re4son/RPi-Tweaks/master/pi-tail/mon0up
 wget -O ${work_dir}/usr/local/bin/mon0down https://raw.githubusercontent.com/Re4son/RPi-Tweaks/master/pi-tail/mon0down
 wget -O ${work_dir}/lib/systemd/system/vncserver@.service https://github.com/Re4son/vncservice/raw/master/vncserver@.service
-chmod 755 ${work_dir}/usr/local/bin/mon0up ${work_dir}/usr/local/bin/mon0down
-mkdir ${work_dir}/etc/skel/.vnc
+chmod 0755 ${work_dir}/usr/local/bin/mon0up ${work_dir}/usr/local/bin/mon0down
+mkdir -p ${work_dir}/etc/skel/.vnc/
 wget -O ${work_dir}/etc/skel/.vnc/xstartup https://raw.githubusercontent.com/Re4son/RPi-Tweaks/master/vncservice/xstartup
-chmod 750 ${work_dir}/etc/skel/.vnc/xstartup
+chmod 0750 ${work_dir}/etc/skel/.vnc/xstartup
 
 
 cat << EOF > ${work_dir}/third-stage
-#!/bin/bash -e
+#!/usr/bin/env bash
+set -e
 export DEBIAN_FRONTEND=noninteractive
 
 eatmydata apt-get update
 
 eatmydata apt-get -y install binutils ca-certificates console-common git initramfs-tools less locales nano u-boot-tools
 
-# Create kali user with kali password... but first, we need to manually make some groups because they don't yet exist...
-# This mirrors what we have on a pre-installed VM, until the script works properly to allow end users to set up their own... user.
+# Create kali user with kali password... but first, we need to manually make some groups because they don't yet exist..
+# This mirrors what we have on a pre-installed VM, until the script works properly to allow end users to set up their own... user
 # However we leave off floppy, because who a) still uses them, and b) attaches them to an SBC!?
-# And since a lot of these have serial devices of some sort, dialout is added as well.
+# And since a lot of these have serial devices of some sort, dialout is added as well
 # scanner, lpadmin and bluetooth have to be added manually because they don't
-# yet exist in /etc/group at this point.
+# yet exist in /etc/group at this point
 groupadd -r -g 118 bluetooth
 groupadd -r -g 113 lpadmin
 groupadd -r -g 122 scanner
@@ -298,7 +307,7 @@ echo "ttyGS0" >> /etc/securetty
 
 
 # Install the kernel packages
-# We install the kalipi-config and kalipi-tft-config packages here so that it pulls in the rpi userland as well.
+# We install the kalipi-config and kalipi-tft-config packages here so that it pulls in the rpi userland as well
 echo "deb http://http.re4son-kernel.com/re4son kali-pi main" > /etc/apt/sources.list.d/re4son.list
 wget -qO /etc/apt/trusted.gpg.d/kali_pi-archive-keyring.gpg https://re4son-kernel.com/keys/http/kali_pi-archive-keyring.gpg
 eatmydata apt-get update
@@ -306,7 +315,7 @@ eatmydata apt-get install --yes --allow-change-held-packages kalipi-kernel kalip
 eatmydata apt-get install --yes \$aptops pi-bluetooth firmware-raspberry
 
 # Regenerated the shared-mime-info database on the first boot
-# since it fails to do so properly in a chroot.
+# since it fails to do so properly in a chroot
 systemctl enable smi-hack
 
 # Resize FS on first run (hopefully)
@@ -358,7 +367,7 @@ apt download -o APT::Sandbox::User=root ca-certificates 2>/dev/null
 sed -i -e 's/REGDOM.*/REGDOMAIN=00/g' /etc/default/crda
 
 # Try and make the console a bit nicer
-# Set the terminus font for a bit nicer display.
+# Set the terminus font for a bit nicer display
 sed -i -e 's/FONTFACE=.*/FONTFACE="Terminus"/' /etc/default/console-setup
 sed -i -e 's/FONTSIZE=.*/FONTSIZE="6x12"/' /etc/default/console-setup
 
@@ -401,7 +410,7 @@ dpkg-divert --remove --rename /usr/bin/dpkg
 EOF
 
 # Run third stage
-chmod 755 ${work_dir}/third-stage
+chmod 0755 ${work_dir}/third-stage
 systemd-nspawn_exec /third-stage
 
 ## Fix the the infamous “Authentication Required to Create Managed Color Device” in vnc
@@ -434,10 +443,10 @@ for logs in $(find /var/log -type f); do > $logs; done
 history -c
 EOF
 
-# Define DNS server after last running systemd-nspawn.
+# Define DNS server after last running systemd-nspawn
 echo "nameserver ${nameserver}" > ${work_dir}/etc/resolv.conf
 
-# Disable the use of http proxy in case it is enabled.
+# Disable the use of http proxy in case it is enabled
 if [ -n "$proxy_url" ]; then
   unset http_proxy
   rm -rf ${work_dir}/etc/apt/apt.conf.d/66proxy
@@ -467,7 +476,7 @@ dwc_otg.lpm_enable=0 console=serial0,115200 console=tty1 root=/dev/mmcblk0p2 roo
 EOF
 
 # systemd doesn't seem to be generating the fstab properly for some people, so
-# let's create one.
+# let's create one
 cat << EOF > ${work_dir}/etc/fstab
 # <file system> <mount point>   <type>  <options>       <dump>  <pass>
 proc            /proc           proc    defaults          0       0
@@ -477,27 +486,27 @@ proc            /proc           proc    defaults          0       0
 EOF
 
 # Copy a default config, with everything commented out so people find it when
-# they go to add something when they are following instructions on a website.
+# they go to add something when they are following instructions on a website
 cp ./bsp/firmware/rpi/config.txt ${work_dir}/boot/config.txt
 # Remove repeat conditional filters [all] in config.txt
 sed -i "59,66d" ${work_dir}/boot/config.txt
 
-cd ${current_dir}
+cd "${current_dir}/"
 
-# Calculate the space to create the image.
+# Calculate the space to create the image
 root_size=$(du -s -B1 ${work_dir} --exclude=${work_dir}/boot | cut -f1)
 root_extra=$((${root_size}/1024/1000*5*1024/5))
 raw_size=$(($((${free_space}*1024))+${root_extra}+$((${bootsize}*1024))+4096))
 
 # Create the disk and partition it
-echo "Creating image file ${imagename}.img"
-fallocate -l $(echo ${raw_size}Ki | numfmt --from=iec-i --to=si) ${current_dir}/${imagename}.img
-parted -s ${current_dir}/${imagename}.img mklabel msdos
-parted -s ${current_dir}/${imagename}.img mkpart primary fat32 1MiB ${bootsize}MiB
-parted -s -a minimal ${current_dir}/${imagename}.img mkpart primary $fstype ${bootsize}MiB 100%
+echo "Creating image file ${image_name}.img"
+fallocate -l $(echo ${raw_size}Ki | numfmt --from=iec-i --to=si) "${image_dir}/${image_name}.img"
+parted -s "${image_dir}/${image_name}.img" mklabel msdos
+parted -s "${image_dir}/${image_name}.img" mkpart primary fat32 1MiB ${bootsize}MiB
+parted -s -a minimal "${image_dir}/${image_name}.img" mkpart primary $fstype ${bootsize}MiB 100%
 
 # Set the partition variables
-loopdevice=$(losetup --show -fP "${current_dir}/${imagename}.img")
+loopdevice=$(losetup --show -fP "${image_dir}/${image_name}.img")
 bootp="${loopdevice}p1"
 rootp="${loopdevice}p2"
 
@@ -511,14 +520,14 @@ fi
 mkfs $features -t $fstype -L ROOTFS ${rootp}
 
 # Create the dirs for the partitions and mount them
-mkdir -p ${basedir}/root/
-mount ${rootp} ${basedir}/root
-mkdir -p ${basedir}/root/boot
-mount ${bootp} ${basedir}/root/boot
+mkdir -p ${base_dir}/root/
+mount ${rootp} ${base_dir}/root
+mkdir -p ${base_dir}/root/boot
+mount ${bootp} ${base_dir}/root/boot
 
 echo "Rsyncing rootfs into image file"
-rsync -HPavz -q --exclude boot ${work_dir}/ ${basedir}/root/
-rsync -rtx -q ${work_dir}/boot ${basedir}/root
+rsync -HPavz -q --exclude boot ${work_dir}/ ${base_dir}/root/
+rsync -rtx -q ${work_dir}/boot ${base_dir}/root
 sync
 
 # Flush buffers and bytes - this is nicked from the Devuan arm-sdk.
@@ -532,9 +541,9 @@ umount -l ${rootp}
 # Remove loop device
 losetup -d ${loopdevice}
 
-# Limite use cpu function
+# Limit CPU function
 limit_cpu (){
-  rand=$(tr -cd 'A-Za-z0-9' < /dev/urandom | head -c4 ; echo) # Randowm name group
+  rand=$(tr -cd 'A-Za-z0-9' < /dev/urandom | head -c4 ; echo) # Random name group
   cgcreate -g cpu:/cpulimit-${rand} # Name of group cpulimit
   cgset -r cpu.shares=800 cpulimit-${rand} # Max 1024
   cgset -r cpu.cfs_quota_us=80000 cpulimit-${rand} # Max 100000
@@ -556,16 +565,16 @@ limit_cpu (){
 
 if [ "$compress" == "xz" ]; then
   if [ $(arch) == 'x86_64' ]; then
-    echo "Compressing ${imagename}.img"
+    echo "Compressing ${image_name}.img"
     [ $(nproc) \< 3 ] || cpu_cores=3 # cpu_cores = Number of cores to use
-    limit_cpu pixz -p ${cpu_cores:-2} ${current_dir}/${imagename}.img # -p Nº cpu cores use
-    chmod 644 ${current_dir}/${imagename}.img.xz
+    limit_cpu pixz -p ${cpu_cores:-2} "${image_dir}/${image_name}.img" # -p Nº cpu cores use
+    chmod 0644 ${current_dir}/${image_name}.img.xz
   fi
 else
-  chmod 644 ${current_dir}/${imagename}.img
+  chmod 0644 "${image_dir}/${image_name}.img"
 fi
 
-# Clean up all the temporary build stuff and remove the directories.
-# Comment this out to keep things around if you want to see what may have gone wrong.
+# Clean up all the temporary build stuff and remove the directories
+# Comment this out to keep things around if you want to see what may have gone wrong
 ## echo "Cleaning up the temporary build files..."
-## rm -rf "${basedir}"
+## rm -rf "${base_dir}"

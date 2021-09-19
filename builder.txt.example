@@ -53,4 +53,4 @@ fstype="ext4"
 # "kali-linux-202X-WXX-rpi4-nexmon-arm64" for the default filename.
 # For release builds from Kali, the requirements are that it start with kali-linuxi
 # and end with the architecture.
-#imagename="kali-linux-$(date +%Y)-W$(date +%U)-${hw_model}-${variant}"
+#image_name="kali-linux-$(date +%Y)-W$(date +%U)-${hw_model}-${variant}"

@@ -1,10 +1,12 @@
 #!/usr/bin/env bash
 # shellcheck disable=SC2154
 
-git clone https://github.com/raspberrypi/userland.git "${basedir}"/userland
+log "rpi userland" green
 
-cd "${basedir}"/userland && mkdir build
-pushd "${basedir}"/userland/build || exit
+git clone https://github.com/raspberrypi/userland.git "${base_dir}"/userland
+
+cd "${base_dir}"/userland && mkdir -p build/
+pushd "${base_dir}"/userland/build || exit
 
 case ${architecture} in
   arm64)
@@ -22,7 +24,7 @@ case ${architecture} in
 esac
 
 make -j"$(nproc)" 2>/dev/null
-mkdir "${work_dir}"/opt/vc
+mkdir -p "${work_dir}"/opt/vc
 mv {bin,lib,inc} "${work_dir}"/opt/vc
 
 cd "${current_dir}" || exit

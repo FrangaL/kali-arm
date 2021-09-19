@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
 
+log "selecting packages" green
+
 debootstrap_base="kali-archive-keyring,eatmydata"
 
-# This is the bare minimimum if you want to start from very scratch.
+# This is the bare minimum if you want to start from very scratch
 minimal_pkgs="ca-certificates iw parted ssh wpasupplicant"
 
 # This is the list of minimal common packages

@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 #
-# Kali Linux ARM build-script for Raspberry Pi 1 (Original) (32-bit)
+# Kali Linux ARM build-script for Raspberry Pi Zero W (32-bit)
 # https://gitlab.com/kalilinux/build-scripts/kali-arm
 #
 # This is a supported device - which you can find pre-generated images for
-# More information: https://www.kali.org/docs/arm/raspberry-pi/
+# More information: https://www.kali.org/docs/arm/raspberry-pi-zero-w/
 #
 
 # Stop on error
@@ -16,7 +16,7 @@ set -e
 source ./common.d/functions.sh
 
 # Hardware model
-hw_model=${hw_model:-"rpi1"}
+hw_model=${hw_model:-"rpi0w"}
 # Architecture
 architecture=${architecture:-"armel"}
 # Variant name for image and dir build
@@ -45,8 +45,8 @@ include hosts
 # Set hostname
 set_hostname "${hostname}"
 # Network configs
-include network
-add_interface eth0
+#include network
+#add_interface wlan0
 
 # Copy directory bsp into build dir
 status "Copy directory bsp into build dir"
@@ -99,10 +99,13 @@ status_stage3 'Install the kernel packages'
 echo "deb http://http.re4son-kernel.com/re4son kali-pi main" > /etc/apt/sources.list.d/re4son.list
 wget -qO /etc/apt/trusted.gpg.d/kali_pi-archive-keyring.gpg https://re4son-kernel.com/keys/http/kali_pi-archive-keyring.gpg
 eatmydata apt-get update
-eatmydata apt-get install -y kalipi-kernel kalipi-bootloader kalipi-re4son-firmware kalipi-kernel-headers kalipi-config kalipi-tft-config firmware-raspberry
+eatmydata apt-get install -y kalipi-kernel kalipi-bootloader kalipi-re4son-firmware kalipi-kernel-headers kalipi-config kalipi-tft-config firmware-raspberry pi-bluetooth
 
 status_stage3 'Copy script rpi-resizerootfs'
 install -m755 /bsp/scripts/rpi-resizerootfs /usr/sbin/
+
+status_stage3 'Copy script for handling wpa_supplicant file'
+install -m755 /bsp/scripts/copy-user-wpasupplicant.sh /usr/bin/
 
 status_stage3 'Enable rpi-resizerootfs first boot'
 systemctl enable rpi-resizerootfs
@@ -159,7 +162,6 @@ include rpi_firmware
 # Clean system
 include clean_system
 trap clean_build ERR SIGTERM SIGINT
-
 
 # systemd doesn't seem to be generating the fstab properly for some people, so let's create one
 status "/etc/fstab"

@@ -1,6 +1,14 @@
-#!/bin/bash -e
-# This is the NanoPi NEO PLUS2 Kali ARM 64 bit build script - http://www.kali.org/get-kali
-# A trusted Kali Linux image created by Offensive Security - http://www.offensive-security.com
+#!/usr/bin/env bash
+#
+# Kali Linux ARM build-script for NanoPi NEO Plus2
+# https://gitlab.com/kalilinux/build-scripts/kali-arm
+#
+# This is a supported device - which you can find pre-generated images for
+# More information: https://www.kali.org/docs/arm/nanopi-neo-plus2/
+#
+
+# Stop on error
+set -e
 
 # shellcheck disable=SC2154
 # Load general functions
@@ -18,7 +26,7 @@ desktop=${desktop:-"xfce"}
 
 # Load common variables
 include variables
-# Checks script enviroment
+# Checks script environment
 include check
 # Packages build list
 include packages
@@ -39,14 +47,16 @@ set_hostname "${hostname}"
 # Network configs
 include network
 add_interface eth0
-# Copy directory bsp into build dir.
+
+# Copy directory bsp into build dir
+status "Copy directory bsp into build dir"
 cp -rp bsp "${work_dir}"
 
 # Eventually this should become a systemd service, but for now, we use the same
-# init.d file that they provide and we let systemd handle the conversion.
+# init.d file that they provide and we let systemd handle the conversion
 mkdir -p ${work_dir}/etc/init.d/
-cat << 'EOF' > ${work_dir}/etc/init.d/brcm_patchram_plus
-#!/bin/bash
+cat << EOF > ${work_dir}/etc/init.d/brcm_patchram_plus
+#!/usr/bin/env bash
 
 ### BEGIN INIT INFO
 # Provides:             brcm_patchram_plus
@@ -121,88 +131,105 @@ case "$1" in
         ;;
 esac
 EOF
-chmod 755 ${work_dir}/etc/init.d/brcm_patchram_plus
+chmod 0755 ${work_dir}/etc/init.d/brcm_patchram_plus
 
 # Third stage
-cat <<EOF >"${work_dir}"/third-stage
-#!/bin/bash -e
+cat <<EOF > "${work_dir}"/third-stage
+#!/usr/bin/env bash
+set -e
+status_3i=0
+status_3t=\$(grep '^status_stage3 ' \$0 | wc -l)
 
+status_stage3() {
+  status_3i=\$((status_3i+1))
+  echo  " [i] Stage 3 (\${status_3i}/\${status_3t}): \$1"
+}
+
+status_stage3 'Update apt'
 export DEBIAN_FRONTEND=noninteractive
 eatmydata apt-get update
+
+status_stage3 'Install core packages'
 eatmydata apt-get -y install ${third_stage_pkgs}
 
+status_stage3 'Install packages'
 eatmydata apt-get install -y ${packages} || eatmydata apt-get install -y --fix-broken
+
+status_stage3 'Install desktop packages'
 eatmydata apt-get install -y ${desktop_pkgs} ${extra} || eatmydata apt-get install -y --fix-broken
 
+status_stage3 'Clean up'
 eatmydata apt-get -y --purge autoremove
 
-# Linux console/Keyboard configuration
+status_stage3 'Linux console/keyboard configuration'
 echo 'console-common console-data/keymap/policy select Select keymap from full list' | debconf-set-selections
 echo 'console-common console-data/keymap/full select en-latin1-nodeadkeys' | debconf-set-selections
 
-# Copy all services
+status_stage3 'Copy all services'
 cp -p /bsp/services/all/*.service /etc/systemd/system/
 
-
-# Copy script rpi-resizerootfs
+status_stage3 'Copy script rpi-resizerootfs'
 install -m755 /bsp/scripts/rpi-resizerootfs /usr/sbin/
 
-# Enable rpi-resizerootfs first boot
+status_stage3 'Enable rpi-resizerootfs first boot'
 systemctl enable rpi-resizerootfs
 
-# Generate SSH host keys on first run
+status_stage3 'Generate SSH host keys on first run'
 systemctl enable regenerate_ssh_host_keys
 
-# Required to kick the bluetooth chip
+status_stage3 'Required to kick the bluetooth chip'
 install -m755 /bsp/firmware/veyron/brcm_patchram_plus /bin/brcm_patchram_plus
 
-# There's no graphical output on this device so
+status_stage3 'Theres no graphical output on this device'
 systemctl set-default multi-user
 
-# Enable bluetooth - we do this way because we haven't written a systemd service
-# file for it yet.
+status_stage3 'Enable bluetooth - we do this way because we haven't written a systemd service file for it yet'
 update-rc.d brcm_patchram_plus defaults
 
-# Allow users to use NM over ssh
+status_stage3 'Allow users to use NetworkManager over ssh'
 install -m644 /bsp/polkit/10-NetworkManager.pkla /var/lib/polkit-1/localauthority/50-local.d
 
+status_stage3 'Install ca-certificate'
 cd /root
 apt download -o APT::Sandbox::User=root ca-certificates 2>/dev/null
 
-# Set a REGDOMAIN.  This needs to be done or wireless doesn't work correctly on the RPi 3B+
+status_stage3 'Set a REGDOMAIN'
 sed -i -e 's/REGDOM.*/REGDOMAIN=00/g' /etc/default/crda
 
-# Enable login over serial
+status_stage3 'Enable login over serial'
 echo "T0:23:respawn:/sbin/agetty -L ttyAMA0 115200 vt100" >> /etc/inittab
 
-# Try and make the console a bit nicer
-# Set the terminus font for a bit nicer display.
+status_stage3 'Try and make the console a bit nicer. Set the terminus font for a bit nicer display'
 sed -i -e 's/FONTFACE=.*/FONTFACE="Terminus"/' /etc/default/console-setup
 sed -i -e 's/FONTSIZE=.*/FONTSIZE="6x12"/' /etc/default/console-setup
 
-# Fix startup time from 5 minutes to 15 secs on raise interface wlan0
+status_stage3 'Fix startup time from 5 minutes to 15 secs on raise interface wlan0'
 sed -i 's/^TimeoutStartSec=5min/TimeoutStartSec=15/g' "/usr/lib/systemd/system/networking.service"
 
-# Enable runonce
+status_stage3 'Enable runonce'
 install -m755 /bsp/scripts/runonce /usr/sbin/
 cp -rf /bsp/runonce.d /etc
 systemctl enable runonce
 
-# Clean up dpkg.eatmydata
+status_stage3 'Clean up dpkg.eatmydata'
 rm -f /usr/bin/dpkg
 dpkg-divert --remove --rename /usr/bin/dpkg
 EOF
 
 # Run third stage
-chmod 755 "${work_dir}"/third-stage
+chmod 0755 "${work_dir}"/third-stage
+status "Run third stage"
 systemd-nspawn_exec /third-stage
 
 # Clean system
 include clean_system
+trap clean_build ERR SIGTERM SIGINT
+
 
 # Kernel section. If you want to use a custom kernel, or configuration, replace
-# them in this section.
-git clone --depth 1 https://github.com/friendlyarm/linux -b sunxi-4.x.y ${work_dir}/usr/src/kernel
+# them in this section
+status "Kernel stuff"
+git clone --depth 1 -b sunxi-4.x.y https://github.com/friendlyarm/linux ${work_dir}/usr/src/kernel
 cd ${work_dir}/usr/src/kernel
 git rev-parse HEAD > ${work_dir}/usr/src/kernel-at-commit
 touch .scmversion
@@ -224,13 +251,14 @@ cp arch/arm64/boot/dts/allwinner/*.dtb ${work_dir}/boot/
 mkdir -p ${work_dir}/boot/overlays/
 cp arch/arm64/boot/dts/allwinner/overlays/*.dtb ${work_dir}/boot/overlays/
 make mrproper
-cd ${current_dir}
+cd "${current_dir}/"
 
-# Copy over the firmware for the ap6212 wifi.
+# Copy over the firmware for the ap6212 wifi
 # On the neo plus2 default install there are other firmware files installed for
-# p2p and apsta but I can't find them publicly posted to friendlyarm's github.
+# p2p and apsta but I can't find them publicly posted to friendlyarm's GitHub
 # At some point, nexmon could work for the device, but the support would need to
-# be added to nexmon.
+# be added to nexmon
+status "WiFi firmware"
 mkdir -p ${work_dir}/lib/firmware/ap6212/
 wget https://raw.githubusercontent.com/friendlyarm/android_vendor_broadcom_nanopi2/nanopi2-lollipop-mr1/proprietary/nvram_ap6212.txt -O ${work_dir}/lib/firmware/ap6212/nvram.txt
 wget https://raw.githubusercontent.com/friendlyarm/android_vendor_broadcom_nanopi2/nanopi2-lollipop-mr1/proprietary/nvram_ap6212a.txt -O ${work_dir}/lib/firmware/ap6212/nvram_ap6212.txt
@@ -242,29 +270,31 @@ wget https://raw.githubusercontent.com/friendlyarm/android_vendor_broadcom_nanop
 wget https://raw.githubusercontent.com/friendlyarm/android_vendor_broadcom_nanopi2/nanopi2-lollipop-mr1/proprietary/config_ap6212.txt -O ${work_dir}/lib/firmware/ap6212/config.txt
 
 # The way the base system comes, the firmware seems to be a symlink into the
-# ap6212 directory so let's do the same here.
+# ap6212 directory so let's do the same here
 # NOTE: This means we can't install firmware-brcm80211 firmware package because
 # the firmware will conflict, and based on testing the firmware in the package
-# *will not* work with this device.
+# *will not* work with this device
 mkdir -p ${work_dir}/lib/firmware/brcm
 cd ${work_dir}/lib/firmware/brcm
 ln -s /lib/firmware/ap6212/fw_bcm43438a1.bin brcmfmac43430a1-sdio.bin
 ln -s /lib/firmware/ap6212/nvram_ap6212.txt brcmfmac43430a1-sdio.txt
 ln -s /lib/firmware/ap6212/fw_bcm43438a0.bin brcmfmac43430-sdio.bin
 ln -s /lib/firmware/ap6212/nvram.txt brcmfmac43430-sdio.txt
-cd ${current_dir}
+cd "${current_dir}/"
 
 # Fix up the symlink for building external modules
 # kernver is used so we don't need to keep track of what the current compiled
 # version is
+status "building external modules"
 kernver=$(ls ${work_dir}/lib/modules/)
 cd ${work_dir}/lib/modules/${kernver}
 rm build
 rm source
 ln -s /usr/src/kernel build
 ln -s /usr/src/kernel source
-cd ${current_dir}
+cd "${current_dir}/"
 
+status "/boot/boot.cmd"
 cat << EOF > ${work_dir}/boot/boot.cmd
 # Recompile with:
 # mkimage -C none -A arm -T script -d boot.cmd boot.scr
@@ -308,21 +338,22 @@ booti \${kernel_addr} - \${dtb_addr}
 EOF
 mkimage -C none -A arm -T script -d ${work_dir}/boot/boot.cmd ${work_dir}/boot/boot.scr
 
-cd ${current_dir}
+cd "${current_dir}/"
 
-# Calculate the space to create the image and create.
+# Calculate the space to create the image and create
 make_image
 
-# Create the disk partitions it
-parted -s ${current_dir}/${imagename}.img mklabel msdos
-parted -s -a minimal ${current_dir}/${imagename}.img mkpart primary $fstype 32MiB 100%
+# Create the disk partitions
+status "Create the disk partitions"
+parted -s "${image_dir}/${image_name}.img" mklabel msdos
+parted -s -a minimal "${image_dir}/${image_name}.img" mkpart primary $fstype 32MiB 100%
 
 # Set the partition variables
-loopdevice=$(losetup --show -fP "${current_dir}/${imagename}.img")
+loopdevice=$(losetup --show -fP "${image_dir}/${image_name}.img")
 rootp="${loopdevice}p1"
 
 # Create file systems
-log "Formating partitions" green
+status "Formatting partitions"
 if [[ "$fstype" == "ext4" ]]; then
   features="^64bit,^metadata_csum"
 elif [[ "$fstype" == "ext3" ]]; then
@@ -331,24 +362,27 @@ fi
 mkfs -O "$features" -t "$fstype" -L ROOTFS "${rootp}"
 
 # Create the dirs for the partitions and mount them
-mkdir -p "${basedir}"/root/
-mount "${rootp}" "${basedir}"/root
+status "Create the dirs for the partitions and mount them"
+mkdir -p "${base_dir}"/root/
+mount "${rootp}" "${base_dir}"/root
 
-# We do this here because we don't want to hardcode the UUID for the partition during creation.
-# systemd doesn't seem to be generating the fstab properly for some people, so let's create one.
-cat <<EOF >"${work_dir}"/etc/fstab
+# We do this here because we don't want to hardcode the UUID for the partition during creation
+# systemd doesn't seem to be generating the fstab properly for some people, so let's create one
+status "/etc/fstab"
+cat <<EOF > "${work_dir}"/etc/fstab
 # <file system> <mount point>   <type>  <options>       <dump>  <pass>
 proc            /proc           proc    defaults          0       0
 UUID=$(blkid -s UUID -o value ${rootp})  /               $fstype    defaults,noatime  0       1
 EOF
 
-log "Rsyncing rootfs into image file" green
-rsync -HPavz -q "${work_dir}"/ "${basedir}"/root/
+status "Rsyncing rootfs into image file"
+rsync -HPavz -q "${work_dir}"/ "${base_dir}"/root/
 sync
 
-cd "${basedir}"
-git clone https://github.com/friendlyarm/u-boot.git
-cd u-boot
+status "u-Boot"
+cd "${base_dir}"
+git clone --depth 1 https://github.com/friendlyarm/u-boot.git
+cd u-boot/
 git checkout sunxi-v2017.x
 make nanopi_h5_defconfig
 make
@@ -356,25 +390,28 @@ dd if=spl/sunxi-spl.bin of=${loopdevice} bs=1024 seek=8
 dd if=u-boot.itb of=${loopdevice} bs=1024 seek=40
 sync
 
-cd ${current_dir}
+cd "${current_dir}/"
 
-# Flush buffers and bytes - this is nicked from the Devuan arm-sdk.
+# Flush buffers and bytes - this is nicked from the Devuan arm-sdk
 blockdev --flushbufs "${loopdevice}"
 python -c 'import os; os.fsync(open("'${loopdevice}'", "r+b"))'
 
-# Umount filesystem
+# Unmount filesystem
+status "Unmount filesystem"
 umount -l "${rootp}"
 
 # Check filesystem
-e2fsck -y -f "$rootp"
+status "Check filesystem"
+e2fsck -y -f "${rootp}"
 
 # Remove loop devices
-kpartx -dv "${loopdevice}"
+status "Remove loop devices"
+kpartx -dv "${loopdevice}" 
 losetup -d "${loopdevice}"
 
 # Compress image compilation
 include compress_img
 
-# Clean up all the temporary build stuff and remove the directories.
-# Comment this out to keep things around if you want to see what may have gone wrong.
+# Clean up all the temporary build stuff and remove the directories
+# Comment this out to keep things around if you want to see what may have gone wrong
 clean_build
