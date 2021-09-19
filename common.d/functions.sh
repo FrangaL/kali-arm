@@ -124,7 +124,20 @@ function restore_mirror() {
 
 # Limit CPU function
 function limit_cpu() {
-  if [[ ${cpu_limit:=} -eq "0" || -z $cpu_limit ]]; then
+  if ! grep -q 'cgroup_enable=memory swapaccount=1' /proc/cmdline; then
+    log "Kernel doesn't support CPU limiting" red
+    cpu_limit=-1
+  elif [[ ${cpu_limit:=} -lt "1" ]]; then
+    log "CPU limit is disabled" yellow
+    cpu_limit=-1
+  elif [[ ${cpu_limit:=} -gt "100" ]]; then
+    log "CPU limit (${cpu_limit}) is higher than 100" yellow
+    cpu_limit=100
+  fi
+
+  if [[ ${cpu_limit:=} -lt "1" ]]; then
+    return exec "${@}"
+  elif [[ -z $cpu_limit ]]; then
     local cpu_shares=$((num_cores * 1024))
     local cpu_quota="-1"
   else

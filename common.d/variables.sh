@@ -38,7 +38,7 @@ disable_ipv6="yes"
 swap="no"
 # Use 0 for unlimited CPU cores, -1 to subtract 1 cores from the total
 cpu_cores="4"
-# 0 or 100 No limit, 10 = percentage use, 50, 75, 90, etc
+# 1 -> 100. 10 = percentage use, 50, 75, 90, etc (0 or -1 to disable)
 cpu_limit="85"
 # If you have your own preferred mirrors, set them here
 mirror=${mirror:-"http://http.kali.org/kali"}
