@@ -22,8 +22,6 @@ include variables
 include check
 # Packages build list
 include packages
-# Load automatic proxy configuration
-include proxy_apt
 # Execute initial debootstrap
 debootstrap_exec http://http.kali.org/kali
 # Enable eatmydata in compilation
@@ -132,8 +130,6 @@ systemd-nspawn_exec /third-stage
 include rpi_firmware
 # Compile RaspberryPi userland
 include rpi_userland
-# Choose a locale
-set_locale "$locale"
 # Clean system
 include clean_system
 
