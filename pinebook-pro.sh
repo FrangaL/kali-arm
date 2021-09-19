@@ -60,7 +60,7 @@ cat <<EOF >"${work_dir}"/third-stage
 #!/usr/bin/env bash
 set -e
 status_3i=0
-status_3i=\$(grep '^status_stage3 ' \$0 | wc -l)
+status_3t=\$(grep '^status_stage3 ' \$0 | wc -l)
 
 status_stage3() {
   status_3i=\$((status_3i+1))

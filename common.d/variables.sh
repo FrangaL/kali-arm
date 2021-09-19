@@ -60,7 +60,7 @@ export MALLOC_CHECK_=0
 
 # Load build configuration
 if [ -f "${current_dir}"/builder.txt ]; then
-  echo "Reading: "${current_dir}"/builder.txt"
+  echo "Loading: "${current_dir}"/builder.txt"
   # shellcheck source=/dev/null
   source "${current_dir}"/builder.txt
 fi

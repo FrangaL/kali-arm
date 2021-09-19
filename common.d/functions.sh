@@ -254,7 +254,7 @@ function clean_build() {
 
 # Show progress
 status() {
-  status_i=$((header_i+1))
+  status_i=$((status_i+1))
   log "[i] ${status_i}/${status_t}: $1" green
 }
 status_i=0
