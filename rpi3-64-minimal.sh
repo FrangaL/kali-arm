@@ -65,10 +65,6 @@ echo 'console-common console-data/keymap/full select en-latin1-nodeadkeys' | deb
 cp -p /bsp/services/all/*.service /etc/systemd/system/
 cp -p /bsp/services/rpi/*.service /etc/systemd/system/
 
-# Re4son's rpi-tft configurator
-install -m755 /bsp/scripts/kalipi-tft-config /usr/bin/
-/usr/bin/kalipi-tft-config -u
-
 # Script mode wlan monitor START/STOP
 install -m755 /bsp/scripts/monstart /usr/bin/
 install -m755 /bsp/scripts/monstop /usr/bin/
