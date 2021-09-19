@@ -184,11 +184,11 @@ make_image
 
 # Create the disk partitions
 log "Create the disk partitions" green
-parted -s ${current_dir}/${imagename}.img mklabel msdos
-parted -s -a minimal ${current_dir}/${imagename}.img mkpart primary $fstype 32MiB 100%
+parted -s ${current_dir}/${image_name}.img mklabel msdos
+parted -s -a minimal ${current_dir}/${image_name}.img mkpart primary $fstype 32MiB 100%
 
 # Set the partition variables
-loopdevice=$(losetup --show -fP "${current_dir}/${imagename}.img")
+loopdevice=$(losetup --show -fP "${current_dir}/${image_name}.img")
 rootp="${loopdevice}p1"
 
 # Create file systems
@@ -202,8 +202,8 @@ mkfs -O "$features" -t "$fstype" -L ROOTFS "${rootp}"
 
 # Create the dirs for the partitions and mount them
 log "Create the dirs for the partitions and mount them" green
-mkdir -p "${basedir}"/root/
-mount "${rootp}" "${basedir}"/root
+mkdir -p "${base_dir}"/root/
+mount "${rootp}" "${base_dir}"/root
 
 # We do this here because we don't want to hardcode the UUID for the partition during creation
 # systemd doesn't seem to be generating the fstab properly for some people, so let's create one
@@ -221,7 +221,7 @@ sed -i -e "0,/root=.*/s//root=UUID=$(blkid -s UUID -o value ${rootp}) rootfstype
 sed -i -e "s/Debian GNU\/Linux/Kali Linux/g" ${work_dir}/boot/extlinux/extlinux.conf
 
 log "Rsyncing rootfs into image file" green
-rsync -HPavz -q "${work_dir}"/ "${basedir}"/root/
+rsync -HPavz -q "${work_dir}"/ "${base_dir}"/root/
 sync
 
 # We are gonna use as much open source as we can here, hopefully we end up with a nice
@@ -235,20 +235,20 @@ unset ARCH
 unset CROSS_COMPILE
 
 log "Bootloader" green
-mkdir -p ${basedir}/bootloader
-cd ${basedir}/bootloader
+mkdir -p ${base_dir}/bootloader
+cd ${base_dir}/bootloader
 git clone --depth 1 https://github.com/afaerber/meson-tools --depth 1
 git clone --depth 1 git://git.denx.de/u-boot
 git clone --depth 1 https://github.com/hardkernel/u-boot -b odroidc2-v2015.01 u-boot-hk
 
 # First things first, let's build the meson-tools, of which, we only really need amlbootsig
-cd ${basedir}/bootloader/meson-tools/
+cd ${base_dir}/bootloader/meson-tools/
 make
 # Now we need to build fip_create
-cd ${basedir}/bootloader/u-boot-hk/tools/fip_create
+cd ${base_dir}/bootloader/u-boot-hk/tools/fip_create
 HOSTCC=cc HOSTLD=ld make
 
-cd ${basedir}/bootloader/u-boot/
+cd ${base_dir}/bootloader/u-boot/
 make ARCH=arm CROSS_COMPILE=aarch64-linux-gnu- odroid-c2_defconfig
 make ARCH=arm CROSS_COMPILE=aarch64-linux-gnu-
 
@@ -261,7 +261,7 @@ make ARCH=arm CROSS_COMPILE=aarch64-linux-gnu-
 # for the inspirations for it.  Specifically Adrian's posts got us closest
 
 # This is funky, but in the end, it should do the right thing
-cd ${basedir}/bootloader/
+cd ${base_dir}/bootloader/
 # Create the fip.bin
 ./u-boot-hk/tools/fip_create/fip_create --bl30 ./u-boot-hk/fip/gxb/bl30.bin \
 --bl301 ./u-boot-hk/fip/gxb/bl301.bin --bl31 ./u-boot-hk/fip/gxb/bl31.bin \

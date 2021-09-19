@@ -25,7 +25,7 @@ machine=$(dbus-uuidgen)
 # Custom hostname variable
 hostname=pi-tail
 # Custom image file name variable - MUST NOT include .img at the end
-imagename=${3:-kali-linux-$1-rpi0w-pitail}
+image_name=${3:-kali-linux-$1-rpi0w-pitail}
 # Suite to use, valid options are:
 # kali-rolling, kali-dev, kali-bleeding-edge, kali-dev-only, kali-experimental, kali-last-snapshot
 suite=${suite:-"kali-rolling"}
@@ -69,20 +69,20 @@ fi
 # Current directory
 current_dir="$(pwd)"
 # Base directory
-basedir=${current_dir}/rpi0w-pitail-"$1"
+base_dir=${current_dir}/rpi0w-pitail-"$1"
 # Working directory
-work_dir="${basedir}/kali-${architecture}"
+work_dir="${base_dir}/kali-${architecture}"
 
 # Check directory build
-if [ -e "${basedir}" ]; then
-  echo "${basedir} directory exists, will not continue" >&2
+if [ -e "${base_dir}" ]; then
+  echo "${base_dir} directory exists, will not continue" >&2
   exit 1
 elif [[ ${current_dir} =~ [[:space:]] ]]; then
   echo "The directory "\"${current_dir}"\" contains whitespace. Not supported." >&2
   exit 1
 else
-  echo "The basedir thinks it is: ${basedir}"
-  mkdir -p ${basedir}
+  echo "The base_dir thinks it is: ${base_dir}"
+  mkdir -p ${base_dir}
 fi
 
 components="main,contrib,non-free"
@@ -499,14 +499,14 @@ root_extra=$((${root_size}/1024/1000*5*1024/5))
 raw_size=$(($((${free_space}*1024))+${root_extra}+$((${bootsize}*1024))+4096))
 
 # Create the disk and partition it
-echo "Creating image file ${imagename}.img"
-fallocate -l $(echo ${raw_size}Ki | numfmt --from=iec-i --to=si) ${current_dir}/${imagename}.img
-parted -s ${current_dir}/${imagename}.img mklabel msdos
-parted -s ${current_dir}/${imagename}.img mkpart primary fat32 1MiB ${bootsize}MiB
-parted -s -a minimal ${current_dir}/${imagename}.img mkpart primary $fstype ${bootsize}MiB 100%
+echo "Creating image file ${image_name}.img"
+fallocate -l $(echo ${raw_size}Ki | numfmt --from=iec-i --to=si) ${current_dir}/${image_name}.img
+parted -s ${current_dir}/${image_name}.img mklabel msdos
+parted -s ${current_dir}/${image_name}.img mkpart primary fat32 1MiB ${bootsize}MiB
+parted -s -a minimal ${current_dir}/${image_name}.img mkpart primary $fstype ${bootsize}MiB 100%
 
 # Set the partition variables
-loopdevice=$(losetup --show -fP "${current_dir}/${imagename}.img")
+loopdevice=$(losetup --show -fP "${current_dir}/${image_name}.img")
 bootp="${loopdevice}p1"
 rootp="${loopdevice}p2"
 
@@ -520,14 +520,14 @@ fi
 mkfs $features -t $fstype -L ROOTFS ${rootp}
 
 # Create the dirs for the partitions and mount them
-mkdir -p ${basedir}/root/
-mount ${rootp} ${basedir}/root
-mkdir -p ${basedir}/root/boot
-mount ${bootp} ${basedir}/root/boot
+mkdir -p ${base_dir}/root/
+mount ${rootp} ${base_dir}/root
+mkdir -p ${base_dir}/root/boot
+mount ${bootp} ${base_dir}/root/boot
 
 echo "Rsyncing rootfs into image file"
-rsync -HPavz -q --exclude boot ${work_dir}/ ${basedir}/root/
-rsync -rtx -q ${work_dir}/boot ${basedir}/root
+rsync -HPavz -q --exclude boot ${work_dir}/ ${base_dir}/root/
+rsync -rtx -q ${work_dir}/boot ${base_dir}/root
 sync
 
 # Flush buffers and bytes - this is nicked from the Devuan arm-sdk.
@@ -565,16 +565,16 @@ limit_cpu (){
 
 if [ "$compress" == "xz" ]; then
   if [ $(arch) == 'x86_64' ]; then
-    echo "Compressing ${imagename}.img"
+    echo "Compressing ${image_name}.img"
     [ $(nproc) \< 3 ] || cpu_cores=3 # cpu_cores = Number of cores to use
-    limit_cpu pixz -p ${cpu_cores:-2} ${current_dir}/${imagename}.img # -p Nº cpu cores use
-    chmod 0644 ${current_dir}/${imagename}.img.xz
+    limit_cpu pixz -p ${cpu_cores:-2} ${current_dir}/${image_name}.img # -p Nº cpu cores use
+    chmod 0644 ${current_dir}/${image_name}.img.xz
   fi
 else
-  chmod 0644 ${current_dir}/${imagename}.img
+  chmod 0644 ${current_dir}/${image_name}.img
 fi
 
 # Clean up all the temporary build stuff and remove the directories
 # Comment this out to keep things around if you want to see what may have gone wrong
 ## echo "Cleaning up the temporary build files..."
-## rm -rf "${basedir}"
+## rm -rf "${base_dir}"

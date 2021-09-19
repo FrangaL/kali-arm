@@ -166,7 +166,7 @@ sed -i 's/INTERFACESv4=""/INTERFACESv4="usb0"/g' /etc/default/isc-dhcp-server
 systemctl enable isc-dhcp-server
 EOF
 
-cd "${basedir}"
+cd "${base_dir}"
 
 # Do the kernel stuff
 log "Kernel stuff" green
@@ -212,11 +212,11 @@ make_image
 
 # Create the disk partitions
 log "Create the disk partitions" green
-parted -s ${current_dir}/${imagename}.img mklabel msdos
-parted -s -a minimal ${current_dir}/${imagename}.img mkpart primary $fstype 4MiB 100%
+parted -s ${current_dir}/${image_name}.img mklabel msdos
+parted -s -a minimal ${current_dir}/${image_name}.img mkpart primary $fstype 4MiB 100%
 
 # Set the partition variables
-loopdevice=$(losetup --show -fP "${current_dir}/${imagename}.img")
+loopdevice=$(losetup --show -fP "${current_dir}/${image_name}.img")
 rootp="${loopdevice}p1"
 
 # Create file systems
@@ -230,8 +230,8 @@ mkfs -O "$features" -t "$fstype" -L ROOTFS "${rootp}"
 
 # Create the dirs for the partitions and mount them
 log "Create the dirs for the partitions and mount them" green
-mkdir -p "${basedir}"/root/
-mount "${rootp}" "${basedir}"/root
+mkdir -p "${base_dir}"/root/
+mount "${rootp}" "${base_dir}"/root
 
 # We do this here because we don't want to hardcode the UUID for the partition during creation
 # systemd doesn't seem to be generating the fstab properly for some people, so let's create one
@@ -243,7 +243,7 @@ UUID=$(blkid -s UUID -o value ${rootp})  /               $fstype    defaults,noa
 EOF
 
 log "Rsyncing rootfs into image file" green
-rsync -HPavz -q "${work_dir}"/ "${basedir}"/root/
+rsync -HPavz -q "${work_dir}"/ "${base_dir}"/root/
 
 # Flush buffers and bytes - this is nicked from the Devuan arm-sdk.
 blockdev --flushbufs "${loopdevice}"

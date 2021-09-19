@@ -344,11 +344,11 @@ make_image
 
 # Create the disk partitions
 log "Create the disk partitions" green
-parted -s ${current_dir}/${imagename}.img mklabel msdos
-parted -s -a minimal ${current_dir}/${imagename}.img mkpart primary $fstype 32MiB 100%
+parted -s ${current_dir}/${image_name}.img mklabel msdos
+parted -s -a minimal ${current_dir}/${image_name}.img mkpart primary $fstype 32MiB 100%
 
 # Set the partition variables
-loopdevice=$(losetup --show -fP "${current_dir}/${imagename}.img")
+loopdevice=$(losetup --show -fP "${current_dir}/${image_name}.img")
 rootp="${loopdevice}p1"
 
 # Create file systems
@@ -362,8 +362,8 @@ mkfs -O "$features" -t "$fstype" -L ROOTFS "${rootp}"
 
 # Create the dirs for the partitions and mount them
 log "Create the dirs for the partitions and mount them" green
-mkdir -p "${basedir}"/root/
-mount "${rootp}" "${basedir}"/root
+mkdir -p "${base_dir}"/root/
+mount "${rootp}" "${base_dir}"/root
 
 # We do this here because we don't want to hardcode the UUID for the partition during creation
 # systemd doesn't seem to be generating the fstab properly for some people, so let's create one
@@ -375,11 +375,11 @@ UUID=$(blkid -s UUID -o value ${rootp})  /               $fstype    defaults,noa
 EOF
 
 log "Rsyncing rootfs into image file" green
-rsync -HPavz -q "${work_dir}"/ "${basedir}"/root/
+rsync -HPavz -q "${work_dir}"/ "${base_dir}"/root/
 sync
 
 log "u-Boot" green
-cd "${basedir}"
+cd "${base_dir}"
 git clone --depth 1 https://github.com/friendlyarm/u-boot.git
 cd u-boot/
 git checkout sunxi-v2017.x

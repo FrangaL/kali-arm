@@ -59,17 +59,24 @@ cat <<EOF >"${work_dir}"/third-stage
 #!/usr/bin/env bash
 set -e
 
+# Update apt
 export DEBIAN_FRONTEND=noninteractive
 eatmydata apt-get update
+
+# Install core packages
 eatmydata apt-get -y install ${third_stage_pkgs}
 
+# Install packages
 eatmydata apt-get install -y ${packages} || eatmydata apt-get install -y --fix-broken
+
+# Install desktop packages
 eatmydata apt-get install -y ${desktop_pkgs} ${extra} || eatmydata apt-get install -y --fix-broken
+
 # ntp doesn't always sync the date, but systemd's timesyncd does, so we remove ntp and reinstall it with this
 eatmydata apt-get install -y systemd-timesyncd --autoremove
 eatmydata apt-get -y --purge autoremove
 
-# Linux console/Keyboard configuration
+# Linux console/keyboard configuration
 echo 'console-common console-data/keymap/policy select Select keymap from full list' | debconf-set-selections
 echo 'console-common console-data/keymap/full select en-latin1-nodeadkeys' | debconf-set-selections
 
@@ -89,6 +96,7 @@ eatmydata apt-get install -y kalipi-kernel kalipi-bootloader kalipi-re4son-firmw
 
 # Copy script rpi-resizerootfs
 install -m755 /bsp/scripts/rpi-resizerootfs /usr/sbin/
+
 # Copy script for handling wpa_supplicant file
 install -m755 /bsp/scripts/copy-user-wpasupplicant.sh /usr/bin/
 
@@ -101,16 +109,17 @@ systemctl enable regenerate_ssh_host_keys
 # Enable copying of user wpa_supplicant.conf file
 systemctl enable copy-user-wpasupplicant
 
-# Enable... enabling ssh by putting ssh or ssh.txt file in /boot
+# Wnabling ssh by putting ssh or ssh.txt file in /boot
 systemctl enable enable-ssh
 
-# Allow users to use NM over ssh
+# Allow users to use NetworkManager over ssh
 install -m644 /bsp/polkit/10-NetworkManager.pkla /var/lib/polkit-1/localauthority/50-local.d
 
+# Install ca-certificate
 cd /root
 apt download -o APT::Sandbox::User=root ca-certificates 2>/dev/null
 
-# Set a REGDOMAIN.  This needs to be done or wireless doesn't work correctly on the RPi 3B+
+# Set a REGDOMAIN.  This needs to be done or wireless doesnt work correctly on the RPi 3B+
 sed -i -e 's/REGDOM.*/REGDOMAIN=00/g' /etc/default/crda
 
 # Enable login over serial
@@ -142,7 +151,7 @@ chmod 0755 "${work_dir}"/third-stage
 log "Run third stage" green
 systemd-nspawn_exec /third-stage
 
-# Configure RaspberryPi firmware (set config.txt to 64bit)
+# Configure Raspberry Pi firmware (set config.txt to 64-bit)
 include rpi_firmware
 # Choose a locale
 set_locale "$locale"
@@ -172,12 +181,12 @@ make_image
 
 # Create the disk partitions
 log "Create the disk partitions" green
-parted -s "${current_dir}"/"${imagename}".img mklabel msdos
-parted -s "${current_dir}"/"${imagename}".img mkpart primary fat32 1MiB "${bootsize}"MiB
-parted -s -a minimal "${current_dir}"/"${imagename}".img mkpart primary "$fstype" "${bootsize}"MiB 100%
+parted -s "${current_dir}"/"${image_name}".img mklabel msdos
+parted -s "${current_dir}"/"${image_name}".img mkpart primary fat32 1MiB "${bootsize}"MiB
+parted -s -a minimal "${current_dir}"/"${image_name}".img mkpart primary "$fstype" "${bootsize}"MiB 100%
 
 # Set the partition variables
-loopdevice=$(losetup --show -fP "${current_dir}/${imagename}.img")
+loopdevice=$(losetup --show -fP "${current_dir}/${image_name}.img")
 bootp="${loopdevice}p1"
 rootp="${loopdevice}p2"
 
@@ -193,18 +202,20 @@ mkfs -O "$features" -t "$fstype" -L ROOTFS "${rootp}"
 
 # Create the dirs for the partitions and mount them
 log "Create the dirs for the partitions and mount them" green
-mkdir -p "${basedir}"/root/
-mount "${rootp}" "${basedir}"/root
-mkdir -p "${basedir}"/root/boot
-mount "${bootp}" "${basedir}"/root/boot
+mkdir -p "${base_dir}"/root/
+mount "${rootp}" "${base_dir}"/root
+mkdir -p "${base_dir}"/root/boot
+mount "${bootp}" "${base_dir}"/root/boot
 
 log "Rsyncing rootfs into image file" green
-rsync -HPavz -q --exclude boot "${work_dir}"/ "${basedir}"/root/
-log "Rsyncing rootfs into image file (/boot)" green
-rsync -rtx -q "${work_dir}"/boot "${basedir}"/root
+rsync -HPavz -q --exclude boot "${work_dir}"/ "${base_dir}"/root/
 sync
 
-# Flush buffers and bytes - this is nicked from the Devuan arm-sdk.
+log "Rsyncing rootfs into image file (/boot)" green
+rsync -rtx -q "${work_dir}"/boot "${base_dir}"/root
+sync
+
+# Flush buffers and bytes - this is nicked from the Devuan arm-sdk
 blockdev --flushbufs "${loopdevice}"
 python -c 'import os; os.fsync(open("'${loopdevice}'", "r+b"))'
 

@@ -162,11 +162,11 @@ sed -i -e 's/append.*/append console=ttyS0,115200 console=tty1 root=\/dev\/mmcbl
 
 # Create the disk partitions
 log "Create the disk partitions" green
-parted -s "${current_dir}"/"${imagename}".img mklabel msdos
-parted -s -a minimal "${current_dir}"/"${imagename}".img mkpart primary "$fstype" 4MiB 100%
+parted -s "${current_dir}"/"${image_name}".img mklabel msdos
+parted -s -a minimal "${current_dir}"/"${image_name}".img mkpart primary "$fstype" 4MiB 100%
 
 # Set the partition variables
-loopdevice=$(losetup -f --show ${current_dir}/${imagename}.img)
+loopdevice=$(losetup -f --show ${current_dir}/${image_name}.img)
 device=$(kpartx -va ${loopdevice} | sed 's/.*\(loop[0-9]\+\)p.*/\1/g' | head -1)
 sleep 5s
 device="/dev/mapper/${device}"
@@ -181,11 +181,11 @@ mkfs -O "$features" -t "$fstype" -L ROOTFS "${rootp}"
 
 # Create the dirs for the partitions and mount them
 log "Create the dirs for the partitions and mount them" green
-mkdir -p "${basedir}"/root
-mount ${rootp} "${basedir}"/root
+mkdir -p "${base_dir}"/root
+mount ${rootp} "${base_dir}"/root
 
 log "Rsyncing rootfs into image file" green
-rsync -HPavz -q ${work_dir}/ ${basedir}/root/
+rsync -HPavz -q ${work_dir}/ ${base_dir}/root/
 sync
 
 # Flush buffers and bytes - this is nicked from the Devuan arm-sdk.

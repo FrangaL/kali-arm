@@ -25,7 +25,7 @@ machine=$(tr -cd 'A-Za-z0-9' < /dev/urandom | head -c16 ; echo)
 # Custom hostname variable
 hostname=${2:-kali}
 # Custom image file name variable - MUST NOT include .img at the end
-imagename=${3:-kali-linux-$1-cubox-i4pro}
+image_name=${3:-kali-linux-$1-cubox-i4pro}
 # Suite to use, valid options are:
 # kali-rolling, kali-dev, kali-bleeding-edge, kali-dev-only, kali-experimental, kali-last-snapshot
 suite=${suite:-"kali-rolling"}
@@ -67,20 +67,20 @@ fi
 # Current directory
 current_dir="$(pwd)"
 # Base directory
-basedir=${current_dir}/cuboxi-"$1"
+base_dir=${current_dir}/cuboxi-"$1"
 # Working directory
-work_dir="${basedir}/kali-${architecture}"
+work_dir="${base_dir}/kali-${architecture}"
 
 # Check directory build
-if [ -e "${basedir}" ]; then
-  echo "${basedir} directory exists, will not continue" >&2
+if [ -e "${base_dir}" ]; then
+  echo "${base_dir} directory exists, will not continue" >&2
   exit 1
 elif [[ ${current_dir} =~ [[:space:]] ]]; then
   echo "The directory "\"${current_dir}"\" contains whitespace. Not supported." >&2
   exit 1
 else
-  echo "The basedir thinks it is: ${basedir}"
-  mkdir -p ${basedir}
+  echo "The base_dir thinks it is: ${base_dir}"
+  mkdir -p ${base_dir}
 fi
 
 components="main,contrib,non-free"
@@ -334,7 +334,7 @@ EOF
 
 # For some reason the brcm firmware doesn't work properly in linux-firmware git
 # so we grab the ones from OpenELEC
-cd ${basedir}
+cd ${base_dir}
 git clone https://github.com/OpenELEC/wlan-firmware
 cd wlan-firmware
 rm -rf ${work_dir}/lib/firmware/brcm
@@ -349,13 +349,13 @@ root_extra=$((${root_size}/1024/1000*5*1024/5))
 raw_size=$(($((${free_space}*1024))+${root_extra}+$((${bootsize}*1024))+4096))
 
 # Create the disk and partition it
-echo "Creating image file ${imagename}.img"
-fallocate -l $(echo ${raw_size}Ki | numfmt --from=iec-i --to=si) ${current_dir}/${imagename}.img
-parted -s ${current_dir}/${imagename}.img mklabel msdos
-parted -s -a minimal ${current_dir}/${imagename}.img mkpart primary $fstype 1MiB 100%
+echo "Creating image file ${image_name}.img"
+fallocate -l $(echo ${raw_size}Ki | numfmt --from=iec-i --to=si) ${current_dir}/${image_name}.img
+parted -s ${current_dir}/${image_name}.img mklabel msdos
+parted -s -a minimal ${current_dir}/${image_name}.img mkpart primary $fstype 1MiB 100%
 
 # Set the partition variables
-loopdevice=`losetup -f --show ${current_dir}/${imagename}.img`
+loopdevice=`losetup -f --show ${current_dir}/${image_name}.img`
 device=`kpartx -va ${loopdevice} | sed 's/.*\(loop[0-9]\+\)p.*/\1/g' | head -1`
 sleep 5
 device="/dev/mapper/${device}"
@@ -369,8 +369,8 @@ fi
 mkfs $features -t $fstype -L ROOTFS ${rootp}
 
 # Create the dirs for the partitions and mount them
-mkdir -p "${basedir}"/root
-mount ${rootp} "${basedir}"/root
+mkdir -p "${base_dir}"/root
+mount ${rootp} "${base_dir}"/root
 
 # We do this down here to get rid of the build system's resolv.conf after running through the build
 echo "nameserver ${nameserver}" > "${work_dir}"/etc/resolv.conf
@@ -380,7 +380,7 @@ UUID=$(blkid -s UUID -o value ${rootp})
 echo "UUID=$UUID /               $fstype    errors=remount-ro 0       1" >> ${work_dir}/etc/fstab
 
 echo "Rsyncing rootfs into image file"
-rsync -HPavz -q ${work_dir}/ ${basedir}/root/
+rsync -HPavz -q ${work_dir}/ ${base_dir}/root/
 
 dd conv=fsync,notrunc if=${work_dir}/usr/lib/u-boot/mx6cuboxi/SPL of=${loopdevice} bs=1k seek=1
 dd conv=fsync,notrunc if=${work_dir}/usr/lib/u-boot/mx6cuboxi/u-boot.img of=${loopdevice} bs=1k seek=69
@@ -394,9 +394,9 @@ umount ${rootp}
 #git clone https://github.com/offensive-security/gcc-arm-linux-gnueabihf-4.7
 
 #git clone https://github.com/SolidRun/u-boot-imx6.git
-#cd "${basedir}"/u-boot-imx6
-#make CROSS_COMPILE="${basedir}"/gcc-arm-linux-gnueabihf-4.7/bin/arm-linux-gnueabihf- mx6_cubox-i_config
-#make CROSS_COMPILE="${basedir}"/gcc-arm-linux-gnueabihf-4.7/bin/arm-linux-gnueabihf-
+#cd "${base_dir}"/u-boot-imx6
+#make CROSS_COMPILE="${base_dir}"/gcc-arm-linux-gnueabihf-4.7/bin/arm-linux-gnueabihf- mx6_cubox-i_config
+#make CROSS_COMPILE="${base_dir}"/gcc-arm-linux-gnueabihf-4.7/bin/arm-linux-gnueabihf-
 
 #dd if=SPL of=${loopdevice} bs=1K seek=1
 #dd if=u-boot.img of=${loopdevice} bs=1K seek=42
@@ -430,16 +430,16 @@ limit_cpu (){
 
 if [ $compress = xz ]; then
   if [ $(arch) == 'x86_64' ]; then
-    echo "Compressing ${imagename}.img"
+    echo "Compressing ${image_name}.img"
     [ $(nproc) \< 3 ] || cpu_cores=3 # cpu_cores = Number of cores to use
-    limit_cpu pixz -p ${cpu_cores:-2} ${current_dir}/${imagename}.img # -p Nº cpu cores use
-    chmod 0644 ${current_dir}/${imagename}.img.xz
+    limit_cpu pixz -p ${cpu_cores:-2} ${current_dir}/${image_name}.img # -p Nº cpu cores use
+    chmod 0644 ${current_dir}/${image_name}.img.xz
   fi
 else
-  chmod 0644 ${current_dir}/${imagename}.img
+  chmod 0644 ${current_dir}/${image_name}.img
 fi
 
 # Clean up all the temporary build stuff and remove the directories
 # Comment this out to keep things around if you want to see what may have gone wrong
 echo "Removing temporary build files"
-rm -rf "${basedir}"
+rm -rf "${base_dir}"

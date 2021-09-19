@@ -148,7 +148,7 @@ cd ${work_dir}/usr/src/kernel/
 git rev-parse HEAD > ${work_dir}/usr/src/kernel-at-commit
 touch .scmversion
 export ARCH=arm64
-#export CROSS_COMPILE="${basedir}"/gcc-arm-linux-gnueabihf-4.7/bin/arm-linux-gnueabihf-
+#export CROSS_COMPILE="${base_dir}"/gcc-arm-linux-gnueabihf-4.7/bin/arm-linux-gnueabihf-
 export CROSS_COMPILE=aarch64-linux-gnu-
 patch -p1 --no-backup-if-mismatch < ${current_dir}/patches/kali-wifi-injection-4.4.patch
 make nanopi3_linux_defconfig
@@ -192,12 +192,12 @@ make_image
 
 # Create the disk partitions
 log "Create the disk partitions" green
-parted -s "${current_dir}"/"${imagename}".img mklabel msdos
-parted -s "${current_dir}"/"${imagename}".img mkpart primary ext3 4MiB "${bootsize}"MiB
-parted -s -a minimal "${current_dir}"/"${imagename}".img mkpart primary "$fstype" "${bootsize}"MiB 100%
+parted -s "${current_dir}"/"${image_name}".img mklabel msdos
+parted -s "${current_dir}"/"${image_name}".img mkpart primary ext3 4MiB "${bootsize}"MiB
+parted -s -a minimal "${current_dir}"/"${image_name}".img mkpart primary "$fstype" "${bootsize}"MiB 100%
 
 # Set the partition variables
-loopdevice=$(losetup --show -fP "${current_dir}/${imagename}.img")
+loopdevice=$(losetup --show -fP "${current_dir}/${image_name}.img")
 bootp="${loopdevice}p1"
 rootp="${loopdevice}p2"
 
@@ -213,10 +213,10 @@ mkfs -O "$features" -t "$fstype" -L ROOTFS "${rootp}"
 
 # Create the dirs for the partitions and mount them
 log "Create the dirs for the partitions and mount them" green
-mkdir -p "${basedir}"/root/
-mount "${rootp}" "${basedir}"/root
-mkdir -p "${basedir}"/root/boot
-mount "${bootp}" "${basedir}"/root/boot
+mkdir -p "${base_dir}"/root/
+mount "${rootp}" "${base_dir}"/root
+mkdir -p "${base_dir}"/root/boot
+mount "${bootp}" "${base_dir}"/root/boot
 
 # We do this here because we don't want to hardcode the UUID for the partition during creation
 # systemd doesn't seem to be generating the fstab properly for some people, so let's create one
@@ -228,29 +228,29 @@ UUID=$(blkid -s UUID -o value ${rootp})  /               $fstype    defaults,noa
 EOF
 
 log "Rsyncing rootfs into image file" green
-rsync -HPavz -q "${work_dir}"/ "${basedir}"/root/
+rsync -HPavz -q "${work_dir}"/ "${base_dir}"/root/
 sync
 
 # Samsung bootloaders must be signed
 # These are the same steps that are done by
 # https://github.com/friendlyarm/sd-fuse_nanopi2/blob/master/fusing.sh
 log "Samsung bootloaders" green
-mkdir -p "${basedir}"/bootloader/
-cd "${basedir}"/bootloader/
-wget 'https://github.com/friendlyarm/sd-fuse_s5p6818/blob/master/prebuilt/bl1-mmcboot.bin?raw=true' -O "${basedir}"/bootloader/bl1-mmcboot.bin
-wget 'https://github.com/friendlyarm/sd-fuse_s5p6818/blob/master/prebuilt/fip-loader.img?raw=true' -O "${basedir}"/bootloader/fip-loader.img
-wget 'https://github.com/friendlyarm/sd-fuse_s5p6818/blob/master/prebuilt/fip-secure.img?raw=true' -O "${basedir}"/bootloader/fip-secure.img
-wget 'https://github.com/friendlyarm/sd-fuse_s5p6818/blob/master/prebuilt/fip-nonsecure.img?raw=true' -O "${basedir}"/bootloader/fip-nonsecure.img
-wget 'https://github.com/friendlyarm/sd-fuse_s5p6818/blob/master/tools/fw_printenv?raw=true' -O "${basedir}"/bootloader/fw_printenv
-chmod 0755 "${basedir}"/bootloader/fw_printenv
-ln -s "${basedir}"/bootloader/fw_printenv "${basedir}"/bootloader/fw_setenv
+mkdir -p "${base_dir}"/bootloader/
+cd "${base_dir}"/bootloader/
+wget 'https://github.com/friendlyarm/sd-fuse_s5p6818/blob/master/prebuilt/bl1-mmcboot.bin?raw=true' -O "${base_dir}"/bootloader/bl1-mmcboot.bin
+wget 'https://github.com/friendlyarm/sd-fuse_s5p6818/blob/master/prebuilt/fip-loader.img?raw=true' -O "${base_dir}"/bootloader/fip-loader.img
+wget 'https://github.com/friendlyarm/sd-fuse_s5p6818/blob/master/prebuilt/fip-secure.img?raw=true' -O "${base_dir}"/bootloader/fip-secure.img
+wget 'https://github.com/friendlyarm/sd-fuse_s5p6818/blob/master/prebuilt/fip-nonsecure.img?raw=true' -O "${base_dir}"/bootloader/fip-nonsecure.img
+wget 'https://github.com/friendlyarm/sd-fuse_s5p6818/blob/master/tools/fw_printenv?raw=true' -O "${base_dir}"/bootloader/fw_printenv
+chmod 0755 "${base_dir}"/bootloader/fw_printenv
+ln -s "${base_dir}"/bootloader/fw_printenv "${base_dir}"/bootloader/fw_setenv
 
-dd if="${basedir}"/bootloader/bl1-mmcboot.bin of=${loopdevice} bs=512 seek=1
-dd if="${basedir}"/bootloader/fip-loader.img of=${loopdevice} bs=512 seek=129
-dd if="${basedir}"/bootloader/fip-secure.img of=${loopdevice} bs=512 seek=769
-dd if="${basedir}"/bootloader/fip-nonsecure.img of=${loopdevice} bs=512 seek=3841
+dd if="${base_dir}"/bootloader/bl1-mmcboot.bin of=${loopdevice} bs=512 seek=1
+dd if="${base_dir}"/bootloader/fip-loader.img of=${loopdevice} bs=512 seek=129
+dd if="${base_dir}"/bootloader/fip-secure.img of=${loopdevice} bs=512 seek=769
+dd if="${base_dir}"/bootloader/fip-nonsecure.img of=${loopdevice} bs=512 seek=3841
 
-cat << EOF > "${basedir}"/bootloader/env.conf
+cat << EOF > "${base_dir}"/bootloader/env.conf
 # U-Boot environment for Debian, Ubuntu
 #
 # Copyright (C) Guangzhou FriendlyARM Computer Tech. Co., Ltd

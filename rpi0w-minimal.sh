@@ -168,12 +168,12 @@ make_image
 
 # Create the disk partitions
 log "Create the disk partitions" green
-parted -s "${current_dir}"/"${imagename}".img mklabel msdos
-parted -s "${current_dir}"/"${imagename}".img mkpart primary fat32 1MiB "${bootsize}"MiB
-parted -s -a minimal "${current_dir}"/"${imagename}".img mkpart primary "$fstype" "${bootsize}"MiB 100%
+parted -s "${current_dir}"/"${image_name}".img mklabel msdos
+parted -s "${current_dir}"/"${image_name}".img mkpart primary fat32 1MiB "${bootsize}"MiB
+parted -s -a minimal "${current_dir}"/"${image_name}".img mkpart primary "$fstype" "${bootsize}"MiB 100%
 
 # Set the partition variables
-loopdevice=$(losetup --show -fP "${current_dir}/${imagename}.img")
+loopdevice=$(losetup --show -fP "${current_dir}/${image_name}.img")
 bootp="${loopdevice}p1"
 rootp="${loopdevice}p2"
 
@@ -189,15 +189,15 @@ mkfs -O "$features" -t "$fstype" -L ROOTFS "${rootp}"
 
 # Create the dirs for the partitions and mount them
 log "Create the dirs for the partitions and mount them" green
-mkdir -p "${basedir}"/root/
-mount "${rootp}" "${basedir}"/root
-mkdir -p "${basedir}"/root/boot
-mount "${bootp}" "${basedir}"/root/boot
+mkdir -p "${base_dir}"/root/
+mount "${rootp}" "${base_dir}"/root
+mkdir -p "${base_dir}"/root/boot
+mount "${bootp}" "${base_dir}"/root/boot
 
 log "Rsyncing rootfs into image file" green
-rsync -HPavz -q --exclude boot "${work_dir}"/ "${basedir}"/root/
+rsync -HPavz -q --exclude boot "${work_dir}"/ "${base_dir}"/root/
 log "Rsyncing rootfs into image file (/boot)" green
-rsync -rtx -q "${work_dir}"/boot "${basedir}"/root
+rsync -rtx -q "${work_dir}"/boot "${base_dir}"/root
 sync
 
 # Umount filesystem

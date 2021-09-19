@@ -3,10 +3,10 @@
 
 log "rpi userland" green
 
-git clone https://github.com/raspberrypi/userland.git "${basedir}"/userland
+git clone https://github.com/raspberrypi/userland.git "${base_dir}"/userland
 
-cd "${basedir}"/userland && mkdir -p build/
-pushd "${basedir}"/userland/build || exit
+cd "${base_dir}"/userland && mkdir -p build/
+pushd "${base_dir}"/userland/build || exit
 
 case ${architecture} in
   arm64)

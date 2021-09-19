@@ -284,11 +284,11 @@ make_image
 
 # Create the disk partitions
 log "Create the disk partitions" green
-parted -s ${current_dir}/${imagename}.img mklabel msdos
-parted -s -a minimal ${current_dir}/${imagename}.img mkpart primary $fstype 32MiB 100%
+parted -s ${current_dir}/${image_name}.img mklabel msdos
+parted -s -a minimal ${current_dir}/${image_name}.img mkpart primary $fstype 32MiB 100%
 
 # Set the partition variables
-loopdevice=$(losetup --show -fP "${current_dir}/${imagename}.img")
+loopdevice=$(losetup --show -fP "${current_dir}/${image_name}.img")
 rootp="${loopdevice}p1"
 
 # Create file systems
@@ -302,8 +302,8 @@ mkfs -O "$features" -t "$fstype" -L ROOTFS "${rootp}"
 
 # Create the dirs for the partitions and mount them
 log "Create the dirs for the partitions and mount them" green
-mkdir -p "${basedir}"/root/
-mount "${rootp}" "${basedir}"/root
+mkdir -p "${base_dir}"/root/
+mount "${rootp}" "${base_dir}"/root
 
 # We do this here because we don't want to hardcode the UUID for the partition during creation
 # systemd doesn't seem to be generating the fstab properly for some people, so let's create one
@@ -320,12 +320,12 @@ EOF
 #sed -i -e "0,/root=.*/s//root=UUID=$(blkid -s UUID -o value ${rootp}) rootfstype=$fstype console=ttyS0,115200 console=tty1 consoleblank=0 rw quiet rootwait/g" ${work_dir}/boot/extlinux/extlinux.conf
 
 log "Rsyncing rootfs into image file" green
-rsync -HPavz -q "${work_dir}"/ "${basedir}"/root/
+rsync -HPavz -q "${work_dir}"/ "${base_dir}"/root/
 sync
 
 ## Nick the u-boot from Manjaro ARM to see if my compilation was somehow
 ## screwing things up
-cp ${current_dir}/bsp/bootloader/pinebook-pro/idbloader.img ${current_dir}/bsp/bootloader/pinebook-pro/trust.img ${current_dir}/bsp/bootloader/pinebook-pro/uboot.img ${basedir}/root/boot/
+cp ${current_dir}/bsp/bootloader/pinebook-pro/idbloader.img ${current_dir}/bsp/bootloader/pinebook-pro/trust.img ${current_dir}/bsp/bootloader/pinebook-pro/uboot.img ${base_dir}/root/boot/
 dd if=${current_dir}/bsp/bootloader/pinebook-pro/idbloader.img of=${loopdevice} seek=64 conv=notrunc
 dd if=${current_dir}/bsp/bootloader/pinebook-pro/uboot.img of=${loopdevice} seek=16384 conv=notrunc
 dd if=${current_dir}/bsp/bootloader/pinebook-pro/trust.img of=${loopdevice} seek=24576 conv=notrunc

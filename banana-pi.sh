@@ -162,7 +162,7 @@ echo "T1:12345:respawn:/sbin/agetty -L ttyS0 115200 vt100" >> ${work_dir}/etc/in
 echo "sunxi_emac" >> ${work_dir}/etc/modules
 
 mkdir -p ${work_dir}/etc/X11/xorg.conf.d/
-cp "${basedir}"/../bsp/xorg/20-fbdev.conf ${work_dir}/etc/X11/xorg.conf.d/
+cp "${base_dir}"/../bsp/xorg/20-fbdev.conf ${work_dir}/etc/X11/xorg.conf.d/
 
 # Build system will insert it's root filesystem into the extlinux.conf file so
 # we sed it out, this only affects build time, not upgrading the kernel on the
@@ -171,11 +171,11 @@ sed -i -e 's/append.*/append console=ttyS0,115200 console=tty1 root=\/dev\/mmcbl
 
 # Create the disk partitions
 log "Create the disk partitions" green
-parted -s ${current_dir}/${imagename}.img mklabel msdos
-parted -s -a minimal ${current_dir}/${imagename}.img mkpart primary $fstype 4MiB 100%
+parted -s ${current_dir}/${image_name}.img mklabel msdos
+parted -s -a minimal ${current_dir}/${image_name}.img mkpart primary $fstype 4MiB 100%
 
 # Set the partition variables
-loopdevice=$(losetup -f --show ${current_dir}/${imagename}.img)
+loopdevice=$(losetup -f --show ${current_dir}/${image_name}.img)
 device=$(kpartx -va ${loopdevice} | sed 's/.*\(loop[0-9]\+\)p.*/\1/g' | head -1)
 sleep 5
 device="/dev/mapper/${device}"
@@ -190,8 +190,8 @@ mkfs -O "$features" -t "$fstype" -L ROOTFS "${rootp}"
 
 # Create the dirs for the partitions and mount them
 log "Create the dirs for the partitions and mount them" green
-mkdir -p ${basedir}/root
-mount ${rootp} ${basedir}/root
+mkdir -p ${base_dir}/root
+mount ${rootp} ${base_dir}/root
 
 # Create an fstab so that we don't mount / read-only
 log "/etc/fstab" green
@@ -199,7 +199,7 @@ UUID=$(blkid -s UUID -o value ${rootp})
 echo "UUID=$UUID /               $fstype    errors=remount-ro 0       1" >> ${work_dir}/etc/fstab
 
 echo "Rsyncing rootfs to image file"
-rsync -HPavz -q ${work_dir}/ ${basedir}/root/
+rsync -HPavz -q ${work_dir}/ ${base_dir}/root/
 sync
 
 # Flush buffers and bytes - this is nicked from the Devuan arm-sdk.

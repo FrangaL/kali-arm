@@ -180,7 +180,7 @@ cp arch/arm/boot/dts/exynos5422-odroidxu4-kvm.dtb ${work_dir}/boot
 make mrproper
 cp ${current_dir}/kernel-configs/odroid-xu3.config .config
 cp ${current_dir}/kernel-configs/odroid-xu3.config ../odroid-xu3.config
-cd "${basedir}"
+cd "${base_dir}"
 
 # Fix up the symlink for building external modules
 # kernver is used so we don't need to keep track of what the current compiled
@@ -251,13 +251,13 @@ cd "${current_dir}/"
 make_image
 
 # Create the disk and partition it
-echo "Creating image file ${imagename}.img"
-parted -s ${current_dir}/${imagename}.img mklabel msdos
-parted -s ${current_dir}/${imagename}.img mkpart primary fat32 4MiB ${bootsize}MiB
-parted -s -a minimal ${current_dir}/${imagename}.img mkpart primary $fstype ${bootsize}MiB 100%
+echo "Creating image file ${image_name}.img"
+parted -s ${current_dir}/${image_name}.img mklabel msdos
+parted -s ${current_dir}/${image_name}.img mkpart primary fat32 4MiB ${bootsize}MiB
+parted -s -a minimal ${current_dir}/${image_name}.img mkpart primary $fstype ${bootsize}MiB 100%
 
 # Set the partition variables
-loopdevice=$(losetup --show -fP "${current_dir}/${imagename}.img")
+loopdevice=$(losetup --show -fP "${current_dir}/${image_name}.img")
 bootp="${loopdevice}p1"
 rootp="${loopdevice}p2"
 
@@ -273,10 +273,10 @@ mkfs -O "$features" -t "$fstype" -L ROOTFS "${rootp}"
 
 # Create the dirs for the partitions and mount them
 log "Create the dirs for the partitions and mount them" green
-mkdir -p "${basedir}"/root/
-mount "${rootp}" "${basedir}"/root
-mkdir -p "${basedir}"/root/boot
-mount "${bootp}" "${basedir}"/root/boot
+mkdir -p "${base_dir}"/root/
+mount "${rootp}" "${base_dir}"/root
+mkdir -p "${base_dir}"/root/boot
+mount "${bootp}" "${base_dir}"/root/boot
 
 # We do this down here to get rid of the build system's resolv.conf after running through the build
 echo "nameserver ${nameserver}" > "${work_dir}"/etc/resolv.conf
@@ -287,14 +287,14 @@ UUID=$(blkid -s UUID -o value ${rootp})
 echo "UUID=$UUID /               $fstype    errors=remount-ro 0       1" >> ${work_dir}/etc/fstab
 
 log "Rsyncing rootfs into image file" green
-rsync -HPavz -q "${work_dir}"/ "${basedir}"/root/
+rsync -HPavz -q "${work_dir}"/ "${base_dir}"/root/
 sync
 
 # Write the signed u-boot binary to the image so that it will boot
 log "u-Boot" green
-cd "${basedir}"
+cd "${base_dir}"
 git clone --depth 1 -b odroidxu4-v2017.05 https://github.com/hardkernel/u-boot.git
-cd "${basedir}"/u-boot
+cd "${base_dir}"/u-boot
 make odroid-xu4_defconfig
 make
 cd sd_fuse

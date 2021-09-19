@@ -4,15 +4,15 @@
 # Current directory
 current_dir="$(pwd)"
 # Base directory
-basedir=${current_dir}/base/${hw_model}-${variant}
+base_dir=${current_dir}/base/${hw_model}-${variant}
 # Working directory
-work_dir="${basedir}/working/kali-${architecture}"
+work_dir="${base_dir}/working/kali-${architecture}"
 # Image directory
 image_dir="${current_dir}/images"
 # Version Kali release
 version=${version:-$(cat ${current_dir}/.release)}
 # Custom image file name variable - MUST NOT include .img at the end
-imagename=${imagename:-"kali-linux-${version}-${hw_model}-${variant}"}
+image_name=${image_name:-"kali-linux-${version}-${hw_model}-${variant}"}
 # Generate a random machine name to be used
 machine=$(dbus-uuidgen)
 # Custom hostname variable

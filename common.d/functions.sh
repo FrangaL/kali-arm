@@ -225,7 +225,7 @@ function print_config() {
     log "Hardware model: $(tput sgr0) $hw_model" cyan
   fi
   log "Architecture: $(tput sgr0) $architecture" cyan
-  log "The basedir thinks it is: $(tput sgr0) ${basedir}" cyan
+  log "The base_dir thinks it is: $(tput sgr0) ${base_dir}" cyan
   echo -e "\n"
   sleep 1.5
 }
@@ -238,16 +238,16 @@ function make_image() {
   raw_size=$(($((free_space * 1024)) + root_extra + $((bootsize * 1024)) + 4096))
   img_size=$(echo "${raw_size}"Ki | numfmt --from=iec-i --to=si)
   # Create the disk image
-  log "Creating image file ${imagename}.img (${img_size})" green
+  log "Creating image file ${image_name}.img (${img_size})" green
   mkdir -p "${image_dir}/"
-  fallocate -l "${img_size}" "${image_dir}/${imagename}.img"
+  fallocate -l "${img_size}" "${image_dir}/${image_name}.img"
 }
 
 # Clean up all the temporary build stuff and remove the directories.
 function clean_build() {
   log "Cleaning up the temporary build files..." yellow
-  rm -rf "${basedir}"
+  rm -rf "${base_dir}"
   log "Done." green
   echo -e "\n"
-  log "Your image is: $(tput sgr0) $(ls "${imagename}".*)" bold
+  log "Your image is: $(tput sgr0) $(ls "${image_name}".*)" bold
 }

@@ -27,7 +27,7 @@ machine=$(tr -cd 'A-Za-z0-9' < /dev/urandom | head -c16 ; echo)
 # Custom hostname variable
 hostname=${2:-kali}
 # Custom image file name variable - MUST NOT include .img at the end
-imagename=${3:-kali-linux-$1-rpi0w-p4wnp1-aloa}
+image_name=${3:-kali-linux-$1-rpi0w-p4wnp1-aloa}
 # Suite to use, valid options are:
 # kali-rolling, kali-dev, kali-bleeding-edge, kali-dev-only, kali-experimental, kali-last-snapshot
 suite=${suite:-"kali-rolling"}
@@ -71,20 +71,20 @@ fi
 # Current directory
 current_dir="$(pwd)"
 # Base directory
-basedir=${current_dir}/rpi0w-p4wnp1-"$1"
+base_dir=${current_dir}/rpi0w-p4wnp1-"$1"
 # Working directory
-work_dir="${basedir}/kali-${architecture}"
+work_dir="${base_dir}/kali-${architecture}"
 
 # Check directory build
-if [ -e "${basedir}" ]; then
-  echo "${basedir} directory exists, will not continue" >&2
+if [ -e "${base_dir}" ]; then
+  echo "${base_dir} directory exists, will not continue" >&2
   exit 1
 elif [[ ${current_dir} =~ [[:space:]] ]]; then
   echo "The directory "\"${current_dir}"\" contains whitespace. Not supported." >&2
   exit 1
 else
-  echo "The basedir thinks it is: ${basedir}"
-  mkdir -p ${basedir}
+  echo "The base_dir thinks it is: ${base_dir}"
+  mkdir -p ${base_dir}
 fi
 
 components="main,contrib,non-free"
@@ -212,12 +212,12 @@ fi
 
 # Copy a default config, with everything commented out so people find it when
 # they go to add something when they are following instructions on a website
-cp "${basedir}"/../bsp/firmware/rpi/config.txt ${work_dir}/boot/config.txt
+cp "${base_dir}"/../bsp/firmware/rpi/config.txt ${work_dir}/boot/config.txt
 
 # move P4wnP1 in (change to release blob when ready)
 git clone  -b 'master' --single-branch --depth 1  https://github.com/rogandawes/P4wnP1_aloa ${work_dir}/root/P4wnP1
 
-cat << EOF > ${basedir}/kali-${architecture}/third-stage
+cat << EOF > ${base_dir}/kali-${architecture}/third-stage
 #!/bin/bash
 set -e
 dpkg-divert --add --local --divert /usr/sbin/invoke-rc.d.chroot --rename /usr/sbin/invoke-rc.d
@@ -335,8 +335,8 @@ dpkg-divert --remove --rename /usr/sbin/invoke-rc.d
 rm -f /third-stage
 EOF
 
-chmod 0755 ${basedir}/kali-${architecture}/third-stage
-LANG=C systemd-nspawn -M ${machine} -D ${basedir}/kali-${architecture} /third-stage
+chmod 0755 ${base_dir}/kali-${architecture}/third-stage
+LANG=C systemd-nspawn -M ${machine} -D ${base_dir}/kali-${architecture} /third-stage
 if [[ $? > 0 ]]; then
   echo "Third stage failed"
   exit 1
@@ -410,8 +410,8 @@ cp -rf rpi-firmware/opt/* ${work_dir}/opt/
 rm -rf rpi-firmware
 
 # Build nexmon firmware outside the build system, if we can (use repository with driver and firmware for P4wnP1)
-cd "${basedir}"
-git clone https://github.com/mame82/nexmon_wifi_covert_channel.git -b p4wnp1 "${basedir}"/nexmon --depth 1
+cd "${base_dir}"
+git clone https://github.com/mame82/nexmon_wifi_covert_channel.git -b p4wnp1 "${base_dir}"/nexmon --depth 1
 
 # Setup build
 cd ${TOPDIR}
@@ -421,7 +421,7 @@ git clone --depth 1 https://github.com/Re4son/re4son-raspberrypi-linux -b rpi-4.
 
 cd ${work_dir}/usr/src/kernel
 # Remove redundant yyloc global declaration
-patch -p1 --no-backup-if-mismatch < ${basedir}/../patches/11647f99b4de6bc460e106e876f72fc7af3e54a6.patch
+patch -p1 --no-backup-if-mismatch < ${base_dir}/../patches/11647f99b4de6bc460e106e876f72fc7af3e54a6.patch
 # Note: Compiling the kernel in /usr/src/kernel of the target file system is problematic, as the binaries of the compiling host architecture
 # get deployed to the /usr/src/kernel/scripts subfolder (in this case linux-x64 binaries), which is symlinked to /usr/src/build later on
 # This would f.e. hinder rebuilding single modules, like nexmon's brcmfmac driver, on the Pi itself (online compilation)
@@ -476,11 +476,11 @@ rm build
 rm source
 ln -s /usr/src/kernel build
 ln -s /usr/src/kernel source
-cd "${basedir}"
+cd "${base_dir}"
 
 # Copy a default config, with everything commented out so people find it when
 # they go to add something when they are following instructions on a website
-cp "${basedir}"/../bsp/firmware/rpi/config.txt ${work_dir}/boot/config.txt
+cp "${base_dir}"/../bsp/firmware/rpi/config.txt ${work_dir}/boot/config.txt
 
 cat << EOF >> ${work_dir}/boot/config.txt
 dtoverlay=dwc2
@@ -502,7 +502,7 @@ wget https://raw.github.com/steev/rpiwiggle/master/rpi-wiggle -O ${work_dir}/roo
 chmod 0755 ${work_dir}/root/scripts/rpi-wiggle.sh
 
 # git clone of nexmon moved in front of kernel compilation, to have poper brcmfmac driver ready
-cd "${basedir}"/nexmon
+cd "${base_dir}"/nexmon
 # Make sure we're not still using the armel cross compiler
 unset CROSS_COMPILE
 
@@ -530,9 +530,9 @@ wget https://raw.githubusercontent.com/RPi-Distro/firmware-nonfree/master/brcm/b
 wget https://raw.githubusercontent.com/RPi-Distro/firmware-nonfree/master/brcm/brcmfmac43430-sdio.bin -O ${work_dir}/lib/firmware/brcm/brcmfmac43430-sdio.rpi.bin
 #cp ${work_dir}/lib/firmware/brcm/brcmfmac43430-sdio.rpi.bin ${work_dir}/lib/firmware/brcm/brcmfmac43430-sdio.bin
 
-cp "${basedir}"/../bsp/firmware/rpi/BCM43430A1.hcd ${work_dir}/lib/firmware/brcm/BCM43430A1.hcd
+cp "${base_dir}"/../bsp/firmware/rpi/BCM43430A1.hcd ${work_dir}/lib/firmware/brcm/BCM43430A1.hcd
 
-cd "${basedir}"
+cd "${base_dir}"
 
 sed -i -e 's/^#PermitRootLogin.*/PermitRootLogin yes/' ${work_dir}/etc/ssh/sshd_config
 
@@ -542,14 +542,14 @@ root_extra=$((${root_size}/1024/1000*5*1024/5))
 raw_size=$(($((${free_space}*1024))+${root_extra}+$((${bootsize}*1024))+4096))
 
 # Create the disk and partition it
-echo "Creating image file ${imagename}.img"
-fallocate -l $(echo ${raw_size}Ki | numfmt --from=iec-i --to=si) ${current_dir}/${imagename}.img
-parted -s ${current_dir}/${imagename}.img mklabel msdos
-parted -s ${current_dir}/${imagename}.img mkpart primary fat32 4MiB ${bootsize}MiB
-parted -s -a minimal ${current_dir}/${imagename}.img mkpart primary $fstype ${bootsize}MiB 100%
+echo "Creating image file ${image_name}.img"
+fallocate -l $(echo ${raw_size}Ki | numfmt --from=iec-i --to=si) ${current_dir}/${image_name}.img
+parted -s ${current_dir}/${image_name}.img mklabel msdos
+parted -s ${current_dir}/${image_name}.img mkpart primary fat32 4MiB ${bootsize}MiB
+parted -s -a minimal ${current_dir}/${image_name}.img mkpart primary $fstype ${bootsize}MiB 100%
 
 # Set the partition variables
-loopdevice=$(losetup --show -fP "${current_dir}/${imagename}.img")
+loopdevice=$(losetup --show -fP "${current_dir}/${image_name}.img")
 bootp="${loopdevice}p1"
 rootp="${loopdevice}p2"
 
@@ -563,10 +563,10 @@ fi
 mkfs $features -t $fstype -L ROOTFS ${rootp}
 
 # Create the dirs for the partitions and mount them
-mkdir -p ${basedir}/root/
-mount ${rootp} ${basedir}/root
-mkdir -p ${basedir}/root/boot
-mount ${bootp} ${basedir}/root/boot
+mkdir -p ${base_dir}/root/
+mount ${rootp} ${base_dir}/root
+mkdir -p ${base_dir}/root/boot
+mount ${bootp} ${base_dir}/root/boot
 
 # We do this down here to get rid of the build system's resolv.conf after running through the build
 cat << EOF > kali-${architecture}/etc/resolv.conf
@@ -588,8 +588,8 @@ ff02::2         ip6-allrouters
 EOF
 
 echo "Rsyncing rootfs into image file"
-rsync -HPavz -q --exclude boot ${work_dir}/ ${basedir}/root/
-rsync -rtx -q ${work_dir}/boot ${basedir}/root
+rsync -HPavz -q --exclude boot ${work_dir}/ ${base_dir}/root/
+rsync -rtx -q ${work_dir}/boot ${base_dir}/root
 sync
 
 # Flush buffers and bytes - this is nicked from the Devuan arm-sdk.
@@ -626,16 +626,16 @@ limit_cpu (){
 
 if [ $compress = xz ]; then
   if [ $(arch) == 'x86_64' ]; then
-    echo "Compressing ${imagename}.img"
+    echo "Compressing ${image_name}.img"
     [ $(nproc) \< 3 ] || cpu_cores=3 # cpu_cores = Number of cores to use
-    pixz -p ${cpu_cores:-2} ${current_dir}/${imagename}.img # -p Nº cpu cores use
-    chmod 0644 ${current_dir}/${imagename}.img.xz
+    pixz -p ${cpu_cores:-2} ${current_dir}/${image_name}.img # -p Nº cpu cores use
+    chmod 0644 ${current_dir}/${image_name}.img.xz
   fi
 else
-  chmod 0644 ${current_dir}/${imagename}.img
+  chmod 0644 ${current_dir}/${image_name}.img
 fi
 
 # Clean up all the temporary build stuff and remove the directories
 # Comment this out to keep things around if you want to see what may have gone wrong
 echo "Cleaning up the temporary build files..."
-rm -rf "${basedir}"
+rm -rf "${base_dir}"

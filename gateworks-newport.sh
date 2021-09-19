@@ -140,7 +140,7 @@ restore_mirror
 # Reload sources.list
 #include sources.list
 
-cd "${basedir}/"
+cd "${base_dir}/"
 
 # Do the kernel stuff
 log "Kernel stuff" green
@@ -197,14 +197,14 @@ root_extra=$((${root_size}/1024/1000*5*1024/5))
 raw_size=$(($((${free_space}*1024))+${root_extra}))
 
 # Weird Boot Partition
-log "Creating image file ${imagename}.img" green
-wget http://dev.gateworks.com/newport/boot_firmware/firmware-newport.img -O ${current_dir}/${imagename}.img
-fallocate -l $(echo ${raw_size}Ki | numfmt --from=iec-i --to=si) ${base_dir}/${imagename}.img
-dd if=${base_dir}/${imagename}.img of=${current_dir}/${imagename}.img bs=16M seek=1
-echo ", +" | sfdisk -N 2 ${current_dir}/${imagename}.img
+log "Creating image file ${image_name}.img" green
+wget http://dev.gateworks.com/newport/boot_firmware/firmware-newport.img -O ${current_dir}/${image_name}.img
+fallocate -l $(echo ${raw_size}Ki | numfmt --from=iec-i --to=si) ${base_dir}/${image_name}.img
+dd if=${base_dir}/${image_name}.img of=${current_dir}/${image_name}.img bs=16M seek=1
+echo ", +" | sfdisk -N 2 ${current_dir}/${image_name}.img
 
 # Set the partition variables
-loopdevice=$(losetup -f --show ${current_dir}/${imagename}.img)
+loopdevice=$(losetup -f --show ${current_dir}/${image_name}.img)
 device=$(kpartx -va ${loopdevice} | sed 's/.*\(loop[0-9]\+\)p.*/\1/g' | head -1)
 sleep 5
 device="/dev/mapper/${device}"
@@ -220,8 +220,8 @@ mkfs -O "$features" -t "$fstype" -L ROOTFS "${rootp}"
 
 # Create the dirs for the partitions and mount them
 log "Create the dirs for the partitions and mount them" green
-mkdir -p "${basedir}"/root
-mount ${rootp} "${basedir}"/root
+mkdir -p "${base_dir}"/root
+mount ${rootp} "${base_dir}"/root
 
 # Create an fstab so that we don't mount / read-only
 log "/etc/fstab" green
@@ -229,7 +229,7 @@ UUID=$(blkid -s UUID -o value ${rootp})
 echo "UUID=$UUID /               $fstype    errors=remount-ro 0       1" >> ${work_dir}/etc/fstab
 
 log "Rsyncing rootfs into image file" green
-rsync -HPavz -q ${work_dir}/ ${basedir}/root/
+rsync -HPavz -q ${work_dir}/ ${base_dir}/root/
 sync
 # Flush buffers and bytes - this is nicked from the Devuan arm-sdk.
 blockdev --flushbufs "${loopdevice}"
@@ -268,17 +268,17 @@ limit_cpu (){
 
 if [ $compress = xz ]; then
   if [ $(arch) == 'x86_64' ]; then
-    log "Compressing ${imagename}.img" green
+    log "Compressing ${image_name}.img" green
     [ $(nproc) \< 3 ] || cpu_cores=3 # cpu_cores = Number of cores to use
-#    limit_cpu pixz -p ${cpu_cores:-2} ${current_dir}/${imagename}.img # -p Nº cpu cores use
-    pixz -p ${cpu_cores:-2} ${current_dir}/${imagename}.img # -p Nº cpu cores use
-    chmod 0644 ${current_dir}/${imagename}.img.xz
+#    limit_cpu pixz -p ${cpu_cores:-2} ${current_dir}/${image_name}.img # -p Nº cpu cores use
+    pixz -p ${cpu_cores:-2} ${current_dir}/${image_name}.img # -p Nº cpu cores use
+    chmod 0644 ${current_dir}/${image_name}.img.xz
   fi
 else
-  chmod 0644 ${current_dir}/${imagename}.img
+  chmod 0644 ${current_dir}/${image_name}.img
 fi
 
 # Clean up all the temporary build stuff and remove the directories
 # Comment this out to keep things around if you want to see what may have gone wrong
 log "Removing temporary build files" green
-rm -rf "${basedir}"
+rm -rf "${base_dir}"
