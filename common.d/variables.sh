@@ -6,7 +6,7 @@ current_dir="$(pwd)"
 # Base directory
 base_dir=${current_dir}/base/${hw_model}-${variant}
 # Working directory
-work_dir="${base_dir}/working/kali-${architecture}"
+work_dir="${base_dir}/working"
 # Image directory
 image_dir="${current_dir}/images"
 # Version Kali release

@@ -2,7 +2,6 @@
 base/
 local/
 logs/
-working/
 # Files
 builder.txt
 .DS_Store
