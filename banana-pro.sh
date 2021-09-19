@@ -207,13 +207,13 @@ python -c 'import os; os.fsync(open("'${loopdevice}'", "r+b"))'
 
 # Unmount filesystem
 status "Unmount filesystem"
-umount ${rootp}
+umount -l "${rootp}"
 
 dd if=${work_dir}/usr/lib/u-boot/Bananapro/u-boot-sunxi-with-spl.bin of=${loopdevice} bs=1024 seek=8
 
 # Check filesystem
 status "Check filesystem"
-e2fsck -y -f "$rootp"
+e2fsck -y -f "${rootp}"
 
 # Remove loop devices
 status "Remove loop devices"

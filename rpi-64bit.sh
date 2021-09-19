@@ -232,7 +232,7 @@ umount -l "${rootp}"
 # Check filesystem
 status "Check filesystem"
 dosfsck -w -r -a -t "$bootp"
-e2fsck -y -f "$rootp"
+e2fsck -y -f "${rootp}"
 
 # Remove loop devices
 status "Remove loop devices"

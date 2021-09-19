@@ -211,7 +211,7 @@ status "/etc/fstab"
 UUID=$(blkid -s UUID -o value ${rootp})
 echo "UUID=$UUID /               $fstype    errors=remount-ro 0       1" >> ${work_dir}/etc/fstab
 
-echo "Rsyncing rootfs to image file"
+status "Rsyncing rootfs to image file"
 rsync -HPavz -q ${work_dir}/ ${base_dir}/root/
 sync
 
@@ -227,7 +227,7 @@ dd if=${work_dir}/usr/lib/u-boot/Bananapi/u-boot-sunxi-with-spl.bin of=${loopdev
 
 # Check filesystem
 status "Check filesystem"
-e2fsck -y -f "$rootp"
+e2fsck -y -f "${rootp}"
 
 # Remove loop devices
 status "Remove loop devices"

@@ -307,7 +307,7 @@ umount -l "${rootp}"
 
 # Check filesystem
 status "Check filesystem"
-e2fsck -y -f "$rootp"
+e2fsck -y -f "${rootp}"
 
 # Remove loop devices
 status "Remove loop devices"
