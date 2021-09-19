@@ -53,7 +53,7 @@ status "Copy directory bsp into build dir"
 cp -rp bsp "${work_dir}"
 
 # Third stage
-cat <<EOF >"${work_dir}"/third-stage
+cat <<EOF > "${work_dir}"/third-stage
 #!/usr/bin/env bash
 set -e
 status_3i=0
@@ -164,7 +164,7 @@ trap clean_build ERR SIGTERM SIGINT
 
 # systemd doesn't seem to be generating the fstab properly for some people, so let's create one
 status "/etc/fstab"
-cat <<EOF >"${work_dir}"/etc/fstab
+cat <<EOF > "${work_dir}"/etc/fstab
 # <file system> <mount point>   <type>  <options>       <dump>  <pass>
 proc            /proc           proc    defaults          0       0
 /dev/mmcblk0p1  /boot           vfat    defaults          0       2

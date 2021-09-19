@@ -208,7 +208,7 @@ function set_hostname() {
 function add_interface() {
   interfaces="$*"
   for netdev in $interfaces; do
-    cat <<EOF >"${work_dir}"/etc/network/interfaces.d/"$netdev"
+    cat <<EOF > "${work_dir}"/etc/network/interfaces.d/"$netdev"
 auto $netdev
     allow-hotplug $netdev
     iface $netdev inet dhcp

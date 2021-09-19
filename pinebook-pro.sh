@@ -54,7 +54,7 @@ status "Copy directory bsp into build dir"
 cp -rp bsp "${work_dir}"-rp bsp "${work_dir}"
 
 # Third stage
-cat <<EOF >"${work_dir}"/third-stage
+cat <<EOF > "${work_dir}"/third-stage
 #!/usr/bin/env bash
 set -e
 status_3i=0
@@ -309,7 +309,7 @@ mount "${rootp}" "${base_dir}"/root
 # We do this here because we don't want to hardcode the UUID for the partition during creation
 # systemd doesn't seem to be generating the fstab properly for some people, so let's create one
 status "/etc/fstab"
-cat <<EOF >"${work_dir}"/etc/fstab
+cat <<EOF > "${work_dir}"/etc/fstab
 # <file system> <mount point>   <type>  <options>       <dump>  <pass>
 proc            /proc           proc    defaults          0       0
 UUID=$(blkid -s UUID -o value ${rootp})  /               $fstype    defaults,noatime  0       1

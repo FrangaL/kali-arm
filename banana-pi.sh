@@ -53,7 +53,7 @@ status "Copy directory bsp into build dir"
 cp -rp bsp "${work_dir}"
 
 # Third stage
-cat <<EOF >"${work_dir}"/third-stage
+cat <<EOF > "${work_dir}"/third-stage
 #!/usr/bin/env bash
 set -e
 status_3i=0

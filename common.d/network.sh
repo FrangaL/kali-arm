@@ -9,7 +9,7 @@ if [ "$disable_ipv6" = "yes" ]; then
 fi
 
 log "/etc/network/interfaces" green
-cat <<EOF >"${work_dir}"/etc/network/interfaces
+cat <<EOF > "${work_dir}"/etc/network/interfaces
 source-directory /etc/network/interfaces.d
 
 auto lo
