@@ -184,11 +184,11 @@ sed -i -e 's/append.*/append console=ttyS0,115200 console=tty1 root=\/dev\/mmcbl
 
 # Create the disk partitions
 status "Create the disk partitions"
-parted -s ${current_dir}/${image_name}.img mklabel msdos
-parted -s -a minimal ${current_dir}/${image_name}.img mkpart primary $fstype 4MiB 100%
+parted -s "${image_dir}/${image_name}.img" mklabel msdos
+parted -s -a minimal "${image_dir}/${image_name}.img" mkpart primary $fstype 4MiB 100%
 
 # Set the partition variables
-loopdevice=$(losetup -f --show ${current_dir}/${image_name}.img)
+loopdevice=$(losetup -f --show "${image_dir}/${image_name}.img")
 device=$(kpartx -va ${loopdevice} | sed 's/.*\(loop[0-9]\+\)p.*/\1/g' | head -1)
 sleep 5
 device="/dev/mapper/${device}"

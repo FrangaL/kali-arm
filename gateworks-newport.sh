@@ -211,13 +211,13 @@ raw_size=$(($((${free_space}*1024))+${root_extra}))
 
 # Weird Boot Partition
 status "Creating image file ${image_name}.img"
-wget http://dev.gateworks.com/newport/boot_firmware/firmware-newport.img -O ${current_dir}/${image_name}.img
-fallocate -l $(echo ${raw_size}Ki | numfmt --from=iec-i --to=si) ${base_dir}/${image_name}.img
-dd if=${base_dir}/${image_name}.img of=${current_dir}/${image_name}.img bs=16M seek=1
-echo ", +" | sfdisk -N 2 ${current_dir}/${image_name}.img
+wget http://dev.gateworks.com/newport/boot_firmware/firmware-newport.img -O "${image_dir}/${image_name}.img"
+fallocate -l $(echo ${raw_size}Ki | numfmt --from=iec-i --to=si) "${image_dir}/${image_name}.img"
+dd if=${base_dir}/${image_name}.img of="${image_dir}/${image_name}.img"bs=16M seek=1
+echo ", +" | sfdisk -N 2 "${image_dir}/${image_name}.img"
 
 # Set the partition variables
-loopdevice=$(losetup -f --show ${current_dir}/${image_name}.img)
+loopdevice=$(losetup -f --show "${image_dir}/${image_name}.img")
 device=$(kpartx -va ${loopdevice} | sed 's/.*\(loop[0-9]\+\)p.*/\1/g' | head -1)
 sleep 5
 device="/dev/mapper/${device}"

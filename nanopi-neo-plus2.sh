@@ -356,11 +356,11 @@ make_image
 
 # Create the disk partitions
 status "Create the disk partitions"
-parted -s ${current_dir}/${image_name}.img mklabel msdos
-parted -s -a minimal ${current_dir}/${image_name}.img mkpart primary $fstype 32MiB 100%
+parted -s "${image_dir}/${image_name}.img" mklabel msdos
+parted -s -a minimal "${image_dir}/${image_name}.img" mkpart primary $fstype 32MiB 100%
 
 # Set the partition variables
-loopdevice=$(losetup --show -fP "${current_dir}/${image_name}.img")
+loopdevice=$(losetup --show -fP "${image_dir}/${image_name}.img")
 rootp="${loopdevice}p1"
 
 # Create file systems

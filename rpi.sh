@@ -165,7 +165,7 @@ include rpi_firmware
 set_locale "$locale"
 # Clean system
 include clean_system
-trap clean_build ERR SIGTERM SIGINT
+#trap clean_build ERR SIGTERM SIGINT
 # Define DNS server after last running systemd-nspawn
 echo "nameserver ${nameserver}" > "${work_dir}"/etc/resolv.conf
 # Disable the use of http proxy in case it is enabled
@@ -189,12 +189,12 @@ make_image
 
 # Create the disk partitions
 status "Create the disk partitions"
-parted -s "${current_dir}"/"${image_name}".img mklabel msdos
-parted -s "${current_dir}"/"${image_name}".img mkpart primary fat32 1MiB "${bootsize}"MiB
-parted -s -a minimal "${current_dir}"/"${image_name}".img mkpart primary "$fstype" "${bootsize}"MiB 100%
+parted -s "${image_dir}/${image_name}.img" mklabel msdos
+parted -s "${image_dir}/${image_name}.img" mkpart primary fat32 1MiB "${bootsize}"MiB
+parted -s -a minimal "${image_dir}/${image_name}.img" mkpart primary "$fstype" "${bootsize}"MiB 100%
 
 # Set the partition variables
-loopdevice=$(losetup --show -fP "${current_dir}/${image_name}.img")
+loopdevice=$(losetup --show -fP "${image_dir}/${image_name}.img")
 bootp="${loopdevice}p1"
 rootp="${loopdevice}p2"
 

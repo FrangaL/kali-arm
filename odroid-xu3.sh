@@ -266,12 +266,12 @@ make_image
 
 # Create the disk and partition it
 echo "Creating image file ${image_name}.img"
-parted -s ${current_dir}/${image_name}.img mklabel msdos
-parted -s ${current_dir}/${image_name}.img mkpart primary fat32 4MiB ${bootsize}MiB
-parted -s -a minimal ${current_dir}/${image_name}.img mkpart primary $fstype ${bootsize}MiB 100%
+parted -s "${image_dir}/${image_name}.img" mklabel msdos
+parted -s "${image_dir}/${image_name}.img" mkpart primary fat32 4MiB ${bootsize}MiB
+parted -s -a minimal "${image_dir}/${image_name}.img" mkpart primary $fstype ${bootsize}MiB 100%
 
 # Set the partition variables
-loopdevice=$(losetup --show -fP "${current_dir}/${image_name}.img")
+loopdevice=$(losetup --show -fP "${image_dir}/${image_name}.img")
 bootp="${loopdevice}p1"
 rootp="${loopdevice}p2"
 

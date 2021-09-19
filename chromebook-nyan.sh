@@ -573,13 +573,13 @@ raw_size=$(($((${free_space}*1024))+${root_extra}+$((${bootsize}*1024))+4096))
 
 # Create the disk and partition it
 echo "Creating image file ${image_name}.img"
-fallocate -l $(echo ${raw_size}Ki | numfmt --from=iec-i --to=si) ${current_dir}/${image_name}.img
-parted -s ${current_dir}/${image_name}.img mklabel gpt
-cgpt create -z ${current_dir}/${image_name}.img
-cgpt create ${current_dir}/${image_name}.img
+fallocate -l $(echo ${raw_size}Ki | numfmt --from=iec-i --to=si) "${image_dir}/${image_name}.img"
+parted -s "${image_dir}/${image_name}.img" mklabel gpt
+cgpt create -z "${image_dir}/${image_name}.img"
+cgpt create "${image_dir}/${image_name}.img"
 
-cgpt add -i 1 -t kernel -b 8192 -s 32768 -l kernel -S 1 -T 5 -P 10 ${current_dir}/${image_name}.img
-cgpt add -i 2 -t data -b 40960 -s `expr $(cgpt show ${current_dir}/${image_name}.img | grep 'Sec GPT table' | awk '{ print \$1 }')  - 40960` -l Root ${current_dir}/${image_name}.img
+cgpt add -i 1 -t kernel -b 8192 -s 32768 -l kernel -S 1 -T 5 -P 10 "${image_dir}/${image_name}.img"
+cgpt add -i 2 -t data -b 40960 -s `expr $(cgpt show "${image_dir}/${image_name}.img" | grep 'Sec GPT table' | awk '{ print \$1 }')  - 40960` -l Root "${image_dir}/${image_name}.img"
 
 loopdevice=`losetup -f --show ${current_dir}/${image_name}.img`
 device=`kpartx -va ${loopdevice} | sed 's/.*\(loop[0-9]\+\)p.*/\1/g' | head -1`
@@ -646,11 +646,11 @@ if [ $compress = xz ]; then
   if [ $(arch) == 'x86_64' ]; then
     echo "Compressing ${image_name}.img"
     [ $(nproc) \< 3 ] || cpu_cores=3 # cpu_cores = Number of cores to use
-    limit_cpu pixz -p ${cpu_cores:-2} ${current_dir}/${image_name}.img # -p Nº cpu cores use
+    limit_cpu pixz -p ${cpu_cores:-2} "${image_dir}/${image_name}.img" # -p Nº cpu cores use
     chmod 0644 ${current_dir}/${image_name}.img.xz
   fi
 else
-  chmod 0644 ${current_dir}/${image_name}.img
+  chmod 0644 "${image_dir}/${image_name}.img"
 fi
 
 # Clean up all the temporary build stuff and remove the directories

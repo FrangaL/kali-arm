@@ -464,11 +464,11 @@ echo $raw_size
 
 # Create the disk and partition it
 echo "Creating image file ${image_name}.img"
-fallocate -l $(echo ${raw_size}Ki | numfmt --from=iec-i --to=si) ${current_dir}/${image_name}.img
+fallocate -l $(echo ${raw_size}Ki | numfmt --from=iec-i --to=si) "${image_dir}/${image_name}.img"
 echo "Partitioning ${image_name}.img"
-parted -s ${current_dir}/${image_name}.img mklabel msdos
-parted -s ${current_dir}/${image_name}.img mkpart primary fat32 1MiB ${bootsize}MiB
-parted -s -a minimal ${current_dir}/${image_name}.img mkpart primary $fstype ${bootsize}MiB 100%
+parted -s "${image_dir}/${image_name}.img" mklabel msdos
+parted -s "${image_dir}/${image_name}.img" mkpart primary fat32 1MiB ${bootsize}MiB
+parted -s -a minimal "${image_dir}/${image_name}.img" mkpart primary $fstype ${bootsize}MiB 100%
 
 # Set the partition variables
 loopdevice=`losetup -f --show ${current_dir}/${image_name}.img`
@@ -536,11 +536,11 @@ if [ $compress = xz ]; then
   if [ $(arch) == 'x86_64' ]; then
     echo "Compressing ${image_name}.img"
     [ $(nproc) \< 3 ] || cpu_cores=3 # cpu_cores = Number of cores to use
-    limit_cpu pixz -p ${cpu_cores:-2} ${current_dir}/${image_name}.img # -p Nº cpu cores use
+    limit_cpu pixz -p ${cpu_cores:-2} "${image_dir}/${image_name}.img" # -p Nº cpu cores use
     chmod 0644 ${current_dir}/${image_name}.img.xz
   fi
 else
-  chmod 0644 ${current_dir}/${image_name}.img
+  chmod 0644 "${image_dir}/${image_name}.img"
 fi
 
 # Clean up all the temporary build stuff and remove the directories
