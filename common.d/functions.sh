@@ -253,9 +253,9 @@ function clean_build() {
 }
 
 # Show progress
-header() {
+status() {
   status_i=$((header_i+1))
-  log "[i] \${header_i}/\${header_t}: $1" green
+  log "[i] ${status_i}/${status_t}: $1" green
 }
-header_i=0
-header_t=$(grep '^header ' $0 | wc -l)
+status_i=0
+status_t=$(grep '^status ' $0 | wc -l)
