@@ -251,3 +251,11 @@ function clean_build() {
   echo -e "\n"
   log "Your image is: $(tput sgr0) $(ls "${image_name}".*)" bold
 }
+
+# Show progress
+header() {
+  status_i=$((header_i+1))
+  log "[i] \${header_i}/\${header_t}: $1" green
+}
+header_i=0
+header_t=$(grep '^header ' $0 | wc -l)

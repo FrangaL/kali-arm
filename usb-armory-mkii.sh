@@ -51,44 +51,65 @@ include network
 add_interface eth0
 
 # Copy directory bsp into build dir
-log "Copy directory bsp into build dir" green
+status "Copy directory bsp into build dir"
 cp -rp bsp "${work_dir}"
 
 # Third stage
 cat <<EOF >"${work_dir}"/third-stage
 #!/usr/bin/env bash
 set -e
+status_3i=0
+status_3i=\$(grep '^status_stage3 ' \$0 | wc -l)
 
+status_stage3() {
+  status_3i=\$((status_3i+1))
+  echo  " [i] Stage 3 (\${status_3i}/\${status_3t}): \$1"
+}
+
+status_stage3 'Update apt'
 export DEBIAN_FRONTEND=noninteractive
 eatmydata apt-get update
+
+status_stage3 'Install core packages'
 eatmydata apt-get -y install ${third_stage_pkgs}
 
+status_stage3 'Enable dhcp server'
 eatmydata apt-get install -y ${packages} || eatmydata apt-get install -y --fix-broken
+
+status_stage3 'Install desktop packages'
 eatmydata apt-get install -y ${desktop_pkgs} ${extra} || eatmydata apt-get install -y --fix-broken
+
+status_stage3 'Enable dhcp server'
 eatmydata apt-get install -y isc-dhcp-server tightvncserver || eatmydata apt-get install -y --fix-broken
+
+status_stage3 'Clean up'
 eatmydata apt-get -y --purge autoremove
 
-# Linux console/Keyboard configuration
+status_stage3 'Linux console/keyboard configuration'
 echo 'console-common console-data/keymap/policy select Select keymap from full list' | debconf-set-selections
 echo 'console-common console-data/keymap/full select en-latin1-nodeadkeys' | debconf-set-selections
 
-# Copy all services
+status_stage3 'Copy all services'
 cp -p /bsp/services/all/*.service /etc/systemd/system/
 
-# Copy script rpi-resizerootfs
+status_stage3 'Copy script rpi-resizerootfs'
 install -m755 /bsp/scripts/rpi-resizerootfs /usr/sbin/
 
-# Enable rpi-resizerootfs first boot
+status_stage3 'Enable rpi-resizerootfs first boot'
 systemctl enable rpi-resizerootfs
 
-# Generate SSH host keys on first run
+status_stage3 'Generate SSH host keys on first run'
 systemctl enable regenerate_ssh_host_keys
 
-# Allow users to use NM over ssh
+status_stage3 'Allow users to use NetworkManager over ssh'
 install -m644 /bsp/polkit/10-NetworkManager.pkla /var/lib/polkit-1/localauthority/50-local.d
 
+status_stage3 'Remove /etc/modules*'
 rm /etc/modules
 rm /etc/modules-load.d/modules.conf
+
+
+status_stage3 'Add our /etc/modules-load.d/'
 cat << __EOF__ > /etc/modules-load.d/modules.conf
 ledtrig_heartbeat
 ci_hdrc_imx
@@ -97,6 +118,7 @@ g_ether
 #g_multi
 __EOF__
 
+status_stage3 'Add our /etc/modprobe.d/'
 cat << __EOF__ > /etc/modprobe.d/usbarmory.conf
 options g_ether use_eem=0 dev_addr=1a:55:89:a2:69:41 host_addr=1a:55:89:a2:69:42
 # To use either of the following, you should create the file /disk.img via dd
@@ -105,6 +127,7 @@ options g_ether use_eem=0 dev_addr=1a:55:89:a2:69:41 host_addr=1a:55:89:a2:69:42
 #options g_multi use_eem=0 dev_addr=1a:55:89:a2:69:41 host_addr=1a:55:89:a2:69:42 file=disk.img
 __EOF__
 
+status_stage3 'Add our /etc/network/interfaces.d/usb0'
 cat << __EOF__ > /etc/network/interfaces.d/usb0
 allow-hotplug usb0
 iface usb0 inet static
@@ -113,6 +136,8 @@ netmask 255.255.255.0
 gateway 10.0.0.2
 __EOF__
 
+
+status_stage3 'Add our /etc/dhcp/dhcpd.conf'
 # Debian reads the config from inside /etc/dhcp
 cp /etc/dhcp/dhcpd.conf /etc/dhcp/dhcpd.conf.old
 cat << __EOF__ > /etc/dhcp/dhcpd.conf
@@ -133,39 +158,39 @@ subnet 10.0.0.0 netmask 255.255.255.0 {
 }
 __EOF__
 
-# Only listen on usb0
+status_stage3 'Only listen on usb0'
 sed -i -e 's/INTERFACES.*/INTERFACES="usb0"/g' /etc/default/isc-dhcp-server
 
-# Enable dhcp server
+status_stage3 'Enable dhcp server'
 update-rc.d isc-dhcp-server enable
 
+status_stage3 'Install ca-certificate'
 cd /root
 apt download -o APT::Sandbox::User=root ca-certificates 2>/dev/null
 
-# Set a REGDOMAIN.  This needs to be done or wireless doesn't work correctly on the RPi 3B+
+status_stage3 'Set a REGDOMAIN'
 sed -i -e 's/REGDOM.*/REGDOMAIN=00/g' /etc/default/crda
 
-# Try and make the console a bit nicer
-# Set the terminus font for a bit nicer display
+status_stage3 'Try and make the console a bit nicer. Set the terminus font for a bit nicer display'
 sed -i -e 's/FONTFACE=.*/FONTFACE="Terminus"/' /etc/default/console-setup
 sed -i -e 's/FONTSIZE=.*/FONTSIZE="6x12"/' /etc/default/console-setup
 
-# Fix startup time from 5 minutes to 15 secs on raise interface wlan0
+status_stage3 'Fix startup time from 5 minutes to 15 secs on raise interface wlan0'
 sed -i 's/^TimeoutStartSec=5min/TimeoutStartSec=15/g' "/usr/lib/systemd/system/networking.service"
 
-# Enable runonce
+status_stage3 'Enable runonce'
 install -m755 /bsp/scripts/runonce /usr/sbin/
 cp -rf /bsp/runonce.d /etc
 systemctl enable runonce
 
-# Clean up dpkg.eatmydata
+status_stage3 'Clean up dpkg.eatmydata'
 rm -f /usr/bin/dpkg
 dpkg-divert --remove --rename /usr/bin/dpkg
 EOF
 
 # Run third stage
 chmod 0755 "${work_dir}"/third-stage
-log "Run third stage" green
+status "Run third stage"
 systemd-nspawn_exec /third-stage
 
 # Choose a locale
@@ -177,14 +202,14 @@ trap clean_build ERR SIGTERM SIGINT
 echo "nameserver ${nameserver}" > "${work_dir}"/etc/resolv.conf
 # Disable the use of http proxy in case it is enabled
 disable_proxy
+# Reload sources.list
+include sources.list
 # Mirror & suite replacement
 restore_mirror
-# Reload sources.list
-#include sources.list
 
 # Kernel section. If you want to use a custom kernel, or configuration, replace
 # them in this section
-log "Kernel stuff" green
+status "Kernel stuff"
 git clone --depth 1 -b linux-5.4.y git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git ${work_dir}/usr/src/kernel
 cd ${work_dir}/usr/src/kernel
 git rev-parse HEAD > ${work_dir}/usr/src/kernel-at-commit
@@ -213,7 +238,7 @@ wget $githubraw/inversepath/usbarmory/master/software/kernel_conf/mark-two/imx6u
 # Fix up the symlink for building external modules
 # kernver is used so we don't need to keep track of what the current compiled
 # version is
-log "building external modules" green
+status "building external modules"
 kernver=$(ls ${work_dir}/lib/modules/)
 cd ${work_dir}/lib/modules/${kernver}
 rm build
@@ -227,7 +252,7 @@ cd "${current_dir}/"
 make_image
 
 # Create the disk partitions
-log "Create the disk partitions" green
+status "Create the disk partitions"
 parted -s ${current_dir}/${image_name}.img mklabel msdos
 parted -s -a minimal ${current_dir}/${image_name}.img mkpart primary ext2 5MiB 100%
 
@@ -236,24 +261,24 @@ loopdevice=$(losetup --show -fP "${current_dir}/${image_name}.img")
 rootp="${loopdevice}p1"
 
 # Create file systems
-log "Formatting partitions" green
+status "Formatting partitions"
 mkfs.ext2 ${rootp}
 
 # Create the dirs for the partitions and mount them
-log "Create the dirs for the partitions and mount them" green
+status "Create the dirs for the partitions and mount them"
 mkdir -p "${base_dir}"/root
 mount ${rootp} "${base_dir}"/root
 
 # Create an fstab so that we don't mount / read-only
-log "/etc/fstab" green
+status "/etc/fstab"
 UUID=$(blkid -s UUID -o value ${rootp})
 echo "UUID=$UUID /               $fstype    errors=remount-ro 0       1" >> ${work_dir}/etc/fstab
 
-log "Rsyncing rootfs into image file" green
+status "Rsyncing rootfs into image file"
 rsync -HPavz -q "${work_dir}"/ "${base_dir}"/root/
 sync
 
-log "u-Boot" green
+status "u-Boot"
 cd "${work_dir}"
 wget ftp://ftp.denx.de/pub/u-boot/u-boot-2020.10.tar.bz2
 tar xvf u-boot-2020.10.tar.bz2 && cd u-boot-2020.10
@@ -264,20 +289,20 @@ dd if=u-boot.imx of=${loopdevice} bs=512 seek=2 conv=fsync
 
 cd "${current_dir}/"
 
-# Flush buffers and bytes - this is nicked from the Devuan arm-sdk.
+# Flush buffers and bytes - this is nicked from the Devuan arm-sdk
 blockdev --flushbufs "${loopdevice}"
 python -c 'import os; os.fsync(open("'${loopdevice}'", "r+b"))'
 
-# Umount filesystem
-log "Umount filesystem" green
+# Unmount filesystem
+status "Unmount filesystem"
 umount -l "${rootp}"
 
 # Check filesystem
-log "Check filesystem" green
+status "Check filesystem"
 e2fsck -y -f "$rootp"
 
 # Remove loop devices
-log "Remove loop devices" green
+status "Remove loop devices"
 losetup -d "${loopdevice}"
 
 # Compress image compilation
