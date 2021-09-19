@@ -30,8 +30,6 @@ include variables
 include check
 # Packages build list
 include packages
-# Load automatic proxy configuration
-include proxy_apt
 # Execute initial debootstrap
 debootstrap_exec http://http.kali.org/kali
 # Enable eatmydata in compilation
@@ -215,19 +213,10 @@ chmod 0755 "${work_dir}"/third-stage
 status "Run third stage"
 systemd-nspawn_exec /third-stage
 
-# Choose a locale
-set_locale "$locale"
 # Clean system
 include clean_system
 trap clean_build ERR SIGTERM SIGINT
-# Define DNS server after last running systemd-nspawn
-echo "nameserver ${nameserver}" > "${work_dir}"/etc/resolv.conf
-# Disable the use of http proxy in case it is enabled
-disable_proxy
-# Reload sources.list
-include sources.list
-# Mirror & suite replacement
-restore_mirror
+
 
 # Set up some defaults for chromium, if the user ever installs it
 mkdir -p ${work_dir}/etc/chromium/

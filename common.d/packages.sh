@@ -2,7 +2,9 @@
 
 log "selecting packages" green
 
-# This is the bare minimum if you want to start from very scratch.
+debootstrap_base="kali-archive-keyring,eatmydata"
+
+# This is the bare minimum if you want to start from very scratch
 minimal_pkgs="ca-certificates iw parted ssh wpasupplicant"
 
 # This is the list of minimal common packages
@@ -47,8 +49,12 @@ packages="$common_pkgs $cli_tools_pkgs $services $extra_custom_pkgs"
 if [[ "$hw_model" == *rpi* ]]; then
   extra+=" $gpio_pkgs $rpi_pkgs"
 fi
-if [[ "$variant" == *lite* ]]; then
+if [[ "$variant" == *minimal* ]]; then
   packages="$common_min_pkgs $cli_min_tools $services $extra_custom_pkgs"
 fi
 
 third_stage_pkgs="binutils ca-certificates console-common console-setup locales libterm-readline-gnu-perl git wget curl"
+
+# Re4son packages
+re4ason_packages="kalipi-kernel kalipi-bootloader kalipi-re4son-firmware kalipi-kernel-headers firmware-raspberry \
+kalipi-config kalipi-tft-config"

@@ -96,7 +96,7 @@ function systemd-nspawn_exec() {
 function debootstrap_exec() {
   log "debootstrap_exec" green
   eatmydata debootstrap --foreign --keyring=/usr/share/keyrings/kali-archive-keyring.gpg --components="${components}" \
-    --include=kali-archive-keyring,eatmydata --arch "${architecture}" "${suite}" "${work_dir}" "$@"
+    --include="${debootstrap_base}" --arch "${architecture}" "${suite}" "${work_dir}" "$@"
 }
 
 # Disable the use of http proxy in case it is enabled.
@@ -178,7 +178,7 @@ function set_locale() {
   LOCALES="$1"
   log "locale: ${LOCALES}" green
   sed -i "s/^# *\($LOCALES\)/\1/" "${work_dir}"/etc/locale.gen
-  systemd-nspawn_exec locale-gen
+  #systemd-nspawn_exec locale-gen
   echo "LANG=$LOCALES" >"${work_dir}"/etc/locale.conf
   echo "LC_ALL=$LOCALES" >>"${work_dir}"/etc/locale.conf
   cat <<'EOM' >"${work_dir}"/etc/profile.d/default-lang.sh

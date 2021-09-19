@@ -30,8 +30,6 @@ include variables
 include check
 # Packages build list
 include packages
-# Load automatic proxy configuration
-include proxy_apt
 # Execute initial debootstrap
 debootstrap_exec http://http.kali.org/kali
 # Enable eatmydata in compilation
@@ -90,10 +88,6 @@ status_stage3 'Copy all services'
 cp -p /bsp/services/all/*.service /etc/systemd/system/
 cp -p /bsp/services/rpi/*.service /etc/systemd/system/
 
-status_stage3 '# Re4sons rpi-tft configurator'
-install -m755 /bsp/scripts/kalipi-tft-config /usr/bin/
-/usr/bin/kalipi-tft-config -u
-
 status_stage3 'Script mode wlan monitor START/STOP'
 install -m755 /bsp/scripts/monstart /usr/bin/
 install -m755 /bsp/scripts/monstop /usr/bin/
@@ -105,7 +99,7 @@ status_stage3 'Install the kernel packages'
 echo "deb http://http.re4son-kernel.com/re4son kali-pi main" > /etc/apt/sources.list.d/re4son.list
 wget -qO /etc/apt/trusted.gpg.d/kali_pi-archive-keyring.gpg https://re4son-kernel.com/keys/http/kali_pi-archive-keyring.gpg
 eatmydata apt-get update
-eatmydata apt-get install -y kalipi-kernel kalipi-bootloader kalipi-re4son-firmware kalipi-kernel-headers firmware-raspberry kalipi-config kalipi-tft-config
+eatmydata apt-get install -y $re4ason_packages
 
 status_stage3 'Copy script rpi-resizerootfs'
 install -m755 /bsp/scripts/rpi-resizerootfs /usr/sbin/
@@ -158,19 +152,9 @@ systemd-nspawn_exec /third-stage
 include rpi_firmware
 # Compile Raspberry PI userland
 include rpi_userland
-# Choose a locale
-set_locale "$locale"
-# Clean system
+# Finish tunning and clean system
 include clean_system
 trap clean_build ERR SIGTERM SIGINT
-# Define DNS server after last running systemd-nspawn
-echo "nameserver ${nameserver}" > "${work_dir}"/etc/resolv.conf
-# Disable the use of http proxy in case it is enabled
-disable_proxy
-# Reload sources.list
-include sources.list
-# Mirror & suite replacement
-restore_mirror
 
 # systemd doesn't seem to be generating the fstab properly for some people, so let's create one
 status "/etc/fstab"
