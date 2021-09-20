@@ -104,7 +104,7 @@ install -m644 /bsp/polkit/10-NetworkManager.pkla /var/lib/polkit-1/localauthorit
 status_stage3 'Touchpad settings'
 install -m644 /bsp/xorg/50-pine64-pinebook-pro.touchpad.conf /etc/X11/xorg.conf.d/
 
-status_stage3 'Saved audio settings'status_stage3 '
+status_stage3 'Saved audio settings'
 install -m644 /bsp/audio/pinebook-pro/asound.state /var/lib/alsa/asound.state
 
 status_stage3 'Enable bluetooth'
