@@ -1,484 +1,203 @@
 #!/usr/bin/env bash
 #
-# Kali Linux ARM build-script for USB Armory MKI
+# Kali Linux ARM build-script for USB Armory MKI (32-bit)
 # https://gitlab.com/kalilinux/build-scripts/kali-arm
 #
 # This is a community script - you will need to generate your own image to use
-# More information: https://www.kali.org/docs/arm/usb-armory-mki/
+# More information: https://www.kali.org/docs/arm/usb-armory-mkii/
 #
 
 # Stop on error
 set -e
 
-# Uncomment to activate debug
-# debug=true
+# shellcheck disable=SC2154
+# Load general functions
+# shellcheck source=/dev/null
+source ./common.d/functions.sh
 
-if [ "$debug" = true ]; then
-  exec > >(tee -a -i "${0%.*}.log") 2>&1
-  set -x
-fi
-
+# Hardware model
+hw_model=${hw_model:-"usbarmory-mki"}
 # Architecture
 architecture=${architecture:-"armhf"}
-# Generate a random machine name to be used
-machine=$(tr -cd 'A-Za-z0-9' < /dev/urandom | head -c16 ; echo)
-# Custom hostname variable
-hostname=${2:-kali}
-# Custom image file name variable - MUST NOT include .img at the end
-image_name=${3:-kali-linux-$1-usbarmory-mki}
-# Suite to use, valid options are:
-# kali-rolling, kali-dev, kali-bleeding-edge, kali-dev-only, kali-experimental, kali-last-snapshot
-suite=${suite:-"kali-rolling"}
-# Free space rootfs in MiB
-free_space="300"
-# /boot partition in MiB
-bootsize="128"
-# Select compression, xz or none
-compress="xz"
-# Choose filesystem format to format (ext3 or ext4)
-fstype="ext3"
-# If you have your own preferred mirrors, set them here
-mirror=${mirror:-"http://http.kali.org/kali"}
-# GitLab URL Kali repository
-kaligit="https://gitlab.com/kalilinux"
-# GitHub raw URL
-githubraw="$githubraw"
+# Variant name for image and dir build
+variant=${variant:-"${architecture}"}
+# Desktop manager (xfce, gnome, i3, kde, lxde, mate, e17 or none)
+desktop=${desktop:-"xfce"}
 
-# Check EUID=0 you can run any binary as root
-if [[ $EUID -ne 0 ]]; then
-  echo "This script must be run as root or have super user permissions" >&2
-  echo "Use: sudo $0 ${1:-2.0} ${2:-kali}" >&2
-  exit 1
-fi
-
-# Pass version number
-if [[ $# -eq 0 ]] ; then
-  echo "Please pass version number, e.g. $0 2.0, and (if you want) a hostname, default is kali" >&2
-  exit 0
-fi
-
-# Check exist bsp directory
-if [ ! -e "bsp" ]; then
-  echo "Error: missing bsp directory structure" >&2
-  echo "Please clone the full repository ${kaligit}/build-scripts/kali-arm" >&2
-  exit 255
-fi
-
-# Current directory
-current_dir="$(pwd)"
-# Base directory
-base_dir=${current_dir}/usbarmory-"$1"
-# Working directory
-work_dir="${base_dir}/kali-${architecture}"
-
-# Check directory build
-if [ -e "${base_dir}" ]; then
-  echo "${base_dir} directory exists, will not continue" >&2
-  exit 1
-elif [[ ${current_dir} =~ [[:space:]] ]]; then
-  echo "The directory "\"${current_dir}"\" contains whitespace. Not supported." >&2
-  exit 1
-else
-  echo "The base_dir thinks it is: ${base_dir}"
-  mkdir -p ${base_dir}
-fi
-
-components="main,contrib,non-free"
-arm="kali-linux-arm ntpdate"
-base="apt-transport-https apt-utils bash-completion console-setup dialog e2fsprogs ifupdown initramfs-tools inxi iw man-db mlocate netcat-traditional net-tools parted pciutils psmisc rfkill screen tmux unrar usbutils vim wget whiptail zerofree"
-#desktop="kali-desktop-xfce kali-root-login xserver-xorg-video-fbdev xfonts-terminus xinput"
-tools="aircrack-ng cewl crunch dnsrecon dnsutils ethtool exploitdb hydra john libnfc-bin medusa metasploit-framework mfoc ncrack nmap passing-the-hash proxychains recon-ng sqlmap tcpdump theharvester tor tshark usbutils whois windows-binaries winexe wpscan"
-services="apache2 atftpd haveged isc-dhcp-server openssh-server openvpn tightvncserver"
-extras="alsa-utils bc bison bluez bluez-firmware cryptsetup kali-linux-core libnss-systemd libssl-dev lvm2 wpasupplicant"
-
-packages="${arm} ${base} ${services}"
-
-# Automatic configuration to use an http proxy, such as apt-cacher-ng
-# You can turn off automatic settings by uncommenting apt_cacher=off
-# apt_cacher=off
-# By default the proxy settings are local, but you can define an external proxy
-# proxy_url="http://external.intranet.local"
-apt_cacher=${apt_cacher:-"$(lsof -i :3142|cut -d ' ' -f3 | uniq | sed '/^\s*$/d')"}
-if [ -n "$proxy_url" ]; then
-  export http_proxy=$proxy_url
-elif [ "$apt_cacher" = "apt-cacher-ng" ] ; then
-  if [ -z "$proxy_url" ]; then
-    proxy_url=${proxy_url:-"http://127.0.0.1:3142/"}
-    export http_proxy=$proxy_url
-  fi
-fi
-
-# Detect architecture
-if [[ "${architecture}" == "arm64" ]]; then
-        qemu_bin="/usr/bin/qemu-aarch64-static"
-        lib_arch="aarch64-linux-gnu"
-elif [[ "${architecture}" == "armhf" ]]; then
-        qemu_bin="/usr/bin/qemu-arm-static"
-        lib_arch="arm-linux-gnueabihf"
-elif [[ "${architecture}" == "armel" ]]; then
-        qemu_bin="/usr/bin/qemu-arm-static"
-        lib_arch="arm-linux-gnueabi"
-fi
-
-# create the rootfs - not much to modify here, except maybe throw in some more packages if you want
-eatmydata debootstrap --foreign --keyring=/usr/share/keyrings/kali-archive-keyring.gpg --include=kali-archive-keyring,eatmydata \
-  --components=${components} --arch ${architecture} ${suite} ${work_dir} http://http.kali.org/kali
-
-# systemd-nspawn environment
-systemd-nspawn_exec(){
-  LANG=C systemd-nspawn -q --bind-ro ${qemu_bin} -M ${machine} -D ${work_dir} "$@"
-}
-
-# We need to manually extract eatmydata to use it for the second stage
-for archive in ${work_dir}/var/cache/apt/archives/*eatmydata*.deb; do
-  dpkg-deb --fsys-tarfile "$archive" > ${work_dir}/eatmydata
-  tar -xkf ${work_dir}/eatmydata -C ${work_dir}
-  rm -f ${work_dir}/eatmydata
-done
-
-# Prepare dpkg to use eatmydata
-systemd-nspawn_exec dpkg-divert --divert /usr/bin/dpkg-eatmydata --rename --add /usr/bin/dpkg
-
-cat > ${work_dir}/usr/bin/dpkg << EOF
-#!/bin/sh
-if [ -e /usr/lib/${lib_arch}/libeatmydata.so ]; then
-    [ -n "\${LD_PRELOAD}" ] && LD_PRELOAD="\$LD_PRELOAD:"
-    LD_PRELOAD="\$LD_PRELOAD\$so"
-fi
-for so in /usr/lib/${lib_arch}/libeatmydata.so; do
-    [ -n "\$LD_PRELOAD" ] && LD_PRELOAD="\$LD_PRELOAD:"
-    LD_PRELOAD="\$LD_PRELOAD\$so"
-done
-export LD_PRELOAD
-exec "\$0-eatmydata" --force-unsafe-io "\$@"
-EOF
-chmod 0755 ${work_dir}/usr/bin/dpkg
-
+# Load common variables
+include variables
+# Checks script environment
+include check
+# Packages build list
+include packages
+# Execute initial debootstrap
+debootstrap_exec http://http.kali.org/kali
+# Enable eatmydata in compilation
+include eatmydata
 # debootstrap second stage
 systemd-nspawn_exec eatmydata /debootstrap/debootstrap --second-stage
-
-cat << EOF > ${work_dir}/etc/apt/sources.list
-deb ${mirror} ${suite} ${components//,/ }
-#deb-src ${mirror} ${suite} ${components//,/ }
-EOF
-
-# Set hostname
-echo "${hostname}" > ${work_dir}/etc/hostname
-
+# Define sources.list
+include sources.list
+# APT options
+include apt_options
 # So X doesn't complain, we add kali to hosts
-cat << EOF > ${work_dir}/etc/hosts
-127.0.0.1       ${hostname}    localhost
-::1             localhost ip6-localhost ip6-loopback
-fe00::0         ip6-localnet
-ff00::0         ip6-mcastprefix
-ff02::1         ip6-allnodes
-ff02::2         ip6-allrouters
-EOF
-
-# Disable IPv6
-cat << EOF > ${work_dir}/etc/modprobe.d/ipv6.conf
-# Don't load ipv6 by default
-alias net-pf-10 off
-EOF
-
-cat << EOF > ${work_dir}/etc/network/interfaces
-auto lo
-iface lo inet loopback
-
-auto eth0
-allow-hotplug eth0
-iface eth0 inet dhcp
-EOF
-
-# DNS server
-echo "nameserver ${nameserver}" > "${work_dir}"/etc/resolv.conf
+include hosts
+# Set hostname
+set_hostname "${hostname}"
+# Network configs
+include network
+add_interface eth0
 
 # Copy directory bsp into build dir
-cp -rp bsp ${work_dir}
-
-export MALLOC_CHECK_=0 # workaround for LP: #520465
-
-# Enable the use of http proxy in third-stage in case it is enabled
-if [ -n "$proxy_url" ]; then
-  echo "Acquire::http { Proxy \"$proxy_url\" };" > ${work_dir}/etc/apt/apt.conf.d/66proxy
-fi
+status "Copy directory bsp into build dir"
+cp -rp bsp "${work_dir}"
 
 # Third stage
-cat << EOF >  ${work_dir}/third-stage
-#!/bin/bash -e
-export DEBIAN_FRONTEND=noninteractive
+cat <<EOF > "${work_dir}"/third-stage
+#!/usr/bin/env bash
+set -e
+status_3i=0
+status_3t=\$(grep '^status_stage3 ' \$0 | wc -l)
 
+status_stage3() {
+  status_3i=\$((status_3i+1))
+  echo  " [i] Stage 3 (\${status_3i}/\${status_3t}): \$1"
+}
+
+status_stage3 'Update apt'
+export DEBIAN_FRONTEND=noninteractive
 eatmydata apt-get update
 
-eatmydata apt-get -y install binutils ca-certificates console-common git initramfs-tools less locales nano u-boot-tools
+status_stage3 'Install core packages'
+eatmydata apt-get -y install ${third_stage_pkgs}
 
-# Create kali user with kali password... but first, we need to manually make some groups because they don't yet exist..
-# This mirrors what we have on a pre-installed VM, until the script works properly to allow end users to set up their own... user
-# However we leave off floppy, because who a) still uses them, and b) attaches them to an SBC!?
-# And since a lot of these have serial devices of some sort, dialout is added as well
-# scanner, lpadmin and bluetooth have to be added manually because they don't
-# yet exist in /etc/group at this point
-groupadd -r -g 118 bluetooth
-groupadd -r -g 113 lpadmin
-groupadd -r -g 122 scanner
-groupadd -g 1000 kali
+status_stage3 'Enable dhcp server'
+eatmydata apt-get install -y ${packages} || eatmydata apt-get install -y --fix-broken
 
-useradd -m -u 1000 -g 1000 -G sudo,audio,bluetooth,cdrom,dialout,dip,lpadmin,netdev,plugdev,scanner,video,kali -s /bin/bash kali
-echo "kali:kali" | chpasswd
+status_stage3 'Install desktop packages'
+eatmydata apt-get install -y ${desktop_pkgs} ${extra} || eatmydata apt-get install -y --fix-broken
 
-aptops="--allow-change-held-packages -o dpkg::options::=--force-confnew -o Acquire::Retries=3"
+status_stage3 'Enable dhcp server'
+eatmydata apt-get install -y isc-dhcp-server tightvncserver || eatmydata apt-get install -y --fix-broken
 
-# This looks weird, but we do it twice because every so often, there's a failure to download from the mirror
-# So to workaround it, we attempt to install them twice
-eatmydata apt-get install -y \$aptops ${packages} || eatmydata apt-get --yes --fix-broken install
-eatmydata apt-get install -y \$aptops ${packages} || eatmydata apt-get --yes --fix-broken install
-eatmydata apt-get install -y \$aptops ${desktop} ${extras} ${tools} || eatmydata apt-get --yes --fix-broken install
-eatmydata apt-get install -y \$aptops ${desktop} ${extras} ${tools} || eatmydata apt-get --yes --fix-broken install
-eatmydata apt-get dist-upgrade -y \$aptops
+status_stage3 'Clean up'
+eatmydata apt-get -y --purge autoremove
 
-eatmydata apt-get -y --allow-change-held-packages --purge autoremove
-
-# Linux console/Keyboard configuration
+status_stage3 'Linux console/keyboard configuration'
 echo 'console-common console-data/keymap/policy select Select keymap from full list' | debconf-set-selections
 echo 'console-common console-data/keymap/full select en-latin1-nodeadkeys' | debconf-set-selections
 
-# Copy all services
-install -m644 /bsp/services/all/*.service /etc/systemd/system/
+status_stage3 'Copy all services'
+cp -p /bsp/services/all/*.service /etc/systemd/system/
 
-# Regenerated the shared-mime-info database on the first boot
-# since it fails to do so properly in a chroot
-systemctl enable smi-hack
+status_stage3 'Copy script rpi-resizerootfs'
+install -m755 /bsp/scripts/rpi-resizerootfs /usr/sbin/
 
-# Generate SSH host keys on first run
+status_stage3 'Enable rpi-resizerootfs first boot'
+systemctl enable rpi-resizerootfs
+
+status_stage3 'Generate SSH host keys on first run'
 systemctl enable regenerate_ssh_host_keys
-# Enable sshd
-systemctl enable ssh
 
-# Enable dhcp server
-update-rc.d isc-dhcp-server enable
-
-# Allow users to use NM over ssh
+status_stage3 'Allow users to use NetworkManager over ssh'
 install -m644 /bsp/polkit/10-NetworkManager.pkla /var/lib/polkit-1/localauthority/50-local.d
 
-cd /root
-apt download -o APT::Sandbox::User=root ca-certificates 2>/dev/null
+status_stage3 'Remove /etc/modules*'
+rm /etc/modules
+rm /etc/modules-load.d/modules.conf
 
-# Copy over the default bashrc
-cp /etc/skel/.bashrc /root/.bashrc
 
-# Set a REGDOMAIN.  This needs to be done or wireless doesn't work correctly on the RPi 3B+
-sed -i -e 's/REGDOM.*/REGDOMAIN=00/g' /etc/default/crda
-
-# Try and make the console a bit nicer
-# Set the terminus font for a bit nicer display
-sed -i -e 's/FONTFACE=.*/FONTFACE="Terminus"/' /etc/default/console-setup
-sed -i -e 's/FONTSIZE=.*/FONTSIZE="6x12"/' /etc/default/console-setup
-
-# Fix startup time from 5 minutes to 15 secs on raise interface wlan0
-sed -i 's/^TimeoutStartSec=5min/TimeoutStartSec=15/g' "/usr/lib/systemd/system/networking.service"
-
-rm -f /usr/bin/dpkg
-EOF
-
-# Run third stage
-chmod 0755 ${work_dir}/third-stage
-systemd-nspawn_exec /third-stage
-
-# Clean up eatmydata
-systemd-nspawn_exec dpkg-divert --remove --rename /usr/bin/dpkg
-
-# Clean system
-systemd-nspawn_exec << 'EOF'
-rm -f /0
-rm -rf /bsp
-fc-cache -frs
-rm -rf /tmp/*
-rm -rf /etc/*-
-rm -rf /hs_err*
-rm -rf /userland
-rm -rf /opt/vc/src
-rm -f /etc/ssh/ssh_host_*
-rm -rf /var/lib/dpkg/*-old
-rm -rf /var/lib/apt/lists/*
-rm -rf /var/cache/apt/*.bin
-rm -rf /var/cache/apt/archives/*
-rm -rf /var/cache/debconf/*.data-old
-for logs in $(find /var/log -type f); do > $logs; done
-history -c
-EOF
-
-# Disable the use of http proxy in case it is enabled
-if [ -n "$proxy_url" ]; then
-  unset http_proxy
-  rm -rf ${work_dir}/etc/apt/apt.conf.d/66proxy
-fi
-
-# Mirror & suite replacement
-if [[ ! -z "${4}" || ! -z "${5}" ]]; then
-  mirror=${4}
-  suite=${5}
-fi
-
-# Define sources.list
-cat << EOF > ${work_dir}/etc/apt/sources.list
-deb ${mirror} ${suite} ${components//,/ }
-#deb-src ${mirror} ${suite} ${components//,/ }
-EOF
-
-echo "Setting up modules.conf"
-# rm the symlink if it exists, and the original files if they exist
-rm ${work_dir}/etc/modules
-rm ${work_dir}/etc/modules-load.d/modules.conf
-cat << EOF > ${work_dir}/etc/modules-load.d/modules.conf
+status_stage3 'Add our /etc/modules-load.d/'
+cat << __EOF__ > /etc/modules-load.d/modules.conf
 ledtrig_heartbeat
 ci_hdrc_imx
 g_ether
 #g_mass_storage
 #g_multi
-EOF
+__EOF__
 
-echo "Setting up modprobe.d"
-cat << EOF > ${work_dir}/etc/modprobe.d/usbarmory.conf
+status_stage3 'Add our /etc/modprobe.d/'
+cat << __EOF__ > /etc/modprobe.d/usbarmory.conf
 options g_ether use_eem=0 dev_addr=1a:55:89:a2:69:41 host_addr=1a:55:89:a2:69:42
 # To use either of the following, you should create the file /disk.img via dd
 # "dd if=/dev/zero of=/disk.img bs=1M count=2048" would create a 2GB disk.img file
 #options g_mass_storage file=disk.img
 #options g_multi use_eem=0 dev_addr=1a:55:89:a2:69:41 host_addr=1a:55:89:a2:69:42 file=disk.img
-EOF
+__EOF__
 
-cat << EOF > ${work_dir}/etc/network/interfaces
-auto lo
-iface lo inet loopback
-
+status_stage3 'Add our /etc/network/interfaces.d/usb0'
+cat << __EOF__ > /etc/network/interfaces.d/usb0
 allow-hotplug usb0
 iface usb0 inet static
 address 10.0.0.1
 netmask 255.255.255.0
 gateway 10.0.0.2
-EOF
+__EOF__
 
+
+status_stage3 'Add our /etc/dhcp/dhcpd.conf'
 # Debian reads the config from inside /etc/dhcp
-cat << EOF > ${work_dir}/etc/dhcp/dhcpd.conf
-#
+cp /etc/dhcp/dhcpd.conf /etc/dhcp/dhcpd.conf.old
+cat << __EOF__ > /etc/dhcp/dhcpd.conf
 # Sample configuration file for ISC dhcpd for Debian
-#
-# The ddns-updates-style parameter controls whether or not the server will
-# attempt to do a DNS update when a lease is confirmed. We default to the
-# behavior of the version 2 packages ('none', since DHCP v2 didn't
-# have support for DDNS.)
-ddns-update-style none;
+# Original file /etc/dhcp/dhcpd.conf.old
 
-# option definitions common to all supported networks..
-#option domain-name "example.org";
-#option domain-name-servers ns1.example.org, ns2.example.org;
+ddns-update-style none;
 
 default-lease-time 600;
 max-lease-time 7200;
 
-# If this DHCP server is the official DHCP server for the local
-# network, the authoritative directive should be uncommented
-#authoritative;
-
-# Use this to send dhcp log messages to a different log file (you also
-# have to hack syslog.conf to complete the redirection)
 log-facility local7;
 
-# A slightly different configuration for an internal subnet
 subnet 10.0.0.0 netmask 255.255.255.0 {
   range 10.0.0.2 10.0.0.2;
   default-lease-time 600;
   max-lease-time 7200;
 }
+__EOF__
 
+status_stage3 'Only listen on usb0'
+sed -i -e 's/INTERFACES.*/INTERFACES="usb0"/g' /etc/default/isc-dhcp-server
 
-# No service will be given on this subnet, but declaring it helps the
-# DHCP server to understand the network topology
+status_stage3 'Enable dhcp server'
+update-rc.d isc-dhcp-server enable
 
-#subnet 10.152.187.0 netmask 255.255.255.0 {
-#}
+status_stage3 'Install ca-certificate'
+cd /root
+apt download -o APT::Sandbox::User=root ca-certificates 2>/dev/null
 
-# This is a very basic subnet declaration
+status_stage3 'Set a REGDOMAIN'
+sed -i -e 's/REGDOM.*/REGDOMAIN=00/g' /etc/default/crda
 
-#subnet 10.254.239.0 netmask 255.255.255.224 {
-#  range 10.254.239.10 10.254.239.20;
-#  option routers rtr-239-0-1.example.org, rtr-239-0-2.example.org;
-#}
+status_stage3 'Try and make the console a bit nicer. Set the terminus font for a bit nicer display'
+sed -i -e 's/FONTFACE=.*/FONTFACE="Terminus"/' /etc/default/console-setup
+sed -i -e 's/FONTSIZE=.*/FONTSIZE="6x12"/' /etc/default/console-setup
 
-# This declaration allows BOOTP clients to get dynamic addresses,
-# which we don't really recommend
+status_stage3 'Fix startup time from 5 minutes to 15 secs on raise interface wlan0'
+sed -i 's/^TimeoutStartSec=5min/TimeoutStartSec=15/g' "/usr/lib/systemd/system/networking.service"
 
-#subnet 10.254.239.32 netmask 255.255.255.224 {
-#  range dynamic-bootp 10.254.239.40 10.254.239.60;
-#  option broadcast-address 10.254.239.31;
-#  option routers rtr-239-32-1.example.org;
-#}
+status_stage3 'Enable runonce'
+install -m755 /bsp/scripts/runonce /usr/sbin/
+cp -rf /bsp/runonce.d /etc
+systemctl enable runonce
 
-# A slightly different configuration for an internal subnet
-#subnet 10.5.5.0 netmask 255.255.255.224 {
-#  range 10.5.5.26 10.5.5.30;
-#  option domain-name-servers ns1.internal.example.org;
-#  option domain-name "internal.example.org";
-#  option routers 10.5.5.1;
-#  option broadcast-address 10.5.5.31;
-#  default-lease-time 600;
-#  max-lease-time 7200;
-#}
-
-# Hosts which require special configuration options can be listed in
-# host statements.   If no address is specified, the address will be
-# allocated dynamically (if possible), but the host-specific information
-# will still come from the host declaration
-
-#host passacaglia {
-#  hardware ethernet 0:0:c0:5d:bd:95;
-#  filename "vmunix.passacaglia";
-#  server-name "toccata.fugue.com";
-#}
-
-# Fixed IP addresses can also be specified for hosts.   These addresses
-# should not also be listed as being available for dynamic assignment
-# Hosts for which fixed IP addresses have been specified can boot using
-# BOOTP or DHCP.   Hosts for which no fixed address is specified can only
-# be booted with DHCP, unless there is an address range on the subnet
-# to which a BOOTP client is connected which has the dynamic-bootp flag
-# set
-#host fantasia {
-#  hardware ethernet 08:00:07:26:c0:a5;
-#  fixed-address fantasia.fugue.com;
-#}
-
-# You can declare a class of clients and then do address allocation
-# based on that.   The example below shows a case where all clients
-# in a certain class get addresses on the 10.17.224/24 subnet, and all
-# other clients get addresses on the 10.0.29/24 subnet
-
-#class "foo" {
-#  match if substring (option vendor-class-identifier, 0, 4) = "SUNW";
-#}
-
-#shared-network 224-29 {
-#  subnet 10.17.224.0 netmask 255.255.255.0 {
-#    option routers rtr-224.example.org;
-#  }
-#  subnet 10.0.29.0 netmask 255.255.255.0 {
-#    option routers rtr-29.example.org;
-#  }
-#  pool {
-#    allow members of "foo";
-#    range 10.17.224.10 10.17.224.250;
-#  }
-#  pool {
-#    deny members of "foo";
-#    range 10.0.29.10 10.0.29.230;
-#  }
-#}
+status_stage3 'Clean up dpkg.eatmydata'
+rm -f /usr/bin/dpkg
+dpkg-divert --remove --rename /usr/bin/dpkg
 EOF
 
-# Only listen on usb0
-sed -i 's/INTERFACES.*/INTERFACES="usb0"/g' ${work_dir}/etc/default/isc-dhcp-server
+# Run third stage
+chmod 0755 "${work_dir}"/third-stage
+status "Run third stage"
+systemd-nspawn_exec /third-stage
+
+# Clean system
+include clean_system
+trap clean_build ERR SIGTERM SIGINT
 
 # Kernel section. If you want to use a custom kernel, or configuration, replace
 # them in this section
+status "Kernel stuff"
 git clone -b linux-5.4.y --depth 1 git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git ${work_dir}/usr/src/kernel
 cd ${work_dir}/usr/src/kernel
 git rev-parse HEAD > ${work_dir}/usr/src/kernel-at-commit
@@ -507,102 +226,79 @@ wget $githubraw/inversepath/usbarmory/master/software/kernel_conf/mark-one/imx53
 wget $githubraw/inversepath/usbarmory/master/software/kernel_conf/mark-one/imx53-usbarmory-i2c.dts -O arch/arm/boot/dts/imx53-usbarmory-i2c.dts
 wget $githubraw/inversepath/usbarmory/master/software/kernel_conf/mark-one/imx53-usbarmory-scc2.dts -O arch/arm/boot/dts/imx53-usbarmory-scc2.dts
 
-
 # Fix up the symlink for building external modules
 # kernver is used so we don't need to keep track of what the current compiled
 # version is
+status "building external modules"
 kernver=$(ls ${work_dir}/lib/modules/)
 cd ${work_dir}/lib/modules/${kernver}
 rm build
 rm source
 ln -s /usr/src/kernel build
 ln -s /usr/src/kernel source
-cd ${current_dir}
 
-# Calculate the space to create the image
-root_size=$(du -s -B1 ${work_dir} --exclude=${work_dir}/boot | cut -f1)
-root_extra=$((${root_size}/1024/1000*5*1024/5))
-raw_size=$(($((${free_space}*1024))+${root_extra}+$((${bootsize}*1024))+4096))
+cd "${current_dir}/"
 
-# Create the disk and partition it
-echo "Creating image file ${image_name}.img"
-fallocate -l $(echo ${raw_size}Ki | numfmt --from=iec-i --to=si) "${image_dir}/${image_name}.img"
+# Calculate the space to create the image and create
+make_image
+
+# Create the disk partitions
+status "Create the disk partitions"
 parted -s "${image_dir}/${image_name}.img" mklabel msdos
 parted -s -a minimal "${image_dir}/${image_name}.img" mkpart primary ext2 5MiB 100%
 
 # Set the partition variables
-loopdevice=`losetup -f --show ${current_dir}/${image_name}.img`
-device=`kpartx -va ${loopdevice} | sed 's/.*\(loop[0-9]\+\)p.*/\1/g' | head -1`
-sleep 5
-device="/dev/mapper/${device}"
-rootp=${device}p1
+loopdevice=$(losetup --show -fP "${image_dir}/${image_name}.img")
+rootp="${loopdevice}p1"
 
 # Create file systems
+status "Formatting partitions"
 mkfs.ext2 ${rootp}
 
 # Create the dirs for the partitions and mount them
+status "Create the dirs for the partitions and mount them"
 mkdir -p "${base_dir}"/root
 mount ${rootp} "${base_dir}"/root
 
-# We do this down here to get rid of the build system's resolv.conf after running through the build
-echo "nameserver ${nameserver}" > "${work_dir}"/etc/resolv.conf
-
 # Create an fstab so that we don't mount / read-only
+status "/etc/fstab"
 UUID=$(blkid -s UUID -o value ${rootp})
 echo "UUID=$UUID /               $fstype    errors=remount-ro 0       1" >> ${work_dir}/etc/fstab
 
-echo "Rsyncing rootfs into image file"
-rsync -HPavz -q ${work_dir}/ ${base_dir}/root/
-
-# Unmount partitions
+status "Rsyncing rootfs into image file"
+rsync -HPavz -q "${work_dir}"/ "${base_dir}"/root/
 sync
-umount ${rootp}
-kpartx -dv ${loopdevice}
 
+status "u-Boot"
 cd "${base_dir}"
-wget ftp://ftp.denx.de/pub/u-boot/u-boot-2018.05.tar.bz2
-tar xvf u-boot-2018.05.tar.bz2 && cd u-boot-2018.05
+wget ftp://ftp.denx.de/pub/u-boot/u-boot-2020.10.tar.bz2
+tar xvf u-boot-2020.10.tar.bz2 && cd u-boot-2020.10
 make distclean
 make usbarmory_config
 make ARCH=arm
 dd if=u-boot.imx of=${loopdevice} bs=512 seek=2 conv=fsync
 
-losetup -d ${loopdevice}
+cd "${current_dir}/"
 
-# Limit CPU function
-limit_cpu (){
-  rand=$(tr -cd 'A-Za-z0-9' < /dev/urandom | head -c4 ; echo) # Random name group
-  cgcreate -g cpu:/cpulimit-${rand} # Name of group cpulimit
-  cgset -r cpu.shares=800 cpulimit-${rand} # Max 1024
-  cgset -r cpu.cfs_quota_us=80000 cpulimit-${rand} # Max 100000
-  # Retry command
-  local n=1; local max=5; local delay=2
-  while true; do
-    cgexec -g cpu:cpulimit-${rand} "$@" && break || {
-      if [[ $n -lt $max ]]; then
-        ((n++))
-        echo -e "\e[31m Command failed. Attempt $n/$max \033[0m"
-        sleep $delay;
-      else
-        echo "The command has failed after $n attempts."
-        break
-      fi
-    }
-  done
-}
+# Flush buffers and bytes - this is nicked from the Devuan arm-sdk
+blockdev --flushbufs "${loopdevice}"
+python -c 'import os; os.fsync(open("'${loopdevice}'", "r+b"))'
 
-if [ $compress = xz ]; then
-  if [ $(arch) == 'x86_64' ]; then
-    echo "Compressing ${image_name}.img"
-    [ $(nproc) \< 3 ] || cpu_cores=3 # cpu_cores = Number of cores to use
-    limit_cpu pixz -p ${cpu_cores:-2} "${image_dir}/${image_name}.img" # -p Nº cpu cores use
-    chmod 0644 ${current_dir}/${image_name}.img.xz
-  fi
-else
-  chmod 0644 "${image_dir}/${image_name}.img"
-fi
+# Unmount filesystem
+status "Unmount filesystem"
+umount -l "${rootp}"
+
+# Check filesystem
+status "Check filesystem"
+e2fsck -y -f "${rootp}"
+
+# Remove loop devices
+status "Remove loop devices"
+losetup -d "${loopdevice}"
+
+# Compress image compilation
+include compress_img
 
 # Clean up all the temporary build stuff and remove the directories
 # Comment this out to keep things around if you want to see what may have gone wrong
-echo "Removing build directory"
-rm -rf "${base_dir}"
+clean_build
