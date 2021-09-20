@@ -56,5 +56,4 @@ fi
 third_stage_pkgs="binutils ca-certificates console-common console-setup locales libterm-readline-gnu-perl git wget curl"
 
 # Re4son packages
-re4son_packages="kalipi-kernel kalipi-bootloader kalipi-re4son-firmware kalipi-kernel-headers firmware-raspberry \
-kalipi-config kalipi-tft-config pi-bluetooth bluetooth"
+re4son_pkgs="kalipi-kernel kalipi-bootloader kalipi-re4son-firmware kalipi-kernel-headers firmware-raspberry kalipi-config kalipi-tft-config pi-bluetooth bluetooth"
