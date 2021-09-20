@@ -126,8 +126,8 @@ status_stage3 'Load the ethernet module since it does not load automatically at 
 echo "sunxi_emac" >> /etc/modules
 
 status_stage3 'Create xorg config snippet to use fbdev driver' 
-mkdir -p ${work_dir}/etc/X11/xorg.conf.d/
-cp "${base_dir}"/../bsp/xorg/20-fbdev.conf ${work_dir}/etc/X11/xorg.conf.d/
+mkdir -p /etc/X11/xorg.conf.d/
+cp /bsp/xorg/20-fbdev.conf /etc/X11/xorg.conf.d/
 
 status_stage3 'Try and make the console a bit nicer. Set the terminus font for a bit nicer display'
 sed -i -e 's/FONTFACE=.*/FONTFACE="Terminus"/' /etc/default/console-setup
