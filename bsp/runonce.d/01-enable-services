@@ -1,5 +1,5 @@
 #!/bin/bash
 
-systemctl enable ssh
-systemctl enable bluetooth || true
-systemctl enable NetworkManager || true
+systemctl enable --now ssh
+systemctl enable --now bluetooth || true
+systemctl enable --now NetworkManager || true
