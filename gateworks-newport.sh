@@ -106,7 +106,7 @@ apt download -o APT::Sandbox::User=root ca-certificates 2>/dev/null
 status_stage3 'Set a REGDOMAIN'
 sed -i -e 's/REGDOM.*/REGDOMAIN=00/g' /etc/default/crda
 
-status_stage3 'We replace the u-boot menu defaults here so we can make sure the build system doesn't poison it'
+status_stage3 'We replace the u-boot menu defaults here so we can make sure the build system does not poison it'
 # We use _EOF_ so that the third-stage script doesn't end prematurely
 cat << '_EOF_' > /etc/default/u-boot
 U_BOOT_PARAMETERS="console=ttyS0,115200 console=tty1 root=/dev/mmcblk0p1 rootwait panic=10 rw rootfstype=$fstype net.ifnames=0"
