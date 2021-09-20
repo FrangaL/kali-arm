@@ -52,7 +52,7 @@ include network
 
 # Copy directory bsp into build dir
 status "Copy directory bsp into build dir"
-cp -rp bsp "${work_dir}"-rp bsp "${work_dir}"
+cp -rp bsp "${work_dir}"
 
 # Disable RESUME (suspend/resume is currently broken anyway!) which speeds up boot massively
 mkdir -p ${work_dir}/etc/initramfs-tools/conf.d/

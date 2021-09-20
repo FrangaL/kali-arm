@@ -51,7 +51,7 @@ include network
 
 # Copy directory bsp into build dir
 status "Copy directory bsp into build dir"
-cp -rp bsp "${work_dir}"-rp bsp "${work_dir}"
+cp -rp bsp "${work_dir}"
 
 # Third stage
 cat <<EOF > "${work_dir}"/third-stage
