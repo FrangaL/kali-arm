@@ -201,8 +201,8 @@ raw_size=$(($((${free_space}*1024))+${root_extra}))
 status "Creating image file ${image_name}.img"
 mkdir -p "${image_dir}"
 wget http://dev.gateworks.com/newport/boot_firmware/firmware-newport.img -O "${image_dir}/${image_name}.img"
-fallocate -l $(echo ${raw_size}Ki | numfmt --from=iec-i --to=si) "${image_dir}/${image_name}.img"
-dd if=${image_dir}/${image_name}.img of="${image_dir}/${image_name}.img" bs=16M seek=1
+fallocate -l $(echo ${raw_size}Ki | numfmt --from=iec-i --to=si) "${base_dir}/${image_name}.img"
+dd if=${base_dir}/${image_name}.img of="${image_dir}/${image_name}.img" bs=16M seek=1
 echo ", +" | sfdisk -N 2 "${image_dir}/${image_name}.img"
 
 # Set the partition variables
