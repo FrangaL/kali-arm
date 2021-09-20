@@ -83,6 +83,9 @@ eatmydata apt-get install -y ${packages} || eatmydata apt-get install -y --fix-b
 status_stage3 'Install desktop packages'
 eatmydata apt-get install -y ${desktop_pkgs} ${extra} || eatmydata apt-get install -y --fix-broken
 
+status_stage3 'Install systemd-timesyncd'
+eatmydata apt-get install -y --autoremove systemd-timesyncd || eatmydata apt-get install -y --fix-broken
+
 status_stage3 'Clean up'
 eatmydata apt-get -y --purge autoremove
 
@@ -95,7 +98,7 @@ cp -p /bsp/services/all/*.service /etc/systemd/system/
 cp -p /bsp/services/odroid-c2/*.service /etc/systemd/system/
 
 # For some reason the latest modesetting driver (part of xorg server) seems to cause a lot of jerkiness
-status_stage3 'Using the fbdev driver is not ideal but it's far less frustrating to work with'
+status_stage3 'Using the fbdev driver is not ideal but it is far less frustrating to work with'
 mkdir -p /etc/X11/xorg.conf.d
 cp -p /bsp/xorg/20-meson.conf /etc/X11/xorg.conf.d/
 
