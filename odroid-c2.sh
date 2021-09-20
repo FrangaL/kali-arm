@@ -244,7 +244,7 @@ status "Bootloader"
 mkdir -p ${base_dir}/bootloader
 cd ${base_dir}/bootloader
 git clone --depth 1 https://github.com/afaerber/meson-tools --depth 1
-git clone --depth 1 git://git.denx.de/u-boot
+git clone --depth 1 https://github.com/u-boot/u-boot.git
 git clone --depth 1 https://github.com/hardkernel/u-boot -b odroidc2-v2015.01 u-boot-hk
 
 # First things first, let's build the meson-tools, of which, we only really need amlbootsig
