@@ -174,9 +174,9 @@ device="/dev/mapper/${device}"
 rootp=${device}p1
 
 if [[ $fstype == ext4 ]]; then
-  features="-O ^64bit,^metadata_csum"
+  features="^64bit,^metadata_csum"
 elif [[ $fstype == ext3 ]]; then
-  features="-O ^64bit"
+  features="^64bit"
 fi
 mkfs -O "$features" -t "$fstype" -L ROOTFS "${rootp}"
 
