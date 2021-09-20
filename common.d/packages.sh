@@ -46,6 +46,7 @@ extra="$custom_kernel_pkgs"
 # add extra_custom_pkgs, that can be a global variable
 packages="$common_pkgs $cli_tools_pkgs $services $extra_custom_pkgs"
 
+# Do not add re4son_pkgs to this list, as we do not have his repo added when these are installed
 if [[ "$hw_model" == *rpi* ]]; then
   extra+=" $gpio_pkgs $rpi_pkgs"
 fi
