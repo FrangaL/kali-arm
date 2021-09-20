@@ -183,7 +183,7 @@ install -m755 /bsp/firmware/veyron/brcm_patchram_plus /bin/brcm_patchram_plus
 status_stage3 'Theres no graphical output on this device'
 systemctl set-default multi-user
 
-status_stage3 'Enable bluetooth - we do this way because we haven't written a systemd service file for it yet'
+status_stage3 'Enable bluetooth - we do this way because we have not written a systemd service file for it yet'
 update-rc.d brcm_patchram_plus defaults
 
 status_stage3 'Allow users to use NetworkManager over ssh'
