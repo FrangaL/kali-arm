@@ -47,6 +47,7 @@ kaligit="https://gitlab.com/kalilinux"
 githubraw="https://raw.githubusercontent.com"
 # DNS server
 nameserver=${nameserver:-"8.8.8.8"}
+image_dir="${current_dir}/images/"
 
 # Check EUID=0 you can run any binary as root
 if [[ $EUID -ne 0 ]]; then
