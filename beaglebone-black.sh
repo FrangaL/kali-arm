@@ -3,8 +3,8 @@
 # Kali Linux ARM build-script for Beaglebone Black (32-bit)
 # https://gitlab.com/kalilinux/build-scripts/kali-arm
 #
-# This is a supported device - which you can find pre-generated images for
-# More information: https://www.kali.org/docs/arm/banana-pi/
+# This is a community script - you will need to generate your own image to use
+# More information: https://www.kali.org/docs/arm/beaglebone-black/
 #
 
 # Stop on error
