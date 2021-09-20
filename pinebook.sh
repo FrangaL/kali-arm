@@ -200,7 +200,7 @@ __EOF__
 cd /usr/src/rtl8723cs-2020.02.27
 dkms install rtl8723cs/2020.02.27 -k 5.10.0-kali9-arm64
 
-status_stage3 'Replace the conf file after we've built the module and hope for the best'
+status_stage3 'Replace the conf file after we have built the module and hope for the best'
 mv /usr/src/rtl8723cs-2020.02.27/dkms.conf.orig /usr/src/rtl8723cs-2020.02.27/dkms.conf
 
 status_stage3 'Clean up dpkg.eatmydata'
