@@ -120,7 +120,14 @@ status_stage3 'Set a REGDOMAIN'
 sed -i -e 's/REGDOM.*/REGDOMAIN=00/g' /etc/default/crda
 
 status_stage3 'Enable login over serial'
-echo "T0:23:respawn:/sbin/agetty -L ttyAMA0 115200 vt100" >> /etc/inittab
+echo "T0:23:respawn:/sbin/agetty -L ttyS0 115200 vt100" >> /etc/inittab
+
+status_stage3 'Load the ethernet module since it does not load automatically at boot'
+echo "sunxi_emac" >> /etc/modules
+
+status_stage3 'Create xorg config snippet to use fbdev driver' 
+mkdir -p ${work_dir}/etc/X11/xorg.conf.d/
+cp "${base_dir}"/../bsp/xorg/20-fbdev.conf ${work_dir}/etc/X11/xorg.conf.d/
 
 status_stage3 'Try and make the console a bit nicer. Set the terminus font for a bit nicer display'
 sed -i -e 's/FONTFACE=.*/FONTFACE="Terminus"/' /etc/default/console-setup
@@ -148,7 +155,6 @@ systemd-nspawn_exec /third-stage
 include clean_system
 trap clean_build ERR SIGTERM SIGINT
 
-
 # Create an fstab so that we don't mount / read-only
 status "/etc/fstab"
 UUID=$(blkid -s UUID -o value ${rootp})
@@ -156,15 +162,6 @@ echo "UUID=$UUID /               $fstype    errors=remount-ro 0       1" >> ${wo
 
 # Calculate the space to create the image and create
 make_image
-
-# Enable the serial console
-status "serial console"
-echo "T1:12345:respawn:/sbin/agetty -L ttyS0 115200 vt100" >> ${work_dir}/etc/inittab
-# Load the ethernet module since it doesn't load automatically at boot
-echo "sunxi_emac" >> ${work_dir}/etc/modules
-
-mkdir -p ${work_dir}/etc/X11/xorg.conf.d/
-cp "${base_dir}"/../bsp/xorg/20-fbdev.conf ${work_dir}/etc/X11/xorg.conf.d/
 
 # Build system will insert it's root filesystem into the extlinux.conf file so
 # we sed it out, this only affects build time, not upgrading the kernel on the
@@ -184,9 +181,9 @@ device="/dev/mapper/${device}"
 rootp=${device}p1
 
 if [[ $fstype == ext4 ]]; then
-  features="-O ^64bit,^metadata_csum"
+  features="^64bit,^metadata_csum"
 elif [[ $fstype == ext3 ]]; then
-  features="-O ^64bit"
+  features="^64bit"
 fi
 mkfs -O "$features" -t "$fstype" -L ROOTFS "${rootp}"
 
