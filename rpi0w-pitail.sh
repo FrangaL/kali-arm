@@ -72,6 +72,7 @@ current_dir="$(pwd)"
 base_dir=${current_dir}/rpi0w-pitail-"$1"
 # Working directory
 work_dir="${base_dir}/kali-${architecture}"
+image_dir="${current_dir}/images/"
 
 # Check directory build
 if [ -e "${base_dir}" ]; then
