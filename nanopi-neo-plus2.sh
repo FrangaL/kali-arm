@@ -158,6 +158,9 @@ eatmydata apt-get install -y ${packages} || eatmydata apt-get install -y --fix-b
 status_stage3 'Install desktop packages'
 eatmydata apt-get install -y ${desktop_pkgs} ${extra} || eatmydata apt-get install -y --fix-broken
 
+status_stage3 'Install kernel and bootloader packages'
+eatmydata apt-get install -y linux-image-arm64 u-boot-menu u-boot-sunxi
+
 status_stage3 'Clean up'
 eatmydata apt-get -y --purge autoremove
 
@@ -225,34 +228,6 @@ systemd-nspawn_exec /third-stage
 include clean_system
 trap clean_build ERR SIGTERM SIGINT
 
-
-# Kernel section. If you want to use a custom kernel, or configuration, replace
-# them in this section
-status "Kernel stuff"
-git clone --depth 1 -b sunxi-4.x.y https://github.com/friendlyarm/linux ${work_dir}/usr/src/kernel
-cd ${work_dir}/usr/src/kernel
-git rev-parse HEAD > ${work_dir}/usr/src/kernel-at-commit
-touch .scmversion
-export ARCH=arm64
-export CROSS_COMPILE=aarch64-linux-gnu-
-cp ${current_dir}/kernel-configs/neoplus2.config ${work_dir}/usr/src/kernel/.config
-cp ${current_dir}/kernel-configs/neoplus2.config ${work_dir}/usr/src/
-patch -p1 --no-backup-if-mismatch < ${current_dir}/patches/kali-wifi-injection-4.14.patch
-patch -p1 --no-backup-if-mismatch < ${current_dir}/patches/0001-wireless-carl9170-Enable-sniffer-mode-promisc-flag-t.patch
-# Remove the duplicate yylloc define
-patch -p1 --no-backup-if-mismatch < ${current_dir}/patches/11647f99b4de6bc460e106e876f72fc7af3e54a6.patch
-# Use the kernel socket.h instead of host so that we can build on systems with newer headers
-patch -p1 --no-backup-if-mismatch < ${current_dir}/patches/selinux-use-kernel-socket-definitions.patch
-make -j $(grep -c processor /proc/cpuinfo)
-make modules
-make modules_install INSTALL_MOD_PATH=${work_dir}
-cp arch/arm64/boot/Image ${work_dir}/boot
-cp arch/arm64/boot/dts/allwinner/*.dtb ${work_dir}/boot/
-mkdir -p ${work_dir}/boot/overlays/
-cp arch/arm64/boot/dts/allwinner/overlays/*.dtb ${work_dir}/boot/overlays/
-make mrproper
-cd "${current_dir}/"
-
 # Copy over the firmware for the ap6212 wifi
 # On the neo plus2 default install there are other firmware files installed for
 # p2p and apsta but I can't find them publicly posted to friendlyarm's GitHub
@@ -274,70 +249,13 @@ wget https://raw.githubusercontent.com/friendlyarm/android_vendor_broadcom_nanop
 # NOTE: This means we can't install firmware-brcm80211 firmware package because
 # the firmware will conflict, and based on testing the firmware in the package
 # *will not* work with this device
+status 'Create firmware symlinks'
 mkdir -p ${work_dir}/lib/firmware/brcm
 cd ${work_dir}/lib/firmware/brcm
 ln -s /lib/firmware/ap6212/fw_bcm43438a1.bin brcmfmac43430a1-sdio.bin
 ln -s /lib/firmware/ap6212/nvram_ap6212.txt brcmfmac43430a1-sdio.txt
 ln -s /lib/firmware/ap6212/fw_bcm43438a0.bin brcmfmac43430-sdio.bin
 ln -s /lib/firmware/ap6212/nvram.txt brcmfmac43430-sdio.txt
-cd "${current_dir}/"
-
-# Fix up the symlink for building external modules
-# kernver is used so we don't need to keep track of what the current compiled
-# version is
-status "building external modules"
-kernver=$(ls ${work_dir}/lib/modules/)
-cd ${work_dir}/lib/modules/${kernver}
-rm build
-rm source
-ln -s /usr/src/kernel build
-ln -s /usr/src/kernel source
-cd "${current_dir}/"
-
-status "/boot/boot.cmd"
-cat << EOF > ${work_dir}/boot/boot.cmd
-# Recompile with:
-# mkimage -C none -A arm -T script -d boot.cmd boot.scr
-
-setenv fsck.repair yes
-setenv ramdisk rootfs.cpio.gz
-setenv kernel Image
-
-setenv env_addr 0x45000000
-setenv kernel_addr 0x46000000
-setenv ramdisk_addr 0x47000000
-setenv dtb_addr 0x48000000
-setenv fdtovaddr 0x49000000
-
-fatload mmc 0 \${kernel_addr} \${kernel}
-fatload mmc 0 \${ramdisk_addr} \${ramdisk}
-if test \$board = nanopi-neo2-v1.1; then
-    fatload mmc 0 \${dtb_addr} sun50i-h5-nanopi-neo2.dtb
-else
-    fatload mmc 0 \${dtb_addr} sun50i-h5-\${board}.dtb
-fi
-fdt addr \${dtb_addr}
-
-# setup NEO2-V1.1 with gpio-dvfs overlay
-if test \$board = nanopi-neo2-v1.1; then
-        fatload mmc 0 \${fdtovaddr} overlays/sun50i-h5-gpio-dvfs-overlay.dtb
-        fdt resize 8192
-    fdt apply \${fdtovaddr}
-fi
-
-# setup MAC address
-fdt set ethernet0 local-mac-address \${mac_node}
-
-# setup boot_device
-fdt set mmc\${boot_mmc} boot_device <1>
-
-setenv fbcon map:0
-setenv bootargs console=ttyS0,115200 earlyprintk root=/dev/mmcblk0p2 rootfstype=$fstype rw rootwait fsck.repair=\${fsck.repair} panic=10 \${extra} fbcon=\${fbcon} ipv6.disable=1
-#booti \${kernel_addr} \${ramdisk_addr}:500000 \${dtb_addr}
-booti \${kernel_addr} - \${dtb_addr}
-EOF
-mkimage -C none -A arm -T script -d ${work_dir}/boot/boot.cmd ${work_dir}/boot/boot.scr
-
 cd "${current_dir}/"
 
 # Calculate the space to create the image and create
@@ -375,20 +293,19 @@ proc            /proc           proc    defaults          0       0
 UUID=$(blkid -s UUID -o value ${rootp})  /               $fstype    defaults,noatime  0       1
 EOF
 
+status 'Update extlinux.conf with the correct root partition UUID'
+# Ensure we don't have root=/dev/sda3 in the extlinux.conf which comes from running u-boot-menu in a cross chroot
+# We do this down here because we don't know the UUID until after the image is created
+sed -i -e "0,/root=.*/s//root=UUID=$(blkid -s UUID -o value ${rootp}) rootfstype=$fstype console=ttyS0,115200 console=tty1 consoleblank=0 rw quiet rootwait/g" ${work_dir}/boot/extlinux/extlinux.conf
+# And we remove the "Debian GNU/Linux because we're Kali"
+sed -i -e "s/Debian GNU\/Linux/Kali Linux/g" ${work_dir}/boot/extlinux/extlinux.conf
+
 status "Rsyncing rootfs into image file"
 rsync -HPavz -q "${work_dir}"/ "${base_dir}"/root/
 sync
 
-status "u-Boot"
-cd "${base_dir}"
-git clone --depth 1 https://github.com/friendlyarm/u-boot.git
-cd u-boot/
-git checkout sunxi-v2017.x
-make nanopi_h5_defconfig
-make
-dd if=spl/sunxi-spl.bin of=${loopdevice} bs=1024 seek=8
-dd if=u-boot.itb of=${loopdevice} bs=1024 seek=40
-sync
+status "Write u-boot to the loopdevice"
+TARGET="${work_dir}/usr/lib/u-boot/nanopi_neo_plus2" "${work_dir}"/usr/bin/u-boot-install-sunxi64 ${loopdevice}
 
 cd "${current_dir}/"
 
