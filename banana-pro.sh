@@ -148,11 +148,6 @@ systemd-nspawn_exec /third-stage
 include clean_system
 trap clean_build ERR SIGTERM SIGINT
 
-# Create an fstab so that we don't mount / read-only
-status "/etc/fstab"
-UUID=$(blkid -s UUID -o value ${rootp})
-echo "UUID=$UUID /               $fstype    errors=remount-ro 0       1" >> ${work_dir}/etc/fstab
-
 # Calculate the space to create the image and create
 make_image
 
@@ -184,6 +179,11 @@ mkfs -O "$features" -t "$fstype" -L ROOTFS "${rootp}"
 status "Create the dirs for the partitions and mount them"
 mkdir -p "${base_dir}"/root
 mount ${rootp} "${base_dir}"/root
+
+# Create an fstab so that we don't mount / read-only
+status "/etc/fstab"
+UUID=$(blkid -s UUID -o value ${rootp})
+echo "UUID=$UUID /               $fstype    errors=remount-ro 0       1" >> ${work_dir}/etc/fstab
 
 status "Rsyncing rootfs into image file"
 rsync -HPavz -q ${work_dir}/ ${base_dir}/root/

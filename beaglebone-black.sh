@@ -263,11 +263,6 @@ status 'Download g-ether script'
 wget -c https://raw.github.com/RobertCNelson/tools/master/scripts/beaglebone-black-g-ether-load.sh -O ${work_dir}/root/beaglebone-black-g-ether-load.sh
 chmod 0755 ${work_dir}/root/beaglebone-black-g-ether-load.sh
 
-# Create an fstab so that we don't mount / read-only
-status "/etc/fstab"
-UUID=$(blkid -s UUID -o value ${rootp})
-echo "UUID=$UUID /               $fstype    errors=remount-ro 0       1" >> ${work_dir}/etc/fstab
-
 # Calculate the space to create the image and create
 make_image
 
@@ -298,6 +293,11 @@ mkdir -p "${base_dir}"/root/
 mount "${rootp}" "${base_dir}"/root
 mkdir -p "${base_dir}"/root/boot
 mount "${bootp}" "${base_dir}"/root/boot
+
+# Create an fstab so that we don't mount / read-only
+status "/etc/fstab"
+UUID=$(blkid -s UUID -o value ${rootp})
+echo "UUID=$UUID /               $fstype    errors=remount-ro 0       1" >> ${work_dir}/etc/fstab
 
 status "Rsyncing rootfs into image file"
 rsync -HPavz -q --exclude boot "${work_dir}"/ "${base_dir}"/root/

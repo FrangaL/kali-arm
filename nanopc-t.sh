@@ -220,14 +220,10 @@ mount "${rootp}" "${base_dir}"/root
 mkdir -p "${base_dir}"/root/boot
 mount "${bootp}" "${base_dir}"/root/boot
 
-# We do this here because we don't want to hardcode the UUID for the partition during creation
-# systemd doesn't seem to be generating the fstab properly for some people, so let's create one
+# Create an fstab so that we don't mount / read-only
 status "/etc/fstab"
-cat <<EOF > "${work_dir}"/etc/fstab
-# <file system> <mount point>   <type>  <options>       <dump>  <pass>
-proc            /proc           proc    defaults          0       0
-UUID=$(blkid -s UUID -o value ${rootp})  /               $fstype    defaults,noatime  0       1
-EOF
+UUID=$(blkid -s UUID -o value ${rootp})
+echo "UUID=$UUID /               $fstype    errors=remount-ro 0       1" >> ${work_dir}/etc/fstab
 
 status "Rsyncing rootfs into image file"
 rsync -HPavz -q "${work_dir}"/ "${base_dir}"/root/

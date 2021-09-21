@@ -284,14 +284,10 @@ status "Create the dirs for the partitions and mount them"
 mkdir -p "${base_dir}"/root/
 mount "${rootp}" "${base_dir}"/root
 
-# We do this here because we don't want to hardcode the UUID for the partition during creation
-# systemd doesn't seem to be generating the fstab properly for some people, so let's create one
+# Create an fstab so that we don't mount / read-only
 status "/etc/fstab"
-cat <<EOF > "${work_dir}"/etc/fstab
-# <file system> <mount point>   <type>  <options>       <dump>  <pass>
-proc            /proc           proc    defaults          0       0
-UUID=$(blkid -s UUID -o value ${rootp})  /               $fstype    defaults,noatime  0       1
-EOF
+UUID=$(blkid -s UUID -o value ${rootp})
+echo "UUID=$UUID /               $fstype    errors=remount-ro 0       1" >> ${work_dir}/etc/fstab
 
 status 'Update extlinux.conf with the correct root partition UUID'
 # Ensure we don't have root=/dev/sda3 in the extlinux.conf which comes from running u-boot-menu in a cross chroot
