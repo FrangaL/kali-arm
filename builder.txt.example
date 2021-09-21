@@ -17,7 +17,7 @@
 #compress="xz"
 
 # Choose filesystem format to format ( ext3 or ext4 )
-fstype="ext4"
+#fstype="ext3"
 
 # Disable IPV6 ( yes or no)
 #disable_ipv6="yes"
