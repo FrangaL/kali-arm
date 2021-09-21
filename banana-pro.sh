@@ -151,11 +151,6 @@ trap clean_build ERR SIGTERM SIGINT
 # Calculate the space to create the image and create
 make_image
 
-# Build system will insert it's root filesystem into the extlinux.conf file so
-# we sed it out, this only affects build time, not upgrading the kernel on the
-# device itself
-sed -i -e 's/append.*/append console=ttyS0,115200 console=tty1 root=\/dev\/mmcblk0p1 rootwait panic=10 rw rootfstype=$fstype net.ifnames=0/g' ${work_dir}/boot/extlinux/extlinux.conf
-
 # Create the disk partitions
 status "Create the disk partitions"
 parted -s "${image_dir}/${image_name}.img" mklabel msdos
@@ -181,9 +176,16 @@ mkdir -p "${base_dir}"/root
 mount ${rootp} "${base_dir}"/root
 
 # Create an fstab so that we don't mount / read-only
-status "/etc/fstab"
+status "Fix rootfs entry in /etc/fstab"
 UUID=$(blkid -s UUID -o value ${rootp})
 echo "UUID=$UUID /               $fstype    errors=remount-ro 0       1" >> ${work_dir}/etc/fstab
+
+status "Fix root entry in extlinux.conf"
+# Ensure we don't have root=/dev/sda3 in the extlinux.conf which comes from running u-boot-menu in a cross chroot
+# We do this down here because we don't know the UUID until after the image is created
+sed -i -e "0,/root=.*/s//root=UUID=$(blkid -s UUID -o value ${rootp}) rootfstype=$fstype console=ttyS0,115200 console=tty1 consoleblank=0 rw quiet rootwait/g" ${work_dir}/boot/extlinux/extlinux.conf
+# And we remove the "Debian GNU/Linux because we're Kali"
+sed -i -e "s/Debian GNU\/Linux/Kali Linux/g" ${work_dir}/boot/extlinux/extlinux.conf
 
 status "Rsyncing rootfs into image file"
 rsync -HPavz -q ${work_dir}/ ${base_dir}/root/
