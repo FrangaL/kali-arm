@@ -65,53 +65,58 @@ EOF
 
 
 # Third stage
-cat << EOF >  ${work_dir}/third-stage
-#!/bin/bash -e
-export DEBIAN_FRONTEND=noninteractive
+cat <<EOF > "${work_dir}"/third-stage
+#!/usr/bin/env bash
+set -e
+status_3i=0
+status_3t=\$(grep '^status_stage3 ' \$0 | wc -l)
 
+status_stage3() {
+  status_3i=\$((status_3i+1))
+  echo  " [i] Stage 3 (\${status_3i}/\${status_3t}): \$1"
+}
+
+status_stage3 'Update apt'
+export DEBIAN_FRONTEND=noninteractive
 eatmydata apt-get update
 
-eatmydata apt-get -y install binutils ca-certificates console-common git initramfs-tools less locales nano u-boot-tools
+status_stage3 'Install core packages'
+eatmydata apt-get -y install ${third_stage_pkgs}
 
-# Create kali user with kali password... but first, we need to manually make some groups because they don't yet exist..
-# This mirrors what we have on a pre-installed VM, until the script works properly to allow end users to set up their own... user
-# However we leave off floppy, because who a) still uses them, and b) attaches them to an SBC!?
-# And since a lot of these have serial devices of some sort, dialout is added as well
-# scanner, lpadmin and bluetooth have to be added manually because they don't
-# yet exist in /etc/group at this point
-groupadd -r -g 118 bluetooth
-groupadd -r -g 113 lpadmin
-groupadd -r -g 122 scanner
-groupadd -g 1000 kali
+status_stage3 'Install packages'
+eatmydata apt-get install -y ${packages} || eatmydata apt-get install -y --fix-broken
 
-useradd -m -u 1000 -g 1000 -G sudo,audio,bluetooth,cdrom,dialout,dip,lpadmin,netdev,plugdev,scanner,video,kali -s /bin/bash kali
-echo "kali:kali" | chpasswd
+status_stage3 'Install desktop packages'
+eatmydata apt-get install -y ${desktop_pkgs} ${extra} || eatmydata apt-get install -y --fix-broken
 
-aptops="--allow-change-held-packages -o dpkg::options::=--force-confnew -o Acquire::Retries=3"
+status_stage3 'ntp doesn't always sync the date, but systemd's timesyncd does, so we remove ntp and reinstall it with this'
+eatmydata apt-get install -y systemd-timesyncd --autoremove
 
-# This looks weird, but we do it twice because every so often, there's a failure to download from the mirror
-# So to workaround it, we attempt to install them twice
-eatmydata apt-get install -y \$aptops ${packages} || eatmydata apt-get --yes --fix-broken install
-eatmydata apt-get install -y \$aptops ${packages} || eatmydata apt-get --yes --fix-broken install
-eatmydata apt-get install -y \$aptops ${desktop} ${extras} ${tools} || eatmydata apt-get --yes --fix-broken install
-eatmydata apt-get install -y \$aptops ${desktop} ${extras} ${tools} || eatmydata apt-get --yes --fix-broken install
-eatmydata apt-get install -y \$aptops --autoremove systemd-timesyncd || eatmydata apt-get --yes --fix-broken install
-eatmydata apt-get dist-upgrade -y \$aptops
+status_stage3 'Clean up'
+eatmydata apt-get -y --purge autoremove
 
-eatmydata apt-get -y --allow-change-held-packages --purge autoremove
-
-# Linux console/Keyboard configuration
+status_stage3 'Linux console/keyboard configuration'
 echo 'console-common console-data/keymap/policy select Select keymap from full list' | debconf-set-selections
 echo 'console-common console-data/keymap/full select en-latin1-nodeadkeys' | debconf-set-selections
 
-# Copy all services
+status_stage3 'Copy all services'
 cp -p /bsp/services/all/*.service /etc/systemd/system/
+cp -p /bsp/services/rpi/*.service /etc/systemd/system/
 
 # Regenerated the shared-mime-info database on the first boot
 # since it fails to do so properly in a chroot
 systemctl enable smi-hack
 
-# Generate SSH host keys on first run
+status_stage3 'Copy script rpi-resizerootfs'
+install -m755 /bsp/scripts/rpi-resizerootfs /usr/sbin/
+
+status_stage3 'Copy script for handling wpa_supplicant file'
+install -m755 /bsp/scripts/copy-user-wpasupplicant.sh /usr/bin/
+
+status_stage3 'Enable rpi-resizerootfs first boot'
+systemctl enable rpi-resizerootfs
+
+status_stage3 'Generate SSH host keys on first run'
 systemctl enable regenerate_ssh_host_keys
 # Enable sshd
 systemctl enable ssh
@@ -119,30 +124,37 @@ systemctl enable ssh
 # Resize FS on first run (hopefully)
 systemctl enable rpiwiggle
 
-# Allow users to use NM over ssh
+status_stage3 'Enabling ssh by putting ssh or ssh.txt file in /boot'
+systemctl enable enable-ssh
+
+status_stage3 'Allow users to use NetworkManager over ssh'
 install -m644 /bsp/polkit/10-NetworkManager.pkla /var/lib/polkit-1/localauthority/50-local.d
 
+status_stage3 'Install ca-certificate'
 cd /root
 apt download -o APT::Sandbox::User=root ca-certificates 2>/dev/null
 
-# Copy over the default bashrc
-cp /etc/skel/.bashrc /root/.bashrc
-
-# Set a REGDOMAIN.  This needs to be done or wireless doesn't work correctly on the RPi 3B+
+status_stage3 'Set a REGDOMAIN'
 sed -i -e 's/REGDOM.*/REGDOMAIN=00/g' /etc/default/crda
 
-# Enable login over serial
+status_stage3 'Enable login over serial'
 echo "T0:23:respawn:/sbin/agetty -L ttyAMA0 115200 vt100" >> /etc/inittab
 
-# Try and make the console a bit nicer
-# Set the terminus font for a bit nicer display
+status_stage3 'Try and make the console a bit nicer. Set the terminus font for a bit nicer display'
 sed -i -e 's/FONTFACE=.*/FONTFACE="Terminus"/' /etc/default/console-setup
 sed -i -e 's/FONTSIZE=.*/FONTSIZE="6x12"/' /etc/default/console-setup
 
-# Fix startup time from 5 minutes to 15 secs on raise interface wlan0
+status_stage3 'Fix startup time from 5 minutes to 15 secs on raise interface wlan0'
 sed -i 's/^TimeoutStartSec=5min/TimeoutStartSec=15/g' "/usr/lib/systemd/system/networking.service"
 
+status_stage3 'Enable runonce'
+install -m755 /bsp/scripts/runonce /usr/sbin/
+cp -rf /bsp/runonce.d /etc
+systemctl enable runonce
+
+status_stage3 'Clean up dpkg.eatmydata'
 rm -f /usr/bin/dpkg
+dpkg-divert --remove --rename /usr/bin/dpkg
 EOF
 
 # Run third stage
@@ -150,7 +162,10 @@ chmod 0755 "${work_dir}"/third-stage
 status "Run third stage"
 systemd-nspawn_exec /third-stage
 
-
+# Configure RaspberryPi firmware (set config.txt to 64bit)
+include rpi_firmware
+# Compile RaspberryPi userland
+include rpi_userland
 # Clean system
 include clean_system
 trap clean_build ERR SIGTERM SIGINT
