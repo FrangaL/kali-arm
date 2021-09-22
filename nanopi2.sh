@@ -101,7 +101,6 @@ echo 'console-common console-data/keymap/full select en-latin1-nodeadkeys' | deb
 
 status_stage3 'Copy all services'
 cp -p /bsp/services/all/*.service /etc/systemd/system/
-cp -p /bsp/services/rpi/*.service /etc/systemd/system/
 
 # Regenerated the shared-mime-info database on the first boot
 # since it fails to do so properly in a chroot
@@ -113,9 +112,6 @@ install -m755 /bsp/scripts/rpi-resizerootfs /usr/sbin/
 status_stage3 'Copy script for handling wpa_supplicant file'
 install -m755 /bsp/scripts/copy-user-wpasupplicant.sh /usr/bin/
 
-status_stage3 'Enable rpi-resizerootfs first boot'
-systemctl enable rpi-resizerootfs
-
 status_stage3 'Generate SSH host keys on first run'
 systemctl enable regenerate_ssh_host_keys
 # Enable sshd
@@ -124,7 +120,7 @@ systemctl enable ssh
 # Resize FS on first run (hopefully)
 systemctl enable rpiwiggle
 
-status_stage3 'Enabling ssh by putting ssh or ssh.txt file in /boot'
+status_stage3 'Enabling ssh'
 systemctl enable enable-ssh
 
 status_stage3 'Allow users to use NetworkManager over ssh'
@@ -162,10 +158,6 @@ chmod 0755 "${work_dir}"/third-stage
 status "Run third stage"
 systemd-nspawn_exec /third-stage
 
-# Configure RaspberryPi firmware (set config.txt to 64bit)
-include rpi_firmware
-# Compile RaspberryPi userland
-include rpi_userland
 # Clean system
 include clean_system
 trap clean_build ERR SIGTERM SIGINT
