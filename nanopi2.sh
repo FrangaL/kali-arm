@@ -274,7 +274,7 @@ make_image
 # Create the disk partitions
 status "Create the disk partitions"
 parted -s "${image_dir}/${image_name}.img" mklabel msdos
-parted -s "${image_dir}/${image_name}.img" mkpart primary fat32 1MiB "${bootsize}"MiB
+parted -s "${image_dir}/${image_name}.img" mkpart primary fat32 4MiB "${bootsize}"MiB
 parted -s -a minimal "${image_dir}/${image_name}.img" mkpart primary "$fstype" "${bootsize}"MiB 100%
 
 
