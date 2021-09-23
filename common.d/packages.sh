@@ -30,7 +30,7 @@ if [[ "$desktop" == "none" ]]; then
   desktop_pkgs=""
 else
   desktop_pkgs="kali-linux-default kali-desktop-$desktop alsa-utils xfonts-terminus \
-  xinput xserver-xorg-video-fbdev xserver-xorg-input-libinput xserver-xorg-input-synaptics"
+  xinput xserver-xorg-video-fbdev xserver-xorg-input-libinput"
 fi
 
 # Installed kernel sources when using a kernel that isn't packaged.
