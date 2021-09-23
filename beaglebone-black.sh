@@ -151,14 +151,14 @@ include clean_system
 trap clean_build ERR SIGTERM SIGINT
 
 status 'Kernel compile'
-git clone https://github.com/beagleboard/linux -b 4.9 --depth 1 ${work_dir}/usr/src/kernel
+git clone https://github.com/beagleboard/linux -b 4.14 --depth 1 ${work_dir}/usr/src/kernel
 cd ${work_dir}/usr/src/kernel
 git rev-parse HEAD > ${work_dir}/usr/src/kernel-at-commit
 export ARCH=arm
 # Edit the CROSS_COMPILE variable as needed
 export CROSS_COMPILE=arm-linux-gnueabihf-
 touch .scmversion
-patch -p1 --no-backup-if-mismatch < ${current_dir}/patches/kali-wifi-injection-4.9.patch
+patch -p1 --no-backup-if-mismatch < ${current_dir}/patches/kali-wifi-injection-4.14.patch
 patch -p1 --no-backup-if-mismatch < ${current_dir}/patches/0001-wireless-carl9170-Enable-sniffer-mode-promisc-flag-t.patch
 make bb.org_defconfig
 make -j $(grep -c processor /proc/cpuinfo)
@@ -166,7 +166,7 @@ cp arch/arm/boot/zImage ${work_dir}/boot/zImage
 mkdir -p ${work_dir}/boot/dtbs
 cp arch/arm/boot/dts/*.dtb ${work_dir}/boot/dtbs/
 make INSTALL_MOD_PATH=${work_dir} modules_install
-make INSTALL_MOD_PATH=${work_dir} firmware_install
+#make INSTALL_MOD_PATH=${work_dir} firmware_install
 make mrproper
 make bb.org_defconfig
 cd "${base_dir}"
