@@ -274,6 +274,7 @@ rsync -HPavz -q "${work_dir}"/ "${base_dir}"/root/
 sync
 
 # Adapted from the u-boot-install-sunxi64 script
+status "Write u-boot bootloader to the image file" # Note: do not write to the actual image file, but to the loop device, otherwise you will overwite what is in the image.
 dd conv=notrunc if=${work_dir}/usr/lib/u-boot/pinebook/sunxi-spl.bin of=${loopdevice} bs=8k seek=1
 dd conv=notrunc if=${work_dir}/usr/lib/u-boot/pinebook/u-boot-sunxi-with-spl.fit.itb of=${loopdevice} bs=8k seek=5
 sync
