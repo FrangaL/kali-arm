@@ -23,11 +23,13 @@ fi
 #flock $root_part sfdisk -f $root_part -N $root_part_num <<EOF
 #,+
 #EOF
-parted -s $rootdev resizepart $root_part_nr 100%
+#parted -s $rootdev resizepart $root_part_nr 100%
+/usr/local/bin/growpart -N $rootdev $root_part_nr
+/usr/local/bin/growpart $rootdev $root_part_nr
 
 sleep 5
 udevadm settle
 sleep 5
 flock $rootdev partprobe $rootpart
 mount -o remount,rw $rootpart
-resize2fs $rootpart
+resize2fs $rootpart #&& rm /usr/local/bin/growpart

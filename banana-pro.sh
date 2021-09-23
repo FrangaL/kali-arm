@@ -91,11 +91,9 @@ cp -p /bsp/services/rpi/*.service /etc/systemd/system/
 status_stage3 'Install the kernel packages'
 eatmydata apt-get install -y linux-image-armmp u-boot-menu u-boot-sunxi
 
-status_stage3 'Regenerated the shared-mime-info database on the first boot since it fails to do so properly in a chroot'
-systemctl enable smi-hack
-
 status_stage3 'Copy script rpi-resizerootfs'
 install -m755 /bsp/scripts/rpi-resizerootfs /usr/sbin/
+install -m755 /bsp/scripts/growpart /usr/local/bin/
 
 status_stage3 'Enable rpi-resizerootfs first boot'
 systemctl enable rpi-resizerootfs
@@ -103,11 +101,8 @@ systemctl enable rpi-resizerootfs
 status_stage3 'Generate SSH host keys on first run'
 systemctl enable regenerate_ssh_host_keys
 
-status_stage3 'Enable copying of user wpa_supplicant.conf file'
-systemctl enable copy-user-wpasupplicant
-
-status_stage3 'Enabling ssh by putting ssh or ssh.txt file in /boot'
-systemctl enable enable-ssh
+status_stage3 'Enable ssh'
+systemctl enable ssh
 
 status_stage3 'Allow users to use NetworkManager over ssh'
 install -m644 /bsp/polkit/10-NetworkManager.pkla /var/lib/polkit-1/localauthority/50-local.d

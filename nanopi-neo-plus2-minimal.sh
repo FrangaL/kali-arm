@@ -167,10 +167,8 @@ status_stage3 'Copy all services'
 cp -p /bsp/services/all/*.service /etc/systemd/system/
 
 status_stage3 'Copy script rpi-resizerootfs'
-install -m755 /bsp/scripts/pinebook-resizerootfs /usr/sbin/
-
-status_stage3 'Since we handle it specially, sed the service so that we call pinebook-resizerootfs instead of rpi-resizerootfs'
-sed -i -e 's/rpi/pinebook/' /etc/systemd/system/rpi-resizerootfs.service
+install -m755 /bsp/scripts/rpi-resizerootfs /usr/sbin/
+install -m755 /bsp/scripts/growpart /usr/local/bin/
 
 status_stage3 'Enable rpi-resizerootfs first boot'
 systemctl enable rpi-resizerootfs

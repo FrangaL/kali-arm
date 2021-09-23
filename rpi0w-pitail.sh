@@ -156,6 +156,7 @@ eatmydata apt-get install -y ${re4son_pkgs}
 
 status_stage3 'Copy script rpi-resizerootfs'
 install -m755 /bsp/scripts/rpi-resizerootfs /usr/sbin/
+install -m755 /bsp/scripts/growpart /usr/local/bin/
 
 status_stage3 'Copy script for handling wpa_supplicant file'
 install -m755 /bsp/scripts/copy-user-wpasupplicant.sh /usr/bin/
@@ -165,6 +166,9 @@ systemctl enable rpi-resizerootfs
 
 status_stage3 'Generate SSH host keys on first run'
 systemctl enable regenerate_ssh_host_keys
+
+status_stage3 'Enable ssh'
+systemctl enable ssh
 
 status_stage3 'Enable copying of user wpa_supplicant.conf file'
 systemctl enable copy-user-wpasupplicant

@@ -77,7 +77,7 @@ eatmydata apt-get install -y ${packages} || eatmydata apt-get install -y --fix-b
 status_stage3 'Install desktop packages'
 eatmydata apt-get install -y ${desktop_pkgs} ${extra} || eatmydata apt-get install -y --fix-broken
 
-status_stage3 'Enable dhcp server'
+status_stage3 'Install dhcp and vnc server'
 eatmydata apt-get install -y isc-dhcp-server tightvncserver || eatmydata apt-get install -y --fix-broken
 
 status_stage3 'Clean up'
@@ -92,12 +92,16 @@ cp -p /bsp/services/all/*.service /etc/systemd/system/
 
 status_stage3 'Copy script rpi-resizerootfs'
 install -m755 /bsp/scripts/rpi-resizerootfs /usr/sbin/
+install -m755 /bsp/scripts/growpart /usr/local/bin/
 
 status_stage3 'Enable rpi-resizerootfs first boot'
 systemctl enable rpi-resizerootfs
 
 status_stage3 'Generate SSH host keys on first run'
 systemctl enable regenerate_ssh_host_keys
+
+status_stage3 'Enable ssh'
+systemctl enable ssh
 
 status_stage3 'Allow users to use NetworkManager over ssh'
 install -m644 /bsp/polkit/10-NetworkManager.pkla /var/lib/polkit-1/localauthority/50-local.d
