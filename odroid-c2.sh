@@ -111,6 +111,7 @@ u-boot-update
 
 status_stage3 'Copy script rpi-resizerootfs'
 install -m755 /bsp/scripts/rpi-resizerootfs /usr/sbin/
+install -m755 /bsp/scripts/growpart /usr/local/bin/
 
 status_stage3 'Enable rpi-resizerootfs first boot'
 systemctl enable rpi-resizerootfs
@@ -222,7 +223,7 @@ EOF
 
 # Ensure we don't have root=/dev/sda3 in the extlinux.conf which comes from running u-boot-menu in a cross chroot
 # We do this down here because we don't know the UUID until after the image is created
-sed -i -e "0,/root=.*/s//root=UUID=$(blkid -s UUID -o value ${rootp}) rootfstype=$fstype console=ttyS0,115200 console=tty1 consoleblank=0 rw quiet rootwait/g" ${work_dir}/boot/extlinux/extlinux.conf
+sed -i -e "0,/root=.*/s//root=UUID=$(blkid -s UUID -o value ${rootp}) rootfstype=$fstype console=tty1 consoleblank=0 rw quiet rootwait/g" ${work_dir}/boot/extlinux/extlinux.conf
 # And we remove the "Debian GNU/Linux because we're Kali"
 sed -i -e "s/Debian GNU\/Linux/Kali Linux/g" ${work_dir}/boot/extlinux/extlinux.conf
 
