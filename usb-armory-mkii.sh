@@ -215,6 +215,7 @@ wget $githubraw/inversepath/usbarmory/master/software/kernel_conf/mark-two/imx6u
 wget $githubraw/inversepath/usbarmory/master/software/kernel_conf/mark-two/imx6ull-usbarmory.dts -O arch/arm/boot/dts/imx6ull-usbarmory.dts
 wget $githubraw/inversepath/usbarmory/master/software/kernel_conf/mark-two/imx6ulz-usbarmory.dts -O arch/arm/boot/dts/imx6ulz-usbarmory.dts
 cp .config ${work_dir}/usr/src/usbarmory_linux-5.4.config
+make olddefconfig
 make LOADADDR=0x80000000 -j $(grep -c processor /proc/cpuinfo) uImage modules imx6ul-usbarmory.dtb imx6ull-usbarmory.dtb imx6ulz-usbarmory.dtb
 make modules_install INSTALL_MOD_PATH=${work_dir}
 cp arch/arm/boot/zImage ${work_dir}/boot/
