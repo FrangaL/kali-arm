@@ -103,11 +103,6 @@ install -m755 /bsp/scripts/monstop /usr/bin/
 status_stage3 'Install the kernel packages'
 eatmydata apt-get install -y dkms linux-image-arm64 u-boot-menu u-boot-sunxi
 
-# The pinebook seems to always claim the filesystem is in use when attempting to resize it, and this causes
-# parted to request a confirmation, but since we're doing this in a script, we don't actually get to
-# Solution comes from a comment in https://bugs.launchpad.net/ubuntu/+source/parted/+bug/1270203.  This is
-# new with parted 3.3+
-
 status_stage3 'Copy script pinebook-resizerootfs'
 install -m755 /bsp/scripts/rpi-resizerootfs /usr/sbin/
 install -m755 /bsp/scripts/growpart /usr/local/bin/
@@ -160,24 +155,7 @@ status_stage3 'Need to package up the wifi driver'
 # (it's a Realtek 8723cs, with the usual Realtek driver quality) still,
 # so for now, we clone it and then build it inside the chroot
 cd /usr/src/
-git clone https://github.com/icenowy/rtl8723cs rtl8723cs-2020.02.27
-cat << __EOF__ > /usr/src/rtl8723cs-2020.02.27/dkms.conf.orig
-PACKAGE_NAME="rtl8723cs"
-PACKAGE_VERSION="2020.02.27"
-
-AUTOINSTALL="yes"
-
-CLEAN[0]="make clean"
-
-MAKE[0]="'make' -j4 ARCH=arm64 KVER=\${kernelver} KSRC=/lib/modules/\${kernelver}/build/"
-
-BUILT_MODULE_NAME[0]="8723cs"
-
-BUILT_MODULE_LOCATION[0]=""
-
-DEST_MODULE_LOCATION[0]="/kernel/drivers/net/wireless"
-__EOF__
-
+git clone https://github.com/icenowy/rtl8723cs -b new-driver-by-megous rtl8723cs-2020.02.27
 cat << __EOF__ > /usr/src/rtl8723cs-2020.02.27/dkms.conf
 PACKAGE_NAME="rtl8723cs"
 PACKAGE_VERSION="2020.02.27"
@@ -199,7 +177,7 @@ cd /usr/src/rtl8723cs-2020.02.27
 dkms install rtl8723cs/2020.02.27 -k 5.10.0-kali9-arm64
 
 status_stage3 'Replace the conf file after we have built the module and hope for the best'
-mv /usr/src/rtl8723cs-2020.02.27/dkms.conf.orig /usr/src/rtl8723cs-2020.02.27/dkms.conf
+cp /bsp/configs/pinebook-dkms.conf /usr/src/rtl8723cs-2020.02.27/dkms.conf
 
 status_stage3 'Clean up dpkg.eatmydata'
 rm -f /usr/bin/dpkg
@@ -265,7 +243,7 @@ echo "UUID=$UUID /               $fstype    errors=remount-ro 0       1" >> ${wo
 
 # Ensure we don't have root=/dev/sda3 in the extlinux.conf which comes from running u-boot-menu in a cross chroot
 # We do this down here because we don't know the UUID until after the image is created
-sed -i -e "0,/root=.*/s//root=UUID=$(blkid -s UUID -o value ${rootp}) rootfstype=$fstype console=tty1 consoleblank=0 rw quiet rootwait/g" ${work_dir}/boot/extlinux/extlinux.conf
+sed -i -e "0,/root=.*/s//root=UUID=$(blkid -s UUID -o value ${rootp}) rootfstype=$fstype console=tty1 consoleblank=0 ro rootwait/g" ${work_dir}/boot/extlinux/extlinux.conf
 # And we remove the "Debian GNU/Linux because we're Kali"
 sed -i -e "s/Debian GNU\/Linux/Kali Linux/g" ${work_dir}/boot/extlinux/extlinux.conf
 
