@@ -188,9 +188,13 @@ echo "UUID=$UUID /               $fstype    errors=remount-ro 0       1" >> ${wo
 status "Fix root entry in extlinux.conf"
 # Ensure we don't have root=/dev/sda3 in the extlinux.conf which comes from running u-boot-menu in a cross chroot
 # We do this down here because we don't know the UUID until after the image is created
-sed -i -e "0,/root=.*/s//root=UUID=$(blkid -s UUID -o value ${rootp}) rootfstype=$fstype console=ttyS0,115200 console=tty1 consoleblank=0 rw quiet rootwait/g" ${work_dir}/boot/extlinux/extlinux.conf
-# And we remove the "Debian GNU/Linux because we're Kali"
-sed -i -e "s/Debian GNU\/Linux/Kali Linux/g" ${work_dir}/boot/extlinux/extlinux.conf
+sed -i -e "0,/root=.*/s//root=UUID=$(blkid -s UUID -o value ${rootp}) rootfstype=$fstype console=tty1 consoleblank=0 ro rootwait/g" ${work_dir}/boot/extlinux/extlinux.conf
+# And we remove the "GNU/Linux because we don't use it
+sed -i -e "s|.*GNU/Linux Rolling|menu label Kali Linux|g" ${work_dir}/boot/extlinux/extlinux.conf
+
+status "Set the default options in /etc/default/u-boot"
+echo 'U_BOOT_MENU_LABEL="Kali Linux"' >> ${work_dir}/etc/default/u-boot
+echo 'U_BOOT_PARAMETERS="console=tty1 consoleblank=0 ro rootwait"' >> ${work_dir}/etc/default/u-boot
 
 status "Rsyncing rootfs to image file"
 rsync -HPavz -q ${work_dir}/ ${base_dir}/root/
