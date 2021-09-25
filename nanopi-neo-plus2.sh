@@ -52,87 +52,6 @@ add_interface eth0
 status "Copy directory bsp into build dir"
 cp -rp bsp "${work_dir}"
 
-# Eventually this should become a systemd service, but for now, we use the same
-# init.d file that they provide and we let systemd handle the conversion
-mkdir -p ${work_dir}/etc/init.d/
-cat << EOF > ${work_dir}/etc/init.d/brcm_patchram_plus
-#!/usr/bin/env bash
-
-### BEGIN INIT INFO
-# Provides:             brcm_patchram_plus
-# Required-Start:       $remote_fs $syslog
-# Required-Stop:        $remote_fs $syslog
-# Default-Start:        2 3 4 5
-# Default-Stop:
-# Short-Description:    brcm_patchram_plus
-### END INIT INFO
-
-function reset_bt()
-{
-    BTWAKE=/proc/bluetooth/sleep/btwake
-    if [ -f ${BTWAKE} ]; then
-        echo 0 > ${BTWAKE}
-    fi
-    index=`rfkill list | grep $1 | cut -f 1 -d":"`
-    if [[ -n ${index} ]]; then
-        rfkill block ${index}
-        sleep 1
-        rfkill unblock ${index}
-        sleep 1
-    fi
-}
-
-case "$1" in
-    start|"")
-        index=`rfkill list | grep "sunxi-bt" | cut -f 1 -d":"`
-        brcm_try_log=/var/log/brcm/brcm_try.log
-        brcm_log=/var/log/brcm/brcm.log
-        brcm_err_log=/var/log/brcm/brcm_err.log
-        if [ -d /sys/class/rfkill/rfkill${index} ]; then
-            rm -rf ${brcm_log}
-            reset_bt "sunxi-bt"
-            [ -d /var/log/brcm ] || mkdir -p /var/log/brcm
-            chmod 0660 /sys/class/rfkill/rfkill${index}/state
-            chmod 0660 /sys/class/rfkill/rfkill${index}/type
-            chgrp dialout /sys/class/rfkill/rfkill${index}/state
-            chgrp dialout /sys/class/rfkill/rfkill${index}/type
-            MACADDRESS=`md5sum /sys/class/sunxi_info/sys_info | cut -b 1-12 | sed -r ':1;s/(.*[^:])([^:]{2})/\1:\2/;t1'`
-            let TIMEOUT=150
-            while [ ${TIMEOUT} -gt 0 ]; do
-                killall -9 /bin/brcm_patchram_plus
-                /bin/brcm_patchram_plus -d --patchram /lib/firmware/ap6212/ --enable_hci --bd_addr ${MACADDRESS} --no2bytes --tosleep 5000 /dev/ttyS3 >${brcm_log} 2>&1 &
-                sleep 30
-                TIMEOUT=$((TIMEOUT-30))
-                cur_time=`date "+%H-%M-%S"`
-                if grep "Done setting line discpline" ${brcm_log}; then
-                    echo "${cur_time}: bt firmware download ok(${TIMEOUT})" >> ${brcm_try_log}
-                    if ! grep "fail" ${brcm_try_log}; then
-                        reset_bt "hci0"
-                        hciconfig hci0 up
-                        hciconfig >> ${brcm_try_log}
-                        #reboot
-                    fi
-                    break
-                else
-                    echo "${cur_time}: bt firmware download fail(${TIMEOUT})" >> ${brcm_try_log}
-                    cp ${brcm_log} ${brcm_err_log}
-                    reset_bt "sunxi-bt"
-                fi
-            done
-        fi
-        ;;
-
-    stop)
-    kill `ps --no-headers -C brcm_patchram_plus -o pid`
-        ;;
-    *)
-        echo "Usage: brcm_patchram_plus start|stop" >&2
-        exit 3
-        ;;
-esac
-EOF
-chmod 0755 ${work_dir}/etc/init.d/brcm_patchram_plus
-
 # Third stage
 cat <<EOF > "${work_dir}"/third-stage
 #!/usr/bin/env bash
@@ -159,7 +78,7 @@ status_stage3 'Install desktop packages'
 eatmydata apt-get install -y ${desktop_pkgs} ${extra} || eatmydata apt-get install -y --fix-broken
 
 status_stage3 'Install kernel and bootloader packages'
-eatmydata apt-get install -y linux-image-arm64 u-boot-menu u-boot-sunxi
+eatmydata apt-get install -y linux-image-arm64 u-boot-menu u-boot-sunxi firmware-brcm80211
 
 status_stage3 'Clean up'
 eatmydata apt-get -y --purge autoremove
@@ -184,14 +103,8 @@ systemctl enable regenerate_ssh_host_keys
 status_stage3 'Enable ssh'
 systemctl enable ssh
 
-status_stage3 'Required to kick the bluetooth chip'
-install -m755 /bsp/firmware/veyron/brcm_patchram_plus /bin/brcm_patchram_plus
-
 status_stage3 'Theres no graphical output on this device'
 systemctl set-default multi-user
-
-status_stage3 'Enable bluetooth - we do this way because we have not written a systemd service file for it yet'
-update-rc.d brcm_patchram_plus defaults
 
 status_stage3 'Allow users to use NetworkManager over ssh'
 install -m644 /bsp/polkit/10-NetworkManager.pkla /var/lib/polkit-1/localauthority/50-local.d
@@ -237,30 +150,11 @@ trap clean_build ERR SIGTERM SIGINT
 # p2p and apsta but I can't find them publicly posted to friendlyarm's GitHub
 # At some point, nexmon could work for the device, but the support would need to
 # be added to nexmon
-status "WiFi firmware"
+status 'Clone bluetooth/wifi firmware files'
 mkdir -p ${work_dir}/lib/firmware/ap6212/
-wget https://raw.githubusercontent.com/friendlyarm/android_vendor_broadcom_nanopi2/nanopi2-lollipop-mr1/proprietary/nvram_ap6212.txt -O ${work_dir}/lib/firmware/ap6212/nvram.txt
-wget https://raw.githubusercontent.com/friendlyarm/android_vendor_broadcom_nanopi2/nanopi2-lollipop-mr1/proprietary/nvram_ap6212a.txt -O ${work_dir}/lib/firmware/ap6212/nvram_ap6212.txt
-wget https://raw.githubusercontent.com/friendlyarm/android_vendor_broadcom_nanopi2/nanopi2-lollipop-mr1/proprietary/fw_bcm43438a0.bin -O ${work_dir}/lib/firmware/ap6212/fw_bcm43438a0.bin
-wget https://raw.githubusercontent.com/friendlyarm/android_vendor_broadcom_nanopi2/nanopi2-lollipop-mr1/proprietary/fw_bcm43438a1.bin -O ${work_dir}/lib/firmware/ap6212/fw_bcm43438a1.bin
-wget https://raw.githubusercontent.com/friendlyarm/android_vendor_broadcom_nanopi2/nanopi2-lollipop-mr1/proprietary/fw_bcm43438a0_apsta.bin -O ${work_dir}/lib/firmware/ap6212/fw_bcm43438a0_apsta.bin
-wget https://raw.githubusercontent.com/friendlyarm/android_vendor_broadcom_nanopi2/nanopi2-lollipop-mr1/proprietary/bcm43438a0.hcd -O ${work_dir}/lib/firmware/ap6212/bcm43438a0.hcd
-wget https://raw.githubusercontent.com/friendlyarm/android_vendor_broadcom_nanopi2/nanopi2-lollipop-mr1/proprietary/bcm43438a1.hcd -O ${work_dir}/lib/firmware/ap6212/bcm43438a1.hcd
-wget https://raw.githubusercontent.com/friendlyarm/android_vendor_broadcom_nanopi2/nanopi2-lollipop-mr1/proprietary/config_ap6212.txt -O ${work_dir}/lib/firmware/ap6212/config.txt
-
-# The way the base system comes, the firmware seems to be a symlink into the
-# ap6212 directory so let's do the same here
-# NOTE: This means we can't install firmware-brcm80211 firmware package because
-# the firmware will conflict, and based on testing the firmware in the package
-# *will not* work with this device
-status 'Create firmware symlinks'
-mkdir -p ${work_dir}/lib/firmware/brcm
-cd ${work_dir}/lib/firmware/brcm
-ln -s /lib/firmware/ap6212/fw_bcm43438a1.bin brcmfmac43430a1-sdio.bin
-ln -s /lib/firmware/ap6212/nvram_ap6212.txt brcmfmac43430a1-sdio.txt
-ln -s /lib/firmware/ap6212/fw_bcm43438a0.bin brcmfmac43430-sdio.bin
-ln -s /lib/firmware/ap6212/nvram.txt brcmfmac43430-sdio.txt
-cd "${current_dir}/"
+wget https://raw.githubusercontent.com/friendlyarm/android_vendor_broadcom_nanopi2/nanopi2-lollipop-mr1/proprietary/bcm43438a0.hcd -O ${work_dir}/lib/firmware/brcm/bcm43438a0.hcd
+wget https://raw.githubusercontent.com/friendlyarm/android_vendor_broadcom_nanopi2/nanopi2-lollipop-mr1/proprietary/bcm43438a1.hcd -O ${work_dir}/lib/firmware/brcm/bcm43438a1.hcd
+wget https://raw.githubusercontent.com/friendlyarm/android_vendor_broadcom_nanopi2/nanopi2-lollipop-mr1/proprietary/config_ap6212.txt -O ${work_dir}/lib/firmware/brcm/brcmfmac43430-sdio.friendlyarm,nanopi-neo-plus2.txt
 
 # Calculate the space to create the image and create
 make_image
