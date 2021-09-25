@@ -106,19 +106,11 @@ cp -p /bsp/services/all/*.service /etc/systemd/system/
 # since it fails to do so properly in a chroot
 systemctl enable smi-hack
 
-status_stage3 'Copy script rpi-resizerootfs'
-install -m755 /bsp/scripts/rpi-resizerootfs /usr/sbin/
-
-status_stage3 'Copy script for handling wpa_supplicant file'
-install -m755 /bsp/scripts/copy-user-wpasupplicant.sh /usr/bin/
 
 status_stage3 'Generate SSH host keys on first run'
 systemctl enable regenerate_ssh_host_keys
 status_stage3 'Enable sshd'
 systemctl enable ssh
-
-# Resize FS on first run (hopefully)
-systemctl enable rpiwiggle
 
 status_stage3 'Allow users to use NetworkManager over ssh'
 install -m644 /bsp/polkit/10-NetworkManager.pkla /var/lib/polkit-1/localauthority/50-local.d
