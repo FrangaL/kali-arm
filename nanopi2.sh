@@ -114,14 +114,11 @@ install -m755 /bsp/scripts/copy-user-wpasupplicant.sh /usr/bin/
 
 status_stage3 'Generate SSH host keys on first run'
 systemctl enable regenerate_ssh_host_keys
-# Enable sshd
+status_stage3 'Enable sshd'
 systemctl enable ssh
 
 # Resize FS on first run (hopefully)
 systemctl enable rpiwiggle
-
-status_stage3 'Enabling ssh'
-systemctl enable enable-ssh
 
 status_stage3 'Allow users to use NetworkManager over ssh'
 install -m644 /bsp/polkit/10-NetworkManager.pkla /var/lib/polkit-1/localauthority/50-local.d
