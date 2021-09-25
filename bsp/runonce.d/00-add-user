@@ -41,7 +41,11 @@ done
 
 # Add the kali user and give them all the access they need.
 if ! getent passwd 'kali'; then
-  adduser --gecos "" --uid 1000 --gid 1000 --shell /usr/bin/zsh --disabled-password kali
+  if [ $(arch) == 'armv6l' ]; then
+    adduser --gecos "" --uid 1000 --gid 1000 --shell /usr/bin/bash --disabled-password kali
+  else
+    adduser --gecos "" --uid 1000 --gid 1000 --shell /usr/bin/zsh --disabled-password kali
+  fi
   usermod -a -G "$kali_groups" kali
   echo 'kali:kali' | chpasswd
 fi
