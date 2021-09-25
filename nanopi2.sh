@@ -263,7 +263,7 @@ make_image
 # Create the disk partitions
 status "Create the disk partitions"
 parted -s "${image_dir}/${image_name}.img" mklabel msdos
-parted -s "${image_dir}/${image_name}.img" mkpart primary fat32 4MiB "${bootsize}"MiB
+parted -s "${image_dir}/${image_name}.img" mkpart primary ext2 4MiB "${bootsize}"MiB
 parted -s -a minimal "${image_dir}/${image_name}.img" mkpart primary "$fstype" "${bootsize}"MiB 100%
 
 
@@ -278,7 +278,7 @@ rootp=${device}p2
 
 # Create file systems
 status "Formatting partitions" green
-mkfs.ext3 -L BOOT ${bootp}
+mkfs.ext2 -L BOOT ${bootp}
 if [[ $fstype == ext4 ]]; then
   features="-O ^64bit,^metadata_csum"
 elif [[ $fstype == ext3 ]]; then
