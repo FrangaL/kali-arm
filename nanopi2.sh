@@ -102,8 +102,7 @@ echo 'console-common console-data/keymap/full select en-latin1-nodeadkeys' | deb
 status_stage3 'Copy all services'
 cp -p /bsp/services/all/*.service /etc/systemd/system/
 
-# Regenerated the shared-mime-info database on the first boot
-# since it fails to do so properly in a chroot
+status_stage3 'Regenerated the shared-mime-info database on the first boot since it fails to do so properly in a chroot'
 systemctl enable smi-hack
 
 
