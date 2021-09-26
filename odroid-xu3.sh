@@ -109,10 +109,6 @@ systemctl enable ssh
 status_stage3 'Allow users to use NetworkManager over ssh'
 install -m644 /bsp/polkit/10-NetworkManager.pkla /var/lib/polkit-1/localauthority/50-local.d
 
-status_stage3 'Install ca-certificate'
-cd /root
-apt download -o APT::Sandbox::User=root ca-certificates 2>/dev/null
-
 status_stage3 'Set a REGDOMAIN'
 sed -i -e 's/REGDOM.*/REGDOMAIN=00/g' /etc/default/crda
 

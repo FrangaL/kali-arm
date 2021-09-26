@@ -166,10 +166,6 @@ sed -i -e 's/INTERFACES.*/INTERFACES="usb0"/g' /etc/default/isc-dhcp-server
 status_stage3 'Enable dhcp server'
 update-rc.d isc-dhcp-server enable
 
-status_stage3 'Install ca-certificate'
-cd /root
-apt download -o APT::Sandbox::User=root ca-certificates 2>/dev/null
-
 status_stage3 'Set a REGDOMAIN'
 sed -i -e 's/REGDOM.*/REGDOMAIN=00/g' /etc/default/crda
 

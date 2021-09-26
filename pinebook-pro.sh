@@ -119,10 +119,6 @@ systemctl enable bluetooth
 status_stage3 'Enable suspend2idle'
 sed -i s/"#SuspendState=mem standby freeze"/"SuspendState=freeze"/g /etc/systemd/sleep.conf
 
-status_stage3 'Install ca-certificate'
-cd /root
-apt download -o APT::Sandbox::User=root ca-certificates 2>/dev/null
-
 status_stage3 'Set a REGDOMAIN'
 sed -i -e 's/REGDOM.*/REGDOMAIN=00/g' /etc/default/crda
 

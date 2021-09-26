@@ -110,10 +110,6 @@ systemctl enable ssh
 status_stage3 'Allow users to use NetworkManager over ssh'
 install -m644 /bsp/polkit/10-NetworkManager.pkla /var/lib/polkit-1/localauthority/50-local.d
 
-status_stage3 'Install ca-certificate'
-cd /root
-apt download -o APT::Sandbox::User=root ca-certificates 2>/dev/null
-
 status_stage3 'Set a REGDOMAIN'
 sed -i -e 's/REGDOM.*/REGDOMAIN=00/g' /etc/default/crda
 
@@ -185,7 +181,7 @@ status "Fix rootfs entry in /etc/fstab"
 UUID=$(blkid -s UUID -o value ${rootp})
 echo "UUID=$UUID /               $fstype    errors=remount-ro 0       1" >> ${work_dir}/etc/fstab
 
-status "Fix root entry in extlinux.conf"
+status "Edit the extlinux.conf file to set root uuid and proper name"
 # Ensure we don't have root=/dev/sda3 in the extlinux.conf which comes from running u-boot-menu in a cross chroot
 # We do this down here because we don't know the UUID until after the image is created
 sed -i -e "0,/root=.*/s//root=UUID=$(blkid -s UUID -o value ${rootp}) rootfstype=$fstype console=tty1 consoleblank=0 ro rootwait/g" ${work_dir}/boot/extlinux/extlinux.conf
