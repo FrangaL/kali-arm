@@ -77,6 +77,8 @@ eatmydata apt-get install -y ${packages} || eatmydata apt-get install -y --fix-b
 status_stage3 'Install desktop packages'
 eatmydata apt-get install -y ${desktop_pkgs} ${extra} || eatmydata apt-get install -y --fix-broken
 
+status_stage3 'ntp doesn't always sync the date, but systemd's timesyncd does, so we remove ntp and reinstall it with this'
+eatmydata apt-get install -y systemd-timesyncd --autoremove
 
 status_stage3 'Install the kernel packages'
 eatmydata apt-get install -y linux-image-armmp u-boot-menu u-boot-imx
