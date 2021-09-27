@@ -197,6 +197,7 @@ python3 -c 'import os; os.fsync(open("'${loopdevice}'", "r+b"))'
 status "Unmount filesystem"
 umount -l "${rootp}"
 
+status "dd to ${loopdevice}"
 dd if=${work_dir}/usr/lib/u-boot/Bananapro/u-boot-sunxi-with-spl.bin of=${loopdevice} bs=1024 seek=8
 
 # Check filesystem

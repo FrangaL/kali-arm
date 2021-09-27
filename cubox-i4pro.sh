@@ -205,6 +205,7 @@ python3 -c 'import os; os.fsync(open("'${loopdevice}'", "r+b"))'
 status "Unmount filesystem"
 umount -l "${rootp}"
 
+status "dd to ${loopdevice}"
 dd conv=fsync,notrunc if=${work_dir}/usr/lib/u-boot/mx6cuboxi/SPL of=${loopdevice} bs=1k seek=1
 dd conv=fsync,notrunc if=${work_dir}/usr/lib/u-boot/mx6cuboxi/u-boot.img of=${loopdevice} bs=1k seek=69
 
