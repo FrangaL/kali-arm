@@ -63,4 +63,8 @@ if [ -f "${current_dir}"/builder.txt ]; then
   echo "Loading: "${current_dir}"/builder.txt"
   # shellcheck source=/dev/null
   source "${current_dir}"/builder.txt
+
+  [ "${debug}" = 1 ] \
+    && grep -v '#' "${current_dir}"/builder.txt \
+      | sort -u
 fi
