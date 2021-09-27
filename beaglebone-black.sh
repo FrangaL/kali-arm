@@ -330,5 +330,4 @@ losetup -d "${loopdevice}"
 include compress_img
 
 # Clean up all the temporary build stuff and remove the directories
-# Comment this out to keep things around if you want to see what may have gone wrong
 clean_build

@@ -42,6 +42,7 @@ function debug_enable() {
   exec &> >(tee -a "${log}") 2>&1
   # Print all commands inside of script
   set -x
+  debug=1
 }
 
 # Arguments function
@@ -68,6 +69,7 @@ function arguments() {
     esac
   done
 }
+debug=0
 arguments $*
 
 # Function to include common files
