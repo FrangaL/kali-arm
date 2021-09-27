@@ -12,7 +12,9 @@ function log() {
     cyan) color=$(tput setaf 6) ;;
     *) text="$1" ;;
   esac
-  [ -z "$text" ] && echo "$color $1 $(tput sgr0)" || echo "$text"
+  [ -z "$text" ] \
+    && echo "$color $1 $(tput sgr0)" \
+    || echo "$text"
 }
 
 # Usage function

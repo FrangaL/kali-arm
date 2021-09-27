@@ -111,7 +111,7 @@ EOF
 
 if [ "${desktop}" != "none" ]; then
   log "Desktop mode enabled: ${desktop}" green
-  cat <<EOF >> "${work_dir}"/third-stage
+  cat <<EOF >> "${work_dir}/third-stage"
 status_stage3 'Install desktop packages'
 eatmydata apt-get install -y ${desktop_pkgs} ${extra} || eatmydata apt-get install -y --fix-broken
 
