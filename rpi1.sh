@@ -43,6 +43,15 @@ systemctl enable copy-user-wpasupplicant
 
 status_stage3 'Set default to cli since the system is slow and has low memory'
 systemctl set-default multi-user
+
+status_stage3 'Enabling ssh by putting ssh or ssh.txt file in /boot'
+systemctl enable enable-ssh
+
+status_stage3 'Disable haveged daemon'
+systemctl disable haveged
+
+status_stage3 'Enable login over serial (No password)'
+echo "T0:23:respawn:/sbin/agetty -L ttyAMA0 115200 vt100" >> /etc/inittab
 EOF
 
 # Run third stage

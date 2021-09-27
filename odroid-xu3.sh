@@ -23,14 +23,6 @@ source ./common.d/base_image.sh
 include network
 add_interface eth0
 
-# Copy directory bsp into build dir
-status "Copy directory bsp into build dir"
-cp -rp bsp "${work_dir}"
-
-# Disable RESUME (suspend/resume is currently broken anyway!) which speeds up boot massively
-mkdir -p ${work_dir}/etc/initramfs-tools/conf.d/
-echo 'RESUME=none' > ${work_dir}/etc/initramfs-tools/conf.d/resume
-
 # Third stage
 cat <<EOF >> "${work_dir}"/third-stage
 status_stage3 'Enable ttySAC2 in udev links config'
@@ -52,6 +44,9 @@ status_stage3 'Serial console settings'
 #T1:12345:respawn:/bin/login -f root ttySAC2 /dev/ttySAC2 2>&1' >> /etc/inittab
 # Make sure ttySACX is in root/etc/securetty so root can login on serial console below
 echo 'T1:12345:respawn:/bin/login -f root ttySAC2 /dev/ttySAC2 2>&1' >> /etc/inittab
+
+status_stage3 'Enable login over serial (No password)'
+echo "T0:23:respawn:/sbin/agetty -L ttySAC2 115200 vt100" >> /etc/inittab
 EOF
 
 # Run third stage

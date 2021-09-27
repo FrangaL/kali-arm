@@ -30,6 +30,9 @@ eatmydata apt-get install -y linux-image-armmp u-boot-menu
 
 status_stage3 'Copy rpi services'
 cp -p /bsp/services/rpi/*.service /etc/systemd/system/
+
+status_stage3 'Enable login over serial (No password)'
+echo "T0:23:respawn:/sbin/agetty -L ttyS0 115200 vt100" >> /etc/inittab
 EOF
 
 # Run third stage

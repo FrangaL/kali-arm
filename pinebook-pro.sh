@@ -43,6 +43,9 @@ systemctl enable bluetooth
 
 status_stage3 'Enable suspend2idle'
 sed -i s/"#SuspendState=mem standby freeze"/"SuspendState=freeze"/g /etc/systemd/sleep.conf
+
+status_stage3 'Enable login over serial (No password)'
+echo "T0:23:respawn:/sbin/agetty -L ttyAMA0 115200 vt100" >> /etc/inittab
 EOF
 
 # Run third stage

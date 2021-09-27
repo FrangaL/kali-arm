@@ -24,13 +24,11 @@ include network
 add_interface eth0
 #add_interface wlan0
 
-# Copy directory bsp into build dir
-status "Copy directory bsp into build dir"
-cp -rp bsp "${work_dir}"
-
-# Disable RESUME (suspend/resume is currently broken anyway!) which speeds up boot massively
-mkdir -p ${work_dir}/etc/initramfs-tools/conf.d/
-echo "RESUME=none" > ${work_dir}/etc/initramfs-tools/conf.d/resume
+# Third stage
+cat <<EOF >> "${work_dir}"/third-stage
+status_stage3 'Enable login over serial (No password)'
+echo "T0:23:respawn:/sbin/agetty -L ttyAMA0 115200 vt100" >> /etc/inittab
+EOF
 
 # Run third stage
 include third_stage

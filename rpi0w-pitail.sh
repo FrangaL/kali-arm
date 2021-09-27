@@ -19,10 +19,6 @@ desktop=${desktop:-"xfce"}
 # Load default base_image configs
 source ./common.d/base_image.sh
 
-# Copy directory bsp into build dir
-status "Copy directory bsp into build dir"
-cp -rp bsp "${work_dir}"
-
 # Download Pi-Tail files
 git clone --depth 1 https://github.com/re4son/Kali-Pi ${work_dir}/opt/Kali-Pi
 wget -O ${work_dir}/etc/systemd/system/pi-tail.service https://raw.githubusercontent.com/Re4son/RPi-Tweaks/master/pi-tail/pi-tail.service
@@ -97,6 +93,12 @@ install -m755 /bsp/scripts/copy-user-wpasupplicant.sh /usr/bin/
 status_stage3 'Enable copying of user wpa_supplicant.conf file'
 systemctl enable copy-user-wpasupplicant
 
+status_stage3 'Enabling ssh by putting ssh or ssh.txt file in /boot'
+systemctl enable enable-ssh
+
+status_stage3 'Disable haveged daemon'
+systemctl disable haveged
+
 status_stage3 'Whitelist /dev/ttyGS0 so that users can login over the gadget serial device if they enable it'
 # https://github.com/offensive-security/kali-arm-build-scripts/issues/151
 echo "ttyGS0" >> /etc/securetty
@@ -156,6 +158,9 @@ chmod 0600 /home/kali/.vnc/passwd
 
 status_stage3 'Remove the creation of the kali user, since we do it above'
 rm /etc/runonce.d/00-add-user
+
+status_stage3 'Enable login over serial (No password)'
+echo "T0:23:respawn:/sbin/agetty -L ttyAMA0 115200 vt100" >> /etc/inittab
 EOF
 
 # Run third stage

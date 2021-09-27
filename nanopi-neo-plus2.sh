@@ -30,6 +30,9 @@ eatmydata apt-get install -y linux-image-arm64 u-boot-menu u-boot-sunxi firmware
 
 status_stage3 'Theres no graphical output on this device'
 systemctl set-default multi-user
+
+status_stage3 'Enable login over serial (No password)'
+echo "T0:23:respawn:/sbin/agetty -L ttyAMA0 115200 vt100" >> /etc/inittab
 EOF
 
 # Run third stage

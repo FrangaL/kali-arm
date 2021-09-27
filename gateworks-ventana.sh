@@ -31,6 +31,9 @@ eatmydata apt-get install -y isc-dhcp-server || eatmydata apt-get install -y --f
 status_stage3 'Bootloader'
 install -m644 /bsp/bootloader/gateworks-ventana/6x_bootscript-ventana.script /boot/6x_bootscript-ventana.script
 mkimage -A arm -T script -C none -d /boot/6x_bootscript-ventana.script /boot/6x_bootscript-ventana
+
+status_stage3 'Enable login over serial (No password)'
+echo "T1:12345:respawn:/sbin/getty -L ttymxc1 115200 vt100" >> /etc/inittab
 EOF
 
 # Run third stage

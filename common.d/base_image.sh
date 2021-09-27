@@ -83,9 +83,6 @@ systemctl enable ssh
 status_stage3 'Generate SSH host keys on first run'
 systemctl enable regenerate_ssh_host_keys
 
-status_stage3 'Enabling ssh by putting ssh or ssh.txt file in /boot'
-systemctl enable enable-ssh
-
 status_stage3 'Copy script growpart'
 install -m755 /bsp/scripts/growpart /usr/local/bin/
 
@@ -110,12 +107,6 @@ sed -i -e 's/FONTSIZE=.*/FONTSIZE="6x12"/' /etc/default/console-setup
 
 status_stage3 'Fix startup time from 5 minutes to 15 secs on raise interface wlan0'
 sed -i 's/^TimeoutStartSec=5min/TimeoutStartSec=15/g' "/usr/lib/systemd/system/networking.service"
-
-status_stage3 'Disable haveged daemon'
-systemctl disable haveged
-
-status_stage3 'Enable login over serial (No password)'
-echo "T0:23:respawn:/sbin/agetty -L ttyAMA0 115200 vt100" >> /etc/inittab
 EOF
 
 if [ "${desktop}" != "none" ]; then

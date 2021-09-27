@@ -23,6 +23,12 @@ source ./common.d/base_image.sh
 include network
 add_interface eth0
 
+# Third stage
+cat <<EOF >> "${work_dir}"/third-stage
+status_stage3 'Enable login over serial (No password)'
+echo "T0:23:respawn:/sbin/agetty -L ttymxc0 115200 vt100" >> /etc/inittab
+EOF
+
 # Run third stage
 include third_stage
 

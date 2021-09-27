@@ -32,17 +32,20 @@ status_stage3 'Script mode wlan monitor START/STOP'
 install -m755 /bsp/scripts/monstart /usr/bin/
 install -m755 /bsp/scripts/monstop /usr/bin/
 
-status_stage3 'Copy script for handling wpa_supplicant file'
-install -m755 /bsp/scripts/copy-user-wpasupplicant.sh /usr/bin/
-
 status_stage3 'Install the kernel packages'
 echo "deb http://http.re4son-kernel.com/re4son kali-pi main" > /etc/apt/sources.list.d/re4son.list
 wget -qO /etc/apt/trusted.gpg.d/kali_pi-archive-keyring.gpg https://re4son-kernel.com/keys/http/kali_pi-archive-keyring.gpg
 eatmydata apt-get update
 eatmydata apt-get install -y ${re4son_pkgs}
 
+status_stage3 'Copy script for handling wpa_supplicant file'
+install -m755 /bsp/scripts/copy-user-wpasupplicant.sh /usr/bin/
+
 status_stage3 'Enable copying of user wpa_supplicant.conf file'
 systemctl enable copy-user-wpasupplicant
+
+status_stage3 'Enabling ssh by putting ssh or ssh.txt file in /boot'
+systemctl enable enable-ssh
 EOF
 
 # Run third stage

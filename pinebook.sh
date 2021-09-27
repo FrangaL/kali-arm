@@ -25,16 +25,6 @@ source ./common.d/base_image.sh
 #include network
 #add_interface wlan0
 
-# Copy directory bsp into build dir
-status "Copy directory bsp into build dir"
-cp -rp bsp "${work_dir}"
-
-# Disable RESUME (suspend/resume is currently broken anyway!) which speeds up boot massively
-mkdir -p ${work_dir}/etc/initramfs-tools/conf.d/
-cat << EOF > ${work_dir}/etc/initramfs-tools/conf.d/resume
-RESUME=none
-EOF
-
 # Third stage
 cat <<EOF >> "${work_dir}"/third-stage
 status_stage3 'Copy rpi services'
@@ -80,6 +70,9 @@ dkms install rtl8723cs/2020.02.27 -k 5.10.0-kali9-arm64
 
 status_stage3 'Replace the conf file after we have built the module and hope for the best'
 cp /bsp/configs/pinebook-dkms.conf /usr/src/rtl8723cs-2020.02.27/dkms.conf
+
+status_stage3 'Enable login over serial (No password)'
+echo "T0:23:respawn:/sbin/agetty -L ttyAMA0 115200 vt100" >> /etc/inittab
 EOF
 
 # Run third stage
