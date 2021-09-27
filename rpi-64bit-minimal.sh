@@ -8,7 +8,7 @@
 #
 
 # Hardware model
-hw_model=${hw_model:-"rpi4"}
+hw_model=${hw_model:-"rpi"}
 # Architecture
 architecture=${architecture:-"arm64"}
 # Variant name for image and dir build
