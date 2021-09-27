@@ -176,8 +176,8 @@ mkfs -O "$features" -t "$fstype" -L ROOTFS "${rootp}"
 
 # Create the dirs for the partitions and mount them
 status "Create the dirs for the partitions and mount them"
-mkdir -p ${base_dir}/root
-mount ${rootp} ${base_dir}/root
+mkdir -p "${base_dir}"/root
+mount ${rootp} "${base_dir}"/root
 
 # Create an fstab so that we don't mount / read-only
 status "Fix rootfs entry in /etc/fstab"
@@ -195,7 +195,7 @@ status "Set the default options in /etc/default/u-boot"
 echo 'U_BOOT_MENU_LABEL="Kali Linux"' >> ${work_dir}/etc/default/u-boot
 echo 'U_BOOT_PARAMETERS="console=tty1 consoleblank=0 ro rootwait"' >> ${work_dir}/etc/default/u-boot
 
-status "Rsyncing rootfs to image file"
+status "Rsyncing rootfs into image file"
 rsync -HPavz -q ${work_dir}/ ${base_dir}/root/
 sync
 

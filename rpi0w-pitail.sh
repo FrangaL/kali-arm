@@ -335,6 +335,8 @@ mount "${bootp}" "${base_dir}"/root/boot
 
 status "Rsyncing rootfs into image file"
 rsync -HPavz -q --exclude boot "${work_dir}"/ "${base_dir}"/root/
+sync
+
 status "Rsyncing rootfs into image file (/boot)"
 rsync -rtx -q "${work_dir}"/boot "${base_dir}"/root
 sync

@@ -252,6 +252,7 @@ EOF
 
 status "Rsyncing rootfs into image file"
 rsync -HPavz -q "${work_dir}"/ "${base_dir}"/root/
+sync
 
 # Flush buffers and bytes - this is nicked from the Devuan arm-sdk
 blockdev --flushbufs "${loopdevice}"
