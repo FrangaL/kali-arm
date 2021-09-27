@@ -267,4 +267,4 @@ status() {
   log "[i] ${status_i}/${status_t}: $1" green
 }
 status_i=0
-status_t=$(grep '^status ' $0 | wc -l)
+status_t=$(grep '^status ' $0 common.d/*.sh | wc -l)
