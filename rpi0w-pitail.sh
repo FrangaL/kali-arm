@@ -17,7 +17,7 @@ variant=${variant:-"${architecture}"}
 desktop=${desktop:-"xfce"}
 
 # Load default base_image configs
-include base_image
+source ./common.d/base_image.sh
 
 # Copy directory bsp into build dir
 status "Copy directory bsp into build dir"

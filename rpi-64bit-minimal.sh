@@ -17,7 +17,7 @@ variant=${variant:-"minimal-${architecture}"}
 desktop=${desktop:-"none"}
 
 # Load default base_image configs
-include base_image
+source ./common.d/base_image.sh
 
 # Network configs
 include network

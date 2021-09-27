@@ -17,7 +17,7 @@ variant=${variant:-"${architecture}"}
 desktop=${desktop:-"xfce"}
 
 # Load default base_image configs
-include base_image
+source ./common.d/base_image.sh
 
 # Do not include wlan0 on a wireless only device, otherwise NetworkManager won't run
 # wlan0 requires special editing of the /etc/network/interfaces.d/wlan0 file, to add the wireless network and ssid

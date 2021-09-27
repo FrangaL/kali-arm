@@ -17,7 +17,7 @@ variant=${variant:-"${architecture}"}
 desktop=${desktop:-"xfce"}
 
 # Load default base_image configs
-include base_image
+source ./common.d/base_image.sh
 
 # Do *NOT* include wlan0 if using a desktop otherwise NetworkManager will ignore it
 # Network configs

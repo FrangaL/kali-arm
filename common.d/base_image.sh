@@ -6,9 +6,6 @@
 # Stop on error
 set -e
 
-# Say where we are
-log "base_image" green
-
 # shellcheck disable=SC2154
 # Load general functions
 # shellcheck source=/dev/null

@@ -17,7 +17,7 @@ variant=${variant:-"${architecture}"}
 desktop=${desktop:-"xfce"}
 
 # Load default base_image configs
-include base_image
+source ./common.d/base_image.sh
 
 # Third stage
 cat <<EOF >> "${work_dir}"/third-stage
