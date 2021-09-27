@@ -40,10 +40,6 @@ cat <<EOF >> "${work_dir}"/third-stage
 status_stage3 'Copy rpi services'
 cp -p /bsp/services/rpi/*.service /etc/systemd/system/
 
-status_stage3 'Script mode wlan monitor START/STOP'
-install -m755 /bsp/scripts/monstart /usr/bin/
-install -m755 /bsp/scripts/monstop /usr/bin/
-
 status_stage3 'Install the kernel packages'
 eatmydata apt-get install -y dkms linux-image-arm64 u-boot-menu u-boot-sunxi
 

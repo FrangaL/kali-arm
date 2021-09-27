@@ -86,7 +86,7 @@ status "Rsyncing rootfs into image file"
 rsync -HPavz -q ${work_dir}/ ${base_dir}/root/
 sync
 
-status "dd to ${loopdevice}"
+status "dd to ${loopdevice} (u-boot bootloader)"
 dd if=${work_dir}/usr/lib/u-boot/Bananapro/u-boot-sunxi-with-spl.bin of=${loopdevice} bs=1024 seek=8
 
 # Load default finish_image configs

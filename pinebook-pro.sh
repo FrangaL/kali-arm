@@ -223,9 +223,8 @@ status "Rsyncing rootfs into image file"
 rsync -HPavz -q "${work_dir}"/ "${base_dir}"/root/
 sync
 
-## Nick the u-boot from Manjaro ARM to see if my compilation was somehow
-## screwing things up
-status "dd to ${loopdevice}"
+# Nick the u-boot from Manjaro ARM to see if my compilation was somehow screwing things up
+status "dd to ${loopdevice} (u-boot bootloader)"
 cp ${current_dir}/bsp/bootloader/pinebook-pro/idbloader.img ${current_dir}/bsp/bootloader/pinebook-pro/trust.img ${current_dir}/bsp/bootloader/pinebook-pro/uboot.img ${base_dir}/root/boot/
 dd if=${current_dir}/bsp/bootloader/pinebook-pro/idbloader.img of=${loopdevice} seek=64 conv=notrunc
 dd if=${current_dir}/bsp/bootloader/pinebook-pro/uboot.img of=${loopdevice} seek=16384 conv=notrunc

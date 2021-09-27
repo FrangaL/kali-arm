@@ -31,15 +31,15 @@ cp -p /bsp/services/rpi/*.service /etc/systemd/system/
 status_stage3 'Install the kernel packages'
 eatmydata apt-get install -y linux-image-armmp u-boot-menu u-boot-sunxi
 
-status_stage3 'Regenerated the shared-mime-info database on the first boot since it fails to do so properly in a chroot'
-systemctl enable smi-hack
-
 status_stage3 'Load the ethernet module since it does not load automatically at boot'
 echo "sunxi_emac" >> /etc/modules
 
 status_stage3 'Create xorg config snippet to use fbdev driver' 
 mkdir -p /etc/X11/xorg.conf.d/
 cp /bsp/xorg/20-fbdev.conf /etc/X11/xorg.conf.d/
+
+status_stage3 'Enable login over serial (No password)'
+echo "T0:23:respawn:/sbin/agetty -L ttyS0 115200 vt100" >> /etc/inittab
 EOF
 
 # Run third stage
@@ -96,7 +96,7 @@ status "Rsyncing rootfs into image file"
 rsync -HPavz -q ${work_dir}/ ${base_dir}/root/
 sync
 
-status "dd to ${loopdevice}"
+status "dd to ${loopdevice} (u-boot bootloader)"
 dd if=${work_dir}/usr/lib/u-boot/Bananapi/u-boot-sunxi-with-spl.bin of=${loopdevice} bs=1024 seek=8
 
 # Load default finish_image configs

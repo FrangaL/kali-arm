@@ -34,12 +34,16 @@ set_hostname "${hostname}"
 # Network configs
 include network
 
+# Disable suspend/resume - speeds up boot massively
+mkdir -p "${work_dir}/etc/initramfs-tools/conf.d/"
+echo "RESUME=none" > "${work_dir}/etc/initramfs-tools/conf.d/resume"
+
 # Copy directory bsp into build dir
 status "Copy directory bsp into build dir"
 cp -rp bsp "${work_dir}"
 
 # Third stage
-cat <<EOF > "${work_dir}"/third-stage
+cat <<EOF > "${work_dir}/third-stage"
 #!/usr/bin/env bash
 set -e
 status_3i=0
