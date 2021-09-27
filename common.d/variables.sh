@@ -68,5 +68,6 @@ if [ -f "${current_dir}"/builder.txt ]; then
 
   [ "${debug}" = 1 ] \
     && grep -v '#' "${current_dir}"/builder.txt \
-      | sort -u
+      | sort -u \
+    || true
 fi
