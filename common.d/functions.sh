@@ -88,7 +88,7 @@ function include() {
   fi
 }
 
-# systemd-nspawn enviroment
+# systemd-nspawn environment
 # Putting quotes around $extra_args causes systemd-nspawn to pass the extra arguments as 1, so leave it unquoted.
 function systemd-nspawn_exec() {
   log "systemd-nspawn_exec" green
