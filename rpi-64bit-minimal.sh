@@ -51,11 +51,13 @@ EOF
 # Run third stage
 include third_stage
 
-# Configure Raspberry PI firmware
+# Configure Raspberry Pi firmware (set config.txt to 64-bit)
 include rpi_firmware
-# Compile Raspberry PI userland
+
+# Compile Raspberry Pi userland
 include rpi_userland
-# Finish tunning and clean system
+
+# Clean system
 include clean_system
 trap clean_build ERR SIGTERM SIGINT
 

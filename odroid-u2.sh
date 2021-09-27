@@ -442,7 +442,7 @@ rootp=${device}p2
 
 # Create file systems
 mkfs.vfat -n BOOT ${bootp}
-# Disable 64bit on ext3/4 because the u-boot from 2010 is too old
+# Disable 64-bit on ext3/4 because the u-boot from 2010 is too old
 if [[ $fstype == ext4 ]]; then
   features="-O ^64bit,^metadata_csum"
 elif [[ $fstype == ext3 ]]; then

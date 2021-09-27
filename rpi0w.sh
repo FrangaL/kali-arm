@@ -53,8 +53,9 @@ EOF
 # Run third stage
 include third_stage
 
-# Configure RaspberryPi firmware (set config.txt to 64bit)
+# Configure Raspberry Pi firmware
 include rpi_firmware
+
 # Clean system
 include clean_system
 trap clean_build ERR SIGTERM SIGINT
