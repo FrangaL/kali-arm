@@ -335,25 +335,5 @@ dd if=${current_dir}/bsp/bootloader/pinebook-pro/trust.img of=${loopdevice} seek
 
 #TARGET="/usr/lib/u-boot/pinebook-pro-rk3399" /usr/bin/u-boot-install-rockchip ${loopdevice}
 
-# Flush buffers and bytes - this is nicked from the Devuan arm-sdk
-blockdev --flushbufs "${loopdevice}"
-python3 -c 'import os; os.fsync(open("'${loopdevice}'", "r+b"))'
-
-# Unmount filesystem
-status "Unmount filesystem"
-umount -l "${rootp}"
-
-# Check filesystem
-status "Check filesystem"
-e2fsck -y -f "${rootp}"
-
-# Remove loop devices
-status "Remove loop devices"
-kpartx -dv "${loopdevice}" 
-losetup -d "${loopdevice}"
-
-# Compress image compilation
-include compress_img
-
-# Clean up all the temporary build stuff and remove the directories
-clean_build
+# Load default finish_image configs
+include finish_image

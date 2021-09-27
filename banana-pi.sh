@@ -199,28 +199,8 @@ status "Rsyncing rootfs into image file"
 rsync -HPavz -q ${work_dir}/ ${base_dir}/root/
 sync
 
-# Flush buffers and bytes - this is nicked from the Devuan arm-sdk
-blockdev --flushbufs "${loopdevice}"
-python3 -c 'import os; os.fsync(open("'${loopdevice}'", "r+b"))'
-
-# Unmount filesystem
-status "Unmount filesystem"
-umount -l "${rootp}"
-
 status "dd to ${loopdevice}"
 dd if=${work_dir}/usr/lib/u-boot/Bananapi/u-boot-sunxi-with-spl.bin of=${loopdevice} bs=1024 seek=8
 
-# Check filesystem
-status "Check filesystem"
-e2fsck -y -f "${rootp}"
-
-# Remove loop devices
-status "Remove loop devices"
-kpartx -dv "${loopdevice}"
-losetup -d "${loopdevice}"
-
-# Compress image compilation
-include compress_img
-
-# Clean up all the temporary build stuff and remove the directories
-clean_build
+# Load default finish_image configs
+include finish_image

@@ -262,27 +262,5 @@ dd conv=notrunc if=${work_dir}/usr/lib/u-boot/pinebook/sunxi-spl.bin of=${loopde
 dd conv=notrunc if=${work_dir}/usr/lib/u-boot/pinebook/u-boot-sunxi-with-spl.fit.itb of=${loopdevice} bs=8k seek=5
 sync
 
-cd "${current_dir}/"
-
-# Flush buffers and bytes - this is nicked from the Devuan arm-sdk
-blockdev --flushbufs "${loopdevice}"
-python3 -c 'import os; os.fsync(open("'${loopdevice}'", "r+b"))'
-
-# Unmount filesystem
-status "Unmount filesystem"
-umount -l "${rootp}"
-
-# Check filesystem
-status "Check filesystem"
-e2fsck -y -f "${rootp}"
-
-# Remove loop devices
-status "Remove loop devices"
-kpartx -dv "${loopdevice}" 
-losetup -d "${loopdevice}"
-
-# Compress image compilation
-include compress_img
-
-# Clean up all the temporary build stuff and remove the directories
-clean_build
+# Load default finish_image configs
+include finish_image

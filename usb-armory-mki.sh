@@ -282,26 +282,5 @@ make usbarmory_config
 make ARCH=arm
 dd if=u-boot.imx of=${loopdevice} bs=512 seek=2 conv=fsync
 
-cd "${current_dir}/"
-
-# Flush buffers and bytes - this is nicked from the Devuan arm-sdk
-blockdev --flushbufs "${loopdevice}"
-python3 -c 'import os; os.fsync(open("'${loopdevice}'", "r+b"))'
-
-# Unmount filesystem
-status "Unmount filesystem"
-umount -l "${rootp}"
-
-# Check filesystem
-status "Check filesystem"
-e2fsck -y -f "${rootp}"
-
-# Remove loop devices
-status "Remove loop devices"
-losetup -d "${loopdevice}"
-
-# Compress image compilation
-include compress_img
-
-# Clean up all the temporary build stuff and remove the directories
-clean_build
+# Load default finish_image configs
+include finish_image

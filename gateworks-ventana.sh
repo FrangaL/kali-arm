@@ -254,25 +254,6 @@ status "Rsyncing rootfs into image file"
 rsync -HPavz -q "${work_dir}"/ "${base_dir}"/root/
 sync
 
-# Flush buffers and bytes - this is nicked from the Devuan arm-sdk
-blockdev --flushbufs "${loopdevice}"
-python3 -c 'import os; os.fsync(open("'${loopdevice}'", "r+b"))'
+# Load default finish_image configs
+include finish_image
 
-# Unmount filesystem
-status "Unmount filesystem"
-umount -l "${rootp}"
-
-# Check filesystem
-status "Check filesystem"
-e2fsck -y -f "${rootp}"
-
-# Remove loop devices
-status "Remove loop devices"
-kpartx -dv "${loopdevice}" 
-losetup -d "${loopdevice}"
-
-# Compress image compilation
-include compress_img
-
-# Clean up all the temporary build stuff and remove the directories
-clean_build
