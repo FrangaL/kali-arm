@@ -126,10 +126,25 @@ function restore_mirror() {
 
 # Limit CPU function
 function limit_cpu() {
-  if [[ ${cpu_limit:=} -eq "0" || -z $cpu_limit ]]; then
+  if [[ ${cpu_limit:=} -lt "1" ]]; then
+    cpu_limit=-1
+    log "CPU limiting has been disabled" yellow
+    eval "${@}"
+    return $?
+  elif ! grep -q 'cgroup_enable=memory swapaccount=1' /proc/cmdline; then
+    log "Kernel may not support CPU limiting (cgroups)" red
+    log "If you have issues, you may wish to: $ echo 'cpu_limit=-1' >> ./builder.txt"
+  elif [[ ${cpu_limit:=} -gt "100" ]]; then
+    log "CPU limit (${cpu_limit}) is higher than 100" yellow
+    cpu_limit=100
+  fi
+
+if [[ -z $cpu_limit ]]; then
+    log "CPU limit unset" yellow
     local cpu_shares=$((num_cores * 1024))
     local cpu_quota="-1"
   else
+    log "Limiting CPU (${cpu_limit}%)" yellow
     local cpu_shares=$((1024 * num_cores * cpu_limit / 100))  # 1024 max value per core
     local cpu_quota=$((100000 * num_cores * cpu_limit / 100)) # 100000 max value per core
   fi
@@ -151,10 +166,10 @@ function limit_cpu() {
     cgexec -g cpu:cpulimit-"$rand" "$@" && break || {
       if [[ $n -lt $max ]]; then
         ((n++))
-        log "Command failed. Attempt $n/$max " red
+        log "Command failed. Attempt $n/$max" red
         sleep $delay
       else
-        log "The command has failed after $n attempts." yellow
+        log "The command has failed after $n attempts" yellow
         break
       fi
     }
@@ -258,7 +273,7 @@ function clean_build() {
 # Show progress
 status() {
   status_i=$((status_i+1))
-  log "[i] ${status_i}/${status_t}: $1" green
+  log "[i] ${status_i}/${status_t}: $1 ($(date +"%Y-%m-%d %H:%M:%S"))" green
 }
 status_i=0
 status_t=$(grep '^status ' $0 | wc -l)

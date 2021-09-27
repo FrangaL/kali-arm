@@ -57,12 +57,13 @@ $
 
 ### Custom Values
 
-Changing [builder.txt](builder.txt.example), will allow for custom values, such as using a local LAN mirror:
+Changing [builder.txt](builder.txt.example), will allow for custom values, such as using a local LAN mirror and disabling CPU limiting:
 
 ```
 $ echo 'mirror="http://192.168.1.100/kali"' > ./builder.txt
+$ echo 'cpu_limit=-1' >> ./builder.txt
 ```
 
 - - -
 
-Sat Sep 19 03:34:36 UTC 2021
+Sat Sep 25 05:50:50 UTC 2021
