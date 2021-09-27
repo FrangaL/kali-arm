@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
-# Kali Linux ARM build-script for Mini-X
-# https://gitlab.com/kalilinux/build-scripts/kali-arm
+# Kali Linux ARM build-script for Mini-X (32-bit)
+# Source: https://gitlab.com/kalilinux/build-scripts/kali-arm
 #
 # This is a community script - you will need to generate your own image to use
 # More information: https://www.kali.org/docs/arm/mini-x/

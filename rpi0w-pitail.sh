@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 #
-# Kali Linux ARM build-script for Raspberry Pi Zero W (Pi-Tail)
-# https://gitlab.com/kalilinux/build-scripts/kali-arm
+# Kali Linux ARM build-script for Raspberry Pi Zero W (Pi-Tail) (32-bit)
+# Source: https://gitlab.com/kalilinux/build-scripts/kali-arm
 #
-# This is a supported device - which you can find pre-generated images for
+# This is a supported device - which you can find pre-generated images for: https://www.kali.org/get-kali/
 # More information: https://www.kali.org/docs/arm/raspberry-pi-zero-w-pi-tail/
 #
 

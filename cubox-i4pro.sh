@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
-# Kali Linux ARM build-script for CuBox-i4Pro - Freescale based NOT the original Marvell based
-# https://gitlab.com/kalilinux/build-scripts/kali-arm
+# Kali Linux ARM build-script for CuBox-i4Pro (32-bit) - Freescale based NOT the original Marvell based
+# Source: https://gitlab.com/kalilinux/build-scripts/kali-arm
 #
 # This is a community script - you will need to generate your own image to use
 # More information: https://www.kali.org/docs/arm/cubox-i4pro/

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # Kali Linux ARM build-script for Raspberry Pi 2 1.2/3/4/400 (64-bit) (Minimal)
-# https://gitlab.com/kalilinux/build-scripts/kali-arm
+# Source: https://gitlab.com/kalilinux/build-scripts/kali-arm
 #
 # This is a community script - you will need to generate your own image to use
 # More information: https://www.kali.org/docs/arm/raspberry-pi-2-1.2/
