@@ -131,9 +131,6 @@ function limit_cpu() {
     log "CPU limiting has been disabled" yellow
     eval "${@}"
     return $?
-  elif ! grep -q 'cgroup_enable=memory swapaccount=1' /proc/cmdline; then
-    log "Kernel may not support CPU limiting (cgroups)" red
-    log "If you have issues, you may wish to: $ echo 'cpu_limit=-1' >> ./builder.txt"
   elif [[ ${cpu_limit:=} -gt "100" ]]; then
     log "CPU limit (${cpu_limit}) is higher than 100" yellow
     cpu_limit=100
