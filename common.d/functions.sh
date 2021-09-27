@@ -253,7 +253,7 @@ function make_image() {
 
 # Clean up all the temporary build stuff and remove the directories.
 function clean_build() {
-  log "Cleaning up the temporary build files..." yellow
+  log "Cleaning up the temporary build files" green
   #rm -rf "${base_dir}"
   rm -rf "${work_dir}"
   log "Done" green
