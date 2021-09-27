@@ -109,6 +109,8 @@ function disable_proxy() {
     log "Disable proxy" green
     unset http_proxy
     rm -rf "${work_dir}"/etc/apt/apt.conf.d/66proxy
+  else
+    log "Proxy enabled" yellow
   fi
 }
 
@@ -215,6 +217,8 @@ function make_swap() {
     echo 'vm.swappiness = 50' >>"${work_dir}"/etc/sysctl.conf
     systemd-nspawn_exec apt-get install -y dphys-swapfile >/dev/null 2>&1
     #sed -i 's/#CONF_SWAPSIZE=/CONF_SWAPSIZE=128/g' ${work_dir}/etc/dphys-swapfile
+  else
+    log "Make Swap: Disabled" yellow
   fi
 }
 
