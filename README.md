@@ -45,7 +45,10 @@ $ ./rpi.sh --help
 # Desktop manager (xfce, gnome, kde, i3, lxde, mate, e17 or none)
 ./rpi.sh --desktop kde
 
-# Enable debug & log file
+# Minimal image - no desktop manager & default tools
+./rpi.sh --minimal
+
+# Enable debug & log file (./logs/<file>.log)
 ./rpi.sh --debug
 
 # Help screen (this)

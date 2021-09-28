@@ -26,7 +26,10 @@ function usage() {
   echo "# Desktop manager (xfce, gnome, kde, i3, lxde, mate, e17 or none)"
   echo "$0 --desktop kde"
   echo ""
-  echo "# Enable debug & log file"
+  echo "# Minimal image - no desktop manager & default tools"
+  echo "$0 --minimal"
+  echo ""
+  echo "# Enable debug & log file (./logs/<file>.log)"
   echo "$0 --debug"
   echo ""
   echo "# Help screen (this)"
@@ -47,6 +50,17 @@ function debug_enable() {
   debug=1
 }
 
+# Minimal variant mode
+function minimal_mode() {
+  log "Minimal image mode" green
+
+  # Variant name for image and dir build
+  variant=${"minimal-${architecture}"}
+
+  # Disable Desktop Manager
+  desktop=${"none"}
+}
+
 # Arguments function
 function arguments() {
   while [[ $# -gt 0 ]]; do
@@ -62,6 +76,8 @@ function arguments() {
         desktop="$1"; shift;;
       --desktop=*)
         desktop="${opt#*=}";;
+      --minimal)
+        minimal_mode;;
       -d | --debug)
         debug_enable;;
       -h | --help)
