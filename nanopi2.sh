@@ -102,6 +102,12 @@ echo 'console-common console-data/keymap/full select en-latin1-nodeadkeys' | deb
 status_stage3 'Copy all services'
 cp -p /bsp/services/all/*.service /etc/systemd/system/
 
+status_stage3 'Copy script rpi-resizerootfs'
+install -m755 /bsp/scripts/rpi-resizerootfs /usr/sbin/
+install -m755 /bsp/scripts/growpart /usr/local/bin/
+
+status_stage3 'Enable rpi-resizerootfs first boot'
+systemctl enable rpi-resizerootfs
 
 status_stage3 'Generate SSH host keys on first run'
 systemctl enable regenerate_ssh_host_keys
