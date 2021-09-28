@@ -80,7 +80,7 @@ function arguments() {
         minimal_mode;;
       -d | --debug)
         debug_enable;;
-      -h | --help)
+      -h | -help | --help)
         usage;;
       *)
         log "Unknown option: ${opt}" red; exit 1;;
