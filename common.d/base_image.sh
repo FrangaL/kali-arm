@@ -63,10 +63,22 @@ eatmydata apt-get -y install ${third_stage_pkgs}
 
 status_stage3 'Install packages'
 eatmydata apt-get install -y ${packages} || eatmydata apt-get install -y --fix-broken
+EOF
 
-status_stage3 'ntp doesn't always sync the date, but systemd's timesyncd does, so we remove ntp and reinstall it with this'
+if [ "${desktop}" != "none" ]; then
+  log "Desktop mode enabled: ${desktop}" green
+  cat <<EOF >> "${work_dir}/third-stage"
+status_stage3 'Install desktop packages'
+eatmydata apt-get install -y ${desktop_pkgs} ${extra} || eatmydata apt-get install -y --fix-broken
+
+status_stage3 'Allow users to use NetworkManager over SSH'
+install -m644 /bsp/polkit/10-NetworkManager.pkla /var/lib/polkit-1/localauthority/50-local.d
+EOF
+fi
+
+cat <<EOF >> "${work_dir}/third-stage"
+status_stage3 'ntp does not always sync the date, but systemd-timesyncd does, so we remove ntp and reinstall it with this'
 eatmydata apt-get install -y systemd-timesyncd --autoremove
-
 
 status_stage3 'Linux console/keyboard configuration'
 echo 'console-common console-data/keymap/policy select Select keymap from full list' | debconf-set-selections
@@ -106,14 +118,3 @@ sed -i -e 's/FONTSIZE=.*/FONTSIZE="6x12"/' /etc/default/console-setup
 status_stage3 'Fix startup time from 5 minutes to 15 secs on raise interface wlan0'
 sed -i 's/^TimeoutStartSec=5min/TimeoutStartSec=15/g' "/usr/lib/systemd/system/networking.service"
 EOF
-
-if [ "${desktop}" != "none" ]; then
-  log "Desktop mode enabled: ${desktop}" green
-  cat <<EOF >> "${work_dir}/third-stage"
-status_stage3 'Install desktop packages'
-eatmydata apt-get install -y ${desktop_pkgs} ${extra} || eatmydata apt-get install -y --fix-broken
-
-status_stage3 'Allow users to use NetworkManager over ssh'
-install -m644 /bsp/polkit/10-NetworkManager.pkla /var/lib/polkit-1/localauthority/50-local.d
-EOF
-fi
