@@ -84,6 +84,9 @@ function include() {
     return 0
   else
     log " ⚠️  Fail to load ${file} file" red
+    [ "${debug}" = 1 ] \
+      && pwd
+      || true
     exit 1
   fi
 }
