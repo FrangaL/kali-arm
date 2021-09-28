@@ -119,7 +119,8 @@ cd /root
 apt download -o APT::Sandbox::User=root ca-certificates 2>/dev/null
 
 status_stage3 'Set a REGDOMAIN'
-sed -i -e 's/REGDOM.*/REGDOMAIN=00/g' /etc/default/crda
+# sometimes the package is not installed, so we ignore the error
+sed -i -e 's/REGDOM.*/REGDOMAIN=00/g' /etc/default/crda || true
 
 status_stage3 'Enable login over serial'
 echo "T0:23:respawn:/sbin/agetty -L ttyAMA0 115200 vt100" >> /etc/inittab
