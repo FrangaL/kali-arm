@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # Kali Linux ARM build-script for Raspberry Pi 2 1.2/3/4/400 (64-bit) (Minimal)
-# https://gitlab.com/kalilinux/build-scripts/kali-arm
+# Source: https://gitlab.com/kalilinux/build-scripts/kali-arm
 #
 # This is a community script - you will need to generate your own image to use
 # More information: https://www.kali.org/docs/arm/raspberry-pi-2-1.2/
@@ -230,3 +230,7 @@ include compress_img
 # Clean up all the temporary build stuff and remove the directories
 # Comment this out to keep things around if you want to see what may have gone wrong
 clean_build
+
+# Quit
+log "Done" green
+exit 0

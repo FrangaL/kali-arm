@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 #
 # Kali Linux ARM build-script for Banana Pi (32-bit)
-# https://gitlab.com/kalilinux/build-scripts/kali-arm
+# Source: https://gitlab.com/kalilinux/build-scripts/kali-arm
 #
-# This is a supported device - which you can find pre-generated images for
+# This is a supported device - which you can find pre-generated images for: https://www.kali.org/get-kali/
 # More information: https://www.kali.org/docs/arm/banana-pi/
 #
 
@@ -224,3 +224,7 @@ include compress_img
 # Clean up all the temporary build stuff and remove the directories
 # Comment this out to keep things around if you want to see what may have gone wrong
 clean_build
+
+# Quit
+log "Done" green
+exit 0

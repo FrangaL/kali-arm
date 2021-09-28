@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
-# Kali Linux ARM build-script for Trimslice
-# https://gitlab.com/kalilinux/build-scripts/kali-arm
+# Kali Linux ARM build-script for Trimslice (32-bit)
+# Source: https://gitlab.com/kalilinux/build-scripts/kali-arm
 #
 # This is a community script - you will need to generate your own image to use
 # More information: https://www.kali.org/docs/arm/trimslice/
@@ -226,3 +226,7 @@ include compress_img
 # Clean up all the temporary build stuff and remove the directories
 # Comment this out to keep things around if you want to see what may have gone wrong
 clean_build
+
+# Quit
+log "Done" green
+exit 0
