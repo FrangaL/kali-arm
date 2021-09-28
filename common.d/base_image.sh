@@ -45,7 +45,9 @@ cp -rp bsp "${work_dir}"
 # Third stage
 cat <<EOF > "${work_dir}/third-stage"
 #!/usr/bin/env bash
+# Stop on error
 set -e
+
 status_3i=0
 status_3t=\$(grep '^status_stage3 ' \$0 | wc -l)
 
@@ -102,7 +104,7 @@ install -m755 /bsp/scripts/rpi-resizerootfs /usr/sbin/
 status_stage3 'Enable rpi-resizerootfs first boot'
 systemctl enable rpi-resizerootfs
 
-status_stage3 'Enable runonce'
+status_stage3 'Enable runonce script'
 install -m755 /bsp/scripts/runonce /usr/sbin/
 cp -rf /bsp/runonce.d /etc
 systemctl enable runonce
@@ -115,6 +117,6 @@ status_stage3 'Try and make the console a bit nicer. Set the terminus font for a
 sed -i -e 's/FONTFACE=.*/FONTFACE="Terminus"/' /etc/default/console-setup
 sed -i -e 's/FONTSIZE=.*/FONTSIZE="6x12"/' /etc/default/console-setup
 
-status_stage3 'Fix startup time from 5 minutes to 15 secs on raise interface wlan0'
+status_stage3 'Fix startup time from 5 minutes to 15 secs on raise interface'
 sed -i 's/^TimeoutStartSec=5min/TimeoutStartSec=15/g' "/usr/lib/systemd/system/networking.service"
 EOF
