@@ -28,6 +28,17 @@ if [ -n "${bootp}" ] && [ "${debug}" = 1 ]; then
   status "Check filesystem (dosfsck)"
   dosfsck -w -r -a -t "${bootp}"
 fi
+
+if [ -n "${bootp}" ] && [ "${debug}"  = 1 ]; then
+ fstype=$(blkid -o export "${bootp}" | grep '^TYPE' | cut -d"=" -f2)
+ status "Check filesystem (dosfsck ${fstype})"
+ if [ "$fstype" = "vfat" ]; then
+  dosfsck -w -r -a -t "${bootp}"
+ else
+  e2fsck -y -f "${bootp}"
+ fi
+fi
+
 status "Check filesystem (e2fsck)"
 e2fsck -y -f "${rootp}"
 
