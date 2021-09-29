@@ -354,7 +354,7 @@ cd "${base_dir}"
 # Remove loop devices
 losetup -d ${loopdevice}
 
-
+cd "${current_dir}"
 # Compress image compilation
 include compress_img
 
