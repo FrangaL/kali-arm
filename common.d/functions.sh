@@ -128,7 +128,7 @@ function disable_proxy() {
     log "Disable proxy" green
     unset http_proxy
     rm -rf "${work_dir}"/etc/apt/apt.conf.d/66proxy
-  else
+  elif [ "${debug}" = 1 ]; then
     log "Proxy enabled" yellow
   fi
 }
