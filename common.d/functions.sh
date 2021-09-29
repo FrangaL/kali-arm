@@ -101,7 +101,7 @@ function include() {
   else
     log " ⚠️  Fail to load ${file} file" red
     [ "${debug}" = 1 ] \
-      && pwd
+      && pwd \
       || true
     exit 1
   fi

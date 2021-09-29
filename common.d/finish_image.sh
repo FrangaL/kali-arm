@@ -19,7 +19,8 @@ python3 -c 'import os; os.fsync(open("'${loopdevice}'", "r+b"))'
 # Unmount filesystem
 status "Unmount filesystem"
 [ -n "${bootp}" ] \
-  && umount -l "${bootp}"
+  && umount -l "${bootp}" \
+  || true
 umount -l "${rootp}"
 
 
