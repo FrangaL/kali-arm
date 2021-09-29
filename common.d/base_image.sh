@@ -72,9 +72,6 @@ if [ "${desktop}" != "none" ]; then
   cat <<EOF >> "${work_dir}/third-stage"
 status_stage3 'Install desktop packages'
 eatmydata apt-get install -y ${desktop_pkgs} ${extra} || eatmydata apt-get install -y --fix-broken
-
-status_stage3 'Allow users to use NetworkManager over SSH'
-install -m644 /bsp/polkit/10-NetworkManager.pkla /var/lib/polkit-1/localauthority/50-local.d
 EOF
 fi
 
@@ -94,6 +91,9 @@ systemctl enable ssh
 
 status_stage3 'Generate SSH host keys on first run'
 systemctl enable regenerate_ssh_host_keys
+
+status_stage3 'Allow users to use NetworkManager over SSH'
+install -m644 /bsp/polkit/10-NetworkManager.pkla /var/lib/polkit-1/localauthority/50-local.d
 
 status_stage3 'Copy script growpart'
 install -m755 /bsp/scripts/growpart /usr/local/bin/
