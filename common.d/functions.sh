@@ -143,8 +143,13 @@ function restore_mirror() {
   log "Mirror & suite replacement" green
 
   # For now, restore_mirror will put the default kali mirror in, fix after 2021.3
-  echo "deb http://http.kali.org/kali kali-rolling main contrib non-free" > "${work_dir}"/etc/apt/sources.list
-  echo "#deb-src http://http.kali.org/kali kali-rolling main contrib non-free" >> "${work_dir}"/etc/apt/sources.list
+  cat <<EOF> "${work_dir}"/etc/apt/sources.list
+# See https://www.kali.org/docs/general-use/kali-linux-sources-list-repositories/
+deb http://http.kali.org/kali kali-rolling main contrib non-free
+
+# Additional line for source packages
+# deb-src http://http.kali.org/kali kali-rolling main contrib non-free
+EOF
 }
 
 # Limit CPU function
