@@ -23,11 +23,12 @@ status "Unmount filesystem"
   || true
 umount -l "${rootp}"
 
-
 # Check filesystem
-status "Check filesystem"
-[ -n "${bootp}" ] \
-  && dosfsck -w -r -a -t "${bootp}"
+if [ -n "${bootp}" ] && [ "${debug}" = 1 ]; then
+  status "Check filesystem (dosfsck)"
+  dosfsck -w -r -a -t "${bootp}"
+fi
+status "Check filesystem (e2fsck)"
 e2fsck -y -f "${rootp}"
 
 # Remove loop devices
