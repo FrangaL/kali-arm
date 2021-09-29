@@ -28,7 +28,7 @@ cat <<EOF >> "${work_dir}"/third-stage
 status_stage3 'We replace the u-boot menu defaults here so we can make sure the build system does not poison it'
 # We use _EOF_ so that the third-stage script doesn't end prematurely
 cat << '_EOF_' > /etc/default/u-boot
-U_BOOT_PARAMETERS="console=ttyS0,115200 console=tty1 root=/dev/mmcblk0p1 rootwait panic=10 rw rootfstype=$fstype net.ifnames=0"
+U_BOOT_PARAMETERS="console=ttymxc1,115200 console=tty1 root=/dev/mmcblk0p1 rootwait panic=10 rw rootfstype=$fstype net.ifnames=0"
 _EOF_
 
 status_stage3 'Enable login over serial (No password)'
