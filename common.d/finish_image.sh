@@ -44,6 +44,10 @@ e2fsck -y -f "${rootp}"
 
 # Remove loop devices
 status "Remove loop devices"
+[ -n "${bootp}" ] \
+  && dmsetup clear "${bootp}" \
+  || true
+dmsetup clear "${rootp}"
 kpartx -dsv "${loopdevice}"
 losetup -d "${loopdevice}"
 
