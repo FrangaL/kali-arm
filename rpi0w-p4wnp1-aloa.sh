@@ -47,7 +47,7 @@ kaligit="https://gitlab.com/kalilinux"
 githubraw="https://raw.githubusercontent.com"
 # DNS server
 nameserver=${nameserver:-"8.8.8.8"}
-image_dir="${current_dir}/images/"
+image_dir="${repo_dir}/images/"
 
 # Check EUID=0 you can run any binary as root
 if [[ $EUID -ne 0 ]]; then
@@ -70,9 +70,9 @@ if [ ! -e "bsp" ]; then
 fi
 
 # Current directory
-current_dir="$(pwd)"
+repo_dir="$(pwd)"
 # Base directory
-base_dir=${current_dir}/rpi0w-p4wnp1-"$1"
+base_dir=${repo_dir}/rpi0w-p4wnp1-"$1"
 # Working directory
 work_dir="${base_dir}/kali-${architecture}"
 
@@ -80,8 +80,8 @@ work_dir="${base_dir}/kali-${architecture}"
 if [ -e "${base_dir}" ]; then
   echo "${base_dir} directory exists, will not continue" >&2
   exit 1
-elif [[ ${current_dir} =~ [[:space:]] ]]; then
-  echo "The directory "\"${current_dir}"\" contains whitespace. Not supported." >&2
+elif [[ ${repo_dir} =~ [[:space:]] ]]; then
+  echo "The directory "\"${repo_dir}"\" contains whitespace. Not supported." >&2
   exit 1
 else
   echo "The base_dir thinks it is: ${base_dir}"

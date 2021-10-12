@@ -201,7 +201,7 @@ EOF
 # Clean system
 include clean_system
 trap clean_build ERR SIGTERM SIGINT
-cd "${current_dir}/"
+cd "${repo_dir}/"
 
 # Calculate the space to create the image and create
 make_image

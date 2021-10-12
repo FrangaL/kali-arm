@@ -67,9 +67,9 @@ if [ ! -e "bsp" ]; then
 fi
 
 # Current directory
-current_dir="$(pwd)"
+repo_dir="$(pwd)"
 # Base directory
-basedir=${current_dir}/owdk-"$1"
+basedir=${repo_dir}/owdk-"$1"
 # Working directory
 work_dir="${basedir}/kali-${architecture}"
 
@@ -77,8 +77,8 @@ work_dir="${basedir}/kali-${architecture}"
 if [ -e "${basedir}" ]; then
   echo "${basedir} directory exists, will not continue"
   exit 1
-elif [[ ${current_dir} =~ [[:space:]] ]]; then
-  echo "The directory "\"${current_dir}"\" contains whitespace. Not supported."
+elif [[ ${repo_dir} =~ [[:space:]] ]]; then
+  echo "The directory "\"${repo_dir}"\" contains whitespace. Not supported."
   exit 1
 else
   echo "The basedir thinks it is: ${basedir}"
@@ -422,13 +422,13 @@ raw_size=$(($((${free_space}*1024))+${root_extra}+$((${bootsize}*1024))+4096))
 
 # Create the disk and partition it
 echo "Creating image file ${imagename}.img"
-fallocate -l $(echo ${raw_size}Ki | numfmt --from=iec-i --to=si) ${current_dir}/${imagename}.img
-parted -s ${current_dir}/${imagename}.img mklabel msdos
-parted -s ${current_dir}/${imagename}.img mkpart primary fat32 1MiB ${bootsize}MiB
-parted -s -a minimal ${current_dir}/${imagename}.img mkpart primary $fstype ${bootsize}MiB 100%
+fallocate -l $(echo ${raw_size}Ki | numfmt --from=iec-i --to=si) ${repo_dir}/${imagename}.img
+parted -s ${repo_dir}/${imagename}.img mklabel msdos
+parted -s ${repo_dir}/${imagename}.img mkpart primary fat32 1MiB ${bootsize}MiB
+parted -s -a minimal ${repo_dir}/${imagename}.img mkpart primary $fstype ${bootsize}MiB 100%
 
 # Set the partition variables
-loopdevice=$(losetup --show -fP "${current_dir}/${imagename}.img")
+loopdevice=$(losetup --show -fP "${repo_dir}/${imagename}.img")
 bootp="${loopdevice}p1"
 rootp="${loopdevice}p2"
 
@@ -492,11 +492,11 @@ if [ $compress = xz ]; then
   if [ $(arch) == 'x86_64' ]; then
     echo "Compressing ${imagename}.img"
     [ $(nproc) \< 3 ] || cpu_cores=3 # cpu_cores = Number of cores to use
-    limit_cpu pixz -p ${cpu_cores:-2} ${current_dir}/${imagename}.img # -p Nº cpu cores use
-    chmod 644 ${current_dir}/${imagename}.img.xz
+    limit_cpu pixz -p ${cpu_cores:-2} ${repo_dir}/${imagename}.img # -p Nº cpu cores use
+    chmod 644 ${repo_dir}/${imagename}.img.xz
   fi
 else
-  chmod 644 ${current_dir}/${imagename}.img
+  chmod 644 ${repo_dir}/${imagename}.img
 fi
 
 # Clean up all the temporary build stuff and remove the directories.

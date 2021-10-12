@@ -10,7 +10,7 @@ set -e
 log "finish_image" green
 
 # Make sure we are somewhere we are not going to unmount
-cd "${current_dir}/"
+cd "${repo_dir}/"
 
 # Flush buffers and bytes - this is nicked from the Devuan arm-sdk
 blockdev --flushbufs "${loopdevice}"

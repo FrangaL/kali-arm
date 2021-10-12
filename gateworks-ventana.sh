@@ -82,12 +82,12 @@ cd ${work_dir}/usr/src/kernel
 touch .scmversion
 export ARCH=arm
 export CROSS_COMPILE=arm-linux-gnueabihf- mrproper
-patch -p1 < ${current_dir}/patches/veyron/4.19/kali-wifi-injection.patch
-patch -p1 < ${current_dir}/patches/veyron/4.19/wireless-carl9170-Enable-sniffer-mode-promisc-flag-t.patch
+patch -p1 < ${repo_dir}/patches/veyron/4.19/kali-wifi-injection.patch
+patch -p1 < ${repo_dir}/patches/veyron/4.19/wireless-carl9170-Enable-sniffer-mode-promisc-flag-t.patch
 # Remove redundant YYLOC global declaration
-patch -p1 < ${current_dir}/patches/11647f99b4de6bc460e106e876f72fc7af3e54a6-1.patch
-cp ${current_dir}/kernel-configs/gateworks-ventana-4.20.7.config .config
-cp ${current_dir}/kernel-configs/gateworks-ventana-4.20.7.config ${work_dir}/usr/src/gateworks-ventana-4.20.7.config
+patch -p1 < ${repo_dir}/patches/11647f99b4de6bc460e106e876f72fc7af3e54a6-1.patch
+cp ${repo_dir}/kernel-configs/gateworks-ventana-4.20.7.config .config
+cp ${repo_dir}/kernel-configs/gateworks-ventana-4.20.7.config ${work_dir}/usr/src/gateworks-ventana-4.20.7.config
 make -j $(grep -c processor /proc/cpuinfo)
 make uImage LOADADDR=0x10008000
 make modules_install INSTALL_MOD_PATH=${work_dir}
@@ -111,7 +111,7 @@ wget 'https://github.com/armbian/firmware/blob/master/imx/sdma/sdma-imx6q.bin?ra
 # Ensure we don't have root=/dev/sda3 in the extlinux.conf which comes from running u-boot-menu in a cross chroot
 #sed -i -e 's/append.*/append root=\/dev\/mmcblk0p1 rootfstype=$fstype video=mxcfb0:dev=hdmi,1920x1080M@60,if=RGB24,bpp=32 console=ttymxc0,115200n8 console=tty1 consoleblank=0 rw rootwait/g' ${work_dir}/boot/extlinux/extlinux.conf
 
-cd "${current_dir}/"
+cd "${repo_dir}/"
 
 # Calculate the space to create the image and create
 make_image

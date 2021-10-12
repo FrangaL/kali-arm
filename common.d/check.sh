@@ -18,8 +18,8 @@ fi
 if [ -e "${base_dir}" ]; then
   log "${base_dir} directory exists, will not continue" red
   exit 1
-elif [[ ${current_dir} =~ [[:space:]] ]]; then
-  log "The directory "\"${current_dir}"\" contains whitespace. Not supported." red
+elif [[ ${repo_dir} =~ [[:space:]] ]]; then
+  log "The directory "\"${repo_dir}"\" contains whitespace. Not supported." red
   exit 1
 else
   print_config

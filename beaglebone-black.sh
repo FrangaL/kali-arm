@@ -57,8 +57,8 @@ export ARCH=arm
 # Edit the CROSS_COMPILE variable as needed
 export CROSS_COMPILE=arm-linux-gnueabihf-
 touch .scmversion
-patch -p1 --no-backup-if-mismatch < ${current_dir}/patches/kali-wifi-injection-4.14.patch
-patch -p1 --no-backup-if-mismatch < ${current_dir}/patches/0001-wireless-carl9170-Enable-sniffer-mode-promisc-flag-t.patch
+patch -p1 --no-backup-if-mismatch < ${repo_dir}/patches/kali-wifi-injection-4.14.patch
+patch -p1 --no-backup-if-mismatch < ${repo_dir}/patches/0001-wireless-carl9170-Enable-sniffer-mode-promisc-flag-t.patch
 make bb.org_defconfig
 make -j $(grep -c processor /proc/cpuinfo)
 cp arch/arm/boot/zImage ${work_dir}/boot/zImage

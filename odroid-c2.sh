@@ -77,7 +77,7 @@ display-setup-script=/usr/local/bin/xrandrscript.sh
 session-setup-script=/usr/local/bin/xrandrscript.sh
 EOF
 
-cd "${current_dir}/"
+cd "${repo_dir}/"
 
 # Calculate the space to create the image and create
 make_image

@@ -65,9 +65,9 @@ if [ ! -e "bsp" ]; then
 fi
 
 # Current directory
-current_dir="$(pwd)"
+repo_dir="$(pwd)"
 # Base directory
-base_dir=${current_dir}/odroidc-"$1"
+base_dir=${repo_dir}/odroidc-"$1"
 # Working directory
 work_dir="${base_dir}/kali-${architecture}"
 
@@ -75,8 +75,8 @@ work_dir="${base_dir}/kali-${architecture}"
 if [ -e "${base_dir}" ]; then
   echo "${base_dir} directory exists, will not continue" >&2
   exit 1
-elif [[ ${current_dir} =~ [[:space:]] ]]; then
-  echo "The directory "\"${current_dir}"\" contains whitespace. Not supported." >&2
+elif [[ ${repo_dir} =~ [[:space:]] ]]; then
+  echo "The directory "\"${repo_dir}"\" contains whitespace. Not supported." >&2
   exit 1
 else
   echo "The base_dir thinks it is: ${base_dir}"
@@ -343,8 +343,8 @@ touch .scmversion
 export ARCH=arm
 # NOTE: 3.8 now works with a 4.8 compiler, 3.4 does not!
 export CROSS_COMPILE="${base_dir}"/gcc-arm-linux-gnueabihf-4.7/bin/arm-linux-gnueabihf-
-patch -p1 --no-backup-if-mismatch < ${current_dir}/patches/mac80211-backports.patch
-patch -p1 --no-backup-if-mismatch < ${current_dir}/patches/0001-wireless-carl9170-Enable-sniffer-mode-promisc-flag-t.patch
+patch -p1 --no-backup-if-mismatch < ${repo_dir}/patches/mac80211-backports.patch
+patch -p1 --no-backup-if-mismatch < ${repo_dir}/patches/0001-wireless-carl9170-Enable-sniffer-mode-promisc-flag-t.patch
 make odroidc_defconfig
 cp .config ../odroidc.config
 make -j $(grep -c processor /proc/cpuinfo)
@@ -573,7 +573,7 @@ net.core.optmem_max = 65535
 net.core.netdev_max_backlog = 5000
 EOF
 
-cd ${current_dir}
+cd ${repo_dir}
 
 # Calculate the space to create the image
 root_size=$(du -s -B1 ${work_dir} --exclude=${work_dir}/boot | cut -f1)
@@ -588,7 +588,7 @@ parted -s "${image_dir}/${image_name}.img" mkpart primary fat32 4MiB ${bootsize}
 parted -s -a minimal "${image_dir}/${image_name}.img" mkpart primary $fstype ${bootsize}MiB 100%
 
 # Set the partition variables
-loopdevice=`losetup -f --show ${current_dir}/${image_name}.img`
+loopdevice=`losetup -f --show ${repo_dir}/${image_name}.img`
 device=`kpartx -va ${loopdevice} | sed 's/.*\(loop[0-9]\+\)p.*/\1/g' | head -1`
 sleep 5
 device="/dev/mapper/${device}"
@@ -672,7 +672,7 @@ if [ $compress = xz ]; then
     echo "Compressing ${image_name}.img"
     [ $(nproc) \< 3 ] || cpu_cores=3 # cpu_cores = Number of cores to use
     limit_cpu pixz -p ${cpu_cores:-2} "${image_dir}/${image_name}.img" # -p Nº cpu cores use
-    chmod 0644 ${current_dir}/${image_name}.img.xz
+    chmod 0644 ${repo_dir}/${image_name}.img.xz
   fi
 else
   chmod 0644 "${image_dir}/${image_name}.img"

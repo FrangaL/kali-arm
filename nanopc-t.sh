@@ -47,7 +47,7 @@ touch .scmversion
 export ARCH=arm64
 #export CROSS_COMPILE="${base_dir}"/gcc-arm-linux-gnueabihf-4.7/bin/arm-linux-gnueabihf-
 export CROSS_COMPILE=aarch64-linux-gnu-
-patch -p1 --no-backup-if-mismatch < ${current_dir}/patches/kali-wifi-injection-4.4.patch
+patch -p1 --no-backup-if-mismatch < ${repo_dir}/patches/kali-wifi-injection-4.4.patch
 make nanopi3_linux_defconfig
 make -j $(grep -c processor /proc/cpuinfo)
 make modules_install INSTALL_MOD_PATH=${work_dir}
@@ -55,7 +55,7 @@ cp arch/arm64/boot/Image ${work_dir}/boot
 cp arch/arm64/boot/dts/nexell/*.dtb ${work_dir}/boot/
 make mrproper
 make nanopi3_linux_defconfig
-cd "${current_dir}/"
+cd "${repo_dir}/"
 
 # Copy over the firmware for the nanopi3 wifi
 # At some point, nexmon could work for the device, but the support would need to
@@ -70,7 +70,7 @@ wget https://raw.githubusercontent.com/friendlyarm/android_vendor_broadcom_nanop
 wget https://raw.githubusercontent.com/friendlyarm/android_vendor_broadcom_nanopi2/nanopi2-lollipop-mr1/proprietary/bcm43438a0.hcd -O ${work_dir}/lib/firmware/ap6212/bcm43438a0.hcd
 wget https://raw.githubusercontent.com/friendlyarm/android_vendor_broadcom_nanopi2/nanopi2-lollipop-mr1/proprietary/bcm43438a1.hcd -O ${work_dir}/lib/firmware/ap6212/bcm43438a1.hcd
 wget https://raw.githubusercontent.com/friendlyarm/android_vendor_broadcom_nanopi2/nanopi2-lollipop-mr1/proprietary/config_ap6212.txt -O ${work_dir}/lib/firmware/ap6212/config.txt
-cd "${current_dir}/"
+cd "${repo_dir}/"
 
 # Fix up the symlink for building external modules
 # kernver is used so we don't need to keep track of what the current compiled
@@ -82,7 +82,7 @@ rm build
 rm source
 ln -s /usr/src/kernel build
 ln -s /usr/src/kernel source
-cd "${current_dir}/"
+cd "${repo_dir}/"
 
 # Calculate the space to create the image and create
 make_image

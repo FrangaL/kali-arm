@@ -67,9 +67,9 @@ if [ ! -e "bsp" ]; then
 fi
 
 # Current directory
-current_dir="$(pwd)"
+repo_dir="$(pwd)"
 # Base directory
-basedir=${current_dir}/kalitap-"$1"
+basedir=${repo_dir}/kalitap-"$1"
 # Working directory
 work_dir="${basedir}/kali-${architecture}"
 
@@ -77,8 +77,8 @@ work_dir="${basedir}/kali-${architecture}"
 if [ -e "${basedir}" ]; then
   echo "${basedir} directory exists, will not continue"
   exit 1
-elif [[ ${current_dir} =~ [[:space:]] ]]; then
-  echo "The directory "\"${current_dir}"\" contains whitespace. Not supported."
+elif [[ ${repo_dir} =~ [[:space:]] ]]; then
+  echo "The directory "\"${repo_dir}"\" contains whitespace. Not supported."
   exit 1
 else
   echo "The basedir thinks it is: ${basedir}"
@@ -344,13 +344,13 @@ git clone --depth 1 https://gitlab.com/kalilinux/packages/gcc-arm-linux-gnueabih
 git clone --depth 1 https://github.com/wawtechnologies/linux-kernel-3.14.51-catchwire-kalitap.git ${work_dir}/usr/src/kernel
 cd ${work_dir}/usr/src/kernel
 git rev-parse HEAD > ${work_dir}/usr/src/kernel-at-commit
-patch -p1 --no-backup-if-mismatch < ${current_dir}/patches/kali-wifi-injection-3.14.patch
-patch -p1 --no-backup-if-mismatch < ${current_dir}/patches/0001-wireless-carl9170-Enable-sniffer-mode-promisc-flag-t.patch
+patch -p1 --no-backup-if-mismatch < ${repo_dir}/patches/kali-wifi-injection-3.14.patch
+patch -p1 --no-backup-if-mismatch < ${repo_dir}/patches/0001-wireless-carl9170-Enable-sniffer-mode-promisc-flag-t.patch
 touch .scmversion
 export ARCH=arm
 export CROSS_COMPILE="${basedir}"/gcc-arm-linux-gnueabihf-4.7/bin/arm-linux-gnueabihf-
-cp ${current_dir}/kernel-configs/kalitap.config .config
-cp ${current_dir}/kernel-configs/kalitap.config ${work_dir}/usr/src/kalitap.config
+cp ${repo_dir}/kernel-configs/kalitap.config .config
+cp ${repo_dir}/kernel-configs/kalitap.config ${work_dir}/usr/src/kalitap.config
 make -j $(grep -c processor /proc/cpuinfo)
 make catchwire.dtb catchwire-demac.dtb catchwire-switch.dtb
 make INSTALL_MOD_PATH=${work_dir}/ modules_install
@@ -427,14 +427,14 @@ raw_size=$(($((${free_space}*1024))+${root_extra}+$((${bootsize}*1024))+4096))
 
 # Create the disk and partition it
 echo "Creating image file ${imagename}.img"
-fallocate -l $(echo ${raw_size}Ki | numfmt --from=iec-i --to=si) ${current_dir}/${imagename}.img
-parted -s ${current_dir}/${imagename}.img mklabel msdos
-parted -s ${current_dir}/${imagename}.img mkpart primary fat32 1MiB ${bootsize}MiB
-parted -s -a minimal ${current_dir}/${imagename}.img mkpart primary $fstype ${bootsize}MiB 100%
-parted -s ${current_dir}/${imagename}.img set 1 boot on
+fallocate -l $(echo ${raw_size}Ki | numfmt --from=iec-i --to=si) ${repo_dir}/${imagename}.img
+parted -s ${repo_dir}/${imagename}.img mklabel msdos
+parted -s ${repo_dir}/${imagename}.img mkpart primary fat32 1MiB ${bootsize}MiB
+parted -s -a minimal ${repo_dir}/${imagename}.img mkpart primary $fstype ${bootsize}MiB 100%
+parted -s ${repo_dir}/${imagename}.img set 1 boot on
 
 # Set the partition variables
-loopdevice=`losetup -f --show ${current_dir}/${imagename}.img`
+loopdevice=`losetup -f --show ${repo_dir}/${imagename}.img`
 device=`kpartx -va ${loopdevice} | sed 's/.*\(loop[0-9]\+\)p.*/\1/g' | head -1`
 sleep 5
 device="/dev/mapper/${device}"
@@ -501,11 +501,11 @@ if [ $compress = xz ]; then
   if [ $(arch) == 'x86_64' ]; then
     echo "Compressing ${imagename}.img"
     [ $(nproc) \< 3 ] || cpu_cores=3 # cpu_cores = Number of cores to use
-    limit_cpu pixz -p ${cpu_cores:-2} ${current_dir}/${imagename}.img # -p Nº cpu cores use
-    chmod 644 ${current_dir}/${imagename}.img.xz
+    limit_cpu pixz -p ${cpu_cores:-2} ${repo_dir}/${imagename}.img # -p Nº cpu cores use
+    chmod 644 ${repo_dir}/${imagename}.img.xz
   fi
 else
-  chmod 644 ${current_dir}/${imagename}.img
+  chmod 644 ${repo_dir}/${imagename}.img
 fi
 
 # Clean up all the temporary build stuff and remove the directories.

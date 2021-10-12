@@ -65,9 +65,9 @@ if [ ! -e "bsp" ]; then
 fi
 
 # Current directory
-current_dir="$(pwd)"
+repo_dir="$(pwd)"
 # Base directory
-base_dir=${current_dir}/utilite-"$1"
+base_dir=${repo_dir}/utilite-"$1"
 # Working directory
 work_dir="${base_dir}/kali-${architecture}"
 
@@ -75,8 +75,8 @@ work_dir="${base_dir}/kali-${architecture}"
 if [ -e "${base_dir}" ]; then
   echo "${base_dir} directory exists, will not continue" >&2
   exit 1
-elif [[ ${current_dir} =~ [[:space:]] ]]; then
-  echo "The directory "\"${current_dir}"\" contains whitespace. Not supported." >&2
+elif [[ ${repo_dir} =~ [[:space:]] ]]; then
+  echo "The directory "\"${repo_dir}"\" contains whitespace. Not supported." >&2
   exit 1
 else
   echo "The base_dir thinks it is: ${base_dir}"
@@ -360,16 +360,16 @@ git clone --depth 1 https://gitlab.com/kalilinux/packages/gcc-arm-linux-gnueabih
 git clone --branch utilite/devel --depth 1 https://github.com/utilite-computer/linux-kernel ${work_dir}/usr/src/kernel
 cd ${work_dir}/usr/src/kernel
 git rev-parse HEAD > ${work_dir}/usr/src/kernel-at-commit
-patch -p1 --no-backup-if-mismatch < ${current_dir}/patches/mac80211.patch
+patch -p1 --no-backup-if-mismatch < ${repo_dir}/patches/mac80211.patch
 # Needed for issues with hdmi being inited already in u-boot
-patch -p1 --no-backup-if-mismatch < ${current_dir}/patches/f922b0d.patch
-patch -p1 --no-backup-if-mismatch < ${current_dir}/patches/0001-wireless-carl9170-Enable-sniffer-mode-promisc-flag-t.patch
+patch -p1 --no-backup-if-mismatch < ${repo_dir}/patches/f922b0d.patch
+patch -p1 --no-backup-if-mismatch < ${repo_dir}/patches/0001-wireless-carl9170-Enable-sniffer-mode-promisc-flag-t.patch
 # This patch is necessary for older revisions of the Utilite so leave the patch
 # and comment in the repo to know why this is here.  Should be fixed by a u-boot
 # upgrade but CompuLab haven't released it yet, so leave it here for now
-#patch -p1 --no-backup-if-mismatch < ${current_dir}/patches/31727b0.patch
-cp ${current_dir}/kernel-configs/utilite-3.10.config .config
-cp ${current_dir}/kernel-configs/utilite-3.10.config ${work_dir}/usr/src/utilite-3.10.config
+#patch -p1 --no-backup-if-mismatch < ${repo_dir}/patches/31727b0.patch
+cp ${repo_dir}/kernel-configs/utilite-3.10.config .config
+cp ${repo_dir}/kernel-configs/utilite-3.10.config ${work_dir}/usr/src/utilite-3.10.config
 touch .scmversion
 export ARCH=arm
 export CROSS_COMPILE="${base_dir}"/gcc-arm-linux-gnueabihf-4.7/bin/arm-linux-gnueabihf-
@@ -428,7 +428,7 @@ parted -s "${image_dir}/${image_name}.img" mkpart primary fat32 1MiB ${bootsize}
 parted -s -a minimal "${image_dir}/${image_name}.img" mkpart primary $fstype ${bootsize}MiB 100%
 
 # Set the partition variables
-loopdevice=`losetup -f --show ${current_dir}/${image_name}.img`
+loopdevice=`losetup -f --show ${repo_dir}/${image_name}.img`
 device=`kpartx -va ${loopdevice} | sed 's/.*\(loop[0-9]\+\)p.*/\1/g' | head -1`
 sleep 5
 device="/dev/mapper/${device}"
@@ -496,7 +496,7 @@ if [ $compress = xz ]; then
     echo "Compressing ${image_name}.img"
     [ $(nproc) \< 3 ] || cpu_cores=3 # cpu_cores = Number of cores to use
     limit_cpu pixz -p ${cpu_cores:-2} "${image_dir}/${image_name}.img" # -p Nº cpu cores use
-    chmod 0644 ${current_dir}/${image_name}.img.xz
+    chmod 0644 ${repo_dir}/${image_name}.img.xz
   fi
 else
   chmod 0644 "${image_dir}/${image_name}.img"

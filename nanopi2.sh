@@ -174,11 +174,11 @@ git rev-parse HEAD > ${work_dir}/usr/src/kernel-at-commit
 touch .scmversion
 export ARCH=arm
 export CROSS_COMPILE="${base_dir}"/gcc-arm-linux-gnueabihf-4.7/bin/arm-linux-gnueabihf-
-patch -p1 --no-backup-if-mismatch < ${current_dir}/patches/mac80211.patch
+patch -p1 --no-backup-if-mismatch < ${repo_dir}/patches/mac80211.patch
 # Ugh, this patch is needed because the ethernet driver uses parts of netdev
 # from a newer kernel?
-patch -p1 --no-backup-if-mismatch < ${current_dir}/patches/0001-Remove-define.patch
-cp ${current_dir}/kernel-configs/nanopi2* ${work_dir}/usr/src/
+patch -p1 --no-backup-if-mismatch < ${repo_dir}/patches/0001-Remove-define.patch
+cp ${repo_dir}/kernel-configs/nanopi2* ${work_dir}/usr/src/
 cp ../nanopi2-vendor.config .config
 make -j $(grep -c processor /proc/cpuinfo)
 make uImage
@@ -219,13 +219,13 @@ cd ${work_dir}/usr/src/
 git clone https://github.com/friendlyarm/wireless
 cd wireless
 cd backports-4.4.2-1
-patch -p1 --no-backup-if-mismatch < ${current_dir}/patches/kali-wifi-injection-4.4.patch
+patch -p1 --no-backup-if-mismatch < ${repo_dir}/patches/kali-wifi-injection-4.4.patch
 cd ..
-#cp ${current_dir}/kernel-configs/backports.config .config
+#cp ${repo_dir}/kernel-configs/backports.config .config
 #make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- -j $(grep -c processor /proc/cpuinfo) KLIB_BUILD=${work_dir}/usr/src/kernel KLIB=${work_dir}
 #make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- KLIB_BUILD=${work_dir}/usr/src/kernel KLIB=${work_dir} INSTALL_MOD_PATH=${work_dir} install
 #make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- KLIB_BUILD=${work_dir}/usr/src/kernel KLIB=${work_dir} mrproper
-#cp ${current_dir}/kernel-configs/backports.config .config
+#cp ${repo_dir}/kernel-configs/backports.config .config
 XCROSS="${base_dir}"/gcc-arm-linux-gnueabihf-4.7/bin/arm-linux-gnueabihf- ANDROID=n ./build.sh -k ${work_dir}/usr/src/kernel -c nanopi2 -o ${work_dir}
 cd "${base_dir}"
 
@@ -354,7 +354,7 @@ cd "${base_dir}"
 # Remove loop devices
 losetup -d ${loopdevice}
 
-cd "${current_dir}"
+cd "${repo_dir}"
 # Compress image compilation
 include compress_img
 

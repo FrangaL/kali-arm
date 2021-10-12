@@ -65,9 +65,9 @@ if [ ! -e "bsp" ]; then
 fi
 
 # Current directory
-current_dir="$(pwd)"
+repo_dir="$(pwd)"
 # Base directory
-base_dir=${current_dir}/cubox-"$1"
+base_dir=${repo_dir}/cubox-"$1"
 # Working directory
 work_dir="${base_dir}/kali-${architecture}"
 
@@ -75,8 +75,8 @@ work_dir="${base_dir}/kali-${architecture}"
 if [ -e "${base_dir}" ]; then
   echo "${base_dir} directory exists, will not continue" >&2
   exit 1
-elif [[ ${current_dir} =~ [[:space:]] ]]; then
-  echo "The directory "\"${current_dir}"\" contains whitespace. Not supported." >&2
+elif [[ ${repo_dir} =~ [[:space:]] ]]; then
+  echo "The directory "\"${repo_dir}"\" contains whitespace. Not supported." >&2
   exit 1
 else
   echo "The base_dir thinks it is: ${base_dir}"
@@ -335,8 +335,8 @@ git clone --depth 1 https://gitlab.com/kalilinux/packages/gcc-arm-linux-gnueabih
 git clone --depth 1 https://github.com/rabeeh/linux.git ${work_dir}/usr/src/kernel
 cd ${work_dir}/usr/src/kernel
 git rev-parse HEAD > ${work_dir}/usr/src/kernel-at-commit
-patch -p1 --no-backup-if-mismatch < ${current_dir}/patches/mac80211.patch
-patch -p1 --no-backup-if-mismatch < ${current_dir}/patches/remove-defined-from-timeconst.patch
+patch -p1 --no-backup-if-mismatch < ${repo_dir}/patches/mac80211.patch
+patch -p1 --no-backup-if-mismatch < ${repo_dir}/patches/remove-defined-from-timeconst.patch
 touch .scmversion
 export ARCH=arm
 export CROSS_COMPILE="${base_dir}"/gcc-arm-linux-gnueabihf-4.7/bin/arm-linux-gnueabihf-
@@ -410,7 +410,7 @@ parted -s "${image_dir}/${image_name}.img" mklabel msdos
 parted -s -a minimal "${image_dir}/${image_name}.img" mkpart primary $fstype 1MiB 100%
 
 # Set the partition variables
-loopdevice=`losetup -f --show ${current_dir}/${image_name}.img`
+loopdevice=`losetup -f --show ${repo_dir}/${image_name}.img`
 device=`kpartx -va ${loopdevice} | sed 's/.*\(loop[0-9]\+\)p.*/\1/g' | head -1`
 sleep 5
 device="/dev/mapper/${device}"
@@ -470,7 +470,7 @@ if [ $compress = xz ]; then
     echo "Compressing ${image_name}.img"
     [ $(nproc) \< 3 ] || cpu_cores=3 # cpu_cores = Number of cores to use
     limit_cpu pixz -p ${cpu_cores:-2} "${image_dir}/${image_name}.img" # -p Nº cpu cores use
-    chmod 0644 ${current_dir}/${image_name}.img.xz
+    chmod 0644 ${repo_dir}/${image_name}.img.xz
   fi
 else
   chmod 0644 "${image_dir}/${image_name}.img"

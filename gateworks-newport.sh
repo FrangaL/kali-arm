@@ -52,10 +52,10 @@ cd ${work_dir}/usr/src/kernel
 touch .scmversion
 export ARCH=arm64
 export CROSS_COMPILE=aarch64-linux-gnu-
-patch -p1 < ${current_dir}/patches/kali-wifi-injection-5.4.patch
-patch -p1 < ${current_dir}/patches/0001-wireless-carl9170-Enable-sniffer-mode-promisc-flag-t.patch
-cp ${current_dir}/kernel-configs/gateworks-newport-5.4.45.config .config
-cp ${current_dir}/kernel-configs/gateworks-newport-5.4.45.config ${work_dir}/usr/src/gateworks-newport-5.4.45.config
+patch -p1 < ${repo_dir}/patches/kali-wifi-injection-5.4.patch
+patch -p1 < ${repo_dir}/patches/0001-wireless-carl9170-Enable-sniffer-mode-promisc-flag-t.patch
+cp ${repo_dir}/kernel-configs/gateworks-newport-5.4.45.config .config
+cp ${repo_dir}/kernel-configs/gateworks-newport-5.4.45.config ${work_dir}/usr/src/gateworks-newport-5.4.45.config
 #build
 make -j $(grep -c processor /proc/cpuinfo)
 # install compressed kernel in a kernel.itb
@@ -79,7 +79,7 @@ make mrproper
 
 # U-boot script
 status "U-boot script"
-install -m644 ${current_dir}/bsp/bootloader/gateworks-newport/newport.scr ${work_dir}/boot/newport.script
+install -m644 ${repo_dir}/bsp/bootloader/gateworks-newport/newport.scr ${work_dir}/boot/newport.script
 mkimage -A arm64 -T script -C none -d ${work_dir}/boot/newport.script ${work_dir}/boot/newport.scr
 rm ${work_dir}/boot/newport.script
 

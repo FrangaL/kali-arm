@@ -103,8 +103,8 @@ git rev-parse HEAD > ${work_dir}/usr/src/kernel-at-commit
 touch .scmversion
 export ARCH=arm
 export CROSS_COMPILE=arm-linux-gnueabihf-
-patch -p1 --no-backup-if-mismatch < ${current_dir}/patches/kali-wifi-injection-5.4.patch
-patch -p1 --no-backup-if-mismatch < ${current_dir}/patches/0001-wireless-carl9170-Enable-sniffer-mode-promisc-flag-t.patch
+patch -p1 --no-backup-if-mismatch < ${repo_dir}/patches/kali-wifi-injection-5.4.patch
+patch -p1 --no-backup-if-mismatch < ${repo_dir}/patches/0001-wireless-carl9170-Enable-sniffer-mode-promisc-flag-t.patch
 wget $githubraw/inversepath/usbarmory/master/software/kernel_conf/mark-two/usbarmory_linux-5.4.config -O .config
 wget $githubraw/inversepath/usbarmory/master/software/kernel_conf/mark-two/imx6ul-usbarmory.dts -O arch/arm/boot/dts/imx6ul-usbarmory.dts
 wget $githubraw/inversepath/usbarmory/master/software/kernel_conf/mark-two/imx6ull-usbarmory.dts -O arch/arm/boot/dts/imx6ull-usbarmory.dts
@@ -134,7 +134,7 @@ rm source
 ln -s /usr/src/kernel build
 ln -s /usr/src/kernel source
 
-cd "${current_dir}/"
+cd "${repo_dir}/"
 
 # Calculate the space to create the image and create
 make_image

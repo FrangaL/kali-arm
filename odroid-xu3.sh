@@ -63,13 +63,13 @@ status "Kernel stuff"
 git clone --depth 1 -b odroidxu4-4.14.y https://github.com/hardkernel/linux.git ${work_dir}/usr/src/kernel
 cd ${work_dir}/usr/src/kernel
 git rev-parse HEAD > ${work_dir}/usr/src/kernel-at-commit
-patch -p1 --no-backup-if-mismatch < ${current_dir}/patches/kali-wifi-injection-4.14.patch
-patch -p1 --no-backup-if-mismatch < ${current_dir}/patches/0001-wireless-carl9170-Enable-sniffer-mode-promisc-flag-t.patch
+patch -p1 --no-backup-if-mismatch < ${repo_dir}/patches/kali-wifi-injection-4.14.patch
+patch -p1 --no-backup-if-mismatch < ${repo_dir}/patches/0001-wireless-carl9170-Enable-sniffer-mode-promisc-flag-t.patch
 touch .scmversion
 export ARCH=arm
 export CROSS_COMPILE=arm-linux-gnueabihf-
-cp ${current_dir}/kernel-configs/odroid-xu3.config .config
-cp ${current_dir}/kernel-configs/odroid-xu3.config ../odroid-xu3.config
+cp ${repo_dir}/kernel-configs/odroid-xu3.config .config
+cp ${repo_dir}/kernel-configs/odroid-xu3.config ../odroid-xu3.config
 make -j $(grep -c processor /proc/cpuinfo)
 make modules_install INSTALL_MOD_PATH=${work_dir}
 cp arch/arm/boot/zImage ${work_dir}/boot
@@ -78,8 +78,8 @@ cp arch/arm/boot/dts/exynos5422-odroidxu3-lite.dtb ${work_dir}/boot
 cp arch/arm/boot/dts/exynos5422-odroidxu4.dtb ${work_dir}/boot
 cp arch/arm/boot/dts/exynos5422-odroidxu4-kvm.dtb ${work_dir}/boot
 make mrproper
-cp ${current_dir}/kernel-configs/odroid-xu3.config .config
-cp ${current_dir}/kernel-configs/odroid-xu3.config ../odroid-xu3.config
+cp ${repo_dir}/kernel-configs/odroid-xu3.config .config
+cp ${repo_dir}/kernel-configs/odroid-xu3.config ../odroid-xu3.config
 cd "${base_dir}"
 
 # Fix up the symlink for building external modules
@@ -145,7 +145,7 @@ boot
 EOF
 
 
-cd "${current_dir}/"
+cd "${repo_dir}/"
 
 # Calculate the space to create the image and create
 make_image

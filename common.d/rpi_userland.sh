@@ -27,8 +27,8 @@ make -j"$(nproc)" 2>/dev/null
 mkdir -p "${work_dir}"/opt/vc
 mv {bin,lib,inc} "${work_dir}"/opt/vc
 
-cd "${current_dir}" || exit
+cd "${repo_dir}" || exit
 
-install -m644 "${current_dir}"/bsp/configs/raspi-userland.conf "${work_dir}"/etc/ld.so.conf.d/
-install -m755 "${current_dir}"/bsp/configs/vc.sh "${work_dir}"/etc/profile.d/
-install -m644 "${current_dir}"/bsp/udev/99-vchiq-permissions.rules "${work_dir}"/etc/udev/rules.d/
+install -m644 "${repo_dir}"/bsp/configs/raspi-userland.conf "${work_dir}"/etc/ld.so.conf.d/
+install -m755 "${repo_dir}"/bsp/configs/vc.sh "${work_dir}"/etc/profile.d/
+install -m644 "${repo_dir}"/bsp/udev/99-vchiq-permissions.rules "${work_dir}"/etc/udev/rules.d/

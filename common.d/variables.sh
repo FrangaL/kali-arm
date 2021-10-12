@@ -2,15 +2,15 @@
 # shellcheck disable=SC2034,SC2154
 
 # Current directory
-current_dir="$(pwd)"
+repo_dir="$(pwd)"
 # Base directory
-base_dir=${current_dir}/base/${hw_model}-${variant}
+base_dir=${repo_dir}/base/${hw_model}-${variant}
 # Working directory
 work_dir="${base_dir}/working"
 # Image directory
-image_dir="${current_dir}/images"
+image_dir="${repo_dir}/images"
 # Version Kali release
-version=${version:-$(cat ${current_dir}/.release)}
+version=${version:-$(cat ${repo_dir}/.release)}
 # Custom image file name variable - MUST NOT include .img at the end
 image_name=${image_name:-"kali-linux-${version}-${hw_model}-${variant}"}
 # Generate a random machine name to be used
@@ -61,13 +61,13 @@ export MALLOC_CHECK_=0
 # proxy_url="http://external.intranet.local"
 
 # Load build configuration
-if [ -f "${current_dir}"/builder.txt ]; then
-  echo "Loading: "${current_dir}"/builder.txt"
+if [ -f "${repo_dir}"/builder.txt ]; then
+  echo "Loading: "${repo_dir}"/builder.txt"
   # shellcheck source=/dev/null
-  source "${current_dir}"/builder.txt
+  source "${repo_dir}"/builder.txt
 
   [ "${debug}" = 1 ] \
-    && grep -v '#' "${current_dir}"/builder.txt \
+    && grep -v '#' "${repo_dir}"/builder.txt \
       | sort -u \
     || true
 fi

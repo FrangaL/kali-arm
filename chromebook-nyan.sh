@@ -65,9 +65,9 @@ if [ ! -e "bsp" ]; then
 fi
 
 # Current directory
-current_dir="$(pwd)"
+repo_dir="$(pwd)"
 # Base directory
-base_dir=${current_dir}/nyan-"$1"
+base_dir=${repo_dir}/nyan-"$1"
 # Working directory
 work_dir="${base_dir}/kali-${architecture}"
 
@@ -75,8 +75,8 @@ work_dir="${base_dir}/kali-${architecture}"
 if [ -e "${base_dir}" ]; then
   echo "${base_dir} directory exists, will not continue" >&2
   exit 1
-elif [[ ${current_dir} =~ [[:space:]] ]]; then
-  echo "The directory "\"${current_dir}"\" contains whitespace. Not supported." >&2
+elif [[ ${repo_dir} =~ [[:space:]] ]]; then
+  echo "The directory "\"${repo_dir}"\" contains whitespace. Not supported." >&2
   exit 1
 else
   echo "The base_dir thinks it is: ${base_dir}"
@@ -337,13 +337,13 @@ git clone --depth 1 https://chromium.googlesource.com/chromiumos/third_party/ker
 cd ${work_dir}/usr/src/kernel
 mkdir -p ${work_dir}/usr/src/kernel/firmware/nvidia/tegra124/
 cp ${work_dir}/lib/firmware/nvidia/tegra124/xusb.bin firmware/nvidia/tegra124/
-cp ${current_dir}/kernel-configs/# This is a community script - you will need to generate your own image to usebook-3.10.config .config
-cp ${current_dir}/kernel-configs/# This is a community script - you will need to generate your own image to usebook-3.10.config ${work_dir}/usr/src/nyan.config
+cp ${repo_dir}/kernel-configs/# This is a community script - you will need to generate your own image to usebook-3.10.config .config
+cp ${repo_dir}/kernel-configs/# This is a community script - you will need to generate your own image to usebook-3.10.config ${work_dir}/usr/src/nyan.config
 git rev-parse HEAD > ${work_dir}/usr/src/kernel-at-commit
 export ARCH=arm
 # Edit the CROSS_COMPILE variable as needed
 export CROSS_COMPILE="${base_dir}"/gcc-arm-linux-gnueabihf-4.7/bin/arm-linux-gnueabihf-
-patch -p1 --no-backup-if-mismatch < ${current_dir}/patches/mac80211-3.8.patch
+patch -p1 --no-backup-if-mismatch < ${repo_dir}/patches/mac80211-3.8.patch
 patch -p1 --no-backup-if-mismatch < ${work_dir}/patches/0001-mwifiex-do-not-create-AP-and-P2P-interfaces-upon-dri-3.8.patch
 patch -p1 --no-backup-if-mismatch < ${work_dir}/patches/0001-Comment-out-a-pr_debug-print.patch
 make WIFIVERSION="-3.8" oldconfig || die "Kernel config options added"
@@ -552,7 +552,7 @@ EOF
 
 # Touchpad configuration
 mkdir -p ${work_dir}/etc/X11/xorg.conf.d
-cp ${current_dir}/bsp/xorg/10-synaptics-# This is a community script - you will need to generate your own image to usebook.conf ${work_dir}/etc/X11/xorg.conf.d/
+cp ${repo_dir}/bsp/xorg/10-synaptics-# This is a community script - you will need to generate your own image to usebook.conf ${work_dir}/etc/X11/xorg.conf.d/
 
 # lp0 resume firmware..
 # Check https://chromium.googlesource.com/chromiumos/overlays/chromiumos-overlay/+/master/sys-kernel/tegra_lp0_resume/
@@ -581,7 +581,7 @@ cgpt create "${image_dir}/${image_name}.img"
 cgpt add -i 1 -t kernel -b 8192 -s 32768 -l kernel -S 1 -T 5 -P 10 "${image_dir}/${image_name}.img"
 cgpt add -i 2 -t data -b 40960 -s `expr $(cgpt show "${image_dir}/${image_name}.img" | grep 'Sec GPT table' | awk '{ print \$1 }')  - 40960` -l Root "${image_dir}/${image_name}.img"
 
-loopdevice=`losetup -f --show ${current_dir}/${image_name}.img`
+loopdevice=`losetup -f --show ${repo_dir}/${image_name}.img`
 device=`kpartx -va ${loopdevice} | sed 's/.*\(loop[0-9]\+\)p.*/\1/g' | head -1`
 sleep 5
 device="/dev/mapper/${device}"
@@ -647,7 +647,7 @@ if [ $compress = xz ]; then
     echo "Compressing ${image_name}.img"
     [ $(nproc) \< 3 ] || cpu_cores=3 # cpu_cores = Number of cores to use
     limit_cpu pixz -p ${cpu_cores:-2} "${image_dir}/${image_name}.img" # -p Nº cpu cores use
-    chmod 0644 ${current_dir}/${image_name}.img.xz
+    chmod 0644 ${repo_dir}/${image_name}.img.xz
   fi
 else
   chmod 0644 "${image_dir}/${image_name}.img"
