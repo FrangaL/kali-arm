@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # Kali Linux ARM build-script for USB Armory MKII (32-bit)
-# https://gitlab.com/kalilinux/build-scripts/kali-arm
+# Source: https://gitlab.com/kalilinux/build-scripts/kali-arm
 #
 # This is a community script - you will need to generate your own image to use
 # More information: https://www.kali.org/docs/arm/usb-armory-mkii/
