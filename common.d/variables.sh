@@ -17,6 +17,8 @@ image_name=${image_name:-"kali-linux-${version}-${hw_model}-${variant}"}
 machine=$(dbus-uuidgen)
 # Custom hostname variable
 hostname=${hostname:-kali}
+# If hw_model is set, add it to hostname
+[ -n "${hw_model:=}" ] && [ "${hostname:=}" = "kali" ] && hostname="kali-${hw_model}"
 # Suite to use, valid options are:
 # kali-rolling, kali-dev, kali-bleeding-edge, kali-dev-only, kali-experimental, kali-last-snapshot
 suite=${suite:-"kali-rolling"}
@@ -63,4 +65,9 @@ if [ -f "${current_dir}"/builder.txt ]; then
   echo "Loading: "${current_dir}"/builder.txt"
   # shellcheck source=/dev/null
   source "${current_dir}"/builder.txt
+
+  [ "${debug}" = 1 ] \
+    && grep -v '#' "${current_dir}"/builder.txt \
+      | sort -u \
+    || true
 fi

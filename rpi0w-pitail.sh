@@ -1,19 +1,11 @@
 #!/usr/bin/env bash
 #
-# Kali Linux ARM build-script for Raspberry Pi Zero W (Pi-Tail) (32-bit)
-# Source: https://gitlab.com/kalilinux/build-scripts/kali-arm
+# Kali Linux ARM build-script for Raspberry Pi Zero W (Pi-Tail)
+# https://gitlab.com/kalilinux/build-scripts/kali-arm
 #
-# This is a supported device - which you can find pre-generated images for: https://www.kali.org/get-kali/
+# This is a supported device - which you can find pre-generated images for
 # More information: https://www.kali.org/docs/arm/raspberry-pi-zero-w-pi-tail/
 #
-
-# Stop on error
-set -e
-
-# shellcheck disable=SC2154
-# Load general functions
-# shellcheck source=/dev/null
-source ./common.d/functions.sh
 
 # Hardware model
 hw_model=${hw_model:-"rpi0w-pitail"}
@@ -24,33 +16,8 @@ variant=${variant:-"${architecture}"}
 # Desktop manager (xfce, gnome, i3, kde, lxde, mate, e17 or none)
 desktop=${desktop:-"xfce"}
 
-# Load common variables
-include variables
-# Checks script environment
-include check
-# Packages build list
-include packages
-# Execute initial debootstrap
-debootstrap_exec http://http.kali.org/kali
-# Enable eatmydata in compilation
-include eatmydata
-# debootstrap second stage
-systemd-nspawn_exec eatmydata /debootstrap/debootstrap --second-stage
-# Define sources.list
-include sources.list
-# APT options
-include apt_options
-# So X doesn't complain, we add kali to hosts
-include hosts
-# Set hostname
-set_hostname "${hostname}"
-# Network configs
-#include network
-#add_interface wlan0
-
-# Copy directory bsp into build dir
-status "Copy directory bsp into build dir"
-cp -rp bsp "${work_dir}"
+# Load default base_image configs
+source ./common.d/base_image.sh
 
 # Download Pi-Tail files
 git clone --depth 1 https://github.com/re4son/Kali-Pi ${work_dir}/opt/Kali-Pi
@@ -87,17 +54,7 @@ chmod 0750 ${work_dir}/etc/skel/.vnc/xstartup
 
 
 # Third stage
-cat <<EOF > "${work_dir}"/third-stage
-#!/usr/bin/env bash
-set -e
-status_3i=0
-status_3t=\$(grep '^status_stage3 ' \$0 | wc -l)
-
-status_stage3() {
-  status_3i=\$((status_3i+1))
-  echo  " [i] Stage 3 (\${status_3i}/\${status_3t}): \$1"
-}
-
+cat <<EOF >> "${work_dir}"/third-stage
 status_stage3 'Create kali user'
 # Normally this would be done by runonce, however, because this image is special, and needs the kali home directory
 # to exist before the first boot, we create it here, and remove the script that does it in the runonce stuff later.
@@ -114,34 +71,10 @@ groupadd -g 1000 kali
 useradd -m -u 1000 -g 1000 -G sudo,audio,bluetooth,cdrom,dialout,dip,lpadmin,netdev,plugdev,scanner,video,kali -s /bin/bash kali
 echo "kali:kali" | chpasswd
 
-status_stage3 'Update apt'
-export DEBIAN_FRONTEND=noninteractive
-eatmydata apt-get update
-
-status_stage3 'Install core packages'
-eatmydata apt-get -y install ${third_stage_pkgs}
-
-status_stage3 'Install packages'
-eatmydata apt-get install -y ${packages} || eatmydata apt-get install -y --fix-broken
-
-status_stage3 'Install desktop packages'
-eatmydata apt-get install -y ${desktop_pkgs} ${extra} || eatmydata apt-get install -y --fix-broken
-
 status_stage3 'Install PiTail packages'
 eatmydata apt-get install -y ${pitail_pkgs} || eatmydata apt-get install -y --fix-broken
 
-status_stage3 'ntp does not always sync the date, but systemd-timesyncd does, so we remove ntp and reinstall it with this'
-eatmydata apt-get install -y systemd-timesyncd --autoremove
-
-status_stage3 'Clean up'
-eatmydata apt-get -y --purge autoremove
-
-status_stage3 'Linux console/keyboard configuration'
-echo 'console-common console-data/keymap/policy select Select keymap from full list' | debconf-set-selections
-echo 'console-common console-data/keymap/full select en-latin1-nodeadkeys' | debconf-set-selections
-
-status_stage3 'Copy all services'
-cp -p /bsp/services/all/*.service /etc/systemd/system/
+status_stage3 'Copy rpi services'
 cp -p /bsp/services/rpi/*.service /etc/systemd/system/
 
 status_stage3 'Script mode wlan monitor START/STOP'
@@ -154,21 +87,8 @@ wget -qO /etc/apt/trusted.gpg.d/kali_pi-archive-keyring.gpg https://re4son-kerne
 eatmydata apt-get update
 eatmydata apt-get install -y ${re4son_pkgs}
 
-status_stage3 'Copy script rpi-resizerootfs'
-install -m755 /bsp/scripts/rpi-resizerootfs /usr/sbin/
-install -m755 /bsp/scripts/growpart /usr/local/bin/
-
 status_stage3 'Copy script for handling wpa_supplicant file'
 install -m755 /bsp/scripts/copy-user-wpasupplicant.sh /usr/bin/
-
-status_stage3 'Enable rpi-resizerootfs first boot'
-systemctl enable rpi-resizerootfs
-
-status_stage3 'Generate SSH host keys on first run'
-systemctl enable regenerate_ssh_host_keys
-
-status_stage3 'Enable ssh'
-systemctl enable ssh
 
 status_stage3 'Enable copying of user wpa_supplicant.conf file'
 systemctl enable copy-user-wpasupplicant
@@ -176,14 +96,8 @@ systemctl enable copy-user-wpasupplicant
 status_stage3 'Enabling ssh by putting ssh or ssh.txt file in /boot'
 systemctl enable enable-ssh
 
-status_stage3 'Allow users to use NetworkManager over ssh'
-install -m644 /bsp/polkit/10-NetworkManager.pkla /var/lib/polkit-1/localauthority/50-local.d
-
-status_stage3 'Set a REGDOMAIN'
-sed -i -e 's/REGDOM.*/REGDOMAIN=00/g' /etc/default/crda
-
-status_stage3 'Enable login over serial'
-echo "T0:23:respawn:/sbin/agetty -L ttyAMA0 115200 vt100" >> /etc/inittab
+status_stage3 'Disable haveged daemon'
+systemctl disable haveged
 
 status_stage3 'Whitelist /dev/ttyGS0 so that users can login over the gadget serial device if they enable it'
 # https://github.com/offensive-security/kali-arm-build-scripts/issues/151
@@ -204,8 +118,9 @@ echo "dmesg -D" >> /etc/rc.local
 echo "exit 0" >> /etc/rc.local
 chmod +x /etc/rc.local
 
-status_stage3 'Copy bashrc for root user'
-cp  /etc/skel/.bashrc /root/.bashrc
+status_stage3 'Copy bashrc for root and kali users'
+cp /etc/skel/.bashrc /root/.bashrc
+cp /etc/skel/.bashrc /home/kali/.bashrc
 
 status_stage3 'Copy xstartup for root and kali users'
 cp -r /etc/skel/.vnc /root/
@@ -241,29 +156,15 @@ echo kalikali | vncpasswd -f > /home/kali/.vnc/passwd
 chown -R kali:kali /home/kali/.vnc
 chmod 0600 /home/kali/.vnc/passwd
 
-status_stage3 'Try and make the console a bit nicer. Set the terminus font for a bit nicer display'
-sed -i -e 's/FONTFACE=.*/FONTFACE="Terminus"/' /etc/default/console-setup
-sed -i -e 's/FONTSIZE=.*/FONTSIZE="6x12"/' /etc/default/console-setup
-
-status_stage3 'Fix startup time from 5 minutes to 15 secs on raise interface wlan0'
-sed -i 's/^TimeoutStartSec=5min/TimeoutStartSec=15/g' "/usr/lib/systemd/system/networking.service"
-
-status_stage3 'Enable runonce'
-install -m755 /bsp/scripts/runonce /usr/sbin/
-cp -rf /bsp/runonce.d /etc
-# As noted above, remove the creation of the kali user, since we do it above.
+status_stage3 'Remove the creation of the kali user, since we do it above'
 rm /etc/runonce.d/00-add-user
-systemctl enable runonce
 
-status_stage3 'Clean up dpkg.eatmydata'
-rm -f /usr/bin/dpkg
-dpkg-divert --remove --rename /usr/bin/dpkg
+status_stage3 'Enable login over serial (No password)'
+echo "T0:23:respawn:/sbin/agetty -L ttyAMA0 115200 vt100" >> /etc/inittab
 EOF
 
 # Run third stage
-chmod 0755 "${work_dir}"/third-stage
-status "Run third stage"
-systemd-nspawn_exec /third-stage
+include third_stage
 
 ## Fix the the infamous “Authentication Required to Create Managed Color Device” in vnc
 cat << EOF > ${work_dir}/etc/polkit-1/localauthority/50-local.d/45-allow-colord.pkla
@@ -335,35 +236,11 @@ mount "${bootp}" "${base_dir}"/root/boot
 
 status "Rsyncing rootfs into image file"
 rsync -HPavz -q --exclude boot "${work_dir}"/ "${base_dir}"/root/
+sync
+
 status "Rsyncing rootfs into image file (/boot)"
 rsync -rtx -q "${work_dir}"/boot "${base_dir}"/root
 sync
 
-# Flush buffers and bytes - this is nicked from the Devuan arm-sdk
-blockdev --flushbufs "${loopdevice}"
-python3 -c 'import os; os.fsync(open("'${loopdevice}'", "r+b"))'
-
-# Unmount filesystem
-status "Unmount filesystem"
-umount -l "${bootp}"
-umount -l "${rootp}"
-
-# Check filesystem
-status "Check filesystem"
-dosfsck -w -r -a -t "$bootp"
-e2fsck -y -f "${rootp}"
-
-# Remove loop devices
-status "Remove loop devices"
-losetup -d "${loopdevice}"
-
-# Compress image compilation
-include compress_img
-
-# Clean up all the temporary build stuff and remove the directories
-# Comment this out to keep things around if you want to see what may have gone wrong
-clean_build
-
-# Quit
-log "Done" green
-exit 0
+# Load default finish_image configs
+include finish_image

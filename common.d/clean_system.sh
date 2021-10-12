@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 # shellcheck disable=SC2154
 
+if [ "${debug}" = 1 ]; then
+  log "Skipping due to debug mode ($0 -d) being enabled" yellow
+	return
+fi
+
 log "clean system" green
 
 # Clean system
@@ -43,5 +48,5 @@ rm -f "${work_dir}"/etc/machine-id || true
 touch "${work_dir}"/etc/machine-id
 rm -f "${work_dir}"/var/lib/dbus/machine-id || true
 
-# Define DNS server after last running systemd-nspawn.
+# Define DNS server after last running systemd-nspawn
 echo "nameserver ${nameserver}" >"${work_dir}"/etc/resolv.conf

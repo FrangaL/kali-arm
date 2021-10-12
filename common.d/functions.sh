@@ -12,7 +12,9 @@ function log() {
     cyan) color=$(tput setaf 6) ;;
     *) text="$1" ;;
   esac
-  [ -z "$text" ] && echo "$color $1 $(tput sgr0)" || echo "$text"
+  [ -z "$text" ] \
+    && echo "$color $1 $(tput sgr0)" \
+    || echo "$text"
 }
 
 # Usage function
@@ -24,8 +26,14 @@ function usage() {
   echo "# Desktop manager (xfce, gnome, kde, i3, lxde, mate, e17 or none)"
   echo "$0 --desktop kde"
   echo ""
-  echo "# Enable debug & log file"
+  echo "# Minimal image - no desktop manager & default tools"
+  echo "$0 --minimal"
+  echo ""
+  echo "# Enable debug & log file (./logs/<file>.log)"
   echo "$0 --debug"
+  echo ""
+  echo "# Perform extra checks on the images build"
+  echo "$0 --extra"
   echo ""
   echo "# Help screen (this)"
   echo "$0 --help"
@@ -42,6 +50,25 @@ function debug_enable() {
   exec &> >(tee -a "${log}") 2>&1
   # Print all commands inside of script
   set -x
+  debug=1
+  extra=1
+}
+
+# Extra checks function
+function extra_enable() {
+  log "Extra Checks: Enabled" green
+  extra=1
+}
+
+# Minimal variant mode
+function minimal_mode() {
+  log "Minimal image mode" green
+
+  # Variant name for image and dir build
+  variant="minimal-${architecture}"
+
+  # Disable Desktop Manager
+  desktop="none"
 }
 
 # Arguments function
@@ -59,15 +86,21 @@ function arguments() {
         desktop="$1"; shift;;
       --desktop=*)
         desktop="${opt#*=}";;
+      --minimal)
+        minimal_mode;;
       -d | --debug)
         debug_enable;;
-      -h | --help)
+      -x | --extra)
+        extra_enable;;
+      -h | -help | --help)
         usage;;
       *)
         log "Unknown option: ${opt}" red; exit 1;;
     esac
   done
 }
+debug=0
+extra=0
 arguments $*
 
 # Function to include common files
@@ -81,12 +114,13 @@ function include() {
   else
     log " ⚠️  Fail to load ${file} file" red
     [ "${debug}" = 1 ] \
-      && pwd
+      && pwd \
+      || true
     exit 1
   fi
 }
 
-# systemd-nspawn enviroment
+# systemd-nspawn environment
 # Putting quotes around $extra_args causes systemd-nspawn to pass the extra arguments as 1, so leave it unquoted.
 function systemd-nspawn_exec() {
   log "systemd-nspawn_exec" green
@@ -107,6 +141,8 @@ function disable_proxy() {
     log "Disable proxy" green
     unset http_proxy
     rm -rf "${work_dir}"/etc/apt/apt.conf.d/66proxy
+  elif [ "${debug}" = 1 ]; then
+    log "Proxy enabled" yellow
   fi
 }
 
@@ -120,8 +156,13 @@ function restore_mirror() {
   log "Mirror & suite replacement" green
 
   # For now, restore_mirror will put the default kali mirror in, fix after 2021.3
-  echo "deb http://http.kali.org/kali kali-rolling main contrib non-free" > "${work_dir}"/etc/apt/sources.list
-  echo "#deb-src http://http.kali.org/kali kali-rolling main contrib non-free" >> "${work_dir}"/etc/apt/sources.list
+  cat <<EOF> "${work_dir}"/etc/apt/sources.list
+# See https://www.kali.org/docs/general-use/kali-linux-sources-list-repositories/
+deb http://http.kali.org/kali kali-rolling main contrib non-free
+
+# Additional line for source packages
+# deb-src http://http.kali.org/kali kali-rolling main contrib non-free
+EOF
 }
 
 # Limit CPU function
@@ -213,6 +254,8 @@ function make_swap() {
     echo 'vm.swappiness = 50' >>"${work_dir}"/etc/sysctl.conf
     systemd-nspawn_exec apt-get install -y dphys-swapfile >/dev/null 2>&1
     #sed -i 's/#CONF_SWAPSIZE=/CONF_SWAPSIZE=128/g' ${work_dir}/etc/dphys-swapfile
+  else
+    log "Make Swap: Disabled" yellow
   fi
 }
 
@@ -247,7 +290,7 @@ function make_image() {
 
 # Clean up all the temporary build stuff and remove the directories.
 function clean_build() {
-  log "Cleaning up the temporary build files..." yellow
+  log "Cleaning up the temporary build files" green
   #rm -rf "${base_dir}"
   rm -rf "${work_dir}"
   log "Done" green
@@ -261,4 +304,4 @@ status() {
   log "[i] ${status_i}/${status_t}: $1" green
 }
 status_i=0
-status_t=$(grep '^status ' $0 | wc -l)
+status_t=$(grep '^status ' $0 common.d/*.sh | wc -l)

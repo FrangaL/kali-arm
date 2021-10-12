@@ -45,8 +45,14 @@ $ ./rpi.sh --help
 # Desktop manager (xfce, gnome, kde, i3, lxde, mate, e17 or none)
 ./rpi.sh --desktop kde
 
-# Enable debug & log file
+# Minimal image - no desktop manager & default tools
+./rpi.sh --minimal
+
+# Enable debug & log file (./logs/<file>.log)
 ./rpi.sh --debug
+
+# Perform extra checks on the images build
+./rpi.sh --extra
 
 # Help screen (this)
 ./rpi.sh --help
@@ -65,4 +71,4 @@ $ echo 'mirror="http://192.168.1.100/kali"' > ./builder.txt
 
 - - -
 
-Sat Sep 19 03:34:36 UTC 2021
+Tue Oct 12 20:48:42 UTC 2021
