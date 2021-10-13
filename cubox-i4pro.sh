@@ -44,6 +44,8 @@ cd wlan-firmware
 rm -rf ${work_dir}/lib/firmware/brcm
 cp -a firmware/brcm ${work_dir}/lib/firmware/
 
+cd "${repo_dir}/"
+
 # Calculate the space to create the image and create
 make_image
 

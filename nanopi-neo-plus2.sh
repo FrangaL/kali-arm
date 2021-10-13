@@ -53,6 +53,8 @@ wget https://raw.githubusercontent.com/friendlyarm/android_vendor_broadcom_nanop
 wget https://raw.githubusercontent.com/friendlyarm/android_vendor_broadcom_nanopi2/nanopi2-lollipop-mr1/proprietary/bcm43438a1.hcd -O ${work_dir}/lib/firmware/brcm/bcm43438a1.hcd
 wget https://raw.githubusercontent.com/friendlyarm/android_vendor_broadcom_nanopi2/nanopi2-lollipop-mr1/proprietary/nvram_ap6212.txt -O ${work_dir}/lib/firmware/brcm/brcmfmac43430-sdio.friendlyarm,nanopi-neo-plus2.txt
 
+cd "${repo_dir}/"
+
 # Calculate the space to create the image and create
 make_image
 
