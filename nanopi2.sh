@@ -349,12 +349,11 @@ EOF
 
 sync
 
-cd "${base_dir}"
+cd "${repo_dir}/"
 
 # Remove loop devices
 losetup -d ${loopdevice}
 
-cd "${repo_dir}"
 # Compress image compilation
 include compress_img
 

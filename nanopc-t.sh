@@ -157,6 +157,8 @@ EOF
 ./fw_setenv ${loopdevice} -s env.conf
 sync
 
+cd "${repo_dir}/"
+
 # It should be possible to build your own u-boot, as part of this, if you
 # prefer, it will only generate the fip-nonsecure.img however
 #git clone https://github.com/friendlyarm/u-boot -b nanopi2-v2016.01

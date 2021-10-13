@@ -183,5 +183,7 @@ cd ./u-boot-hk/sd_fuse
 ./sd_fusing.sh ${loopdevice}
 sync
 
+cd "${repo_dir}/"
+
 # Load default finish_image configs
 include finish_image

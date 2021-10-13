@@ -144,7 +144,6 @@ setenv bootargs "\${bootrootfs} \${videoconfig} smsc95xx.macaddr=\${macaddr}"
 boot
 EOF
 
-
 cd "${repo_dir}/"
 
 # Calculate the space to create the image and create
@@ -199,6 +198,7 @@ make odroid-xu4_defconfig
 make
 cd sd_fuse
 sh sd_fusing.sh ${loopdevice}
+cd "${repo_dir}/"
 
 # Load default finish_image configs
 include finish_image

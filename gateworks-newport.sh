@@ -93,6 +93,8 @@ done
 EOF
 chmod +x ${work_dir}/lib/systemd/system-shutdown/gsc-poweroff
 
+cd "${repo_dir}/"
+
 # Calculate the space to create the image
 root_size=$(du -s -B1 ${work_dir} --exclude=${work_dir}/boot | cut -f1)
 root_extra=$((${root_size}/1024/1000*5*1024/5))
