@@ -117,6 +117,7 @@ patch -Np1 -i "${repo_dir}/patches/pinebook-pro/pbp-5.14/0006-pinetab-accelerome
 patch -Np1 -i "${repo_dir}/patches/pinebook-pro/pbp-5.14/0007-enable-jack-detection-pinetab.patch"                                    #Audio
 patch -Np1 -i "${repo_dir}/patches/pinebook-pro/pbp-5.14/0008-enable-hdmi-output-pinetab.patch"                                       #HDMI
 patch -Np1 -i "${repo_dir}/patches/pinebook-pro/pbp-5.14/0009-drm-panel-Adjust-sync-values-for-Feixin-K101-IM2BYL02-panel.patch"      #Display
+patch -Np1 -i "${current_dir}/patches/pinebook-pro/pbp-5.14/rk3399-opp-overclock-2GHz-turbo-mode.patch"      #2GHz
 
 cp ${repo_dir}/kernel-configs/pinebook-pro-5.14.config .config
 make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- LOCALVERSION= -j$(nproc)
@@ -176,14 +177,13 @@ status "Keyboard hotkeys"
 mkdir -p ${work_dir}/etc/udev/hwdb.d/
 cat << EOF > ${work_dir}/etc/udev/hwdb.d/10-usb-kbd.hwdb
 evdev:input:b0003v258Ap001E*
-  KEYBOARD_KEY_700a5=brightnessdown
-  KEYBOARD_KEY_700a6=brightnessup
-  KEYBOARD_KEY_70066=sleep
-  # Supposed to improve performance of touchpad
-  EVDEV_ABS_00=::15
-  EVDEV_ABS_01=::15
-  EVDEV_ABS_35=::15
-  EVDEV_ABS_36=::15
+KEYBOARD_KEY_700a5=brightnessdown
+KEYBOARD_KEY_700a6=brightnessup
+KEYBOARD_KEY_70066=sleep
+EVDEV_ABS_00=::15
+EVDEV_ABS_01=::15
+EVDEV_ABS_35=::15
+EVDEV_ABS_36=::15
 EOF
 
 # Calculate the space to create the image and create
