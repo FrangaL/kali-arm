@@ -47,6 +47,9 @@ echo 'T1:12345:respawn:/bin/login -f root ttySAC2 /dev/ttySAC2 2>&1' >> /etc/ini
 
 status_stage3 'Enable login over serial (No password)'
 echo "T0:23:respawn:/sbin/agetty -L ttySAC2 115200 vt100" >> /etc/inittab
+
+status_stage3 'Fixup wireless-regdb signature'
+update-alternatives --set regulatory.db /lib/firmware/regulatory.db-upstream
 EOF
 
 # Run third stage

@@ -85,6 +85,9 @@ sed -i -e 's/INTERFACES.*/INTERFACES="usb0"/g' /etc/default/isc-dhcp-server
 
 status_stage3 'Enable dhcp server'
 update-rc.d isc-dhcp-server enable
+
+status_stage3 'Fixup wireless-regdb signature'
+update-alternatives --set regulatory.db /lib/firmware/regulatory.db-upstream
 EOF
 
 # Run third stage
