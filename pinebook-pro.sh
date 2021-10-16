@@ -117,7 +117,7 @@ patch -Np1 -i "${repo_dir}/patches/pinebook-pro/pbp-5.14/0006-pinetab-accelerome
 patch -Np1 -i "${repo_dir}/patches/pinebook-pro/pbp-5.14/0007-enable-jack-detection-pinetab.patch"                                    #Audio
 patch -Np1 -i "${repo_dir}/patches/pinebook-pro/pbp-5.14/0008-enable-hdmi-output-pinetab.patch"                                       #HDMI
 patch -Np1 -i "${repo_dir}/patches/pinebook-pro/pbp-5.14/0009-drm-panel-Adjust-sync-values-for-Feixin-K101-IM2BYL02-panel.patch"      #Display
-patch -Np1 -i "${current_dir}/patches/pinebook-pro/pbp-5.14/rk3399-opp-overclock-2GHz-turbo-mode.patch"      #2GHz
+patch -Np1 -i "${repo_dir}/patches/pinebook-pro/pbp-5.14/rk3399-opp-overclock-2GHz-turbo-mode.patch"      #2GHz
 
 cp ${repo_dir}/kernel-configs/pinebook-pro-5.14.config .config
 make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- LOCALVERSION= -j$(nproc)
