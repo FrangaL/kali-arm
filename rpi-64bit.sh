@@ -108,6 +108,9 @@ status "/etc/fstab"
 UUID=$(blkid -s UUID -o value ${rootp})
 echo "UUID=$UUID /               $fstype    errors=remount-ro 0       1" >> ${work_dir}/etc/fstab
 
+status "Fixup cmdline.txt to point to PARTUUID for rootfs"
+sed -i -e "s#/dev/mmcblk0p2#PARTUUID=$(blkid -s PARTUUID -o value ${rootp})#" ${work_dir}/boot/cmdline.txt
+
 status "Rsyncing rootfs into image file"
 rsync -HPavz -q --exclude boot "${work_dir}"/ "${base_dir}"/root/
 sync
