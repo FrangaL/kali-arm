@@ -161,7 +161,7 @@ rm build
 rm source
 ln -s /usr/src/kernel build
 ln -s /usr/src/kernel source
-cd "${base_dir}"
+cd "${repo_dir}/"
 
 # Unused currently, but this script is a part of using the usb as an ethernet
 # device
