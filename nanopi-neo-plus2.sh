@@ -28,6 +28,11 @@ cat <<EOF >> "${work_dir}"/third-stage
 status_stage3 'Install kernel and bootloader packages'
 eatmydata apt-get install -y linux-image-arm64 u-boot-menu u-boot-sunxi firmware-brcm80211
 
+# Note: This just creates an empty /boot/extlinux/extlinux.conf for us to use
+# later.
+status_stage3 'Run u-boot-update'
+u-boot-update
+
 status_stage3 'Theres no graphical output on this device'
 systemctl set-default multi-user
 
