@@ -57,6 +57,6 @@ fi
 third_stage_pkgs="binutils ca-certificates console-common console-setup locales libterm-readline-gnu-perl git wget curl"
 
 # Re4son packages
-re4son_pkgs="kalipi-kernel kalipi-bootloader kalipi-re4son-firmware kalipi-kernel-headers firmware-raspberry kalipi-config kalipi-tft-config pi-bluetooth bluetooth bluez bluez-firmware"
+re4son_pkgs="kalipi-kernel kalipi-bootloader kalipi-re4son-firmware kalipi-kernel-headers kalipi-config kalipi-tft-config pi-bluetooth bluetooth bluez bluez-firmware"
 # PiTail specific packages
 pitail_pkgs="bluelog bluesnarfer blueranger bluez-tools bridge-utils wifiphisher cmake mailutils libusb-1.0-0-dev htop locate pure-ftpd tigervnc-standalone-server dnsmasq darkstat"
