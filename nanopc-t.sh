@@ -28,6 +28,9 @@ add_interface eth0
 cat <<EOF >> "${work_dir}"/third-stage
 status_stage3 'Enable login over serial (No password)'
 echo "T0:23:respawn:/sbin/agetty -L ttyAMA0 115200 vt100" >> /etc/inittab
+
+status_stage3 'Fixup wireless-regdb signature'
+update-alternatives --set regulatory.db /lib/firmware/regulatory.db-upstream
 EOF
 
 # Run third stage
