@@ -64,9 +64,9 @@ status_stage3 'Create kali user'
 # And since a lot of these have serial devices of some sort, dialout is added as well
 # scanner, lpadmin and bluetooth have to be added manually because they don't
 # yet exist in /etc/group at this point
-groupadd -r -g 118 bluetooth
-groupadd -r -g 113 lpadmin
-groupadd -r -g 122 scanner
+groupadd -r -g 118 bluetooth || true
+groupadd -r -g 113 lpadmin || true
+groupadd -r -g 122 scanner || true
 groupadd -g 1000 kali
 useradd -m -u 1000 -g 1000 -G sudo,audio,bluetooth,cdrom,dialout,dip,lpadmin,netdev,plugdev,scanner,video,kali -s /bin/bash kali
 echo "kali:kali" | chpasswd
