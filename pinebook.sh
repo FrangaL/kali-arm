@@ -56,7 +56,7 @@ AUTOINSTALL="yes"
 
 CLEAN[0]="make clean"
 
-MAKE[0]="'make' -j4 ARCH=arm64 KVER=5.10.0-kali9-arm64 KSRC=/lib/modules/5.10.0-kali9-arm64/build/"
+MAKE[0]="'make' -j4 ARCH=arm64 KVER=5.14.9-2kali1-arm64 KSRC=/lib/modules/5.14.9-2kali1-arm64/build/"
 
 BUILT_MODULE_NAME[0]="8723cs"
 
@@ -66,7 +66,7 @@ DEST_MODULE_LOCATION[0]="/kernel/drivers/net/wireless"
 __EOF__
 
 cd /usr/src/rtl8723cs-2020.02.27
-dkms install rtl8723cs/2020.02.27 -k 5.10.0-kali9-arm64
+dkms install rtl8723cs/2020.02.27 -k 5.14.9-2kali1-arm64
 
 status_stage3 'Replace the conf file after we have built the module and hope for the best'
 cp /bsp/configs/pinebook-dkms.conf /usr/src/rtl8723cs-2020.02.27/dkms.conf
