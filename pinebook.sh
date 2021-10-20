@@ -33,6 +33,11 @@ cp -p /bsp/services/rpi/*.service /etc/systemd/system/
 status_stage3 'Install the kernel packages'
 eatmydata apt-get install -y dkms linux-image-arm64 u-boot-menu u-boot-sunxi
 
+# Note: This just creates an empty /boot/extlinux/extlinux.conf for us to use
+# later.
+status_stage3 'Run u-boot-update'
+u-boot-update
+
 status_stage3 'Install touchpad config file'
 install -m644 /bsp/xorg/50-pine64-pinebook.touchpad.conf /etc/X11/xorg.conf.d/
 
@@ -66,6 +71,9 @@ DEST_MODULE_LOCATION[0]="/kernel/drivers/net/wireless"
 __EOF__
 
 cd /usr/src/rtl8723cs-2020.02.27
+# 5.14+ warns about reproducable builds, so we remove the date and time of the driver build
+# as warnings are also now errors.
+sed -i '50d' core/rtw_debug.c
 dkms install rtl8723cs/2020.02.27 -k 5.14.0-kali2-arm64
 
 status_stage3 'Replace the conf file after we have built the module and hope for the best'
