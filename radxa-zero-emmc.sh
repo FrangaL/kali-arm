@@ -8,7 +8,7 @@
 #
 
 # Hardware model
-hw_model=${hw_model:-"radxa-zero"}
+hw_model=${hw_model:-"radxa-zero-emmc"}
 # Architecture
 architecture=${architecture:-"arm64"}
 # Variant name for image and dir build
@@ -106,7 +106,7 @@ sync
 status "u-Boot"
 cd "${work_dir}"
 git clone https://github.com/radxa/fip.git
-git clone https://github.com/radxa/u-boot.git --depth 1 -b radxa-zero-v2021.07
+git clone https://github.com/radxa/u-boot.git --depth 1 -b radxa-zero-v2021.01
 cd u-boot
 make distclean
 make radxa-zero_config
@@ -115,8 +115,8 @@ cp u-boot.bin ../fip/radxa-zero/bl33.bin
 cd ../fip/radxa-zero/
 make
 # https://wiki.radxa.com/Zero/dev/u-boot
-dd if=u-boot.bin.sd.bin of=${loopdevice} conv=fsync,notrunc bs=1 count=444
-dd if=u-boot.bin.sd.bin of=${loopdevice} conv=fsync,notrunc bs=512 skip=1 seek=1
+dd if=u-boot.bin of=${loopdevice} conv=fsync,notrunc bs=1 count=444
+dd if=u-boot.bin of=${loopdevice} conv=fsync,notrunc bs=512 skip=1 seek=1
 cd "${repo_dir}/"
 rm -rf "${work_dir}"/{fip,u-boot}
 
