@@ -57,7 +57,13 @@ make -j $(grep -c processor /proc/cpuinfo) LOCALVERSION="" bindeb-pkg
 make mrproper
 make radxa_zero_defconfig
 cd ..
-dpkg --root "${work_dir}" -i linux-*.deb
+# Cross building kernel packages produces broken header packages
+# so only install the headers if we're building on arm64
+if [ "$(arch)" == 'aarch64' ]; then
+  dpkg --root "${work_dir}" -i linux-*.deb
+else
+  dpkg --root "${work_dir}" -i linux-image-*.deb
+fi
 rm linux-*_*
 
 cd "${repo_dir}/"
@@ -106,7 +112,7 @@ sync
 status "u-Boot"
 cd "${work_dir}"
 git clone https://github.com/radxa/fip.git
-git clone https://github.com/radxa/u-boot.git --depth 1 -b radxa-zero-v2021.01
+git clone https://github.com/radxa/u-boot.git --depth 1 -b radxa-zero-v2021.07
 cd u-boot
 make distclean
 make radxa-zero_config
