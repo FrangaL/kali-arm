@@ -167,7 +167,17 @@ EOF
 
 # Limit CPU function
 function limit_cpu() {
-  if [[ ${cpu_limit:=} -eq "0" || -z $cpu_limit ]]; then
+  if [[ ${cpu_limit:=} -lt "1" ]]; then
+    cpu_limit=-1
+    log "CPU limiting has been disabled" yellow
+    eval "${@}"
+    return $?
+  elif [[ ${cpu_limit:=} -gt "100" ]]; then
+    log "CPU limit (${cpu_limit}) is higher than 100" yellow
+    cpu_limit=100
+  fi
+
+if [[ -z $cpu_limit ]]; then
     local cpu_shares=$((num_cores * 1024))
     local cpu_quota="-1"
   else
