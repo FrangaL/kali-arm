@@ -204,10 +204,10 @@ if [[ -z $cpu_limit ]]; then
     cgexec -g cpu:cpulimit-"$rand" "$@" && break || {
       if [[ $n -lt $max ]]; then
         ((n++))
-        log "Command failed. Attempt $n/$max " red
+        log "Command failed. Attempt $n/$max" red
         sleep $delay
       else
-        log "The command has failed after $n attempts." yellow
+        log "The command has failed after $n attempts" yellow
         break
       fi
     }
