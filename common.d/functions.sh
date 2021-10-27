@@ -178,9 +178,11 @@ function limit_cpu() {
   fi
 
 if [[ -z $cpu_limit ]]; then
+    log "CPU limit unset" yellow
     local cpu_shares=$((num_cores * 1024))
     local cpu_quota="-1"
   else
+    log "Limiting CPU (${cpu_limit}%)" yellow
     local cpu_shares=$((1024 * num_cores * cpu_limit / 100))  # 1024 max value per core
     local cpu_quota=$((100000 * num_cores * cpu_limit / 100)) # 100000 max value per core
   fi
