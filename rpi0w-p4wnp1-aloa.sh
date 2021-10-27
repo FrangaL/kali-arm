@@ -47,7 +47,6 @@ kaligit="https://gitlab.com/kalilinux"
 githubraw="https://raw.githubusercontent.com"
 # DNS server
 nameserver=${nameserver:-"8.8.8.8"}
-image_dir="${repo_dir}/images/"
 
 # Check EUID=0 you can run any binary as root
 if [[ $EUID -ne 0 ]]; then
@@ -75,6 +74,11 @@ repo_dir="$(pwd)"
 base_dir=${repo_dir}/rpi0w-p4wnp1-"$1"
 # Working directory
 work_dir="${base_dir}/kali-${architecture}"
+# Image directory
+# Because this script hasn't been converted to the new way
+# we need to create the directory before using it
+mkdir -p "${repo_dir}/images/"
+image_dir="${repo_dir}/images/"
 
 # Check directory build
 if [ -e "${base_dir}" ]; then
