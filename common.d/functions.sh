@@ -167,10 +167,22 @@ EOF
 
 # Limit CPU function
 function limit_cpu() {
-  if [[ ${cpu_limit:=} -eq "0" || -z $cpu_limit ]]; then
+  if [[ ${cpu_limit:=} -lt "1" ]]; then
+    cpu_limit=-1
+    log "CPU limiting has been disabled" yellow
+    eval "${@}"
+    return $?
+  elif [[ ${cpu_limit:=} -gt "100" ]]; then
+    log "CPU limit (${cpu_limit}) is higher than 100" yellow
+    cpu_limit=100
+  fi
+
+if [[ -z $cpu_limit ]]; then
+    log "CPU limit unset" yellow
     local cpu_shares=$((num_cores * 1024))
     local cpu_quota="-1"
   else
+    log "Limiting CPU (${cpu_limit}%)" yellow
     local cpu_shares=$((1024 * num_cores * cpu_limit / 100))  # 1024 max value per core
     local cpu_quota=$((100000 * num_cores * cpu_limit / 100)) # 100000 max value per core
   fi
@@ -192,10 +204,10 @@ function limit_cpu() {
     cgexec -g cpu:cpulimit-"$rand" "$@" && break || {
       if [[ $n -lt $max ]]; then
         ((n++))
-        log "Command failed. Attempt $n/$max " red
+        log "Command failed. Attempt $n/$max" red
         sleep $delay
       else
-        log "The command has failed after $n attempts." yellow
+        log "The command has failed after $n attempts" yellow
         break
       fi
     }

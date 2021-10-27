@@ -41,7 +41,10 @@ swap="no"
 # Use 0 for unlimited CPU cores, -1 to subtract 1 cores from the total
 cpu_cores="4"
 # 0 or 100 No limit, 10 = percentage use, 50, 75, 90, etc
-cpu_limit="85"
+# Percentage to limit CPU (via cgroups)
+# -1 to disable the feature
+# 1 -> 100. 10 = percentage use, 50, 75, 90, etc
+cpu_limit="-1"
 # If you have your own preferred mirrors, set them here
 mirror=${mirror:-"http://http.kali.org/kali"}
 # Use packages from the listed components of the archive
