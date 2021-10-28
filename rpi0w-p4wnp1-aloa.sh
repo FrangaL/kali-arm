@@ -574,7 +574,7 @@ mkdir -p ${base_dir}/root/boot
 mount ${bootp} ${base_dir}/root/boot
 
 # We do this down here to get rid of the build system's resolv.conf after running through the build
-cat << EOF > kali-${architecture}/etc/resolv.conf
+cat << EOF > ${work_dir}/etc/resolv.conf
 nameserver ${nameserver}
 EOF
 
