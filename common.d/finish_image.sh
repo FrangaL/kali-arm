@@ -27,7 +27,7 @@ umount -l "${rootp}"
 #status "Check filesystem (dosfsck)"
 #dosfsck -w -r -a -t "${bootp}"
 if [ -n "${bootp}" ] && [ "${extra}"  = 1 ]; then
- fstype=$(blkid -o export "${bootp}" | grep '^TYPE' | cut -d"=" -f2)
+ fstype=$(blkid -o value -s TYPE "${bootp}")
  status "Check filesystem (dosfsck ${fstype})"
  if [ "$fstype" = "vfat" ]; then
   dosfsck -w -r -a -t "${bootp}"
