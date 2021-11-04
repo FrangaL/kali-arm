@@ -275,12 +275,12 @@ function make_swap() {
 function print_config() {
   echo -e "\n"
   log "Compilation info" bold
-  if [[ "$hw_model" == *rpi* ]]; then
+  if [[ "$hw_model" == *rpi[0-1.]* ]]; then
+    name_model="Raspberry Pi 1"
+  elif [[ "$hw_model" == rpi ]]; then
     name_model="Raspberry Pi 2/3/4/400"
-    log "Hardware model: $(tput sgr0) $name_model" cyan
-  else
-    log "Hardware model: $(tput sgr0) $hw_model" cyan
   fi
+  log "Hardware model: $(tput sgr0) ${name_model:-$hw_model}" cyan
   log "Architecture: $(tput sgr0) $architecture" cyan
   log "The base_dir thinks it is: $(tput sgr0) ${base_dir}" cyan
   echo -e "\n"
