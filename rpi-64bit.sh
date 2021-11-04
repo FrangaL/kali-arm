@@ -87,17 +87,17 @@ elif [[ "$fstype" == "ext3" ]]; then
 fi
 mkfs -U "$root_uuid" -O "$features" -t "$fstype" -L ROOTFS "${rootp}"
 
+# Make fstab.
+make_fstab
+# Configure Raspberry Pi firmware (set config.txt to 64-bit)
+include rpi_firmware
+
 # Create the dirs for the partitions and mount them
 status "Create the dirs for the partitions and mount them"
 mkdir -p "${base_dir}"/root/
 mount "${rootp}" "${base_dir}"/root
 mkdir -p "${base_dir}"/root/boot
 mount "${bootp}" "${base_dir}"/root/boot
-
-# Make fstab.
-make_fstab
-# Configure Raspberry Pi firmware (set config.txt to 64-bit)
-include rpi_firmware
 
 status "Rsyncing rootfs into image file"
 rsync -HPavz -q --exclude boot "${work_dir}"/ "${base_dir}"/root/
