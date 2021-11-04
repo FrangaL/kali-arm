@@ -276,7 +276,7 @@ function print_config() {
   echo -e "\n"
   log "Compilation info" bold
   if [[ "$hw_model" == *rpi[0-1.]* ]]; then
-    name_model="Raspberry Pi 1"
+    name_model="Raspberry Pi 0W/1"
   elif [[ "$hw_model" == rpi ]]; then
     name_model="Raspberry Pi 2/3/4/400"
   fi
