@@ -38,7 +38,6 @@ include third_stage
 
 # Clean system
 include clean_system
-trap clean_build ERR SIGTERM SIGINT
 
 # Kernel section. If you want to use a custom kernel, or configuration, replace
 # them in this section
@@ -109,7 +108,10 @@ elif [[ "$fstype" == "ext3" ]]; then
   features="^64bit"
 fi
 mkfs -O "$features" -t "$fstype" -L BOOT "${bootp}"
-mkfs -O "$features" -t "$fstype" -L ROOTFS "${rootp}"
+mkfs -U $root_uuid -O "$features" -t "$fstype" -L ROOTFS "${rootp}"
+
+# Make fstab.
+make_fstab
 
 # Create the dirs for the partitions and mount them
 status "Create the dirs for the partitions and mount them"
@@ -117,11 +119,6 @@ mkdir -p "${base_dir}"/root/
 mount "${rootp}" "${base_dir}"/root
 mkdir -p "${base_dir}"/root/boot
 mount "${bootp}" "${base_dir}"/root/boot
-
-# Create an fstab so that we don't mount / read-only
-status "/etc/fstab"
-UUID=$(blkid -s UUID -o value ${rootp})
-echo "UUID=$UUID /               $fstype    errors=remount-ro 0       1" >> ${work_dir}/etc/fstab
 
 status "Rsyncing rootfs into image file"
 rsync -HPavz -q "${work_dir}"/ "${base_dir}"/root/
