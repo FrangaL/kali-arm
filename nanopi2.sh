@@ -280,7 +280,7 @@ if [[ $fstype == ext4 ]]; then
 elif [[ $fstype == ext3 ]]; then
   features="-O ^64bit"
 fi
-mkfs -U $root_uuid $features -t $fstype -L ROOTFS ${rootp}
+mkfs -U "$root_uuid" $features -t $fstype -L ROOTFS ${rootp}
 
 # Make fstab.
 make_fstab

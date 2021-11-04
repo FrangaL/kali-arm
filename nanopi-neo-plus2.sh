@@ -45,7 +45,6 @@ include third_stage
 
 # Clean system
 include clean_system
-trap clean_build ERR SIGTERM SIGINT
 
 # Copy over the firmware for the ap6212 wifi
 # On the neo plus2 default install there are other firmware files installed for
@@ -79,22 +78,20 @@ if [[ "$fstype" == "ext4" ]]; then
 elif [[ "$fstype" == "ext3" ]]; then
   features="^64bit"
 fi
-mkfs -O "$features" -t "$fstype" -L ROOTFS "${rootp}"
+mkfs -U "$root_uuid" -O "$features" -t "$fstype" -L ROOTFS "${rootp}"
+
+# Make fstab.
+make_fstab
 
 # Create the dirs for the partitions and mount them
 status "Create the dirs for the partitions and mount them"
 mkdir -p "${base_dir}"/root/
 mount "${rootp}" "${base_dir}"/root
 
-# Create an fstab so that we don't mount / read-only
-status "/etc/fstab"
-UUID=$(blkid -s UUID -o value ${rootp})
-echo "UUID=$UUID /               $fstype    errors=remount-ro 0       1" >> ${work_dir}/etc/fstab
-
 status "Edit the extlinux.conf file to set root uuid and proper name"
 # Ensure we don't have root=/dev/sda3 in the extlinux.conf which comes from running u-boot-menu in a cross chroot
 # We do this down here because we don't know the UUID until after the image is created
-sed -i -e "0,/root=.*/s//root=UUID=$(blkid -s UUID -o value ${rootp}) rootfstype=$fstype console=tty1 consoleblank=0 ro rootwait/g" ${work_dir}/boot/extlinux/extlinux.conf
+sed -i -e "0,/root=.*/s//root=UUID=$root_uuid rootfstype=$fstype console=tty1 consoleblank=0 ro rootwait/g" ${work_dir}/boot/extlinux/extlinux.conf
 # And we remove the "GNU/Linux because we don't use it
 sed -i -e "s|.*GNU/Linux Rolling|menu label Kali Linux|g" ${work_dir}/boot/extlinux/extlinux.conf
 
