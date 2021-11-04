@@ -12,9 +12,9 @@ set -e
 source ./common.d/functions.sh
 
 # Load common variables
-include variables
+source ./common.d/variables.sh
 # Checks script environment
-include check
+source ./common.d/check.sh
 # Packages build list
 include packages
 # Execute initial debootstrap
