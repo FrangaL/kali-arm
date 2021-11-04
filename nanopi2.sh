@@ -152,8 +152,6 @@ systemd-nspawn_exec /third-stage
 
 # Clean system
 include clean_system
-trap clean_build ERR SIGTERM SIGINT
-
 
 # Disable the use of http proxy in case it is enabled.
 disable_proxy
@@ -269,15 +267,10 @@ parted -s "${image_dir}/${image_name}.img" mklabel msdos
 parted -s "${image_dir}/${image_name}.img" mkpart primary ext2 4MiB "${bootsize}"MiB
 parted -s -a minimal "${image_dir}/${image_name}.img" mkpart primary "$fstype" "${bootsize}"MiB 100%
 
-
-
 # Set the partition variables
-loopdevice=`losetup -f --show ${image_dir}/${image_name}.img`
-device=`kpartx -va ${loopdevice} | sed 's/.*\(loop[0-9]\+\)p.*/\1/g' | head -1`
-sleep 5
-device="/dev/mapper/${device}"
-bootp=${device}p1
-rootp=${device}p2
+loopdevice=$(losetup --show -fP "${image_dir}/${image_name}.img")
+bootp="${loopdevice}p1"
+rootp="${loopdevice}p2"
 
 # Create file systems
 status "Formatting partitions" green
@@ -287,7 +280,10 @@ if [[ $fstype == ext4 ]]; then
 elif [[ $fstype == ext3 ]]; then
   features="-O ^64bit"
 fi
-mkfs $features -t $fstype -L ROOTFS ${rootp}
+mkfs -U $root_uuid $features -t $fstype -L ROOTFS ${rootp}
+
+# Make fstab.
+make_fstab
 
 # Create the dirs for the partitions and mount them
 status "Create the dirs for the partitions and mount them"
@@ -295,13 +291,6 @@ mkdir -p "${base_dir}"/root
 mount ${rootp} "${base_dir}"/root
 mkdir -p "${base_dir}"/root/boot
 mount ${bootp} "${base_dir}"/root/boot
-
-# We do this down here to get rid of the build system's resolv.conf after running through the build
-echo "nameserver ${nameserver}" > "${work_dir}"/etc/resolv.conf
-
-# Create an fstab so that we don't mount / read-only
-UUID=$(blkid -s UUID -o value ${rootp})
-echo "UUID=$UUID /               $fstype    errors=remount-ro 0       1" >> ${work_dir}/etc/fstab
 
 echo "Rsyncing rootfs into image file"
 rsync -HPavz -q ${work_dir}/ ${base_dir}/root/
