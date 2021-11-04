@@ -43,7 +43,6 @@ include third_stage
 
 # Clean system
 include clean_system
-trap clean_build ERR SIGTERM SIGINT
 
 cd "${base_dir}/"
 
@@ -112,11 +111,8 @@ dd if=${base_dir}/${image_name}.img of="${image_dir}/${image_name}.img" bs=16M s
 echo ", +" | sfdisk -N 2 "${image_dir}/${image_name}.img"
 
 # Set the partition variables
-loopdevice=$(losetup -f --show "${image_dir}/${image_name}.img")
-device=$(kpartx -va ${loopdevice} | sed 's/.*\(loop[0-9]\+\)p.*/\1/g' | head -1)
-sleep 5
-device="/dev/mapper/${device}"
-rootp=${device}p2
+loopdevice=$(losetup --show -fP "${image_dir}/${image_name}.img")
+rootp="${loopdevice}p2"
 
 # Create file systems
 if [[ $fstype == ext4 ]]; then
@@ -124,17 +120,15 @@ if [[ $fstype == ext4 ]]; then
 elif [[ $fstype == ext3 ]]; then
   features="^64bit"
 fi
-mkfs -O "$features" -t "$fstype" -L ROOTFS "${rootp}"
+mkfs -U $root_uuid -O "$features" -t "$fstype" -L ROOTFS "${rootp}"
+
+# Make fstab.
+make_fstab
 
 # Create the dirs for the partitions and mount them
 status "Create the dirs for the partitions and mount them"
 mkdir -p "${base_dir}"/root
 mount ${rootp} "${base_dir}"/root
-
-# Create an fstab so that we don't mount / read-only
-status "/etc/fstab"
-UUID=$(blkid -s UUID -o value ${rootp})
-echo "UUID=$UUID /               $fstype    errors=remount-ro 0       1" >> ${work_dir}/etc/fstab
 
 status "Rsyncing rootfs into image file"
 rsync -HPavz -q ${work_dir}/ ${base_dir}/root/
