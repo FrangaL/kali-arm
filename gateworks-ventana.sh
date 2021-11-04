@@ -44,8 +44,6 @@ include third_stage
 
 # Clean system
 include clean_system
-trap clean_build ERR SIGTERM SIGINT
-
 
 # Set up usb gadget mode
 cat << EOF > ${work_dir}/etc/dhcp/dhcpd.conf
@@ -135,21 +133,15 @@ if [[ "$fstype" == "ext4" ]]; then
 elif [[ "$fstype" == "ext3" ]]; then
   features="^64bit"
 fi
-mkfs -O "$features" -t "$fstype" -L ROOTFS "${rootp}"
+mkfs -U "$root_uuid" -O "$features" -t "$fstype" -L ROOTFS "${rootp}"
+
+# Make fsta.
+make_fstab
 
 # Create the dirs for the partitions and mount them
 status "Create the dirs for the partitions and mount them"
 mkdir -p "${base_dir}"/root/
 mount "${rootp}" "${base_dir}"/root
-
-# We do this here because we don't want to hardcode the UUID for the partition during creation
-# systemd doesn't seem to be generating the fstab properly for some people, so let's create one
-status "/etc/fstab"
-cat <<EOF > "${work_dir}"/etc/fstab
-# <file system> <mount point>   <type>  <options>       <dump>  <pass>
-proc            /proc           proc    defaults          0       0
-UUID=$(blkid -s UUID -o value ${rootp})  /               $fstype    defaults,noatime  0       1
-EOF
 
 status "Rsyncing rootfs into image file"
 rsync -HPavz -q "${work_dir}"/ "${base_dir}"/root/
