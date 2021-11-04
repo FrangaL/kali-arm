@@ -30,7 +30,7 @@ free_space="300"
 bootsize="128"
 # Select compression, xz or none
 compress="xz"
-# Choose filesystem format to format (ext3 or ext4)
+# Choose filesystem format to format root partition (ext3 or ext4).
 fstype="ext4"
 # Generate a random root partition UUID to be used
 root_uuid=$(cat </proc/sys/kernel/random/uuid | less)
