@@ -185,25 +185,9 @@ cat << EOF > ${work_dir}/etc/udev/rules.d/70-persistent-net.rules
 SUBSYSTEM=="net", ACTION=="add", DRIVERS=="?*", ATTR{address}=="", ATTR{dev_id}=="0x0", ATTR{type}=="1", KERNEL=="wlan*", NAME="wlan1"
 EOF
 
-status 'Create cmdline.txt file'
-cat << EOF > ${work_dir}/boot/cmdline.txt
-dwc_otg.lpm_enable=0 console=serial0,115200 console=tty1 root=/dev/mmcblk0p2 rootfstype=$fstype elevator=deadline fsck.repair=yes rootwait
-EOF
-
-# systemd doesn't seem to be generating the fstab properly for some people, so
-# let's create one
-status 'Create /etc/fstab'
-cat << EOF > ${work_dir}/etc/fstab
-# <file system> <mount point>   <type>  <options>       <dump>  <pass>
-proc            /proc           proc    defaults          0       0
-/dev/mmcblk0p1  /boot           vfat    defaults          0       2
-/dev/mmcblk0p2  /               $fstype    defaults,noatime  0       1
-/swapfile.img   none            swap    sw                0       0
-EOF
-
 # Clean system
 include clean_system
-trap clean_build ERR SIGTERM SIGINT
+
 cd "${repo_dir}/"
 
 # Calculate the space to create the image and create
@@ -228,7 +212,10 @@ if [[ "$fstype" == "ext4" ]]; then
 elif [[ "$fstype" == "ext3" ]]; then
   features="^64bit"
 fi
-mkfs -O "$features" -t "$fstype" -L ROOTFS "${rootp}"
+mkfs -U $root_uuid -O "$features" -t "$fstype" -L ROOTFS "${rootp}"
+
+# Make fstab.
+make_fstab
 
 # Create the dirs for the partitions and mount them
 status "Create the dirs for the partitions and mount them"
