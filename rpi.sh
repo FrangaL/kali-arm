@@ -60,20 +60,8 @@ EOF
 # Run third stage
 include third_stage
 
-# Configure Raspberry Pi firmware
-include rpi_firmware
-
 # Clean system
 include clean_system
-trap clean_build ERR SIGTERM SIGINT
-
-# systemd doesn't seem to be generating the fstab properly for some people, so let's create one
-status "/etc/fstab"
-cat <<EOF > "${work_dir}"/etc/fstab
-# <file system> <mount point>   <type>  <options>       <dump>  <pass>
-proc            /proc           proc    defaults          0       0
-LABEL=BOOT  /boot           vfat    defaults          0       2
-EOF
 
 # Calculate the space to create the image and create
 make_image
@@ -97,7 +85,12 @@ if [[ "$fstype" == "ext4" ]]; then
 elif [[ "$fstype" == "ext3" ]]; then
   features="^64bit"
 fi
-mkfs -O "$features" -t "$fstype" -L ROOTFS "${rootp}"
+mkfs -U $root_uuid -O "$features" -t "$fstype" -L ROOTFS "${rootp}"
+
+# Make fstab.
+make_fstab
+# Configure Raspberry Pi firmware (set config.txt to 64-bit)
+include rpi_firmware
 
 # Create the dirs for the partitions and mount them
 status "Create the dirs for the partitions and mount them"
@@ -105,14 +98,6 @@ mkdir -p "${base_dir}"/root/
 mount "${rootp}" "${base_dir}"/root
 mkdir -p "${base_dir}"/root/boot
 mount "${bootp}" "${base_dir}"/root/boot
-
-# Create an fstab so that we don't mount / read-only
-status "/etc/fstab"
-UUID=$(blkid -s UUID -o value ${rootp})
-echo "UUID=$UUID /               $fstype    errors=remount-ro 0       1" >> ${work_dir}/etc/fstab
-
-status "Fixup cmdline.txt to point to PARTUUID for rootfs"
-sed -i -e "s#/dev/mmcblk0p2#PARTUUID=$(blkid -s PARTUUID -o value ${rootp})#" ${work_dir}/boot/cmdline.txt
 
 status "Rsyncing rootfs into image file"
 rsync -HPavz -q --exclude boot "${work_dir}"/ "${base_dir}"/root/
