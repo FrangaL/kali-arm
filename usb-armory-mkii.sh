@@ -95,7 +95,6 @@ include third_stage
 
 # Clean system
 include clean_system
-trap clean_build ERR SIGTERM SIGINT
 
 # Kernel section. If you want to use a custom kernel, or configuration, replace
 # them in this section
@@ -153,17 +152,16 @@ rootp="${loopdevice}p1"
 
 # Create file systems
 status "Formatting partitions"
-mkfs.ext2 ${rootp}
+mkfs.ext2 -U "$root_uuid" -L ROOTFS "${rootp}"
+
+# Make fstab.
+fstype="ext2" # Force root partition ext2 filesystem
+make_fstab
 
 # Create the dirs for the partitions and mount them
 status "Create the dirs for the partitions and mount them"
 mkdir -p "${base_dir}"/root
 mount ${rootp} "${base_dir}"/root
-
-# Create an fstab so that we don't mount / read-only
-status "/etc/fstab"
-UUID=$(blkid -s UUID -o value ${rootp})
-echo "UUID=$UUID /               $fstype    errors=remount-ro 0       1" >> ${work_dir}/etc/fstab
 
 status "Rsyncing rootfs into image file"
 rsync -HPavz -q "${work_dir}"/ "${base_dir}"/root/
