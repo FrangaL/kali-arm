@@ -300,6 +300,21 @@ function make_image() {
   fallocate -l "${img_size}" "${image_dir}/${image_name}.img"
 }
 
+# Create fstab file.
+function make_fstab() {
+  status "/etc/fstab"
+  cat <<EOF > "${work_dir}"/etc/fstab
+# <file system> <mount point>   <type>  <options>       <dump>  <pass>
+proc            /proc           proc    defaults          0       0
+
+UUID=$root_uuid /               $fstype errors=remount-ro 0       1
+EOF
+  if ! [ -z "$bootp" ]; then
+    local bootfs=$(blkid -o value -s TYPE $bootp)
+    echo "LABEL=BOOT      /boot           $bootfs    defaults          0       2" >> "${work_dir}"/etc/fstab
+  fi
+}
+
 # Clean up all the temporary build stuff and remove the directories.
 function clean_build() {
   log "Cleaning up the temporary build files" green
@@ -309,6 +324,7 @@ function clean_build() {
   echo -e "\n"
   log "Your image is: $(tput sgr0) $(ls "${image_dir}/${image_name}".*)" bold
 }
+trap clean_build ERR SIGTERM SIGINT
 
 # Show progress
 status() {

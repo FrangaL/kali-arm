@@ -4,7 +4,7 @@ log "rpi firmware" green
 
 # Create cmdline.txt file
 cat <<EOF > "${work_dir}"/boot/cmdline.txt
-dwc_otg.fiq_fix_enable=2 console=ttyAMA0,115200 kgdboc=ttyAMA0,115200 console=tty1 root=/dev/mmcblk0p2 rootfstype=$fstype elevator=deadline fsck.repair=yes rootwait net.ifnames=0
+dwc_otg.fiq_fix_enable=2 console=ttyAMA0,115200 kgdboc=ttyAMA0,115200 console=tty1 root=PARTUUID=$(blkid -s PARTUUID -o value ${rootp}) rootfstype=$fstype elevator=deadline fsck.repair=yes rootwait net.ifnames=0
 EOF
 
 # Copy a default config, with everything commented out so people find it when
