@@ -28,7 +28,7 @@ umount -l "${rootp}"
 #dosfsck -w -r -a -t "${bootp}"
 if [ -n "${bootp}" ] && [ "${extra}"  = 1 ]; then
  bootfstype=$(blkid -o value -s TYPE "${bootp}")
- status "Check filesystem (dosfsck ${fstype})"
+ status "Check filesystem boot partition (${bootfstype})"
  if [ "$bootfstype" = "vfat" ]; then
   dosfsck -w -r -a -t "${bootp}"
  else
@@ -36,7 +36,7 @@ if [ -n "${bootp}" ] && [ "${extra}"  = 1 ]; then
  fi
 fi
 
-status "Check filesystem (e2fsck)"
+status "Check filesystem root partition ($fstype)"
 e2fsck -y -f "${rootp}"
 
 # Remove loop devices
