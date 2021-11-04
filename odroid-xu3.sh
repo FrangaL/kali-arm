@@ -169,7 +169,7 @@ elif [[ "$fstype" == "ext3" ]]; then
   features="^64bit"
 fi
 mkfs -O "$features" -t "$fstype" -L BOOT "${bootp}"
-mkfs -U $root_uuid -O "$features" -t "$fstype" -L ROOTFS "${rootp}"
+mkfs -U "$root_uuid" -O "$features" -t "$fstype" -L ROOTFS "${rootp}"
 
 # Create the dirs for the partitions and mount them
 status "Create the dirs for the partitions and mount them"
