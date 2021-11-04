@@ -49,8 +49,6 @@ include third_stage
 
 # Clean system
 include clean_system
-trap clean_build ERR SIGTERM SIGINT
-
 
 # 1366x768 is sort of broken on the ODROID-C2, not sure where the issue is, but
 # we can work around it by setting the resolution to 1360x768
@@ -98,26 +96,20 @@ if [[ "$fstype" == "ext4" ]]; then
 elif [[ "$fstype" == "ext3" ]]; then
   features="^64bit"
 fi
-mkfs -O "$features" -t "$fstype" -L ROOTFS "${rootp}"
+mkfs -U $root_uuid -O "$features" -t "$fstype" -L ROOTFS "${rootp}"
+
+# Make fstab.
+make_fstab
 
 # Create the dirs for the partitions and mount them
 status "Create the dirs for the partitions and mount them"
 mkdir -p "${base_dir}"/root/
 mount "${rootp}" "${base_dir}"/root
 
-# We do this here because we don't want to hardcode the UUID for the partition during creation
-# systemd doesn't seem to be generating the fstab properly for some people, so let's create one
-status "/etc/fstab"
-cat <<EOF > "${work_dir}"/etc/fstab
-# <file system> <mount point>   <type>  <options>       <dump>  <pass>
-proc            /proc           proc    defaults          0       0
-UUID=$(blkid -s UUID -o value ${rootp})  /               $fstype    defaults,noatime  0       1
-EOF
-
 status "Edit the extlinux.conf file to set root uuid and proper name"
 # Ensure we don't have root=/dev/sda3 in the extlinux.conf which comes from running u-boot-menu in a cross chroot
 # We do this down here because we don't know the UUID until after the image is created
-sed -i -e "0,/root=.*/s//root=UUID=$(blkid -s UUID -o value ${rootp}) rootfstype=$fstype console=tty1 consoleblank=0 ro rootwait/g" ${work_dir}/boot/extlinux/extlinux.conf
+sed -i -e "0,/root=.*/s//root=UUID=$root_uuid rootfstype=$fstype console=tty1 consoleblank=0 ro rootwait/g" ${work_dir}/boot/extlinux/extlinux.conf
 # And we remove the "GNU/Linux because we don't use it
 sed -i -e "s|.*GNU/Linux Rolling|menu label Kali Linux|g" ${work_dir}/boot/extlinux/extlinux.conf
 
