@@ -27,9 +27,9 @@ umount -l "${rootp}"
 #status "Check filesystem (dosfsck)"
 #dosfsck -w -r -a -t "${bootp}"
 if [ -n "${bootp}" ] && [ "${extra}"  = 1 ]; then
- fstype=$(blkid -o value -s TYPE "${bootp}")
+ bootfstype=$(blkid -o value -s TYPE "${bootp}")
  status "Check filesystem (dosfsck ${fstype})"
- if [ "$fstype" = "vfat" ]; then
+ if [ "$bootfstype" = "vfat" ]; then
   dosfsck -w -r -a -t "${bootp}"
  else
   e2fsck -y -f "${bootp}"
