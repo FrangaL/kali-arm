@@ -306,12 +306,18 @@ EOF
 
 # Clean up all the temporary build stuff and remove the directories.
 function clean_build() {
-  log "Cleaning up the temporary build files" green
-  #rm -rf "${base_dir}"
+  log "Cleaning up the temporary build files ..." green
   rm -rf "${work_dir}"
   log "Done" green
 }
-trap clean_build ERR SIGTERM SIGINT
+trap check_trap INT ERR SIGTERM SIGINT
+
+function check_trap() {
+  echo -e "\n"
+  log " ⚠️  An error has occurred !" red
+  echo -e "\n"
+  clean_build
+}
 
 # Show progress
 status() {
