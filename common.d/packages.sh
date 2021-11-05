@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-log " selecting packages" gray
+log " Selecting packages ..." gray
 
 debootstrap_base="kali-archive-keyring,eatmydata"
 
@@ -52,6 +52,7 @@ if [[ "$hw_model" == *rpi* ]]; then
   extra+=" $gpio_pkgs $rpi_pkgs"
 fi
 if [[ "$variant" == *minimal* ]]; then
+  log " Minimal image mode" green
   packages="$common_min_pkgs $cli_min_tools $services $extra_custom_pkgs"
 fi
 

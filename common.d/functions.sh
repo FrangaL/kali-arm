@@ -63,11 +63,8 @@ function extra_enable() {
 
 # Minimal variant mode
 function minimal_mode() {
-  log "Minimal image mode" green
-
   # Variant name for image and dir build
   variant="minimal-${architecture}"
-
   # Disable Desktop Manager
   desktop="none"
 }
