@@ -22,7 +22,6 @@ source ./common.d/base_image.sh
 # Do not include wlan0 on a wireless only device, otherwise NetworkManager won't run
 # wlan0 requires special editing of the /etc/network/interfaces.d/wlan0 file, to add the wireless network and ssid
 # Network configs
-#include network
 #add_interface wlan0
 
 # Third stage

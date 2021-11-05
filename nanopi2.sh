@@ -19,7 +19,6 @@ set -e
 source ./common.d/functions.sh
 
 
-
 # Hardware model
 hw_model=${hw_model:-"nanopi2"}
 # Architecture
