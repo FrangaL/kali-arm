@@ -21,24 +21,25 @@ function log() {
 # Usage function
 function usage() {
   log "Usage commands:" bold
-  echo "# Architecture (arm64, armel, armhf)"
-  echo "$0 --arch arm64"
-  echo ""
-  echo "# Desktop manager (xfce, gnome, kde, i3, lxde, mate, e17 or none)"
-  echo "$0 --desktop kde"
-  echo ""
-  echo "# Minimal image - no desktop manager & default tools"
-  echo "$0 --minimal"
-  echo ""
-  echo "# Enable debug & log file (./logs/<file>.log)"
-  echo "$0 --debug"
-  echo ""
-  echo "# Perform extra checks on the images build"
-  echo "$0 --extra"
-  echo ""
-  echo "# Help screen (this)"
-  echo "$0 --help"
+  cat << EOF
+    # Architectures (arm64, armel, armhf)
+    $0 --arch arm64 or $0 -a armhf
 
+    # Desktop manager (xfce, gnome, kde, i3, lxde, mate, e17 or none)
+    $0 --desktop kde
+
+    # Minimal image - no desktop manager & default tools
+    $0 --minimal or $0 -m
+
+    # Enable debug & log file (./logs/<file>.log)
+    $0 --debug or $0 -d
+
+    # Perform extra checks on the images build
+    $0 --extra or $0 -x
+
+    # Help screen (this)
+    $0 --help or $0 -h
+EOF
   exit 0
 }
 
@@ -78,7 +79,7 @@ function arguments() {
         desktop="${opt#*=}";;
       -m | --minimal)
         variant="minimal" # Variant name for image and dir build
-        desktop="none" ;;# Disable Desktop Manager
+        desktop="none" ;; # Disable Desktop Manager
       -d | --debug)
         debug_enable;;
       -x | --extra)
