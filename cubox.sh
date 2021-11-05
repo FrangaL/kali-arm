@@ -101,8 +101,6 @@ cd "${base_dir}"
 make_image
 
 # Create the disk and partition it
-echo "Creating image file ${image_name}.img"
-fallocate -l $(echo ${raw_size}Ki | numfmt --from=iec-i --to=si) "${image_dir}/${image_name}.img"
 parted -s "${image_dir}/${image_name}.img" mklabel msdos
 parted -s -a minimal "${image_dir}/${image_name}.img" mkpart primary $fstype 1MiB 100%
 
