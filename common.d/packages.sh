@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-log "selecting packages" green
+log " selecting packages" gray
 
 debootstrap_base="kali-archive-keyring,eatmydata"
 

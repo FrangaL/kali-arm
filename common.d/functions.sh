@@ -10,6 +10,7 @@ function log() {
     green) color=$(tput setaf 2) ;;
     yellow) color=$(tput setaf 3) ;;
     cyan) color=$(tput setaf 6) ;;
+    gray) color=$(tput setaf 8) ;;
     *) text="$1" ;;
   esac
   [ -z "$text" ] \
@@ -123,14 +124,14 @@ function include() {
 # systemd-nspawn environment
 # Putting quotes around $extra_args causes systemd-nspawn to pass the extra arguments as 1, so leave it unquoted.
 function systemd-nspawn_exec() {
-  log "systemd-nspawn_exec" green
+  log "systemd-nspawn $@" gray
   ENV="RUNLEVEL=1,LANG=C,DEBIAN_FRONTEND=noninteractive,DEBCONF_NOWARNINGS=yes"
   systemd-nspawn --bind-ro "$qemu_bin" $extra_args --capability=cap_setfcap -E $ENV -M "$machine" -D "$work_dir" "$@"
 }
 
 # Create the rootfs - not much to modify here, except maybe throw in some more packages if you want.
 function debootstrap_exec() {
-  log "debootstrap_exec" green
+  log " debootstrap ${suite} $@" gray
   eatmydata debootstrap --foreign --keyring=/usr/share/keyrings/kali-archive-keyring.gpg --components="${components}" \
     --include="${debootstrap_base}" --arch "${architecture}" "${suite}" "${work_dir}" "$@"
 }
