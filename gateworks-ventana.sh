@@ -11,8 +11,6 @@
 hw_model=${hw_model:-"gateworks-ventana"}
 # Architecture
 architecture=${architecture:-"armhf"}
-# Variant name for image and dir build
-variant=${variant:-"${architecture}"}
 # Desktop manager (xfce, gnome, i3, kde, lxde, mate, e17 or none)
 desktop=${desktop:-"xfce"}
 

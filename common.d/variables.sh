@@ -3,6 +3,8 @@
 
 # Current directory
 repo_dir="$(pwd)"
+# Variant name for image and dir build
+variant=${variant}-${architecture}
 # Base directory
 base_dir=${repo_dir}/base/${hw_model}-${variant}
 # Working directory

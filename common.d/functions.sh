@@ -61,14 +61,6 @@ function extra_enable() {
   extra=1
 }
 
-# Minimal variant mode
-function minimal_mode() {
-  # Variant name for image and dir build
-  variant="minimal-${architecture}"
-  # Disable Desktop Manager
-  desktop="none"
-}
-
 # Arguments function
 function arguments() {
   while [[ $# -gt 0 ]]; do
@@ -85,7 +77,10 @@ function arguments() {
       --desktop=*)
         desktop="${opt#*=}";;
       --minimal)
-        minimal_mode;;
+      # Variant name for image and dir build
+      variant="minimal"
+      # Disable Desktop Manager
+      desktop="none" ;;
       -d | --debug)
         debug_enable;;
       -x | --extra)
