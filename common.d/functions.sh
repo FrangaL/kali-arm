@@ -303,6 +303,39 @@ EOF
   fi
 }
 
+# Create file systems
+function mkfs_partitions() {
+  if ! [ -z "${bootp}" ] ; then
+    status "Formatting boot partition"
+    if [ "$bootfs" = "vfat" ]; then
+      mkfs.vfat -n BOOT -F 32 "${bootp}"
+    elif [[ "$bootfstype" == "ext4" ]]; then
+      features="^64bit,^metadata_csum"
+      mkfs -U "$root_uuid" -O "$features" -t "$fstype" -L BOOT "${rootp}"
+    elif [[ "$bootfstype" == "ext3" ]]; then
+      features="^64bit"
+      mkfs -U "$root_uuid" -O "$features" -t "$fstype" -L BOOT "${rootp}"
+    elif [[ "$bootfstype" == "ext2" ]]; then
+      mkfs -U "$root_uuid" -t "$fstype" -L BOOT "${rootp}"
+    fi
+    bootfstype=$(blkid -o value -s TYPE $bootp)
+  fi
+
+  if ! [ -z "${rootp}" ] ; then
+    status "Formatting root partition"
+    if [[ "$fstype" == "ext4" ]]; then
+      features="^64bit,^metadata_csum"
+      mkfs -U "$root_uuid" -O "$features" -t "$fstype" -L ROOTFS "${rootp}"
+    elif [[ "$fstype" == "ext3" ]]; then
+      features="^64bit"
+      mkfs -U "$root_uuid" -O "$features" -t "$fstype" -L ROOTFS "${rootp}"
+    elif [[ "$fstype" == "ext2" ]]; then
+      mkfs -U "$root_uuid" -t "$fstype" -L ROOTFS "${rootp}"
+    fi
+    rootfstype=$(blkid -o value -s TYPE $rootp)
+  fi
+}
+
 # Clean up all the temporary build stuff and remove the directories.
 function clean_build() {
   log "Cleaning up the temporary build files ..." green
