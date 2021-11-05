@@ -317,8 +317,6 @@ function clean_build() {
   #rm -rf "${base_dir}"
   rm -rf "${work_dir}"
   log "Done" green
-  echo -e "\n"
-  log "Your image is: $(tput sgr0) $(ls "${image_dir}/${image_name}".*)" bold
 }
 trap clean_build ERR SIGTERM SIGINT
 

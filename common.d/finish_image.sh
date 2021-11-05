@@ -55,5 +55,6 @@ include compress_img
 clean_build
 
 # Quit
-log "Done" green
+echo -e "\n"
+log "Your image is: $(tput sgr0) $(ls "${image_dir}/${image_name}".*)" bold
 exit 0
