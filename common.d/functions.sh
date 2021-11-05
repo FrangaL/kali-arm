@@ -76,11 +76,9 @@ function arguments() {
         desktop="$1"; shift;;
       --desktop=*)
         desktop="${opt#*=}";;
-      --minimal)
-      # Variant name for image and dir build
-      variant="minimal"
-      # Disable Desktop Manager
-      desktop="none" ;;
+      -m | --minimal)
+        variant="minimal" # Variant name for image and dir build
+        desktop="none" ;;# Disable Desktop Manager
       -d | --debug)
         debug_enable;;
       -x | --extra)
@@ -116,14 +114,14 @@ function include() {
 # systemd-nspawn environment
 # Putting quotes around $extra_args causes systemd-nspawn to pass the extra arguments as 1, so leave it unquoted.
 function systemd-nspawn_exec() {
-  log "systemd-nspawn $@" gray
+  log "systemd-nspawn $*" gray
   ENV="RUNLEVEL=1,LANG=C,DEBIAN_FRONTEND=noninteractive,DEBCONF_NOWARNINGS=yes"
   systemd-nspawn --bind-ro "$qemu_bin" $extra_args --capability=cap_setfcap -E $ENV -M "$machine" -D "$work_dir" "$@"
 }
 
 # Create the rootfs - not much to modify here, except maybe throw in some more packages if you want.
 function debootstrap_exec() {
-  log " debootstrap ${suite} $@" gray
+  log " debootstrap ${suite} $*" gray
   eatmydata debootstrap --foreign --keyring=/usr/share/keyrings/kali-archive-keyring.gpg --components="${components}" \
     --include="${debootstrap_base}" --arch "${architecture}" "${suite}" "${work_dir}" "$@"
 }
