@@ -197,21 +197,15 @@ loopdevice=$(losetup --show -fP "${image_dir}/${image_name}.img")
 rootp="${loopdevice}p1"
 
 # Create file systems
-status "Formatting partitions"
-if [[ "$fstype" == "ext4" ]]; then
-  features="^64bit,^metadata_csum"
-elif [[ "$fstype" == "ext3" ]]; then
-  features="^64bit"
-fi
-mkfs -U "$root_uuid" -O "$features" -t "$fstype" -L ROOTFS "${rootp}"
+mkfs_partitions
+# Make fstab.
+make_fstab
 
 # Create the dirs for the partitions and mount them
 status "Create the dirs for the partitions and mount them"
 mkdir -p "${base_dir}"/root/
 mount "${rootp}" "${base_dir}"/root
 
-# Make fstab.
-make_fstab
 
 # FUTURE: Move to debian u-boot when it works properly
 # Ensure we don't have root=/dev/sda3 in the extlinux.conf which comes from running u-boot-menu in a cross chroot

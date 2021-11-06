@@ -159,14 +159,9 @@ bootp="${loopdevice}p1"
 rootp="${loopdevice}p2"
 
 # Create file systems
-status "Formatting partitions"
-if [[ "$fstype" == "ext4" ]]; then
-  features="^64bit,^metadata_csum"
-elif [[ "$fstype" == "ext3" ]]; then
-  features="^64bit"
-fi
-mkfs -O "$features" -t "$fstype" -L BOOT "${bootp}"
-mkfs -U "$root_uuid" -O "$features" -t "$fstype" -L ROOTFS "${rootp}"
+mkfs_partitions
+# Make fstab.
+make_fstab
 
 # Create the dirs for the partitions and mount them
 status "Create the dirs for the partitions and mount them"
@@ -174,9 +169,6 @@ mkdir -p "${base_dir}"/root/
 mount "${rootp}" "${base_dir}"/root
 mkdir -p "${base_dir}"/root/boot
 mount "${bootp}" "${base_dir}"/root/boot
-
-# Make fstab.
-make_fstab
 
 status "Rsyncing rootfs into image file"
 rsync -HPavz -q "${work_dir}"/ "${base_dir}"/root/

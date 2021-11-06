@@ -98,15 +98,7 @@ bootp="${loopdevice}p1"
 rootp="${loopdevice}p2"
 
 # Create file systems
-status "Formatting partitions"
-if [[ "$fstype" == "ext4" ]]; then
-  features="^64bit,^metadata_csum"
-elif [[ "$fstype" == "ext3" ]]; then
-  features="^64bit"
-fi
-mkfs -O "$features" -t "$fstype" -L BOOT "${bootp}"
-mkfs -U "$root_uuid" -O "$features" -t "$fstype" -L ROOTFS "${rootp}"
-
+mkfs_partitions
 # Make fstab.
 make_fstab
 
