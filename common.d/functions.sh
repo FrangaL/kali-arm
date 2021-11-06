@@ -28,8 +28,11 @@ function usage() {
     # Desktop manager (xfce, gnome, kde, i3, lxde, mate, e17 or none)
     $0 --desktop kde
 
-    # Minimal image - no desktop manager & default tools
+    # Minimal image - no desktop manager
     $0 --minimal or $0 -m
+
+    # Slim image - no desktop manager & cli tools
+    $0 --slim or $0 -s
 
     # Enable debug & log file (./logs/<file>.log)
     $0 --debug or $0 -d
@@ -78,8 +81,9 @@ function arguments() {
       --desktop=*)
         desktop="${opt#*=}";;
       -m | --minimal)
-        variant="minimal" # Variant name for image and dir build
+        variant="minimal"
         desktop="none" ;; # Disable Desktop Manager
+      -s | --slim) slim=1 ;; # Disable minimal cli tools & Desktop Manager
       -d | --debug)
         debug_enable;;
       -x | --extra)
