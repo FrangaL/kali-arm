@@ -41,7 +41,7 @@ disable_proxy
 restore_mirror
 
 # Reload sources.list
-#include sources.list
+#sources_list
 
 # Newer systemd requires that /etc/machine-id exists but is empty
 rm -f "${work_dir}"/etc/machine-id || true

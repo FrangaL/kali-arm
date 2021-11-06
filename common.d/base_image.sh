@@ -24,7 +24,7 @@ include eatmydata
 # debootstrap second stage
 systemd-nspawn_exec eatmydata /debootstrap/debootstrap --second-stage
 # Define sources.list
-include sources.list
+sources_list
 # APT options
 include apt_options
 

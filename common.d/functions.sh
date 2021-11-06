@@ -209,6 +209,15 @@ if [[ -z $cpu_limit ]]; then
   cgdelete -g cpu:/cpulimit-"$rand"
 }
 
+function sources_list() {
+  # Define sources.list
+  log " define sources.list" green
+  cat <<EOF > "${work_dir}"/etc/apt/sources.list
+deb ${mirror} ${suite} ${components//,/ }
+#deb-src ${mirror} ${suite} ${components//,/ }
+EOF
+}
+
 # Choose a locale
 function set_locale() {
   LOCALES="$1"
