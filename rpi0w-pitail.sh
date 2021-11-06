@@ -17,6 +17,10 @@ desktop=${desktop:-"xfce"}
 # Load default base_image configs
 source ./common.d/base_image.sh
 
+# Network configs
+basic_network
+#add_interface eth0
+
 # Download Pi-Tail files
 git clone --depth 1 https://github.com/re4son/Kali-Pi ${work_dir}/opt/Kali-Pi
 wget -O ${work_dir}/etc/systemd/system/pi-tail.service https://raw.githubusercontent.com/Re4son/RPi-Tweaks/master/pi-tail/pi-tail.service

@@ -17,6 +17,10 @@ desktop=${desktop:-"xfce"}
 # Load default base_image configs
 source ./common.d/base_image.sh
 
+# Network configs
+basic_network
+#add_interface eth0
+
 # Do not include wlan0 on a wireless only device, otherwise NetworkManager won't run
 # wlan0 requires special editing of the /etc/network/interfaces.d/wlan0 file, to add the wireless network and ssid
 # Network configs

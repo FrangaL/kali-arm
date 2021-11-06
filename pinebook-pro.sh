@@ -19,6 +19,7 @@ source ./common.d/base_image.sh
 
 # Do *NOT* include wlan0 if using a desktop otherwise NetworkManager will ignore it
 # Network configs
+basic_network
 #add_interface wlan0
 
 # Third stage

@@ -253,6 +253,38 @@ EOF
   done
 }
 
+function basic_network() {
+# Disable IPv6
+if [ "$disable_ipv6" = "yes" ]; then
+  log "Disable IPv6" green
+
+  echo "# Don't load ipv6 by default" >"${work_dir}"/etc/modprobe.d/ipv6.conf
+  echo "alias net-pf-10 off" >>"${work_dir}"/etc/modprobe.d/ipv6.conf
+fi
+
+cat <<EOF > "${work_dir}"/etc/network/interfaces
+source-directory /etc/network/interfaces.d
+
+auto lo
+  iface lo inet loopback
+
+EOF
+}
+
+function make_hosts() {
+set_hostname "${hostname}"
+log "/etc/hosts" green
+cat <<EOF > "${work_dir:=}"/etc/hosts
+127.0.1.1       ${hostname:=}
+127.0.0.1       localhost
+::1             localhost ip6-localhost ip6-loopback
+fe00::0         ip6-localnet
+ff00::0         ip6-mcastprefix
+ff02::1         ip6-allnodes
+ff02::2         ip6-allrouters
+EOF
+}
+
 # Make SWAP
 function make_swap() {
   if [ "$swap" = yes ]; then

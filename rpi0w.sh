@@ -17,6 +17,10 @@ desktop=${desktop:-"xfce"}
 # Load default base_image configs
 source ./common.d/base_image.sh
 
+# Network configs
+basic_network
+#add_interface eth0
+
 # Third stage
 cat <<EOF >> "${work_dir}"/third-stage
 status_stage3 'Copy rpi services'

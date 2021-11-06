@@ -18,6 +18,7 @@ desktop=${desktop:-"xfce"}
 source ./common.d/base_image.sh
 
 # Network configs
+basic_network
 add_interface eth0
 
 # Third stage
