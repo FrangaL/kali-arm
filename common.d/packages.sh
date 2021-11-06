@@ -59,10 +59,11 @@ if [ "$minimal" = "1" ]; then
     image_mode="Slim"
     packages=+" openssh-server"
   fi
-    packages=+" $services $extra_custom_pkgs"
+  packages=+" $services $extra_custom_pkgs"
   log " $image_mode image mode" green
 fi
 
+# Basic packages third stage
 third_stage_pkgs="binutils ca-certificates console-common console-setup locales libterm-readline-gnu-perl git wget curl"
 
 # Re4son packages
