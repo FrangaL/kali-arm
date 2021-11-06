@@ -59,8 +59,8 @@ if [ "$minimal" = "1" ]; then
     packages="$common_min_pkgs $cli_min_tools openssh-server"
   else
     packages="$common_min_pkgs $cli_min_tools $services $extra_custom_pkgs"
-  fi  
-  log " $image_mode image mode" gray
+  fi
+  log " selecting $image_mode mode ..." gray
 fi
 
 # Basic packages third stage
