@@ -321,9 +321,11 @@ EOF
 
 # Create file systems
 function mkfs_partitions() {
+  check_partitions
+  status "Formatting partitions"
+  # Formatting boot partition.
   if ! [ -z "${bootp}" ] ; then
-    status "Formatting boot partition"
-    if [ "$bootfs" = "vfat" ]; then
+        if [ "$bootfs" = "vfat" ]; then
       mkfs.vfat -n BOOT -F 32 "${bootp}"
     elif [[ "$bootfstype" == "ext4" ]]; then
       features="^64bit,^metadata_csum"
@@ -336,18 +338,18 @@ function mkfs_partitions() {
     fi
     bootfstype=$(blkid -o value -s TYPE $bootp)
   fi
-
+  # Formatting root partition.
   if ! [ -z "${rootp}" ] ; then
-    status "Formatting root partition"
-    if [[ "$fstype" == "ext4" ]]; then
+    if [[ "$rootfstype" == "ext4" ]]; then
       features="^64bit,^metadata_csum"
       mkfs -U "$root_uuid" -O "$features" -t "$fstype" -L ROOTFS "${rootp}"
-    elif [[ "$fstype" == "ext3" ]]; then
+    elif [[ "$rootfstype" == "ext3" ]]; then
       features="^64bit"
       mkfs -U "$root_uuid" -O "$features" -t "$fstype" -L ROOTFS "${rootp}"
-    elif [[ "$fstype" == "ext2" ]]; then
+    elif [[ "$rootfstype" == "ext2" ]]; then
       mkfs -U "$root_uuid" -t "$fstype" -L ROOTFS "${rootp}"
     fi
+    root_partuuid=$(blkid -s PARTUUID -o value ${rootp})
     rootfstype=$(blkid -o value -s TYPE $rootp)
   fi
 }
