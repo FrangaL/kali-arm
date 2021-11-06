@@ -43,7 +43,6 @@ make_image
 
 # Create the disk and partition it
 status "Creating image file ${image_name}.img"
-fallocate -l $(echo ${raw_size}Ki | numfmt --from=iec-i --to=si) "${image_dir}/${image_name}.img"
 parted -s "${image_dir}/${image_name}.img" mklabel msdos
 parted -s "${image_dir}/${image_name}.img" mkpart primary ext2 1MiB ${bootsize}MiB
 parted -s -a minimal "${image_dir}/${image_name}.img" mkpart primary $fstype ${bootsize}MiB 100%
@@ -53,14 +52,8 @@ loopdevice=$(losetup --show -fP "${image_dir}/${image_name}.img")
 bootp="${loopdevice}p1"
 rootp="${loopdevice}p2"
 
-mkfs.ext2 -L BOOT "${bootp}"
-if [[ $fstype == ext4 ]]; then
-  features="^64bit,^metadata_csum"
-elif [[ $fstype == ext3 ]]; then
-  features="^64bit"
-fi
-mkfs -U "$root_uuid" -O "$features" -t "$fstype" -L ROOTFS "${rootp}"
-
+# Create file systems
+mkfs_partitions
 # Make fstab.
 make_fstab
 
