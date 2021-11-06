@@ -58,7 +58,7 @@ if [ "$minimal" = "1" ]; then
     image_mode="Slim"
   fi
   log " $image_mode image mode" green
-  packages="$common_min_pkgs $cli_min_tools $services $extra_custom_pkgs"
+  packages="$common_min_pkgs $cli_min_tools openssh-server $extra_custom_pkgs"
 fi
 
 third_stage_pkgs="binutils ca-certificates console-common console-setup locales libterm-readline-gnu-perl git wget curl"
