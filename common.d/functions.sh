@@ -269,6 +269,7 @@ auto lo
   iface lo inet loopback
 
 EOF
+make_hosts
 }
 
 function make_hosts() {
