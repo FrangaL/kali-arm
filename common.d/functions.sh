@@ -365,7 +365,7 @@ function check_trap() {
 # Show progress
 status() {
   status_i=$((status_i+1))
-  log "[i] ${status_i}/${status_t}: $1 ($(date +"%Y-%m-%d %H:%M:%S"))" green
+  log " ✅ ${status_i}/${status_t}:$(tput sgr0) $1 ($(date +"%Y-%m-%d %H:%M:%S"))" green
 }
 status_i=0
 status_t=$(grep '^status ' $0 common.d/*.sh | wc -l)
