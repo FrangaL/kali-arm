@@ -24,10 +24,7 @@ status "Unmount filesystem"
 umount -l "${rootp}"
 
 # Check filesystem
-#status "Check filesystem (dosfsck)"
-#dosfsck -w -r -a -t "${bootp}"
 if [ -n "${bootp}" ] && [ "${extra}"  = 1 ]; then
- bootfstype=$(blkid -o value -s TYPE "${bootp}")
  status "Check filesystem boot partition (${bootfstype})"
  if [ "$bootfstype" = "vfat" ]; then
   dosfsck -w -r -a -t "${bootp}"
