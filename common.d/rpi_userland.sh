@@ -3,7 +3,7 @@
 
 log "rpi userland" green
 
-git clone https://github.com/raspberrypi/userland.git "${base_dir}"/userland
+git clone --depth 1 --single-branch --branch master https://github.com/raspberrypi/userland.git "${base_dir}"/userland
 
 cd "${base_dir}"/userland && mkdir -p build/
 pushd "${base_dir}"/userland/build || exit
