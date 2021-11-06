@@ -288,6 +288,22 @@ function make_image() {
   fallocate -l "${img_size}" "${image_dir}/${image_name}.img"
 }
 
+# Check table partitions structure.
+function check_partitions() {
+  local img=${image_name}.img
+  local num_parts=$(fdisk -l $img | grep "${img}[1-2]" | wc -l)
+  if [ "$num_parts" = "2" ]; then
+    local part_type1=$(fdisk  -l $img | grep $img1 | awk '{print $6}')
+    local part_type2=$(fdisk  -l $img | grep $img2 | awk '{print $6}')
+    if [[ "$part_type1" == "c" ]]; then
+      bootfstype="vfat"
+    elif [[ "$part_type1" == "83" ]]; then
+      bootfstype=${bootfstype:-"$fstype"}
+    fi
+    rootfstype=${rootfstype:-"$fstype"}
+  fi
+}
+
 # Create fstab file.
 function make_fstab() {
   status "/etc/fstab"
