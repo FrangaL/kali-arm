@@ -124,7 +124,8 @@ function systemd-nspawn_exec() {
 
 # Create the rootfs - not much to modify here, except maybe throw in some more packages if you want.
 function debootstrap_exec() {
-  log " debootstrap ${suite} $*" gray
+  echo -e "\n"
+  status "debootstrap ${suite} $*"
   eatmydata debootstrap --foreign --keyring=/usr/share/keyrings/kali-archive-keyring.gpg --components="${components}" \
     --include="${debootstrap_base}" --arch "${architecture}" "${suite}" "${work_dir}" "$@"
 }
@@ -423,5 +424,5 @@ status() {
   status_i=$((status_i+1))
   log " ✅ ${status_i}/${status_t}:$(tput sgr0) $1 ($(date +"%Y-%m-%d %H:%M:%S"))" green
 }
-status_i=3
+status_i=4
 status_t=$(grep '^status ' $0 common.d/*.sh | wc -l)
