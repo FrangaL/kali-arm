@@ -11,6 +11,7 @@ function log() {
     yellow) color=$(tput setaf 3) ;;
     cyan) color=$(tput setaf 6) ;;
     gray) color=$(tput setaf 8) ;;
+    white) color=$(tput setaf 15) ;;
     *) text="$1" ;;
   esac
   [ -z "$text" ] \
