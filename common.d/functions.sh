@@ -325,30 +325,22 @@ function mkfs_partitions() {
   status "Formatting partitions"
   # Formatting boot partition.
   if ! [ -z "${bootp}" ] ; then
-        if [ "$bootfs" = "vfat" ]; then
-      mkfs.vfat -n BOOT -F 32 "${bootp}"
-    elif [[ "$bootfstype" == "ext4" ]]; then
-      features="^64bit,^metadata_csum"
-      mkfs -U "$root_uuid" -O "$features" -t "$fstype" -L BOOT "${rootp}"
-    elif [[ "$bootfstype" == "ext3" ]]; then
-      features="^64bit"
-      mkfs -U "$root_uuid" -O "$features" -t "$fstype" -L BOOT "${rootp}"
-    elif [[ "$bootfstype" == "ext2" ]]; then
-      mkfs -U "$root_uuid" -t "$fstype" -L BOOT "${rootp}"
-    fi
+    case $bootfstype  in
+      vfat) mkfs.vfat -n BOOT -F 32 "${bootp}" ;;
+      ext4) features="^64bit,^metadata_csum"
+      mkfs -O "$features" -t "$fstype" -L BOOT "${bootp}" ;;
+      ext2 | ext3) features="^64bit"
+      mkfs -O "$features" -t "$fstype" -L BOOT "${bootp}" ;;
+    esac
     bootfstype=$(blkid -o value -s TYPE $bootp)
   fi
   # Formatting root partition.
   if ! [ -z "${rootp}" ] ; then
-    if [[ "$rootfstype" == "ext4" ]]; then
-      features="^64bit,^metadata_csum"
-      mkfs -U "$root_uuid" -O "$features" -t "$fstype" -L ROOTFS "${rootp}"
-    elif [[ "$rootfstype" == "ext3" ]]; then
-      features="^64bit"
-      mkfs -U "$root_uuid" -O "$features" -t "$fstype" -L ROOTFS "${rootp}"
-    elif [[ "$rootfstype" == "ext2" ]]; then
-      mkfs -U "$root_uuid" -t "$fstype" -L ROOTFS "${rootp}"
-    fi
+    case $rootfstype  in
+      ext4) features="^64bit,^metadata_csum" ;;
+      ext2 | ext3) features="^64bit" ;;
+    esac
+    mkfs -U "$root_uuid" -O "$features" -t "$fstype" -L ROOTFS "${rootp}"
     root_partuuid=$(blkid -s PARTUUID -o value ${rootp})
     rootfstype=$(blkid -o value -s TYPE $rootp)
   fi
