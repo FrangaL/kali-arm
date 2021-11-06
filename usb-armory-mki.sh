@@ -154,11 +154,10 @@ loopdevice=$(losetup --show -fP "${image_dir}/${image_name}.img")
 rootp="${loopdevice}p1"
 
 # Create file systems
-status "Formatting partitions"
-mkfs.ext2 -U "$root_uuid" -L ROOTFS "${rootp}"
+rootfstype="ext2" # Force root partition ext2 filesystem
+mkfs_partitions
 
 # Make fstab.
-fstype="ext2" # Force root partition ext2 filesystem
 make_fstab
 
 # Create the dirs for the partitions and mount them
