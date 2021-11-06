@@ -263,28 +263,28 @@ EOF
 }
 
 function basic_network() {
-# Disable IPv6
-if [ "$disable_ipv6" = "yes" ]; then
-  log "Disable IPv6" green
+  # Disable IPv6
+  if [ "$disable_ipv6" = "yes" ]; then
+    log "Disable IPv6" green
 
-  echo "# Don't load ipv6 by default" >"${work_dir}"/etc/modprobe.d/ipv6.conf
-  echo "alias net-pf-10 off" >>"${work_dir}"/etc/modprobe.d/ipv6.conf
-fi
+    echo "# Don't load ipv6 by default" >"${work_dir}"/etc/modprobe.d/ipv6.conf
+    echo "alias net-pf-10 off" >>"${work_dir}"/etc/modprobe.d/ipv6.conf
+  fi
 
-cat <<EOF > "${work_dir}"/etc/network/interfaces
+  cat <<EOF > "${work_dir}"/etc/network/interfaces
 source-directory /etc/network/interfaces.d
 
 auto lo
   iface lo inet loopback
 
 EOF
-make_hosts
+  make_hosts
 }
 
 function make_hosts() {
-set_hostname "${hostname}"
-log "/etc/hosts" green
-cat <<EOF > "${work_dir:=}"/etc/hosts
+  set_hostname "${hostname}"
+  log "/etc/hosts" green
+  cat <<EOF > "${work_dir:=}"/etc/hosts
 127.0.1.1       ${hostname:=}
 127.0.0.1       localhost
 ::1             localhost ip6-localhost ip6-loopback
