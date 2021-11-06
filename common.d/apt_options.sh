@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-log "apt options" green
+log " apt options" green
 
 cat > "${work_dir:=}"/etc/apt/apt.conf.d/apt_opts <<EOF
 DPkg::Options "--force-confnew";

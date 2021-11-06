@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-log "compress image" green
-
 if [ "${compress:=}" = xz ]; then
   log "Compressing file: $(tput sgr0) ${image_dir}/${image_name}.img" green
   if [ "$(arch)" == 'x86_64' ] || [ "$(arch)" == 'aarch64' ]; then

@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-log "third stage" green
-
 # Third stage
 cat <<EOF >> "${work_dir}"/third-stage
 status_stage3 'Clean up apt-get'

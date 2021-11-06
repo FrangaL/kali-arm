@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-log " Selecting packages ..." gray
+log " selecting packages ..." gray
 
 debootstrap_base="kali-archive-keyring,eatmydata"
 
@@ -52,10 +52,10 @@ if [[ "$hw_model" == *rpi* ]]; then
   extra+=" $gpio_pkgs $rpi_pkgs"
 fi
 if [ "$minimal" = "1" ]; then
-  image_mode="Minimal"
+  image_mode="minimal"
   if [ "$slim" = "1" ]; then
     cli_min_tools=""
-    image_mode="Slim"
+    image_mode="slim"
     packages="$common_min_pkgs $cli_min_tools openssh-server"
   fi
   packages=+"$common_min_pkgs $cli_min_tools $services $extra_custom_pkgs"
