@@ -325,7 +325,7 @@ function make_image() {
 
 # Check table partitions structure.
 function check_partitions() {
-  local img=${image_name}.img
+  local img="${image_dir}/${image_name}.img"
   local num_parts=$(fdisk -l $img | grep "${img}[1-2]" | wc -l)
   if [ "$num_parts" = "2" ]; then
     local part_type1=$(fdisk  -l $img | grep $img1 | awk '{print $6}')
