@@ -53,14 +53,13 @@ if [[ "$hw_model" == *rpi* ]]; then
 fi
 if [ "$minimal" = "1" ]; then
   image_mode="Minimal"
-  packages="$common_min_pkgs $cli_min_tools"
   if [ "$slim" = "1" ]; then
     cli_min_tools=""
     image_mode="Slim"
-    packages=+" openssh-server"
+    packages="$common_min_pkgs $cli_min_tools openssh-server"
   fi
-  packages=+" $services $extra_custom_pkgs"
-  log " $image_mode image mode" green
+  packages=+"$common_min_pkgs $cli_min_tools $services $extra_custom_pkgs"
+  log " $image_mode image mode" gray
 fi
 
 # Basic packages third stage
