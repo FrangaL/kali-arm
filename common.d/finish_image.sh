@@ -6,9 +6,6 @@
 # Stop on error
 set -e
 
-# Say where we are
-log "finish_image" green
-
 # Make sure we are somewhere we are not going to unmount
 cd "${repo_dir}/"
 
@@ -42,8 +39,8 @@ status "Remove loop devices"
   && dmsetup clear "${bootp}" \
   || true
 dmsetup clear "${rootp}" || true
-kpartx -dsv "${loopdevice}"
-losetup -d "${loopdevice}"
+#kpartx -dsv "${loopdevice}"
+#losetup -d "${loopdevice}"
 
 # Compress image compilation
 include compress_img
@@ -54,5 +51,5 @@ clean_build
 # Quit
 echo -e "\n"
 img=$(ls "${image_dir}/${image_name}".*)
-log "Your image is: $(tput sgr0) $img $(du -h $img | cut -f1)" bold
+log "Your image is: $(tput sgr0) $img (Size: $(du -h $img | cut -f1))" bold
 exit 0

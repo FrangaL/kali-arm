@@ -258,7 +258,7 @@ auto $netdev
     allow-hotplug $netdev
     iface $netdev inet dhcp
 EOF
-    log "Configured /etc/network/interfaces.d/$netdev" bold
+    log " Configured /etc/network/interfaces.d/$netdev" white
   done
 }
 
@@ -327,7 +327,7 @@ function make_image() {
   raw_size=$(($((free_space * 1024)) + root_extra + $((bootsize * 1024)) + 4096))
   img_size=$(echo "${raw_size}"Ki | numfmt --from=iec-i --to=si)
   # Create the disk image
-  log "Creating image file: ${image_dir}/${image_name}.img (Size: ${img_size})" green
+  log "Creating image file:$(tput sgr0) ${image_name}.img (Size: ${img_size})" white
   mkdir -p "${image_dir}/"
   fallocate -l "${img_size}" "${image_dir}/${image_name}.img"
 }
@@ -367,7 +367,7 @@ function mkfs_partitions() {
   check_partitions
   status "Formatting partitions"
   # Formatting boot partition.
-  if ! [ -z "${bootp}" ] ; then
+  if [ -n "${bootp}" ] ; then
     case $bootfstype  in
       vfat) mkfs.vfat -n BOOT -F 32 "${bootp}" ;;
       ext4) features="^64bit,^metadata_csum"
@@ -378,12 +378,12 @@ function mkfs_partitions() {
     bootfstype=$(blkid -o value -s TYPE $bootp)
   fi
   # Formatting root partition.
-  if ! [ -z "${rootp}" ] ; then
+  if [ -n "${rootp}" ] ; then
     case $rootfstype  in
       ext4) features="^64bit,^metadata_csum" ;;
       ext2 | ext3) features="^64bit" ;;
     esac
-    mkfs -U "$root_uuid" -O "$features" -t "$fstype" -L ROOTFS "${rootp}"
+    yes | mkfs -U "$root_uuid" -O "$features" -t "$fstype" -L ROOTFS "${rootp}"
     root_partuuid=$(blkid -s PARTUUID -o value ${rootp})
     rootfstype=$(blkid -o value -s TYPE $rootp)
   fi
