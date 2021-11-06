@@ -43,7 +43,7 @@ dmsetup clear "${rootp}" || true
 #losetup -d "${loopdevice}"
 
 # Compress image compilation
-include compress_img
+compress_img
 
 # Clean up all the temporary build stuff and remove the directories
 clean_build

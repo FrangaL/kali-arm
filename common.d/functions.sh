@@ -389,6 +389,20 @@ function mkfs_partitions() {
   fi
 }
 
+# Compress image compilation
+function compress_img() {
+  if [ "${compress:=}" = xz ]; then
+    status "Compressing file: ${image_name}.img"
+    if [ "$(arch)" == 'x86_64' ] || [ "$(arch)" == 'aarch64' ]; then
+      limit_cpu pixz -p "${num_cores:=}" "${image_dir}/${image_name}.img" # -p Nº cpu cores use
+    else
+      xz --memlimit-compress=50% -T "$num_cores" "${image_dir}/${image_name}.img" # -T Nº cpu cores use
+    fi
+  fi
+
+  chmod 0644 "${image_dir}/${image_name}.img"*
+}
+
 # Clean up all the temporary build stuff and remove the directories.
 function clean_build() {
   log "Cleaning up the temporary build files ..." green
@@ -409,5 +423,5 @@ status() {
   status_i=$((status_i+1))
   log " ✅ ${status_i}/${status_t}:$(tput sgr0) $1 ($(date +"%Y-%m-%d %H:%M:%S"))" green
 }
-status_i=0
+status_i=3
 status_t=$(grep '^status ' $0 common.d/*.sh | wc -l)
