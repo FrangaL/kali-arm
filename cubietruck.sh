@@ -26,9 +26,6 @@ echo "sunxi_gmac" >> ${work_dir}/etc/modules
 # Run third stage
 include third_stage
 
-# Compile Raspberry Pi userland
-include rpi_userland
-
 # Clean system
 include clean_system
 
