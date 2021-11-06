@@ -53,5 +53,6 @@ clean_build
 
 # Quit
 echo -e "\n"
-log "Your image is: $(tput sgr0) $(ls "${image_dir}/${image_name}".*)" bold
+img=$(ls "${image_dir}/${image_name}".*)
+log "Your image is: $(tput sgr0) $img $(du -h $img | cut -f1)" bold
 exit 0
