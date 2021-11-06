@@ -9,7 +9,7 @@
 
 # Hardware model
 hw_model=${hw_model:-"rpi"}
-# Architecture
+# Architecture (arm64, armhf, armel)
 architecture=${architecture:-"arm64"}
 # Desktop manager (xfce, gnome, i3, kde, lxde, mate, e17 or none)
 desktop=${desktop:-"xfce"}
@@ -75,18 +75,10 @@ bootp="${loopdevice}p1"
 rootp="${loopdevice}p2"
 
 # Create file systems
-status "Formatting partitions"
-mkfs.vfat -n BOOT -F 32 "${bootp}"
-if [[ "$fstype" == "ext4" ]]; then
-  features="^64bit,^metadata_csum"
-elif [[ "$fstype" == "ext3" ]]; then
-  features="^64bit"
-fi
-mkfs -U "$root_uuid" -O "$features" -t "$fstype" -L ROOTFS "${rootp}"
-
+mkfs_partitions
 # Make fstab.
 make_fstab
-# Configure Raspberry Pi firmware (set config.txt to 64-bit)
+# Configure Raspberry Pi firmware (before rsync)
 include rpi_firmware
 
 # Create the dirs for the partitions and mount them
