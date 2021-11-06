@@ -311,11 +311,10 @@ function make_fstab() {
 # <file system> <mount point>   <type>  <options>       <dump>  <pass>
 proc            /proc           proc    defaults          0       0
 
-UUID=$root_uuid /               $fstype errors=remount-ro 0       1
+UUID=$root_uuid /               $rootfstype errors=remount-ro 0       1
 EOF
   if ! [ -z "$bootp" ]; then
-    local bootfs=$(blkid -o value -s TYPE $bootp)
-    echo "LABEL=BOOT      /boot           $bootfs    defaults          0       2" >> "${work_dir}"/etc/fstab
+    echo "LABEL=BOOT      /boot           $bootfstype    defaults          0       2" >> "${work_dir}"/etc/fstab
   fi
 }
 
