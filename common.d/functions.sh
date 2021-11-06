@@ -59,12 +59,6 @@ function debug_enable() {
   extra=1
 }
 
-# Extra checks function
-function extra_enable() {
-  log "Extra Checks: Enabled" green
-  extra=1
-}
-
 # Arguments function
 function arguments() {
   while [[ $# -gt 0 ]]; do
@@ -81,14 +75,16 @@ function arguments() {
       --desktop=*)
         desktop="${opt#*=}";;
       -m | --minimal)
-        variant="minimal"
-        minimal="1"
-        desktop="none" ;; # Disable Desktop Manager
-      -s | --slim) variant="slim"; slim=1 ;; # Disable minimal cli tools & Desktop Manager
+        # Disable Desktop Manager
+        variant="minimal"; minimal="1"; desktop="none" ;;
+      -s | --slim)
+        # Disable minimal cli tools & Desktop Manager
+        variant="slim"; desktop="none"; minimal="1"; slim="1";;
       -d | --debug)
         debug_enable;;
       -x | --extra)
-        extra_enable;;
+        log "Extra Checks: Enabled" green
+        extra="1";;
       -h | -help | --help)
         usage;;
       *)
