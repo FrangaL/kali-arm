@@ -82,8 +82,9 @@ function arguments() {
         desktop="${opt#*=}";;
       -m | --minimal)
         variant="minimal"
+        minimal="1"
         desktop="none" ;; # Disable Desktop Manager
-      -s | --slim) slim=1 ;; # Disable minimal cli tools & Desktop Manager
+      -s | --slim) variant="slim"; slim=1 ;; # Disable minimal cli tools & Desktop Manager
       -d | --debug)
         debug_enable;;
       -x | --extra)
