@@ -133,7 +133,7 @@ function debootstrap_exec() {
 # Disable the use of http proxy in case it is enabled.
 function disable_proxy() {
   if [ -n "$proxy_url" ]; then
-    log "Disable proxy" green
+    log "Disable proxy" gray
     unset http_proxy
     rm -rf "${work_dir}"/etc/apt/apt.conf.d/66proxy
   elif [ "${debug}" = 1 ]; then
@@ -148,7 +148,7 @@ function restore_mirror() {
   elif [[ -n "${replace_suite}" ]]; then
     export suite=${replace_suite}
   fi
-  log "Mirror & suite replacement" green
+  log "Mirror & suite replacement" gray
 
   # For now, restore_mirror will put the default kali mirror in, fix after 2021.3
   cat <<EOF> "${work_dir}"/etc/apt/sources.list
@@ -222,7 +222,7 @@ EOF
 # Choose a locale
 function set_locale() {
   LOCALES="$1"
-  log "locale: ${LOCALES}" green
+  log "locale:$(tput sgr0) ${LOCALES}" gray
   sed -i "s/^# *\($LOCALES\)/\1/" "${work_dir}"/etc/locale.gen
   #systemd-nspawn_exec locale-gen
   echo "LANG=$LOCALES" >"${work_dir}"/etc/locale.conf
@@ -442,4 +442,4 @@ status() {
   log " ✅ ${status_i}/${status_t}:$(tput sgr0) $1 $timestamp" green
 }
 status_i=0
-status_t=$(grep '.*status ' $0 common.d/*.sh | wc -l)
+status_t=$(($(grep '.*status ' $0 common.d/*.sh | wc -l) -1))

@@ -6,7 +6,7 @@ if [ "${debug}" = 1 ]; then
 	return
 fi
 
-log "clean system" green
+status "clean system"
 
 # Clean system
 systemd-nspawn_exec <<'EOF'
@@ -31,9 +31,6 @@ for logs in $(find /var/log -type f); do > $logs; done
 history -c
 EOF
 
-# Choose a locale
-set_locale "$locale"
-
 # Disable the use of http proxy in case it is enabled
 disable_proxy
 
@@ -42,6 +39,9 @@ restore_mirror
 
 # Reload sources.list
 #sources_list
+
+# Choose a locale
+set_locale "$locale"
 
 # Newer systemd requires that /etc/machine-id exists but is empty
 rm -f "${work_dir}"/etc/machine-id || true
