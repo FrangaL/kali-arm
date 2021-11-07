@@ -373,6 +373,11 @@ EOF
   if ! [ -z "$bootp" ]; then
     echo "LABEL=BOOT      /boot           $bootfstype    defaults          0       2" >> "${work_dir}"/etc/fstab
   fi
+  if [ -f "${work_dir}/swapfile.img" ]; then
+    cat << EOF >> ${work_dir}/etc/fstab
+/swapfile.img   none            swap    sw                0       0
+EOF
+  fi
 }
 
 # Create file systems
