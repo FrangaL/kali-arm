@@ -101,7 +101,7 @@ arguments $*
 function include() {
   local file="$1"
   if [[ -f "common.d/${file}.sh" ]]; then
-    log " ✅ Load common file ${file}" green
+    log " ✅ Load common file:$(tput sgr0) ${file}" green
     # shellcheck source=/dev/null
     source "common.d/${file}.sh"
     return 0
