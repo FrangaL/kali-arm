@@ -241,7 +241,7 @@ EOM
 # Set hostname
 function set_hostname() {
   if [[ "$1" =~ ^[a-zA-Z0-9-]{2,63}+$ ]]; then
-    log "/etc/hostname" green
+    log " Created /etc/hostname" white
     echo "$1" >"${work_dir}"/etc/hostname
   else
     log "$1 is not a correct hostname" red
@@ -266,7 +266,7 @@ EOF
 function basic_network() {
   # Disable IPv6
   if [ "$disable_ipv6" = "yes" ]; then
-    log "Disable IPv6" green
+    log " Disable IPv6" white
 
     echo "# Don't load ipv6 by default" >"${work_dir}"/etc/modprobe.d/ipv6.conf
     echo "alias net-pf-10 off" >>"${work_dir}"/etc/modprobe.d/ipv6.conf
@@ -284,7 +284,7 @@ EOF
 
 function make_hosts() {
   set_hostname "${hostname}"
-  log "/etc/hosts" green
+  log " Created /etc/hosts" white
   cat <<EOF > "${work_dir:=}"/etc/hosts
 127.0.1.1       ${hostname:=}
 127.0.0.1       localhost
@@ -362,7 +362,7 @@ function make_loop() {
 
 # Create fstab file.
 function make_fstab() {
-  status "/etc/fstab"
+  status "Create /etc/fstab"
   cat <<EOF > "${work_dir}"/etc/fstab
 # <file system> <mount point>   <type>  <options>       <dump>  <pass>
 proc            /proc           proc    defaults          0       0
@@ -409,9 +409,11 @@ function compress_img() {
     else
       xz --memlimit-compress=50% -T "$num_cores" "${image_dir}/${image_name}.img" # -T Nº cpu cores use
     fi
+    img="${image_dir}/${image_name}.img.xz"
+  else
+    img="${image_dir}/${image_name}.img"
   fi
-
-  chmod 0644 "${image_dir}/${image_name}.img"*
+  chmod 0644 "$img"
 }
 
 # Clean up all the temporary build stuff and remove the directories.

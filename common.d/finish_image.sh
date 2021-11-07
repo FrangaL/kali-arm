@@ -50,6 +50,5 @@ clean_build
 
 # Quit
 echo -e "\n"
-img=$(ls "${image_dir}/${image_name}".*)
 log "Your image is: $(tput sgr0) $img (Size: $(du -h $img | cut -f1))" bold
 exit 0
