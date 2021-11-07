@@ -42,6 +42,11 @@ rpi_pkgs="fake-hwclock ntpdate u-boot-tools"
 # Packages specific to the boards and using the GPIO on it
 gpio_pkgs="i2c-tools python3-configobj python3-pip python3-requests python3-rpi.gpio python3-smbus"
 
+# Add swap packages
+if [ "$swap" = yes ]; then
+  minimal_pkgs+=" dphys-swapfile"
+fi
+
 extra="$custom_kernel_pkgs"
 
 # add extra_custom_pkgs, that can be a global variable

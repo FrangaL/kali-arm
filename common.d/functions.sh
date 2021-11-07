@@ -301,10 +301,9 @@ function make_swap() {
   if [ "$swap" = yes ]; then
     log "Make swap" green
     echo 'vm.swappiness = 50' >>"${work_dir}"/etc/sysctl.conf
-    systemd-nspawn_exec apt-get install -y dphys-swapfile >/dev/null 2>&1
     #sed -i 's/#CONF_SWAPSIZE=/CONF_SWAPSIZE=128/g' ${work_dir}/etc/dphys-swapfile
   else
-    log "Make Swap: Disabled" yellow
+    [[ -f ${work_dir}/swapfile.img ]] || log "Make Swap:$(tput sgr0) Disabled" yellow
   fi
 }
 
@@ -373,6 +372,7 @@ EOF
   if ! [ -z "$bootp" ]; then
     echo "LABEL=BOOT      /boot           $bootfstype    defaults          0       2" >> "${work_dir}"/etc/fstab
   fi
+  make_swap
   if [ -f "${work_dir}/swapfile.img" ]; then
     cat << EOF >> ${work_dir}/etc/fstab
 /swapfile.img   none            swap    sw                0       0
