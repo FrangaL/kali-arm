@@ -94,10 +94,7 @@ parted -s "${image_dir}/${image_name}.img" mkpart primary ext3 4MiB "${bootsize}
 parted -s -a minimal "${image_dir}/${image_name}.img" mkpart primary "$fstype" "${bootsize}"MiB 100%
 
 # Set the partition variables
-loopdevice=$(losetup --show -fP "${image_dir}/${image_name}.img")
-bootp="${loopdevice}p1"
-rootp="${loopdevice}p2"
-
+make_loop
 # Create file systems
 mkfs_partitions
 # Make fstab.

@@ -145,8 +145,7 @@ parted -s "${image_dir}/${image_name}.img" mklabel msdos
 parted -s -a minimal "${image_dir}/${image_name}.img" mkpart primary ext2 5MiB 100%
 
 # Set the partition variables
-loopdevice=$(losetup --show -fP "${image_dir}/${image_name}.img")
-rootp="${loopdevice}p1"
+make_loop
 
 # Create file systems
 rootfstype="ext2" # Force root partition ext2 filesystem

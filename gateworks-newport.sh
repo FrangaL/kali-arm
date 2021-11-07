@@ -109,17 +109,9 @@ dd if=${base_dir}/${image_name}.img of="${image_dir}/${image_name}.img" bs=16M s
 echo ", +" | sfdisk -N 2 "${image_dir}/${image_name}.img"
 
 # Set the partition variables
-loopdevice=$(losetup --show -fP "${image_dir}/${image_name}.img")
-rootp="${loopdevice}p2"
-
+make_loop
 # Create file systems
-if [[ $fstype == ext4 ]]; then
-  features="^64bit,^metadata_csum"
-elif [[ $fstype == ext3 ]]; then
-  features="^64bit"
-fi
-mkfs -U "$root_uuid" -O "$features" -t "$fstype" -L ROOTFS "${rootp}"
-
+mkfs_partitions
 # Make fstab.
 make_fstab
 

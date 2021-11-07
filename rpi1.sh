@@ -71,20 +71,9 @@ parted -s "${image_dir}/${image_name}.img" mkpart primary fat32 1MiB "${bootsize
 parted -s -a minimal "${image_dir}/${image_name}.img" mkpart primary "$fstype" "${bootsize}"MiB 100%
 
 # Set the partition variables
-loopdevice=$(losetup --show -fP "${image_dir}/${image_name}.img")
-bootp="${loopdevice}p1"
-rootp="${loopdevice}p2"
-
+make_loop
 # Create file systems
-status "Formatting partitions"
-mkfs.vfat -n BOOT -F 32 "${bootp}"
-if [[ "$fstype" == "ext4" ]]; then
-  features="^64bit,^metadata_csum"
-elif [[ "$fstype" == "ext3" ]]; then
-  features="^64bit"
-fi
-mkfs -U "$root_uuid" -O "$features" -t "$fstype" -L ROOTFS "${rootp}"
-
+mkfs_partitions
 # Make fstab.
 make_fstab
 # Configure Raspberry Pi firmware (set config.txt to 64-bit)

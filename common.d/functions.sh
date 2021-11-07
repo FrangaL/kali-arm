@@ -333,19 +333,30 @@ function make_image() {
   fallocate -l "${img_size}" "${image_dir}/${image_name}.img"
 }
 
-# Check table partitions structure.
-function check_partitions() {
-  local img="${image_dir}/${image_name}.img"
-  local num_parts=$(fdisk -l $img | grep "${img}[1-2]" | wc -l)
+# Set the partition variables
+function make_loop() {
+  img="${image_dir}/${image_name}.img"
+  num_parts=$(fdisk -l $img | grep "${img}[1-2]" | wc -l)
   if [ "$num_parts" = "2" ]; then
-    local part_type1=$(fdisk  -l $img | grep ${img}1 | awk '{print $6}')
-    local part_type2=$(fdisk  -l $img | grep ${img}2 | awk '{print $6}')
+    part_type1=$(fdisk  -l $img | grep ${img}1 | awk '{print $6}')
+    part_type2=$(fdisk  -l $img | grep ${img}2 | awk '{print $6}')
     if [[ "$part_type1" == "c" ]]; then
       bootfstype="vfat"
     elif [[ "$part_type1" == "83" ]]; then
       bootfstype=${bootfstype:-"$fstype"}
     fi
     rootfstype=${rootfstype:-"$fstype"}
+    loopdevice=$(losetup --show -fP "$img")
+    bootp="${loopdevice}p1"
+    rootp="${loopdevice}p2"
+  elif [ "$num_parts" = "1" ]; then
+    part_type1=$(fdisk  -l $img | grep ${img}1 | awk '{print $6}')
+    if [[ "$part_type1" == "83" ]]; then
+      rootfstype=${rootfstype:-"$fstype"}
+    fi
+    rootfstype=${rootfstype:-"$fstype"}
+    loopdevice=$(losetup --show -fP "$img")
+    rootp="${loopdevice}p1"
   fi
 }
 
@@ -365,7 +376,6 @@ EOF
 
 # Create file systems
 function mkfs_partitions() {
-  check_partitions
   status "Formatting partitions"
   # Formatting boot partition.
   if [ -n "${bootp}" ] ; then
