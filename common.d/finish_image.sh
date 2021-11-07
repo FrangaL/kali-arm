@@ -44,6 +44,5 @@ compress_img
 clean_build
 
 # Quit
-echo -e "\n"
-log "Your image is: $(tput sgr0) $img (Size: $(du -h $img | cut -f1))" bold
+log "\n Your image is: $(tput sgr0) $img (Size: $(du -h $img | cut -f1))" bold
 exit 0
