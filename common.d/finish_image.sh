@@ -30,17 +30,17 @@ if [ -n "${bootp}" ] && [ "${extra}"  = 1 ]; then
  fi
 fi
 
-status "Check filesystem root partition ($fstype)"
+status "Check filesystem root partition ($rootfstype)"
 e2fsck -y -f "${rootp}"
 
 # Remove loop devices
 status "Remove loop devices"
-[ -n "${bootp}" ] \
-  && dmsetup clear "${bootp}" \
-  || true
-dmsetup clear "${rootp}" || true
+#[ -n "${bootp}" ] \
+#  && dmsetup clear "${bootp}" \
+#  || true
+#dmsetup clear "${rootp}" || true
 #kpartx -dsv "${loopdevice}"
-#losetup -d "${loopdevice}"
+losetup -d "${loopdevice}"
 
 # Compress image compilation
 compress_img

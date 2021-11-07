@@ -338,6 +338,7 @@ function make_loop() {
   img="${image_dir}/${image_name}.img"
   num_parts=$(fdisk -l $img | grep "${img}[1-2]" | wc -l)
   if [ "$num_parts" = "2" ]; then
+    extra=1
     part_type1=$(fdisk  -l $img | grep ${img}1 | awk '{print $6}')
     part_type2=$(fdisk  -l $img | grep ${img}2 | awk '{print $6}')
     if [[ "$part_type1" == "c" ]]; then
@@ -410,8 +411,6 @@ function compress_img() {
       xz --memlimit-compress=50% -T "$num_cores" "${image_dir}/${image_name}.img" # -T Nº cpu cores use
     fi
     img="${image_dir}/${image_name}.img.xz"
-  else
-    img="${image_dir}/${image_name}.img"
   fi
   chmod 0644 "$img"
 }
