@@ -15,14 +15,13 @@ python3 -c 'import os; os.fsync(open("'${loopdevice}'", "r+b"))'
 
 # Unmount filesystem
 status "Unmount filesystem"
-[ -n "${bootp}" ] \
-  && umount -l "${bootp}" \
-  || true
+[ -n "${bootp}" ] && umount -l "${bootp}" || true
 umount -l "${rootp}"
 
 # Check filesystem
+status "Check filesystem partitions ($rootfstype)"
 if [ -n "${bootp}" ] && [ "${extra}"  = 1 ]; then
- status "Check filesystem boot partition (${bootfstype})"
+ log "Check filesystem boot partition:$(tput sgr0) (${bootfstype})" green
  if [ "$bootfstype" = "vfat" ]; then
   dosfsck -w -r -a -t "${bootp}"
  else
@@ -30,7 +29,7 @@ if [ -n "${bootp}" ] && [ "${extra}"  = 1 ]; then
  fi
 fi
 
-status "Check filesystem root partition ($rootfstype)"
+log "Check filesystem root partition:$(tput sgr0) ($rootfstype)" green
 e2fsck -y -f "${rootp}"
 
 # Remove loop devices

@@ -146,11 +146,9 @@ parted -s -a minimal "${image_dir}/${image_name}.img" mkpart primary ext2 5MiB 1
 
 # Set the partition variables
 make_loop
-
 # Create file systems
 rootfstype="ext2" # Force root partition ext2 filesystem
 mkfs_partitions
-
 # Make fstab.
 make_fstab
 
