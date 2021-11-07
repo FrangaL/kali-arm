@@ -9,9 +9,9 @@ minimal_pkgs="ca-certificates iw parted ssh wpasupplicant sudo"
 
 # This is the list of minimal common packages
 common_min_pkgs="apt-transport-https crda firmware-linux firmware-realtek firmware-atheros \
-firmware-libertas ifupdown initramfs-tools iw kali-defaults man-db mlocate netcat-traditional net-tools \
+firmware-libertas fontconfig ifupdown initramfs-tools iw kali-defaults man-db mlocate netcat-traditional net-tools \
 parted pciutils psmisc rfkill screen snmpd snmp sudo tftp tmux unrar usbutils vim zerofree \
-zsh zsh-autosuggestions zsh-syntax-highlighting fontconfig"
+zsh zsh-autosuggestions zsh-syntax-highlighting"
 # This is the list of common packages
 common_pkgs="kali-linux-core apt-transport-https bluez bluez-firmware dialog \
 ifupdown initramfs-tools inxi iw libnss-systemd man-db mlocate net-tools network-manager crda \

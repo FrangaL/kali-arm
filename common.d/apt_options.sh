@@ -6,7 +6,7 @@ APT::Get::allow-change-held-packages "true";
 Acquire::Retries "3";
 EOF
 
-if [[ "${variant:=}" =~ "slim" ]] || [[ "${variant:=}" =~ "minimal" ]] ; then
+if [[ "${variant:=}" =~ (minimal|slim) ]] ; then
   cat > "${work_dir:=}"/etc/apt/apt.conf.d/99_norecommends <<EOM
 APT::Install-Recommends "false";
 APT::AutoRemove::RecommendsImportant "false";

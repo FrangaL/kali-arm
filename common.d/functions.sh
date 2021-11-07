@@ -212,7 +212,7 @@ if [[ -z $cpu_limit ]]; then
 
 function sources_list() {
   # Define sources.list
-  log " define sources.list" green
+  log " ✅ define sources.list" green
   cat <<EOF > "${work_dir}"/etc/apt/sources.list
 deb ${mirror} ${suite} ${components//,/ }
 #deb-src ${mirror} ${suite} ${components//,/ }

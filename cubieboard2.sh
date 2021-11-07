@@ -24,9 +24,6 @@ add_interface eth0
 # Run third stage
 include third_stage
 
-# Compile Raspberry Pi userland
-# include rpi_userland
-
 # Clean system
 include clean_system
 

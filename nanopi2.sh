@@ -9,7 +9,7 @@
 
 # Hardware model
 hw_model=${hw_model:-"nanopi2"}
-# Architecture (arm64, armhf, armel)
+# Architecture
 architecture=${architecture:-"armhf"}
 # Desktop manager (xfce, gnome, i3, kde, lxde, mate, e17 or none)
 desktop=${desktop:-"xfce"}
