@@ -35,11 +35,6 @@ e2fsck -y -f "${rootp}"
 
 # Remove loop devices
 status "Remove loop devices"
-#[ -n "${bootp}" ] \
-#  && dmsetup clear "${bootp}" \
-#  || true
-#dmsetup clear "${rootp}" || true
-#kpartx -dsv "${loopdevice}"
 losetup -d "${loopdevice}"
 
 # Compress image compilation
