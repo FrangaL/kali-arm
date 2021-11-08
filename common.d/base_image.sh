@@ -12,9 +12,9 @@ set -e
 source ./common.d/functions.sh
 
 # Load common variables
-include variables
+source ./common.d/variables.sh
 # Checks script environment
-include check
+source ./common.d/check.sh
 # Packages build list
 include packages
 # Execute initial debootstrap
@@ -24,15 +24,9 @@ include eatmydata
 # debootstrap second stage
 systemd-nspawn_exec eatmydata /debootstrap/debootstrap --second-stage
 # Define sources.list
-include sources.list
+sources_list
 # APT options
 include apt_options
-# So X doesn't complain, we add kali to hosts
-include hosts
-# Set hostname
-set_hostname "${hostname}"
-# Network configs
-include network
 
 # Disable suspend/resume - speeds up boot massively
 mkdir -p "${work_dir}/etc/initramfs-tools/conf.d/"
@@ -53,7 +47,7 @@ status_3t=\$(grep '^status_stage3 ' \$0 | wc -l)
 
 status_stage3() {
   status_3i=\$((status_3i+1))
-  echo  " [i] Stage 3 (\${status_3i}/\${status_3t}): \$1"
+  echo  "  $(tput setaf 15)✅ Stage 3 (\${status_3i}/\${status_3t}):$(tput setaf 2) \$1$(tput sgr0)"
 }
 
 status_stage3 'Update apt'

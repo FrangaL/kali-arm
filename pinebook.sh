@@ -11,18 +11,19 @@
 hw_model=${hw_model:-"pinebook"}
 # Architecture
 architecture=${architecture:-"arm64"}
-# Variant name for image and dir build
-variant=${variant:-"${architecture}"}
 # Desktop manager (xfce, gnome, i3, kde, lxde, mate, e17 or none)
 desktop=${desktop:-"xfce"}
 
 # Load default base_image configs
 source ./common.d/base_image.sh
 
+# Network configs
+basic_network
+#add_interface eth0
+
 # Do not include wlan0 on a wireless only device, otherwise NetworkManager won't run
 # wlan0 requires special editing of the /etc/network/interfaces.d/wlan0 file, to add the wireless network and ssid
 # Network configs
-#include network
 #add_interface wlan0
 
 # Third stage
@@ -88,8 +89,6 @@ include third_stage
 
 # Clean system
 include clean_system
-trap clean_build ERR SIGTERM SIGINT
-
 
 # Set up some defaults for chromium, if the user ever installs it
 status "Set default chromium options"
@@ -117,32 +116,22 @@ parted -s "${image_dir}/${image_name}.img" mklabel msdos
 parted -s -a minimal "${image_dir}/${image_name}.img" mkpart primary $fstype 32MiB 100%
 
 # Set the partition variables
-loopdevice=$(losetup --show -fP "${image_dir}/${image_name}.img")
-rootp="${loopdevice}p1"
-
+make_loop
 # Create file systems
-status "Formatting partitions"
-if [[ "$fstype" == "ext4" ]]; then
-  features="^64bit,^metadata_csum"
-elif [[ "$fstype" == "ext3" ]]; then
-  features="^64bit"
-fi
-mkfs -O "$features" -t "$fstype" -L ROOTFS "${rootp}"
+mkfs_partitions
+# Make fstab.
+make_fstab
 
 # Create the dirs for the partitions and mount them
 status "Create the dirs for the partitions and mount them"
 mkdir -p "${base_dir}"/root/
 mount "${rootp}" "${base_dir}"/root
 
-# Create an fstab so that we don't mount / read-only
-status "/etc/fstab"
-UUID=$(blkid -s UUID -o value ${rootp})
-echo "UUID=$UUID /               $fstype    errors=remount-ro 0       1" >> ${work_dir}/etc/fstab
 
 # Ensure we don't have root=/dev/sda3 in the extlinux.conf which comes from running u-boot-menu in a cross chroot
 # We do this down here because we don't know the UUID until after the image is created
 status "Edit the extlinux.conf file to set root uuid and proper name"
-sed -i -e "0,/root=.*/s//root=UUID=$(blkid -s UUID -o value ${rootp}) rootfstype=$fstype console=tty1 consoleblank=0 ro rootwait/g" ${work_dir}/boot/extlinux/extlinux.conf
+sed -i -e "0,/root=.*/s//root=UUID=$root_uuid rootfstype=$fstype console=tty1 consoleblank=0 ro rootwait/g" ${work_dir}/boot/extlinux/extlinux.conf
 # And we remove the "GNU/Linux because we don't use it
 sed -i -e "s|.*GNU/Linux Rolling|menu label Kali Linux|g" ${work_dir}/boot/extlinux/extlinux.conf
 

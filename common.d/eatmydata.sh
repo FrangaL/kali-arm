@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-log "eatmydata" green
+log "enabling eatmydata ..." gray
 
 # We need to manually extract eatmydata to use it for the second stage.
 for archive in "${work_dir}"/var/cache/apt/archives/*eatmydata*.deb; do

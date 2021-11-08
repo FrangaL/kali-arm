@@ -11,8 +11,6 @@
 hw_model=${hw_model:-"usbarmory-mki"}
 # Architecture
 architecture=${architecture:-"armhf"}
-# Variant name for image and dir build
-variant=${variant:-"${architecture}"}
 # Desktop manager (xfce, gnome, i3, kde, lxde, mate, e17 or none)
 desktop=${desktop:-"xfce"}
 
@@ -20,7 +18,7 @@ desktop=${desktop:-"xfce"}
 source ./common.d/base_image.sh
 
 # Network configs
-include network
+basic_network
 add_interface eth0
 
 # Third stage
@@ -98,7 +96,6 @@ include third_stage
 
 # Clean system
 include clean_system
-trap clean_build ERR SIGTERM SIGINT
 
 # Kernel section. If you want to use a custom kernel, or configuration, replace
 # them in this section
@@ -154,22 +151,17 @@ parted -s "${image_dir}/${image_name}.img" mklabel msdos
 parted -s -a minimal "${image_dir}/${image_name}.img" mkpart primary ext2 5MiB 100%
 
 # Set the partition variables
-loopdevice=$(losetup --show -fP "${image_dir}/${image_name}.img")
-rootp="${loopdevice}p1"
-
+make_loop
 # Create file systems
-status "Formatting partitions"
-mkfs.ext2 ${rootp}
+rootfstype="ext2" # Force root partition ext2 filesystem
+mkfs_partitions
+# Make fstab.
+make_fstab
 
 # Create the dirs for the partitions and mount them
 status "Create the dirs for the partitions and mount them"
 mkdir -p "${base_dir}"/root
 mount ${rootp} "${base_dir}"/root
-
-# Create an fstab so that we don't mount / read-only
-status "/etc/fstab"
-UUID=$(blkid -s UUID -o value ${rootp})
-echo "UUID=$UUID /               $fstype    errors=remount-ro 0       1" >> ${work_dir}/etc/fstab
 
 status "Rsyncing rootfs into image file"
 rsync -HPavz -q "${work_dir}"/ "${base_dir}"/root/

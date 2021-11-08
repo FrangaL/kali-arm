@@ -11,8 +11,6 @@
 hw_model=${hw_model:-"gateworks-ventana"}
 # Architecture
 architecture=${architecture:-"armhf"}
-# Variant name for image and dir build
-variant=${variant:-"${architecture}"}
 # Desktop manager (xfce, gnome, i3, kde, lxde, mate, e17 or none)
 desktop=${desktop:-"xfce"}
 
@@ -20,7 +18,7 @@ desktop=${desktop:-"xfce"}
 source ./common.d/base_image.sh
 
 # Network configs
-include network
+basic_network
 add_interface eth0
 
 # Third stage
@@ -44,8 +42,6 @@ include third_stage
 
 # Clean system
 include clean_system
-trap clean_build ERR SIGTERM SIGINT
-
 
 # Set up usb gadget mode
 cat << EOF > ${work_dir}/etc/dhcp/dhcpd.conf
@@ -125,31 +121,16 @@ parted -s "${image_dir}/${image_name}.img" mklabel msdos
 parted -s -a minimal "${image_dir}/${image_name}.img" mkpart primary $fstype 4MiB 100%
 
 # Set the partition variables
-loopdevice=$(losetup --show -fP "${image_dir}/${image_name}.img")
-rootp="${loopdevice}p1"
-
+make_loop
 # Create file systems
-status "Formatting partitions"
-if [[ "$fstype" == "ext4" ]]; then
-  features="^64bit,^metadata_csum"
-elif [[ "$fstype" == "ext3" ]]; then
-  features="^64bit"
-fi
-mkfs -O "$features" -t "$fstype" -L ROOTFS "${rootp}"
+mkfs_partitions
+# Make fsta.
+make_fstab
 
 # Create the dirs for the partitions and mount them
 status "Create the dirs for the partitions and mount them"
 mkdir -p "${base_dir}"/root/
 mount "${rootp}" "${base_dir}"/root
-
-# We do this here because we don't want to hardcode the UUID for the partition during creation
-# systemd doesn't seem to be generating the fstab properly for some people, so let's create one
-status "/etc/fstab"
-cat <<EOF > "${work_dir}"/etc/fstab
-# <file system> <mount point>   <type>  <options>       <dump>  <pass>
-proc            /proc           proc    defaults          0       0
-UUID=$(blkid -s UUID -o value ${rootp})  /               $fstype    defaults,noatime  0       1
-EOF
 
 status "Rsyncing rootfs into image file"
 rsync -HPavz -q "${work_dir}"/ "${base_dir}"/root/

@@ -1,14 +1,12 @@
 #!/usr/bin/env bash
 
-log "apt options" green
-
 cat > "${work_dir:=}"/etc/apt/apt.conf.d/apt_opts <<EOF
 DPkg::Options "--force-confnew";
 APT::Get::allow-change-held-packages "true";
 Acquire::Retries "3";
 EOF
 
-if [[ "${variant:=}" == *minimal* ]]; then
+if [[ "${variant:=}" =~ (minimal|slim) ]] ; then
   cat > "${work_dir:=}"/etc/apt/apt.conf.d/99_norecommends <<EOM
 APT::Install-Recommends "false";
 APT::AutoRemove::RecommendsImportant "false";

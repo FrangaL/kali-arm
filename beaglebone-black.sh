@@ -11,8 +11,6 @@
 hw_model=${hw_model:-"beaglebone-black"}
 # Architecture
 architecture=${architecture:-"armhf"}
-# Variant name for image and dir build
-variant=${variant:-"${architecture}"}
 # Desktop manager (xfce, gnome, i3, kde, lxde, mate, e17 or none)
 desktop=${desktop:-"xfce"}
 
@@ -20,7 +18,7 @@ desktop=${desktop:-"xfce"}
 source ./common.d/base_image.sh
 
 # Network configs
-include network
+basic_network
 add_interface eth0
 
 # Third stage
@@ -50,7 +48,6 @@ include third_stage
 
 # Clean system
 include clean_system
-trap clean_build ERR SIGTERM SIGINT
 
 status 'Kernel compile'
 git clone https://github.com/beagleboard/linux -b 4.14 --depth 1 ${work_dir}/usr/src/kernel
@@ -112,16 +109,6 @@ cat << EOF > ${work_dir}/etc/modules-load.d/modules.conf
 g_ether
 EOF
 
-# systemd doesn't seem to be generating the fstab properly for some people, so
-# let's create one. Further down we add the root partition, but we don't
-# know the UUID til after the image file is created
-status 'Fix fstab'
-cat << EOF > ${work_dir}/etc/fstab
-# <file system> <mount point>   <type>  <options>       <dump>  <pass>
-proc            /proc           proc    defaults          0       0
-/dev/mmcblk0p1  /boot           vfat    defaults          0       2
-EOF
-
 status 'Create xorg config'
 mkdir -p ${work_dir}/etc/X11/
 cat << EOF > ${work_dir}/etc/X11/xorg.conf
@@ -179,19 +166,11 @@ parted -s "${image_dir}/${image_name}.img" mkpart primary fat32 1MiB "${bootsize
 parted -s -a minimal "${image_dir}/${image_name}.img" mkpart primary "$fstype" "${bootsize}"MiB 100%
 
 # Set the partition variables
-loopdevice=$(losetup --show -fP "${image_dir}/${image_name}.img")
-bootp="${loopdevice}p1"
-rootp="${loopdevice}p2"
-
+make_loop
 # Create file systems
-status "Formatting partitions"
-mkfs.vfat -n BOOT -F 16 "${bootp}"
-if [[ "$fstype" == "ext4" ]]; then
-  features="^64bit,^metadata_csum"
-elif [[ "$fstype" == "ext3" ]]; then
-  features="^64bit"
-fi
-mkfs -O "$features" -t "$fstype" -L ROOTFS "${rootp}"
+mkfs_partitions
+# Make fstab.
+make_fstab
 
 # Create the dirs for the partitions and mount them
 status "Create the dirs for the partitions and mount them"
@@ -199,11 +178,6 @@ mkdir -p "${base_dir}"/root/
 mount "${rootp}" "${base_dir}"/root
 mkdir -p "${base_dir}"/root/boot
 mount "${bootp}" "${base_dir}"/root/boot
-
-# Create an fstab so that we don't mount / read-only
-status "/etc/fstab"
-UUID=$(blkid -s UUID -o value ${rootp})
-echo "UUID=$UUID /               $fstype    errors=remount-ro 0       1" >> ${work_dir}/etc/fstab
 
 status "Rsyncing rootfs into image file"
 rsync -HPavz -q --exclude boot "${work_dir}"/ "${base_dir}"/root/

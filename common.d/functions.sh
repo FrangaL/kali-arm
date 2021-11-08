@@ -10,34 +10,40 @@ function log() {
     green) color=$(tput setaf 2) ;;
     yellow) color=$(tput setaf 3) ;;
     cyan) color=$(tput setaf 6) ;;
+    gray) color=$(tput setaf 8) ;;
+    white) color=$(tput setaf 15) ;;
     *) text="$1" ;;
   esac
   [ -z "$text" ] \
-    && echo "$color $1 $(tput sgr0)" \
-    || echo "$text"
+    && echo -e "$color $1 $(tput sgr0)" \
+    || echo -e "$text"
 }
 
 # Usage function
 function usage() {
   log "Usage commands:" bold
-  echo "# Architecture (arm64, armel, armhf)"
-  echo "$0 --arch arm64"
-  echo ""
-  echo "# Desktop manager (xfce, gnome, kde, i3, lxde, mate, e17 or none)"
-  echo "$0 --desktop kde"
-  echo ""
-  echo "# Minimal image - no desktop manager & default tools"
-  echo "$0 --minimal"
-  echo ""
-  echo "# Enable debug & log file (./logs/<file>.log)"
-  echo "$0 --debug"
-  echo ""
-  echo "# Perform extra checks on the images build"
-  echo "$0 --extra"
-  echo ""
-  echo "# Help screen (this)"
-  echo "$0 --help"
+  cat << EOF
+    # Architectures (arm64, armel, armhf)
+    $0 --arch arm64 or $0 -a armhf
 
+    # Desktop manager (xfce, gnome, kde, i3, lxde, mate, e17 or none)
+    $0 --desktop kde
+
+    # Minimal image - no desktop manager
+    $0 --minimal or $0 -m
+
+    # Slim image - no desktop manager & cli tools
+    $0 --slim or $0 -s
+
+    # Enable debug & log file (./logs/<file>.log)
+    $0 --debug or $0 -d
+
+    # Perform extra checks on the images build
+    $0 --extra or $0 -x
+
+    # Help screen (this)
+    $0 --help or $0 -h
+EOF
   exit 0
 }
 
@@ -52,23 +58,6 @@ function debug_enable() {
   set -x
   debug=1
   extra=1
-}
-
-# Extra checks function
-function extra_enable() {
-  log "Extra Checks: Enabled" green
-  extra=1
-}
-
-# Minimal variant mode
-function minimal_mode() {
-  log "Minimal image mode" green
-
-  # Variant name for image and dir build
-  variant="minimal-${architecture}"
-
-  # Disable Desktop Manager
-  desktop="none"
 }
 
 # Arguments function
@@ -86,12 +75,17 @@ function arguments() {
         desktop="$1"; shift;;
       --desktop=*)
         desktop="${opt#*=}";;
-      --minimal)
-        minimal_mode;;
+      -m | --minimal)
+        # Disable Desktop Manager
+        variant="minimal"; minimal="1"; desktop="none" ;;
+      -s | --slim)
+        # Disable minimal cli tools & Desktop Manager
+        variant="slim"; desktop="none"; minimal="1"; slim="1";;
       -d | --debug)
         debug_enable;;
       -x | --extra)
-        extra_enable;;
+        log "Extra Checks: Enabled" green
+        extra="1";;
       -h | -help | --help)
         usage;;
       *)
@@ -107,7 +101,7 @@ arguments $*
 function include() {
   local file="$1"
   if [[ -f "common.d/${file}.sh" ]]; then
-    log " ✅ Load common file ${file}" green
+    log " ✅ Load common file:$(tput sgr0) ${file}" green
     # shellcheck source=/dev/null
     source "common.d/${file}.sh"
     return 0
@@ -123,14 +117,15 @@ function include() {
 # systemd-nspawn environment
 # Putting quotes around $extra_args causes systemd-nspawn to pass the extra arguments as 1, so leave it unquoted.
 function systemd-nspawn_exec() {
-  log "systemd-nspawn_exec" green
+  log "systemd-nspawn $*" gray
   ENV="RUNLEVEL=1,LANG=C,DEBIAN_FRONTEND=noninteractive,DEBCONF_NOWARNINGS=yes"
   systemd-nspawn --bind-ro "$qemu_bin" $extra_args --capability=cap_setfcap -E $ENV -M "$machine" -D "$work_dir" "$@"
 }
 
 # Create the rootfs - not much to modify here, except maybe throw in some more packages if you want.
 function debootstrap_exec() {
-  log "debootstrap_exec" green
+  echo -e "\n"
+  status "debootstrap ${suite} $*"
   eatmydata debootstrap --foreign --keyring=/usr/share/keyrings/kali-archive-keyring.gpg --components="${components}" \
     --include="${debootstrap_base}" --arch "${architecture}" "${suite}" "${work_dir}" "$@"
 }
@@ -138,7 +133,7 @@ function debootstrap_exec() {
 # Disable the use of http proxy in case it is enabled.
 function disable_proxy() {
   if [ -n "$proxy_url" ]; then
-    log "Disable proxy" green
+    log "Disable proxy" gray
     unset http_proxy
     rm -rf "${work_dir}"/etc/apt/apt.conf.d/66proxy
   elif [ "${debug}" = 1 ]; then
@@ -153,7 +148,7 @@ function restore_mirror() {
   elif [[ -n "${replace_suite}" ]]; then
     export suite=${replace_suite}
   fi
-  log "Mirror & suite replacement" green
+  log "Mirror & suite replacement" gray
 
   # For now, restore_mirror will put the default kali mirror in, fix after 2021.3
   cat <<EOF> "${work_dir}"/etc/apt/sources.list
@@ -215,10 +210,19 @@ if [[ -z $cpu_limit ]]; then
   cgdelete -g cpu:/cpulimit-"$rand"
 }
 
+function sources_list() {
+  # Define sources.list
+  log " ✅ define sources.list" green
+  cat <<EOF > "${work_dir}"/etc/apt/sources.list
+deb ${mirror} ${suite} ${components//,/ }
+#deb-src ${mirror} ${suite} ${components//,/ }
+EOF
+}
+
 # Choose a locale
 function set_locale() {
   LOCALES="$1"
-  log "locale: ${LOCALES}" green
+  log "locale:$(tput sgr0) ${LOCALES}" gray
   sed -i "s/^# *\($LOCALES\)/\1/" "${work_dir}"/etc/locale.gen
   #systemd-nspawn_exec locale-gen
   echo "LANG=$LOCALES" >"${work_dir}"/etc/locale.conf
@@ -237,7 +241,7 @@ EOM
 # Set hostname
 function set_hostname() {
   if [[ "$1" =~ ^[a-zA-Z0-9-]{2,63}+$ ]]; then
-    log "/etc/hostname" green
+    log " Created /etc/hostname" white
     echo "$1" >"${work_dir}"/etc/hostname
   else
     log "$1 is not a correct hostname" red
@@ -255,8 +259,41 @@ auto $netdev
     allow-hotplug $netdev
     iface $netdev inet dhcp
 EOF
-    log "Configured /etc/network/interfaces.d/$netdev" bold
+    log " Configured /etc/network/interfaces.d/$netdev" white
   done
+}
+
+function basic_network() {
+  # Disable IPv6
+  if [ "$disable_ipv6" = "yes" ]; then
+    log " Disable IPv6" white
+
+    echo "# Don't load ipv6 by default" >"${work_dir}"/etc/modprobe.d/ipv6.conf
+    echo "alias net-pf-10 off" >>"${work_dir}"/etc/modprobe.d/ipv6.conf
+  fi
+
+  cat <<EOF > "${work_dir}"/etc/network/interfaces
+source-directory /etc/network/interfaces.d
+
+auto lo
+  iface lo inet loopback
+
+EOF
+  make_hosts
+}
+
+function make_hosts() {
+  set_hostname "${hostname}"
+  log " Created /etc/hosts" white
+  cat <<EOF > "${work_dir:=}"/etc/hosts
+127.0.1.1       ${hostname:=}
+127.0.0.1       localhost
+::1             localhost ip6-localhost ip6-loopback
+fe00::0         ip6-localnet
+ff00::0         ip6-mcastprefix
+ff02::1         ip6-allnodes
+ff02::2         ip6-allrouters
+EOF
 }
 
 # Make SWAP
@@ -264,10 +301,9 @@ function make_swap() {
   if [ "$swap" = yes ]; then
     log "Make swap" green
     echo 'vm.swappiness = 50' >>"${work_dir}"/etc/sysctl.conf
-    systemd-nspawn_exec apt-get install -y dphys-swapfile >/dev/null 2>&1
     #sed -i 's/#CONF_SWAPSIZE=/CONF_SWAPSIZE=128/g' ${work_dir}/etc/dphys-swapfile
   else
-    log "Make Swap: Disabled" yellow
+    [[ -f ${work_dir}/swapfile.img ]] || log "Make Swap:$(tput sgr0) Disabled" yellow
   fi
 }
 
@@ -275,12 +311,8 @@ function make_swap() {
 function print_config() {
   echo -e "\n"
   log "Compilation info" bold
-  if [[ "$hw_model" == *rpi* ]]; then
-    name_model="Raspberry Pi 2/3/4/400"
-    log "Hardware model: $(tput sgr0) $name_model" cyan
-  else
-    log "Hardware model: $(tput sgr0) $hw_model" cyan
-  fi
+  name_model="$(sed -n '3'p $0)"
+  log "Hardware model: $(tput sgr0) ${name_model#* for}" cyan
   log "Architecture: $(tput sgr0) $architecture" cyan
   log "The base_dir thinks it is: $(tput sgr0) ${base_dir}" cyan
   echo -e "\n"
@@ -295,25 +327,119 @@ function make_image() {
   raw_size=$(($((free_space * 1024)) + root_extra + $((bootsize * 1024)) + 4096))
   img_size=$(echo "${raw_size}"Ki | numfmt --from=iec-i --to=si)
   # Create the disk image
-  log "Creating image file: ${image_dir}/${image_name}.img (Size: ${img_size})" green
+  log "Creating image file:$(tput sgr0) ${image_name}.img (Size: ${img_size})" white
   mkdir -p "${image_dir}/"
   fallocate -l "${img_size}" "${image_dir}/${image_name}.img"
 }
 
+# Set the partition variables
+function make_loop() {
+  img="${image_dir}/${image_name}.img"
+  num_parts=$(fdisk -l $img | grep "${img}[1-2]" | wc -l)
+  if [ "$num_parts" = "2" ]; then
+    extra=1
+    part_type1=$(fdisk  -l $img | grep ${img}1 | awk '{print $6}')
+    part_type2=$(fdisk  -l $img | grep ${img}2 | awk '{print $6}')
+    if [[ "$part_type1" == "c" ]]; then
+      bootfstype="vfat"
+    elif [[ "$part_type1" == "83" ]]; then
+      bootfstype=${bootfstype:-"$fstype"}
+    fi
+    rootfstype=${rootfstype:-"$fstype"}
+    loopdevice=$(losetup --show -fP "$img")
+    bootp="${loopdevice}p1"
+    rootp="${loopdevice}p2"
+  elif [ "$num_parts" = "1" ]; then
+    part_type1=$(fdisk  -l $img | grep ${img}1 | awk '{print $6}')
+    if [[ "$part_type1" == "83" ]]; then
+      rootfstype=${rootfstype:-"$fstype"}
+    fi
+    rootfstype=${rootfstype:-"$fstype"}
+    loopdevice=$(losetup --show -fP "$img")
+    rootp="${loopdevice}p1"
+  fi
+}
+
+# Create fstab file.
+function make_fstab() {
+  status "Create /etc/fstab"
+  cat <<EOF > "${work_dir}"/etc/fstab
+# <file system> <mount point>   <type>  <options>       <dump>  <pass>
+proc            /proc           proc    defaults          0       0
+
+UUID=$root_uuid /               $rootfstype errors=remount-ro 0       1
+EOF
+  if ! [ -z "$bootp" ]; then
+    echo "LABEL=BOOT      /boot           $bootfstype    defaults          0       2" >> "${work_dir}"/etc/fstab
+  fi
+  make_swap
+  if [ -f "${work_dir}/swapfile.img" ]; then
+    cat << EOF >> ${work_dir}/etc/fstab
+/swapfile.img   none            swap    sw                0       0
+EOF
+  fi
+}
+
+# Create file systems
+function mkfs_partitions() {
+  status "Formatting partitions"
+  # Formatting boot partition.
+  if [ -n "${bootp}" ] ; then
+    case $bootfstype  in
+      vfat) mkfs.vfat -n BOOT -F 32 "${bootp}" ;;
+      ext4) features="^64bit,^metadata_csum"
+      mkfs -O "$features" -t "$fstype" -L BOOT "${bootp}" ;;
+      ext2 | ext3) features="^64bit"
+      mkfs -O "$features" -t "$fstype" -L BOOT "${bootp}" ;;
+    esac
+    bootfstype=$(blkid -o value -s TYPE $bootp)
+  fi
+  # Formatting root partition.
+  if [ -n "${rootp}" ] ; then
+    case $rootfstype  in
+      ext4) features="^64bit,^metadata_csum" ;;
+      ext2 | ext3) features="^64bit" ;;
+    esac
+    yes | mkfs -U "$root_uuid" -O "$features" -t "$fstype" -L ROOTFS "${rootp}"
+    root_partuuid=$(blkid -s PARTUUID -o value ${rootp})
+    rootfstype=$(blkid -o value -s TYPE $rootp)
+  fi
+}
+
+# Compress image compilation
+function compress_img() {
+  if [ "${compress:=}" = xz ]; then
+    status "Compressing file: ${image_name}.img"
+    if [ "$(arch)" == 'x86_64' ] || [ "$(arch)" == 'aarch64' ]; then
+      limit_cpu pixz -p "${num_cores:=}" "${image_dir}/${image_name}.img" # -p Nº cpu cores use
+    else
+      xz --memlimit-compress=50% -T "$num_cores" "${image_dir}/${image_name}.img" # -T Nº cpu cores use
+    fi
+    img="${image_dir}/${image_name}.img.xz"
+  fi
+  chmod 0644 "$img"
+}
+
 # Clean up all the temporary build stuff and remove the directories.
 function clean_build() {
-  log "Cleaning up the temporary build files" green
-  #rm -rf "${base_dir}"
+  log "Cleaning up the temporary build files ..." green
   rm -rf "${work_dir}"
   log "Done" green
+}
+trap check_trap INT ERR SIGTERM SIGINT
+
+function check_trap() {
   echo -e "\n"
-  log "Your image is: $(tput sgr0) $(ls "${image_dir}/${image_name}".*)" bold
+  log " ⚠️  An error has occurred !" red
+  echo -e "\n"
+  clean_build
 }
 
 # Show progress
 status() {
   status_i=$((status_i+1))
-  log "[i] ${status_i}/${status_t}: $1 ($(date +"%Y-%m-%d %H:%M:%S"))" green
+  [[ $debug = 1 ]] && timestamp="($(date +"%Y-%m-%d %H:%M:%S"))" || timestamp=""
+  log " ✅ ${status_i}/${status_t}:$(tput sgr0) $1 $timestamp" green
 }
 status_i=0
-status_t=$(grep '^status ' $0 common.d/*.sh | wc -l)
+status_t=$(($(grep '.*status ' $0 common.d/*.sh | wc -l) -1))

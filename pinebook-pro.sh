@@ -11,8 +11,6 @@
 hw_model=${hw_model:-"pinebook-pro"}
 # Architecture
 architecture=${architecture:-"arm64"}
-# Variant name for image and dir build
-variant=${variant:-"${architecture}"}
 # Desktop manager (xfce, gnome, i3, kde, lxde, mate, e17 or none)
 desktop=${desktop:-"xfce"}
 
@@ -21,7 +19,7 @@ source ./common.d/base_image.sh
 
 # Do *NOT* include wlan0 if using a desktop otherwise NetworkManager will ignore it
 # Network configs
-#include network
+basic_network
 #add_interface wlan0
 
 # Third stage
@@ -56,8 +54,6 @@ include third_stage
 
 # Clean system
 include clean_system
-trap clean_build ERR SIGTERM SIGINT
-
 
 # Pull in the wifi and bluetooth firmware from manjaro's git repository
 status "WiFi & bluetooth firmware"
@@ -198,27 +194,17 @@ parted -s "${image_dir}/${image_name}.img" mklabel msdos
 parted -s -a minimal "${image_dir}/${image_name}.img" mkpart primary $fstype 32MiB 100%
 
 # Set the partition variables
-loopdevice=$(losetup --show -fP "${image_dir}/${image_name}.img")
-rootp="${loopdevice}p1"
-
+make_loop
 # Create file systems
-status "Formatting partitions"
-if [[ "$fstype" == "ext4" ]]; then
-  features="^64bit,^metadata_csum"
-elif [[ "$fstype" == "ext3" ]]; then
-  features="^64bit"
-fi
-mkfs -O "$features" -t "$fstype" -L ROOTFS "${rootp}"
+mkfs_partitions
+# Make fstab.
+make_fstab
 
 # Create the dirs for the partitions and mount them
 status "Create the dirs for the partitions and mount them"
 mkdir -p "${base_dir}"/root/
 mount "${rootp}" "${base_dir}"/root
 
-# Create an fstab so that we don't mount / read-only
-status "/etc/fstab"
-UUID=$(blkid -s UUID -o value ${rootp})
-echo "UUID=$UUID /               $fstype    errors=remount-ro 0       1" >> ${work_dir}/etc/fstab
 
 # FUTURE: Move to debian u-boot when it works properly
 # Ensure we don't have root=/dev/sda3 in the extlinux.conf which comes from running u-boot-menu in a cross chroot

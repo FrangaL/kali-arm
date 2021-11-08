@@ -11,13 +11,15 @@
 hw_model=${hw_model:-"rpi0w-pitail"}
 # Architecture
 architecture=${architecture:-"armel"}
-# Variant name for image and dir build
-variant=${variant:-"${architecture}"}
 # Desktop manager (xfce, gnome, i3, kde, lxde, mate, e17 or none)
 desktop=${desktop:-"xfce"}
 
 # Load default base_image configs
 source ./common.d/base_image.sh
+
+# Network configs
+basic_network
+#add_interface eth0
 
 # Download Pi-Tail files
 git clone --depth 1 https://github.com/re4son/Kali-Pi ${work_dir}/opt/Kali-Pi
@@ -185,25 +187,9 @@ cat << EOF > ${work_dir}/etc/udev/rules.d/70-persistent-net.rules
 SUBSYSTEM=="net", ACTION=="add", DRIVERS=="?*", ATTR{address}=="", ATTR{dev_id}=="0x0", ATTR{type}=="1", KERNEL=="wlan*", NAME="wlan1"
 EOF
 
-status 'Create cmdline.txt file'
-cat << EOF > ${work_dir}/boot/cmdline.txt
-dwc_otg.lpm_enable=0 console=serial0,115200 console=tty1 root=/dev/mmcblk0p2 rootfstype=$fstype elevator=deadline fsck.repair=yes rootwait
-EOF
-
-# systemd doesn't seem to be generating the fstab properly for some people, so
-# let's create one
-status 'Create /etc/fstab'
-cat << EOF > ${work_dir}/etc/fstab
-# <file system> <mount point>   <type>  <options>       <dump>  <pass>
-proc            /proc           proc    defaults          0       0
-/dev/mmcblk0p1  /boot           vfat    defaults          0       2
-/dev/mmcblk0p2  /               $fstype    defaults,noatime  0       1
-/swapfile.img   none            swap    sw                0       0
-EOF
-
 # Clean system
 include clean_system
-trap clean_build ERR SIGTERM SIGINT
+
 cd "${repo_dir}/"
 
 # Calculate the space to create the image and create
@@ -216,19 +202,11 @@ parted -s "${image_dir}/${image_name}.img" mkpart primary fat32 1MiB "${bootsize
 parted -s -a minimal "${image_dir}/${image_name}.img" mkpart primary "$fstype" "${bootsize}"MiB 100%
 
 # Set the partition variables
-loopdevice=$(losetup --show -fP "${image_dir}/${image_name}.img")
-bootp="${loopdevice}p1"
-rootp="${loopdevice}p2"
-
+make_loop
 # Create file systems
-status "Formatting partitions"
-mkfs.vfat -n BOOT -F 32 "${bootp}"
-if [[ "$fstype" == "ext4" ]]; then
-  features="^64bit,^metadata_csum"
-elif [[ "$fstype" == "ext3" ]]; then
-  features="^64bit"
-fi
-mkfs -O "$features" -t "$fstype" -L ROOTFS "${rootp}"
+mkfs_partitions
+# Make fstab.
+make_fstab
 
 # Create the dirs for the partitions and mount them
 status "Create the dirs for the partitions and mount them"

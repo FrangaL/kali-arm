@@ -6,9 +6,6 @@
 # Stop on error
 set -e
 
-# Say where we are
-log "finish_image" green
-
 # Make sure we are somewhere we are not going to unmount
 cd "${repo_dir}/"
 
@@ -18,42 +15,33 @@ python3 -c 'import os; os.fsync(open("'${loopdevice}'", "r+b"))'
 
 # Unmount filesystem
 status "Unmount filesystem"
-[ -n "${bootp}" ] \
-  && umount -l "${bootp}" \
-  || true
+[ -n "${bootp}" ] && umount -l "${bootp}" || true
 umount -l "${rootp}"
 
 # Check filesystem
-#status "Check filesystem (dosfsck)"
-#dosfsck -w -r -a -t "${bootp}"
+status "Check filesystem partitions ($rootfstype)"
 if [ -n "${bootp}" ] && [ "${extra}"  = 1 ]; then
- fstype=$(blkid -o export "${bootp}" | grep '^TYPE' | cut -d"=" -f2)
- status "Check filesystem (dosfsck ${fstype})"
- if [ "$fstype" = "vfat" ]; then
+ log "Check filesystem boot partition:$(tput sgr0) (${bootfstype})" green
+ if [ "$bootfstype" = "vfat" ]; then
   dosfsck -w -r -a -t "${bootp}"
  else
   e2fsck -y -f "${bootp}"
  fi
 fi
 
-status "Check filesystem (e2fsck)"
+log "Check filesystem root partition:$(tput sgr0) ($rootfstype)" green
 e2fsck -y -f "${rootp}"
 
 # Remove loop devices
 status "Remove loop devices"
-[ -n "${bootp}" ] \
-  && dmsetup clear "${bootp}" \
-  || true
-dmsetup clear "${rootp}" || true
-kpartx -dsv "${loopdevice}"
 losetup -d "${loopdevice}"
 
 # Compress image compilation
-include compress_img
+compress_img
 
 # Clean up all the temporary build stuff and remove the directories
 clean_build
 
 # Quit
-log "Done" green
+log "\n Your image is: $(tput sgr0) $img (Size: $(du -h $img | cut -f1))" bold
 exit 0

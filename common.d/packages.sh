@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-log "selecting packages" green
+log " selecting packages ..." gray
 
 debootstrap_base="kali-archive-keyring,eatmydata"
 
@@ -9,7 +9,7 @@ minimal_pkgs="ca-certificates iw parted ssh wpasupplicant sudo"
 
 # This is the list of minimal common packages
 common_min_pkgs="apt-transport-https crda firmware-linux firmware-realtek firmware-atheros \
-firmware-libertas ifupdown initramfs-tools iw kali-defaults man-db mlocate netcat-traditional net-tools \
+firmware-libertas fontconfig ifupdown initramfs-tools iw kali-defaults man-db mlocate netcat-traditional net-tools \
 parted pciutils psmisc rfkill screen snmpd snmp sudo tftp tmux unrar usbutils vim zerofree \
 zsh zsh-autosuggestions zsh-syntax-highlighting"
 # This is the list of common packages
@@ -42,6 +42,11 @@ rpi_pkgs="fake-hwclock ntpdate u-boot-tools"
 # Packages specific to the boards and using the GPIO on it
 gpio_pkgs="i2c-tools python3-configobj python3-pip python3-requests python3-rpi.gpio python3-smbus"
 
+# Add swap packages
+if [ "$swap" = yes ]; then
+  minimal_pkgs+=" dphys-swapfile"
+fi
+
 extra="$custom_kernel_pkgs"
 
 # add extra_custom_pkgs, that can be a global variable
@@ -51,10 +56,19 @@ packages="$common_pkgs $cli_tools_pkgs $services $extra_custom_pkgs"
 if [[ "$hw_model" == *rpi* ]]; then
   extra+=" $gpio_pkgs $rpi_pkgs"
 fi
-if [[ "$variant" == *minimal* ]]; then
-  packages="$common_min_pkgs $cli_min_tools $services $extra_custom_pkgs"
+if [ "$minimal" = "1" ]; then
+  image_mode="minimal"
+  if [ "$slim" = "1" ]; then
+    cli_min_tools=""
+    image_mode="slim"
+    packages="$common_min_pkgs $cli_min_tools openssh-server"
+  else
+    packages="$common_min_pkgs $cli_min_tools $services $extra_custom_pkgs"
+  fi
+  log " selecting $image_mode mode ..." gray
 fi
 
+# Basic packages third stage
 third_stage_pkgs="binutils ca-certificates console-common console-setup locales libterm-readline-gnu-perl git wget curl"
 
 # Re4son packages

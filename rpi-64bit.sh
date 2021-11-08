@@ -9,10 +9,8 @@
 
 # Hardware model
 hw_model=${hw_model:-"rpi"}
-# Architecture
+# Architecture (arm64, armhf, armel)
 architecture=${architecture:-"arm64"}
-# Variant name for image and dir build
-variant=${variant:-"${architecture}"}
 # Desktop manager (xfce, gnome, i3, kde, lxde, mate, e17 or none)
 desktop=${desktop:-"xfce"}
 
@@ -20,7 +18,7 @@ desktop=${desktop:-"xfce"}
 source ./common.d/base_image.sh
 
 # Network configs
-include network
+basic_network
 add_interface eth0
 
 # Third stage
@@ -29,8 +27,7 @@ status_stage3 'Copy rpi services'
 cp -p /bsp/services/rpi/*.service /etc/systemd/system/
 
 status_stage3 'Script mode wlan monitor START/STOP'
-install -m755 /bsp/scripts/monstart /usr/bin/
-install -m755 /bsp/scripts/monstop /usr/bin/
+install -m755 /bsp/scripts/{monstart,monstop} /usr/bin/
 
 status_stage3 'Install the kernel packages'
 echo "deb http://http.re4son-kernel.com/re4son kali-pi main" > /etc/apt/sources.list.d/re4son.list
@@ -57,23 +54,11 @@ EOF
 # Run third stage
 include third_stage
 
-# Configure Raspberry Pi firmware (set config.txt to 64-bit)
-include rpi_firmware
-
 # Compile Raspberry Pi userland
 include rpi_userland
 
 # Clean system
 include clean_system
-trap clean_build ERR SIGTERM SIGINT
-
-# systemd doesn't seem to be generating the fstab properly for some people, so let's create one
-status "/etc/fstab"
-cat <<EOF > "${work_dir}"/etc/fstab
-# <file system> <mount point>   <type>  <options>       <dump>  <pass>
-proc            /proc           proc    defaults          0       0
-LABEL=BOOT  /boot           vfat    defaults          0       2
-EOF
 
 # Calculate the space to create the image and create
 make_image
@@ -85,19 +70,13 @@ parted -s "${image_dir}/${image_name}.img" mkpart primary fat32 1MiB "${bootsize
 parted -s -a minimal "${image_dir}/${image_name}.img" mkpart primary "$fstype" "${bootsize}"MiB 100%
 
 # Set the partition variables
-loopdevice=$(losetup --show -fP "${image_dir}/${image_name}.img")
-bootp="${loopdevice}p1"
-rootp="${loopdevice}p2"
-
+make_loop
 # Create file systems
-status "Formatting partitions"
-mkfs.vfat -n BOOT -F 32 "${bootp}"
-if [[ "$fstype" == "ext4" ]]; then
-  features="^64bit,^metadata_csum"
-elif [[ "$fstype" == "ext3" ]]; then
-  features="^64bit"
-fi
-mkfs -O "$features" -t "$fstype" -L ROOTFS "${rootp}"
+mkfs_partitions
+# Make fstab.
+make_fstab
+# Configure Raspberry Pi firmware (before rsync)
+include rpi_firmware
 
 # Create the dirs for the partitions and mount them
 status "Create the dirs for the partitions and mount them"
@@ -106,19 +85,11 @@ mount "${rootp}" "${base_dir}"/root
 mkdir -p "${base_dir}"/root/boot
 mount "${bootp}" "${base_dir}"/root/boot
 
-# Create an fstab so that we don't mount / read-only
-status "/etc/fstab"
-UUID=$(blkid -s UUID -o value ${rootp})
-echo "UUID=$UUID /               $fstype    errors=remount-ro 0       1" >> ${work_dir}/etc/fstab
-
-status "Fixup cmdline.txt to point to PARTUUID for rootfs"
-sed -i -e "s#/dev/mmcblk0p2#PARTUUID=$(blkid -s PARTUUID -o value ${rootp})#" ${work_dir}/boot/cmdline.txt
-
 status "Rsyncing rootfs into image file"
 rsync -HPavz -q --exclude boot "${work_dir}"/ "${base_dir}"/root/
 sync
 
-status "Rsyncing rootfs into image file (/boot)"
+status "Rsyncing boot into image file (/boot)"
 rsync -rtx -q "${work_dir}"/boot "${base_dir}"/root
 sync
 
