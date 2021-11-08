@@ -27,12 +27,13 @@ sqlmap tcpdump theharvester tor tshark whois windows-binaries winexe wpscan"
 cli_tools_pkgs="kali-linux-arm"
 
 # Desktop packages to install
-if [[ "$desktop" == "none" ]]; then
-  desktop_pkgs=""
-else
-  desktop_pkgs="kali-linux-default kali-desktop-$desktop alsa-utils xfonts-terminus \
-  xinput xserver-xorg-video-fbdev xserver-xorg-input-libinput"
-fi
+case $desktop in
+  xfce|gnome|kde|i3|i3-gaps|lxde|mate|e17)
+    desktop_pkgs="kali-linux-default kali-desktop-$desktop alsa-utils xfonts-terminus \
+    xinput xserver-xorg-video-fbdev xserver-xorg-input-libinput" ;;
+  none) variant="minimal"; minimal="1"; desktop_pkgs="" ;;
+  *) usage ;;
+esac
 
 # Installed kernel sources when using a kernel that isn't packaged.
 custom_kernel_pkgs="bc bison libssl-dev"

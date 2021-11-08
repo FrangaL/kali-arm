@@ -72,8 +72,10 @@ function arguments() {
       --arch=*)
         architecture="${opt#*=}";;
       --desktop)
+        [ $desktop = "none" ] && variant="minimal" || true
         desktop="$1"; shift;;
       --desktop=*)
+        [ $desktop = "none" ] && variant="minimal" || true
         desktop="${opt#*=}";;
       -m | --minimal)
         # Disable Desktop Manager
