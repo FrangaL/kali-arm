@@ -63,8 +63,7 @@ function debug_enable() {
 # Validate desktop
 function validate_desktop (){
   case $1 in
-    xfce|gnome|kde|i3|i3-gaps|lxde|mate|e17)
-      true ;;
+    xfce|gnome|kde|i3|i3-gaps|lxde|mate|e17) true ;;
     none) variant="minimal" ;;
     *) log "\n ⚠️  Unknown desktop:$(tput sgr0) $1\n" red; usage ;;
   esac
@@ -82,14 +81,12 @@ function arguments() {
       --arch=*)
         architecture="${opt#*=}";;
       --desktop)
-        validate_desktop $1;  desktop="$1"; shift;;
+        validate_desktop $1; desktop="$1"; shift;;
       --desktop=*)
-        validate_desktop "${opt#*=}";  desktop="${opt#*=}";;
+        validate_desktop "${opt#*=}"; desktop="${opt#*=}";;
       -m | --minimal)
-        # Disable Desktop Manager
         variant="minimal"; minimal="1"; desktop="none" ;;
       -s | --slim)
-        # Disable minimal cli tools & Desktop Manager
         variant="slim"; desktop="none"; minimal="1"; slim="1";;
       -d | --debug)
         debug_enable;;
@@ -134,8 +131,7 @@ function systemd-nspawn_exec() {
 
 # Create the rootfs - not much to modify here, except maybe throw in some more packages if you want.
 function debootstrap_exec() {
-  echo -e "\n"
-  status "debootstrap ${suite} $*"
+  status "\n debootstrap ${suite} $*"
   eatmydata debootstrap --foreign --keyring=/usr/share/keyrings/kali-archive-keyring.gpg --components="${components}" \
     --include="${debootstrap_base}" --arch "${architecture}" "${suite}" "${work_dir}" "$@"
 }
