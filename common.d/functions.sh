@@ -60,6 +60,12 @@ function debug_enable() {
   extra=1
 }
 
+# Validate desktop
+function validate_desktop (){
+  [ $1 = "none" ] && variant="minimal" || true
+  [[ $1 =~ (xfce|gnome|kde|i3|i3-gaps|lxde|mate|e17|none) ]] || usage
+}
+
 # Arguments function
 function arguments() {
   while [[ $# -gt 0 ]]; do
@@ -72,11 +78,9 @@ function arguments() {
       --arch=*)
         architecture="${opt#*=}";;
       --desktop)
-        [ $desktop = "none" ] && variant="minimal" || true
-        desktop="$1"; shift;;
+        validate_desktop $1;  desktop="$1"; shift;;
       --desktop=*)
-        [ $desktop = "none" ] && variant="minimal" || true
-        desktop="${opt#*=}";;
+        validate_desktop "${opt#*=}";  desktop="${opt#*=}";;
       -m | --minimal)
         # Disable Desktop Manager
         variant="minimal"; minimal="1"; desktop="none" ;;
