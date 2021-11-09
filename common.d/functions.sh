@@ -61,7 +61,7 @@ function debug_enable() {
 }
 
 # Validate desktop
-function validate_desktop (){
+function validate_desktop() {
   case $1 in
     xfce|gnome|kde|i3|i3-gaps|lxde|mate|e17) true ;;
     none) variant="minimal" ;;
@@ -114,9 +114,7 @@ function include() {
     return 0
   else
     log " ⚠️  Fail to load ${file} file" red
-    [ "${debug}" = 1 ] \
-      && pwd \
-      || true
+    [ "${debug}" = 1 ] && pwd || true
     exit 1
   fi
 }
