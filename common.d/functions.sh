@@ -26,8 +26,8 @@ function usage() {
     # Architectures (arm64, armel, armhf)
     $0 --arch arm64 or $0 -a armhf
 
-    # Desktop manager (xfce, gnome, kde, i3, lxde, mate, e17 or none)
-    $0 --desktop kde
+    # Desktop manager (xfce, gnome, kde, i3, i3-gaps, lxde, mate, e17 or none)
+    $0 --desktop kde or $0 --desktop=kde
 
     # Minimal image - no desktop manager
     $0 --minimal or $0 -m
@@ -66,7 +66,7 @@ function validate_desktop (){
     xfce|gnome|kde|i3|i3-gaps|lxde|mate|e17)
       true ;;
     none) variant="minimal" ;;
-    *) usage ;;
+    *) log "Unknown desktop: $1" red; usage ;;
   esac
 }
 
