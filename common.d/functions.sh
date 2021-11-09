@@ -323,6 +323,8 @@ function print_config() {
   name_model="$(sed -n '3'p $0)"
   log "Hardware model: $(tput sgr0) ${name_model#* for}" cyan
   log "Architecture: $(tput sgr0) $architecture" cyan
+  log "OS build: $(tput sgr0) $suite $version" cyan
+  log "Desktop manager: $(tput sgr0) $desktop" cyan
   log "The base_dir thinks it is: $(tput sgr0) ${base_dir} \n" cyan
   sleep 1.5
 }
