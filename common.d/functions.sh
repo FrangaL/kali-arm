@@ -66,7 +66,7 @@ function validate_desktop (){
     xfce|gnome|kde|i3|i3-gaps|lxde|mate|e17)
       true ;;
     none) variant="minimal" ;;
-    *) log "Unknown desktop: $1" red; usage ;;
+    *) log "\n ⚠️  Unknown desktop:$(tput sgr0) $1\n" red; usage ;;
   esac
 }
 
@@ -319,13 +319,11 @@ function make_swap() {
 
 # Print current config.
 function print_config() {
-  echo -e "\n"
-  log "Compilation info" bold
+  log "\n Compilation info" bold
   name_model="$(sed -n '3'p $0)"
   log "Hardware model: $(tput sgr0) ${name_model#* for}" cyan
   log "Architecture: $(tput sgr0) $architecture" cyan
-  log "The base_dir thinks it is: $(tput sgr0) ${base_dir}" cyan
-  echo -e "\n"
+  log "The base_dir thinks it is: $(tput sgr0) ${base_dir} \n" cyan
   sleep 1.5
 }
 
@@ -439,9 +437,7 @@ function clean_build() {
 trap check_trap INT ERR SIGTERM SIGINT
 
 function check_trap() {
-  echo -e "\n"
-  log " ⚠️  An error has occurred !" red
-  echo -e "\n"
+  log "\n ⚠️  An error has occurred !\n" red
   clean_build
 }
 
