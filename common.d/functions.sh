@@ -62,8 +62,12 @@ function debug_enable() {
 
 # Validate desktop
 function validate_desktop (){
-  [ $1 = "none" ] && variant="minimal" || true
-  [[ $1 =~ (xfce|gnome|kde|i3|i3-gaps|lxde|mate|e17|none) ]] || usage
+  case $1 in
+    xfce|gnome|kde|i3|i3-gaps|lxde|mate|e17)
+      true ;;
+    none) variant="minimal" ;;
+    *) usage ;;
+  esac
 }
 
 # Arguments function
