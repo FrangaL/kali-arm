@@ -14,9 +14,7 @@ function log() {
     white) color=$(tput setaf 15) ;;
     *) text="$1" ;;
   esac
-  [ -z "$text" ] \
-    && echo -e "$color $1 $(tput sgr0)" \
-    || echo -e "$text"
+  [ -z "$text" ] && echo -e "$color $1 $(tput sgr0)" || echo -e "$text"
 }
 
 # Usage function
@@ -26,8 +24,8 @@ function usage() {
     # Architectures (arm64, armel, armhf)
     $0 --arch arm64 or $0 -a armhf
 
-    # Desktop manager (xfce, gnome, kde, i3, lxde, mate, e17 or none)
-    $0 --desktop kde
+    # Desktop manager (xfce, gnome, kde, i3, i3-gaps, lxde, mate, e17 or none)
+    $0 --desktop kde or $0 --desktop=kde
 
     # Minimal image - no desktop manager
     $0 --minimal or $0 -m
@@ -60,6 +58,15 @@ function debug_enable() {
   extra=1
 }
 
+# Validate desktop
+function validate_desktop() {
+  case $1 in
+    xfce|gnome|kde|i3|i3-gaps|lxde|mate|e17) true ;;
+    none) variant="minimal" ;;
+    *) log "\n ⚠️  Unknown desktop:$(tput sgr0) $1\n" red; usage ;;
+  esac
+}
+
 # Arguments function
 function arguments() {
   while [[ $# -gt 0 ]]; do
@@ -72,16 +79,12 @@ function arguments() {
       --arch=*)
         architecture="${opt#*=}";;
       --desktop)
-        [ $desktop = "none" ] && variant="minimal" || true
-        desktop="$1"; shift;;
+        validate_desktop $1; desktop="$1"; shift;;
       --desktop=*)
-        [ $desktop = "none" ] && variant="minimal" || true
-        desktop="${opt#*=}";;
+        validate_desktop "${opt#*=}"; desktop="${opt#*=}";;
       -m | --minimal)
-        # Disable Desktop Manager
         variant="minimal"; minimal="1"; desktop="none" ;;
       -s | --slim)
-        # Disable minimal cli tools & Desktop Manager
         variant="slim"; desktop="none"; minimal="1"; slim="1";;
       -d | --debug)
         debug_enable;;
@@ -109,9 +112,7 @@ function include() {
     return 0
   else
     log " ⚠️  Fail to load ${file} file" red
-    [ "${debug}" = 1 ] \
-      && pwd \
-      || true
+    [ "${debug}" = 1 ] && pwd || true
     exit 1
   fi
 }
@@ -126,8 +127,7 @@ function systemd-nspawn_exec() {
 
 # Create the rootfs - not much to modify here, except maybe throw in some more packages if you want.
 function debootstrap_exec() {
-  echo -e "\n"
-  status "debootstrap ${suite} $*"
+  status "\n debootstrap ${suite} $*"
   eatmydata debootstrap --foreign --keyring=/usr/share/keyrings/kali-archive-keyring.gpg --components="${components}" \
     --include="${debootstrap_base}" --arch "${architecture}" "${suite}" "${work_dir}" "$@"
 }
@@ -311,13 +311,13 @@ function make_swap() {
 
 # Print current config.
 function print_config() {
-  echo -e "\n"
-  log "Compilation info" bold
+  log "\n Compilation info" bold
   name_model="$(sed -n '3'p $0)"
   log "Hardware model: $(tput sgr0) ${name_model#* for}" cyan
   log "Architecture: $(tput sgr0) $architecture" cyan
-  log "The base_dir thinks it is: $(tput sgr0) ${base_dir}" cyan
-  echo -e "\n"
+  log "OS build: $(tput sgr0) $suite $version" cyan
+  log "Desktop manager: $(tput sgr0) $desktop" cyan
+  log "The base_dir thinks it is: $(tput sgr0) ${base_dir} \n" cyan
   sleep 1.5
 }
 
@@ -431,9 +431,7 @@ function clean_build() {
 trap check_trap INT ERR SIGTERM SIGINT
 
 function check_trap() {
-  echo -e "\n"
-  log " ⚠️  An error has occurred !" red
-  echo -e "\n"
+  log "\n ⚠️  An error has occurred !\n" red
   clean_build
 }
 

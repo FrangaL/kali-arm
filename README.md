@@ -39,23 +39,27 @@ On any build script, add `--help`. Example:
 
 ```
 $ ./rpi.sh --help
-# Architecture (arm64, armel, armhf)
-./rpi.sh --arch arm64
+ Usage commands:
+# Architectures (arm64, armel, armhf)
+./rpi.sh --arch arm64 or ./rpi.sh -a armhf
 
-# Desktop manager (xfce, gnome, kde, i3, lxde, mate, e17 or none)
-./rpi.sh --desktop kde
+# Desktop manager (xfce, gnome, kde, i3, i3-gaps, lxde, mate, e17 or none)
+./rpi.sh --desktop kde or ./rpi.sh --desktop=kde
 
-# Minimal image - no desktop manager & default tools
-./rpi.sh --minimal
+# Minimal image - no desktop manager
+./rpi.sh --minimal or ./rpi.sh -m
+
+# Slim image - no desktop manager & cli tools
+./rpi.sh --slim or ./rpi.sh -s
 
 # Enable debug & log file (./logs/<file>.log)
-./rpi.sh --debug
+./rpi.sh --debug or ./rpi.sh -d
 
 # Perform extra checks on the images build
-./rpi.sh --extra
+./rpi.sh --extra or ./rpi.sh -x
 
 # Help screen (this)
-./rpi.sh --help
+./rpi.sh --help or ./rpi.sh -h
 $
 ```
 
@@ -71,4 +75,4 @@ $ echo 'mirror="http://192.168.1.100/kali"' > ./builder.txt
 
 - - -
 
-Tue Oct 12 20:48:42 UTC 2021
+Tue Nov 9 20:48:42 UTC 2021
