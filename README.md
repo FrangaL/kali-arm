@@ -39,6 +39,7 @@ On any build script, add `--help`. Example:
 
 ```
 $ ./rpi.sh --help
+ Usage commands:
 # Architectures (arm64, armel, armhf)
 ./rpi.sh --arch arm64 or ./rpi.sh -a armhf
 
@@ -59,7 +60,6 @@ $ ./rpi.sh --help
 
 # Help screen (this)
 ./rpi.sh --help or ./rpi.sh -h
-
 $
 ```
 
