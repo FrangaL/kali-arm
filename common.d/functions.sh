@@ -14,9 +14,7 @@ function log() {
     white) color=$(tput setaf 15) ;;
     *) text="$1" ;;
   esac
-  [ -z "$text" ] \
-    && echo -e "$color $1 $(tput sgr0)" \
-    || echo -e "$text"
+  [ -z "$text" ] && echo -e "$color $1 $(tput sgr0)" || echo -e "$text"
 }
 
 # Usage function
