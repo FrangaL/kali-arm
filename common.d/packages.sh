@@ -5,19 +5,19 @@ log " selecting packages ..." gray
 debootstrap_base="kali-archive-keyring,eatmydata"
 
 # This is the bare minimum if you want to start from very scratch
-minimal_pkgs="ca-certificates iw parted ssh wpasupplicant sudo"
+minimal_pkgs="ca-certificates iw parted wpasupplicant sudo"
 
 # This is the list of minimal common packages
-common_min_pkgs="apt-transport-https crda firmware-linux firmware-realtek firmware-atheros \
-firmware-libertas fontconfig ifupdown initramfs-tools iw kali-defaults man-db mlocate netcat-traditional net-tools \
-parted pciutils psmisc rfkill screen snmpd snmp sudo tftp tmux unrar usbutils vim zerofree \
+common_min_pkgs="$minimal_pkgs apt-transport-https crda firmware-linux firmware-realtek firmware-atheros \
+firmware-libertas fontconfig ifupdown initramfs-tools kali-defaults man-db mlocate netcat-traditional net-tools \
+pciutils psmisc rfkill screen snmpd snmp tftp tmux unrar usbutils vim zerofree \
 zsh zsh-autosuggestions zsh-syntax-highlighting"
 # This is the list of common packages
-common_pkgs="kali-linux-core apt-transport-https bluez bluez-firmware dialog \
-ifupdown initramfs-tools inxi iw libnss-systemd man-db mlocate net-tools network-manager crda \
-pciutils psmisc rfkill screen snmpd snmp sudo tftp triggerhappy unrar usbutils whiptail zerofree"
+common_pkgs="$minimal_pkgs kali-linux-core apt-transport-https bluez bluez-firmware dialog \
+ifupdown initramfs-tools inxi libnss-systemd man-db mlocate net-tools network-manager crda \
+pciutils psmisc rfkill screen snmpd snmp tftp triggerhappy unrar usbutils whiptail zerofree"
 
-services="apache2 atftpd openssh-server openvpn tightvncserver"
+services="apache2 atftpd ssh openvpn tightvncserver"
 
 # This is the list of minimal cli based tools
 cli_min_tools="aircrack-ng crunch cewl dnsrecon dnsutils ethtool exploitdb hydra john \
@@ -61,7 +61,7 @@ if [ "$minimal" = "1" ]; then
   if [ "$slim" = "1" ]; then
     cli_min_tools=""
     image_mode="slim"
-    packages="$common_min_pkgs $cli_min_tools openssh-server"
+    packages="$common_min_pkgs $cli_min_tools ssh"
   else
     packages="$common_min_pkgs $cli_min_tools $services $extra_custom_pkgs"
   fi
