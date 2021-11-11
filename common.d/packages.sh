@@ -5,7 +5,7 @@ log " selecting packages ..." gray
 debootstrap_base="kali-archive-keyring,eatmydata"
 
 # This is the bare minimum if you want to start from very scratch
-minimal_pkgs="ca-certificates iw parted wpasupplicant sudo"
+minimal_pkgs="ca-certificates iw network-manager parted wpasupplicant sudo"
 
 # This is the list of minimal common packages
 common_min_pkgs="$minimal_pkgs apt-transport-https crda firmware-linux firmware-realtek firmware-atheros \
