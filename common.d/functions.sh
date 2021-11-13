@@ -429,11 +429,12 @@ total_time() {
   local H=$((T/60/60%24))
   local M=$((T/60%60))
   local S=$((T%60))
+  printf '\nFinal time: '
   [[ $D -gt 0 ]] && printf '%d days ' $D
   [[ $H -gt 0 ]] && printf '%d hours ' $H
   [[ $M -gt 0 ]] && printf '%d minutes ' $M
-  [[ $D -gt 0 || $H > 0 || $M > 0 ]] && printf 'and '
-  printf '\nFinal time: %d seconds\n' $S
+  [[ $D -gt 0 || $H -gt 0 || $M -gt 0 ]] && printf 'and '
+  printf '%d seconds\n' $S
 }
 
 # Clean up all the temporary build stuff and remove the directories.
