@@ -31,7 +31,7 @@ case $desktop in
   xfce|gnome|kde|i3|i3-gaps|lxde|mate|e17)
     desktop_pkgs="kali-linux-default kali-desktop-$desktop alsa-utils xfonts-terminus \
     xinput xserver-xorg-video-fbdev xserver-xorg-input-libinput" ;;
-  slim|miminal) variant="minimal"; minimal="1"; desktop_pkgs="" ;;
+  none|slim|miminal) variant="minimal"; minimal="1"; desktop_pkgs="" ;;
 esac
 
 # Installed kernel sources when using a kernel that isn't packaged.
