@@ -83,9 +83,9 @@ function arguments() {
       --desktop=*)
         validate_desktop "${opt#*=}"; desktop="${opt#*=}";;
       -m | --minimal)
-        variant="minimal"; minimal="1"; desktop="none" ;;
+        variant="minimal"; minimal="1"; desktop="minimal" ;;
       -s | --slim)
-        variant="slim"; desktop="none"; minimal="1"; slim="1";;
+        variant="slim"; desktop="slim"; minimal="1"; slim="1";;
       -d | --debug)
         debug_enable;;
       -x | --extra)
