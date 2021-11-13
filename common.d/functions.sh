@@ -83,9 +83,9 @@ function arguments() {
       --desktop=*)
         validate_desktop "${opt#*=}"; desktop="${opt#*=}";;
       -m | --minimal)
-        variant="minimal"; minimal="1"; desktop="none" ;;
+        variant="minimal"; minimal="1"; desktop="minimal" ;;
       -s | --slim)
-        variant="slim"; desktop="none"; minimal="1"; slim="1";;
+        variant="slim"; desktop="slim"; minimal="1"; slim="1";;
       -d | --debug)
         debug_enable;;
       -x | --extra)
@@ -330,7 +330,7 @@ function make_image() {
   img_size=$(echo "${raw_size}"Ki | numfmt --from=iec-i --to=si)
   # Create the disk image
   log "Creating image file:$(tput sgr0) ${image_name}.img (Size: ${img_size})" white
-  mkdir -p "${image_dir}/"
+  [ -d ${image_dir} ] || mkdir -p "${image_dir}/"
   fallocate -l "${img_size}" "${image_dir}/${image_name}.img"
 }
 
