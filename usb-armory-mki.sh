@@ -105,14 +105,15 @@ cd ${work_dir}/usr/src/kernel
 git rev-parse HEAD > ${work_dir}/usr/src/kernel-at-commit
 touch .scmversion
 export ARCH=arm
-export CROSS_COMPILE=arm-linux-gnueabihf-
+export CROSS_COMPILE=arm-none-eabi-
+patch -p1 --no-backup-if-mismatch < ${repo_dir}/patches/ARM-drop-cc-option-fallbacks-for-architecture-select.patch
 patch -p1 --no-backup-if-mismatch < ${repo_dir}/patches/kali-wifi-injection-5.4.patch
 patch -p1 --no-backup-if-mismatch < ${repo_dir}/patches/0001-wireless-carl9170-Enable-sniffer-mode-promisc-flag-t.patch
-wget $githubraw/inversepath/usbarmory/master/software/kernel_conf/mark-one/imx53-usbarmory-host.dts -O arch/arm/boot/dts/imx53-usbarmory-host.dts
-wget $githubraw/inversepath/usbarmory/master/software/kernel_conf/mark-one/imx53-usbarmory-gpio.dts -O arch/arm/boot/dts/imx53-usbarmory-gpio.dts
-wget $githubraw/inversepath/usbarmory/master/software/kernel_conf/mark-one/imx53-usbarmory-spi.dts -O arch/arm/boot/dts/imx53-usbarmory-spi.dts
-wget $githubraw/inversepath/usbarmory/master/software/kernel_conf/mark-one/imx53-usbarmory-i2c.dts -O arch/arm/boot/dts/imx53-usbarmory-i2c.dts
-wget $githubraw/inversepath/usbarmory/master/software/kernel_conf/mark-one/imx53-usbarmory-scc2.dts -O arch/arm/boot/dts/imx53-usbarmory-scc2.dts
+wget $githubraw/f-secure-foundry/usbarmory/master/software/kernel_conf/mark-one/imx53-usbarmory-host.dts -O arch/arm/boot/dts/imx53-usbarmory-host.dts
+wget $githubraw/f-secure-foundry/usbarmory/master/software/kernel_conf/mark-one/imx53-usbarmory-gpio.dts -O arch/arm/boot/dts/imx53-usbarmory-gpio.dts
+wget $githubraw/f-secure-foundry/usbarmory/master/software/kernel_conf/mark-one/imx53-usbarmory-spi.dts -O arch/arm/boot/dts/imx53-usbarmory-spi.dts
+wget $githubraw/f-secure-foundry/usbarmory/master/software/kernel_conf/mark-one/imx53-usbarmory-i2c.dts -O arch/arm/boot/dts/imx53-usbarmory-i2c.dts
+wget $githubraw/f-secure-foundry/usbarmory/master/software/kernel_conf/mark-one/imx53-usbarmory-scc2.dts -O arch/arm/boot/dts/imx53-usbarmory-scc2.dts
 cp ${repo_dir}/kernel-configs/usbarmory-5.4.config ${work_dir}/usr/src/kernel/.config
 cp ${repo_dir}/kernel-configs/usbarmory-5.4.config ${work_dir}/usr/src/usbarmory-5.4.config
 make olddefconfig
@@ -123,11 +124,11 @@ cp arch/arm/boot/dts/imx53-usbarmory*.dtb ${work_dir}/boot/
 make mrproper
 # Since these aren't integrated into the kernel yet, mrproper removes them
 cp ${repo_dir}/kernel-configs/usbarmory-5.4.config ${work_dir}/usr/src/kernel/.config
-wget $githubraw/inversepath/usbarmory/master/software/kernel_conf/mark-one/imx53-usbarmory-host.dts -O arch/arm/boot/dts/imx53-usbarmory-host.dts
-wget $githubraw/inversepath/usbarmory/master/software/kernel_conf/mark-one/imx53-usbarmory-gpio.dts -O arch/arm/boot/dts/imx53-usbarmory-gpio.dts
-wget $githubraw/inversepath/usbarmory/master/software/kernel_conf/mark-one/imx53-usbarmory-spi.dts -O arch/arm/boot/dts/imx53-usbarmory-spi.dts
-wget $githubraw/inversepath/usbarmory/master/software/kernel_conf/mark-one/imx53-usbarmory-i2c.dts -O arch/arm/boot/dts/imx53-usbarmory-i2c.dts
-wget $githubraw/inversepath/usbarmory/master/software/kernel_conf/mark-one/imx53-usbarmory-scc2.dts -O arch/arm/boot/dts/imx53-usbarmory-scc2.dts
+wget $githubraw/f-secure-foundry/usbarmory/master/software/kernel_conf/mark-one/imx53-usbarmory-host.dts -O arch/arm/boot/dts/imx53-usbarmory-host.dts
+wget $githubraw/f-secure-foundry/usbarmory/master/software/kernel_conf/mark-one/imx53-usbarmory-gpio.dts -O arch/arm/boot/dts/imx53-usbarmory-gpio.dts
+wget $githubraw/f-secure-foundry/usbarmory/master/software/kernel_conf/mark-one/imx53-usbarmory-spi.dts -O arch/arm/boot/dts/imx53-usbarmory-spi.dts
+wget $githubraw/f-secure-foundry/usbarmory/master/software/kernel_conf/mark-one/imx53-usbarmory-i2c.dts -O arch/arm/boot/dts/imx53-usbarmory-i2c.dts
+wget $githubraw/f-secure-foundry/usbarmory/master/software/kernel_conf/mark-one/imx53-usbarmory-scc2.dts -O arch/arm/boot/dts/imx53-usbarmory-scc2.dts
 
 # Fix up the symlink for building external modules
 # kernver is used so we don't need to keep track of what the current compiled
@@ -169,12 +170,14 @@ sync
 
 status "u-Boot"
 cd "${base_dir}"
-wget ftp://ftp.denx.de/pub/u-boot/u-boot-2020.10.tar.bz2
-tar xvf u-boot-2020.10.tar.bz2 && cd u-boot-2020.10
+wget ftp://ftp.denx.de/pub/u-boot/u-boot-2021.07.tar.bz2
+tar xvf u-boot-2021.07.tar.bz2 && cd u-boot-2021.07
+wget $githubraw/f-secure-foundry/usbarmory/master/software/u-boot/0001-Fix-microSD-detection-for-USB-armory-Mk-I.patch
+patch -p1 --no-backup-if-mismatch < 0001-Fix-microSD-detection-for-USB-armory-Mk-I.patch
 make distclean
 make usbarmory_config
 make ARCH=arm
-dd if=u-boot.imx of=${loopdevice} bs=512 seek=2 conv=fsync
+dd if=u-boot-dtb.imx of=${loopdevice} bs=512 seek=2 conv=fsync
 cd "${repo_dir}/"
 
 # Load default finish_image configs
