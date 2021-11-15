@@ -28,7 +28,11 @@ cat <<EOF >> "${work_dir}"/third-stage
 # and causing kernel panics, even with the latest from unstable Debian
 #eatmydata apt-get install -y dkms linux-image-arm64 u-boot-menu u-boot-rockchip
 
+status_stage3 'Install bluez for bluetooth'
+eatmydata apt-get install -y bluez bluez-firmware
+
 status_stage3 'Touchpad settings'
+mkdir -p /etc/X11/xorg.conf.d/
 install -m644 /bsp/xorg/50-pine64-pinebook-pro.touchpad.conf /etc/X11/xorg.conf.d/
 
 status_stage3 'Saved audio settings'
