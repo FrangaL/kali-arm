@@ -21,6 +21,12 @@ source ./common.d/base_image.sh
 basic_network
 #add_interface eth0
 
+# Third stage
+cat << EOF >>  ${work_dir}/third-stage
+# Enable serial console access
+echo "T1:23:respawn:/sbin/agetty -L ttymxc3 115200 vt100" >> /etc/inittab
+EOF
+
 # Run third stage
 include third_stage
 
