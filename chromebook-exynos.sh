@@ -24,7 +24,7 @@ basic_network
 # Third stage
 cat <<EOF >> "${work_dir}"/third-stage
 # Install samsung firmware
-apt-get install -y firmware-samsung
+eatmydata apt-get install -y firmware-samsung
 EOF
 
 # Run third stage
