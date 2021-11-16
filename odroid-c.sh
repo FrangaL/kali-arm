@@ -21,6 +21,15 @@ source ./common.d/base_image.sh
 basic_network
 add_interface eth0
 
+cat << EOF >>  ${work_dir}/third-stage
+# Copy all services
+install -m644 /bsp/services/all/*.service /etc/systemd/system/
+install -m644 /bsp/services/odroid-c2/*.service /etc/systemd/system/
+
+# Create symlink to enable the service..
+ln -sf /etc/systemd/system/amlogic.service /etc/systemd/system/multi-user.target.wants/amlogic.service
+EOF
+
 # Run third stage
 include third_stage
 
