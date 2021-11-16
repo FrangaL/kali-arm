@@ -28,6 +28,8 @@ install -m644 /bsp/services/odroid-c2/*.service /etc/systemd/system/
 
 # Create symlink to enable the service..
 ln -sf /etc/systemd/system/amlogic.service /etc/systemd/system/multi-user.target.wants/amlogic.service
+# Enable login over serial
+echo 'T1:12345:respawn:/sbin/agetty 115200 ttyS0 vt100' >> /etc/inittab
 EOF
 
 # Run third stage
