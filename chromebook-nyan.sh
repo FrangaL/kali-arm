@@ -19,10 +19,16 @@ source ./common.d/base_image.sh || echo "full clone repository please"; exit 1
 
 # Network configs
 basic_network
-add_interface eth0
+#add_interface eth0
 
 # Run third stage
 include third_stage
+
+# Third stage
+cat <<EOF >> "${work_dir}"/third-stage
+# Enable login over serial
+echo "T0:23:respawn:/sbin/agetty -L ttyAMA0 115200 vt100" >> /etc/inittab
+EOF
 
 # Clean system
 include clean_system
