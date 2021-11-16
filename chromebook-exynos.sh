@@ -19,7 +19,13 @@ source ./common.d/base_image.sh
 
 # Network configs
 basic_network
-add_interface eth0
+#add_interface eth0
+
+# Third stage
+cat <<EOF >> "${work_dir}"/third-stage
+# Install samsung firmware
+apt-get install -y firmware-samsung
+EOF
 
 # Run third stage
 include third_stage
