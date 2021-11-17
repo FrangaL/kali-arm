@@ -23,7 +23,7 @@ add_interface eth0
 
 # Third stage
 cat << EOF >>  ${work_dir}/third-stage
-status_3 "Install kernel"
+status_stage3 "Install kernel"
 apt-get install linux-image-armmp u-boot-menu u-boot-sunxi
 # We replace the u-boot menu defaults here so we can make sure the build system doesn't poison it
 # We use _EOF_ so that the third-stage script doesn't end prematurely
