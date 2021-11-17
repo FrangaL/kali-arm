@@ -23,10 +23,11 @@ add_interface eth0
 
 # Third stage
 cat << EOF >>  ${work_dir}/third-stage
-# Install u-boot
-apt-get install u-boot-tools vboot-utils vboot-kernel-utils
+status_3 "Install kernel"
+apt-get install linux-image-armmp u-boot-menu u-boot-sunxi
 # We replace the u-boot menu defaults here so we can make sure the build system doesn't poison it
 # We use _EOF_ so that the third-stage script doesn't end prematurely
+mkdir -p /etc/default/u-boot
 cat << '_EOF_' > /etc/default/u-boot
 U_BOOT_PARAMETERS="console=ttyS0,115200 console=tty1 root=/dev/mmcblk0p1 rootwait panic=10 rw rootfstype=$fstype net.ifnames=0"
 _EOF_
