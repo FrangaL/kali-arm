@@ -26,6 +26,10 @@ cat << EOF >>  ${work_dir}/third-stage
 status_stage3 "Install kernel"
 eatmydata apt-get install linux-image-armmp u-boot-menu u-boot-sunxi
 
+# Note: This just creates an empty /boot/extlinux/extlinux.conf for us to use # later.
+status_stage3 'Run u-boot-update'
+u-boot-update
+
 # We replace the u-boot menu defaults here so we can make sure the build system doesn't poison it
 # We use _EOF_ so that the third-stage script doesn't end prematurely
 mkdir -p /etc/default/u-boot
@@ -33,9 +37,7 @@ cat << '_EOF_' > /etc/default/u-boot
 U_BOOT_PARAMETERS="console=ttyS0,115200 console=tty1 root=/dev/mmcblk0p1 rootwait panic=10 rw rootfstype=$fstype net.ifnames=0"
 _EOF_
 
-# Note: This just creates an empty /boot/extlinux/extlinux.conf for us to use # later.
-status_stage3 'Run u-boot-update'
-u-boot-update
+
 EOF
 
 # Run third stage
