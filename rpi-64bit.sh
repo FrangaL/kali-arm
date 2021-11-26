@@ -38,6 +38,9 @@ eatmydata apt-get install -y ${re4son_pkgs}
 status_stage3 'Copy script for handling wpa_supplicant file'
 install -m755 /bsp/scripts/copy-user-wpasupplicant.sh /usr/bin/
 
+status_stage3 'Copy in the Zero 2 W wifi firmware files'
+install -m644 /bsp/firmware/rpi/brcmfmac43436* /lib/firmware/brcm/
+
 status_stage3 'Enable copying of user wpa_supplicant.conf file'
 systemctl enable copy-user-wpasupplicant
 
