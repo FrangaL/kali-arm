@@ -15,6 +15,10 @@ if [[ "${architecture}" == "arm64" ]]; then
   sed -i "59,66d" "${work_dir}"/boot/config.txt
   cat <<EOF >>"${work_dir}"/boot/config.txt
 
+[pi02]
+# Pi Zero 2 W has the same processor as a Raspberry Pi 3
+# 64-bit kernel for Raspberry Pi Zero 2 W is called kernel8 (armv8a)
+kernel=kernel8-alt.img
 [pi2]
 # Pi2 is 64-bit only on v1.2+
 # 64-bit kernel for Raspberry Pi 2 is called kernel8 (armv8a)
