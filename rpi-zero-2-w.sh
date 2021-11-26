@@ -31,7 +31,7 @@ install -m755 /bsp/scripts/monstart /usr/bin/
 install -m755 /bsp/scripts/monstop /usr/bin/
 
 status_stage3 'Install the kernel packages'
-echo "deb http://http.re4son-kernel.com/re4son kali-pi-next main" > /etc/apt/sources.list.d/re4son.list
+echo "deb http://http.re4son-kernel.com/re4son kali-pi main" > /etc/apt/sources.list.d/re4son.list
 wget -qO /etc/apt/trusted.gpg.d/kali_pi-archive-keyring.gpg https://re4son-kernel.com/keys/http/kali_pi-archive-keyring.gpg
 eatmydata apt-get update
 eatmydata apt-get install -y ${re4son_pkgs}
