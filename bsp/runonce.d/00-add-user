@@ -50,6 +50,11 @@ if ! getent passwd 'kali'; then
   echo 'kali:kali' | chpasswd
 fi
 
+# Parts of XFCE aren't being installed correctly despite existing in /etc/skel
+# So we copy them in here, now that the kali user is created
+# TODO: make this configurable when we allow users to specify their own user.
+cp -rT /etc/skel /home/kali
+
 # Reload and trigger udev rule
 udevadm control --reload-rules
 udevadm trigger
