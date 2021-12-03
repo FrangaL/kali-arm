@@ -1,0 +1,42 @@
+From dddc052b14d3dc1f2f4b13cb49e6370a09a8d0c1 Mon Sep 17 00:00:00 2001
+From: Steev Klimaszewski <steev@kali.org>
+Date: Thu, 2 Dec 2021 18:02:20 -0600
+Subject: [PATCH 17/17] HACK: remove shutdown callback to fix reboot
+
+---
+ drivers/gpu/drm/meson/meson_drv.c | 12 ------------
+ 1 file changed, 12 deletions(-)
+
+diff --git a/drivers/gpu/drm/meson/meson_drv.c b/drivers/gpu/drm/meson/meson_drv.c
+index 2753067c08e6..3d1de9cbb1c8 100644
+--- a/drivers/gpu/drm/meson/meson_drv.c
++++ b/drivers/gpu/drm/meson/meson_drv.c
+@@ -482,17 +482,6 @@ static int meson_probe_remote(struct platform_device *pdev,
+ 	return count;
+ }
+ 
+-static void meson_drv_shutdown(struct platform_device *pdev)
+-{
+-	struct meson_drm *priv = dev_get_drvdata(&pdev->dev);
+-
+-	if (!priv)
+-		return;
+-
+-	drm_kms_helper_poll_fini(priv->drm);
+-	drm_atomic_helper_shutdown(priv->drm);
+-}
+-
+ static int meson_drv_probe(struct platform_device *pdev)
+ {
+ 	struct component_match *match = NULL;
+@@ -564,7 +553,6 @@ static const struct dev_pm_ops meson_drv_pm_ops = {
+ 
+ static struct platform_driver meson_drm_platform_driver = {
+ 	.probe      = meson_drv_probe,
+-	.shutdown   = meson_drv_shutdown,
+ 	.driver     = {
+ 		.name	= "meson-drm",
+ 		.of_match_table = dt_match,
+-- 
+2.33.0
+
