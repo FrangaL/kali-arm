@@ -442,12 +442,14 @@ function clean_build() {
   log "Done" green
   total_time $SECONDS
 }
-trap check_trap INT ERR SIGTERM SIGINT
 
 function check_trap() {
   log "\n ⚠️  An error has occurred !\n" red
   clean_build
+  exit 1
 }
+# If there is an issue, run the above function
+trap check_trap INT ERR SIGTERM SIGINT
 
 # Show progress
 status() {
