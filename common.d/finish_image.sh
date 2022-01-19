@@ -14,9 +14,7 @@ blockdev --flushbufs "${loopdevice}"
 python3 -c 'import os; os.fsync(open("'${loopdevice}'", "r+b"))'
 
 # Unmount filesystem
-status "Unmount filesystem"
-[ -n "${bootp}" ] && umount -l "${bootp}" || true
-umount -l "${rootp}"
+umount_partitions
 
 # Check filesystem
 status "Check filesystem partitions ($rootfstype)"

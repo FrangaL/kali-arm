@@ -435,10 +435,31 @@ total_time() {
   printf '%d seconds\n' $S
 }
 
+function umount_partitions()_{
+  # Make sure we are somewhere we are not going to unmount
+  cd "${repo_dir}/"
+
+  # Unmount filesystem
+  log "Unmount filesystem..." green
+
+  # If there is boot partition, unmount that first. Else continue as not every ARM device has one
+  [ -n "${bootp}" ] \
+    && umount -l "${bootp}" \
+    || true
+
+  umount -l "${rootp}"
+}
+
 # Clean up all the temporary build stuff and remove the directories.
 function clean_build() {
-  log "Cleaning up the temporary build files ..." green
+  # unmount anything that may be mounted
+  umount_partitions
+
+  # Delete files
+  log "Cleaning up the temporary build files..." green
   rm -rf "${work_dir}"
+
+  # Done
   log "Done" green
   total_time $SECONDS
 }
