@@ -2,11 +2,11 @@
 
 Kali Linux ARM build-scripts.
 
-These are the same build scripts that we use to generate the pre-generated official Kali Linux ARM images, found here: https://www.kali.org/get-kali/
+These are the same build scripts that we use to generate the pre-generated official Kali Linux ARM images, found here: <https://www.kali.org/get-kali/>
 
 There are additional scripts included in this repository, supporting more devices, but these will need to be built in order for them to be used.
 
-For more information, please see: https://www.kali.org/docs/arm/
+For more information, please see: <https://www.kali.org/docs/arm/>
 
 - - -
 
@@ -23,7 +23,7 @@ cd ~/
 git clone https://gitlab.com/kalilinux/build-scripts/kali-arm
 cd ~/kali-arm/
 sudo ./common.d/build_deps.sh
-sudo ./rpi.sh
+sudo ./raspberry-pi.sh
 ```
 
 - Depending on your system hardware & network connectivity, will depend on how long it will take to build _(4 core CPU, 8GB RAM, SSD inside a VM takes using a [local repo](https://www.kali.org/docs/community/setting-up-a-kali-linux-mirror/) about 100 minutes per script)_
@@ -38,28 +38,28 @@ sudo ./rpi.sh
 On any build script, add `--help`. Example:
 
 ```
-$ ./rpi.sh --help
+$ ./raspberry-pi.sh --help
  Usage commands:
 # Architectures (arm64, armel, armhf)
-./rpi.sh --arch arm64 or ./rpi.sh -a armhf
+./raspberry-pi.sh --arch arm64 or ./raspberry-pi.sh -a armhf
 
 # Desktop manager (xfce, gnome, kde, i3, i3-gaps, lxde, mate, e17 or none)
-./rpi.sh --desktop kde or ./rpi.sh --desktop=kde
+./raspberry-pi.sh --desktop kde or ./raspberry-pi.sh --desktop=kde
 
 # Minimal image - no desktop manager
-./rpi.sh --minimal or ./rpi.sh -m
+./raspberry-pi.sh --minimal or ./raspberry-pi.sh -m
 
 # Slim image - no desktop manager & cli tools
-./rpi.sh --slim or ./rpi.sh -s
+./raspberry-pi.sh --slim or ./raspberry-pi.sh -s
 
 # Enable debug & log file (./logs/<file>.log)
-./rpi.sh --debug or ./rpi.sh -d
+./raspberry-pi.sh --debug or ./raspberry-pi.sh -d
 
 # Perform extra checks on the images build
-./rpi.sh --extra or ./rpi.sh -x
+./raspberry-pi.sh --extra or ./raspberry-pi.sh -x
 
 # Help screen (this)
-./rpi.sh --help or ./rpi.sh -h
+./raspberry-pi.sh --help or ./raspberry-pi.sh -h
 $
 ```
 
@@ -75,4 +75,4 @@ $ echo 'mirror="http://192.168.1.100/kali"' > ./builder.txt
 
 - - -
 
-Tue Nov 9 20:48:42 UTC 2021
+Thu Jan 27 15:47:28 UTC 2022

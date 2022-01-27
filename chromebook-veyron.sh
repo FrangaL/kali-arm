@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 #
-# Kali Linux ARM build-script for Chromebook (ASUS - Veyron) (32-bit)
+# Kali Linux ARM build-script for Chromebook (Veyron ASUS Flip) (32-bit)
 # Source: https://gitlab.com/kalilinux/build-scripts/kali-arm
 #
 # This is a community script - you will need to generate your own image to use
-# More information: https://www.kali.org/docs/arm/asus-chromebook-flip/
+# More information: https://www.kali.org/docs/arm/chromebook-veyron/
 #
 
 # Stop on error

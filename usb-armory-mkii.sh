@@ -8,7 +8,7 @@
 #
 
 # Hardware model
-hw_model=${hw_model:-"usbarmory-mkii"}
+hw_model=${hw_model:-"usb-armory-mkii"}
 # Architecture
 architecture=${architecture:-"armhf"}
 # Desktop manager (xfce, gnome, i3, kde, lxde, mate, e17 or none)

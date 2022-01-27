@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 #
-# Kali Linux ARM build-script for Chromebook (Samsung - Exynos) (32-bit)
+# Kali Linux ARM build-script for Chromebook 1/2 (Exynos Samsung daisy_snow/peach_pi/peach_pit & HP daisy_spring) (32-bit)
 # Source: https://gitlab.com/kalilinux/build-scripts/kali-arm
 #
 # This is a community script - you will need to generate your own image to use
-# More information: https://www.kali.org/docs/arm/samsung-chromebook/
+# More information: https://www.kali.org/docs/arm/chromebook-exynos/
 #
 
 # Stop on error

@@ -1,16 +1,16 @@
 #!/usr/bin/env bash
 #
-# Kali Linux ARM build-script for Raspberry Pi 2/3/4/400 (32-bit)
+# Kali Linux ARM build-script for Raspberry Pi 1 (Original) (32-bit)
 # Source: https://gitlab.com/kalilinux/build-scripts/kali-arm
 #
 # This is a supported device - which you can find pre-generated images on: https://www.kali.org/get-kali/
-# More information: https://www.kali.org/docs/arm/raspberry-pi-2/
+# More information: https://www.kali.org/docs/arm/raspberry-pi/
 #
 
 # Hardware model
-hw_model=${hw_model:-"rpi-zero-2-w"}
+hw_model=${hw_model:-"raspberry-pi1"}
 # Architecture
-architecture=${architecture:-"armhf"}
+architecture=${architecture:-"armel"}
 # Desktop manager (xfce, gnome, i3, kde, lxde, mate, e17 or none)
 desktop=${desktop:-"xfce"}
 
@@ -19,7 +19,7 @@ source ./common.d/base_image.sh
 
 # Network configs
 basic_network
-#add_interface eth0
+add_interface eth0
 
 # Third stage
 cat <<EOF >> "${work_dir}"/third-stage
@@ -36,11 +36,11 @@ wget -qO /etc/apt/trusted.gpg.d/kali_pi-archive-keyring.gpg https://re4son-kerne
 eatmydata apt-get update
 eatmydata apt-get install -y ${re4son_pkgs}
 
-status_stage3 'Copy script for handling wpa_supplicant file'
-install -m755 /bsp/scripts/copy-user-wpasupplicant.sh /usr/bin/
-
 status_stage3 'Enable copying of user wpa_supplicant.conf file'
 systemctl enable copy-user-wpasupplicant
+
+status_stage3 'Set default to cli since the system is slow and has low memory'
+systemctl set-default multi-user
 
 status_stage3 'Enabling ssh by putting ssh or ssh.txt file in /boot'
 systemctl enable enable-ssh
