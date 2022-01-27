@@ -8,9 +8,9 @@
 #
 
 # Hardware model
-hw_model=${hw_model:-"rpi-zero-2-w-pitail"}
+hw_model=${hw_model:-"raspberry-pi-zero-w-pitail"}
 # Architecture
-architecture=${architecture:-"armhf"}
+architecture=${architecture:-"armel"}
 # Desktop manager (xfce, gnome, i3, kde, lxde, mate, e17 or none)
 desktop=${desktop:-"xfce"}
 

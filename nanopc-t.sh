@@ -4,7 +4,7 @@
 # Source: https://gitlab.com/kalilinux/build-scripts/kali-arm
 #
 # This is a supported device - which you can find pre-generated images on: https://www.kali.org/get-kali/
-# More information: https://www.kali.org/docs/arm/nanopc-t3/
+# More information: https://www.kali.org/docs/arm/nanopc-t/
 #
 
 # Hardware model

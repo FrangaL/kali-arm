@@ -4,11 +4,11 @@
 # Source: https://gitlab.com/kalilinux/build-scripts/kali-arm
 #
 # This is a community script - you will need to generate your own image to use
-# More information: https://www.kali.org/docs/arm/usb-armory-mkii/
+# More information: https://www.kali.org/docs/arm/usb-armory-mki/
 #
 
 # Hardware model
-hw_model=${hw_model:-"usbarmory-mki"}
+hw_model=${hw_model:-"usb-armory-mki"}
 # Architecture
 architecture=${architecture:-"armhf"}
 # Desktop manager (xfce, gnome, i3, kde, lxde, mate, e17 or none)

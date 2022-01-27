@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Kali Linux ARM build-script for Beaglebone Black (32-bit)
+# Kali Linux ARM build-script for BeagleBone Black (32-bit)
 # Source: https://gitlab.com/kalilinux/build-scripts/kali-arm
 #
 # This is a community script - you will need to generate your own image to use

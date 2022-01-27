@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Kali Linux ARM build-script for Raspberry Pi Zero W (Pi-Tail) (32-bit)
+# Kali Linux ARM build-script for Raspberry Pi Zero 2 W (Pi-Tail) (32-bit)
 # Source: https://gitlab.com/kalilinux/build-scripts/kali-arm
 #
 # This is a supported device - which you can find pre-generated images on: https://www.kali.org/get-kali/
@@ -8,9 +8,9 @@
 #
 
 # Hardware model
-hw_model=${hw_model:-"rpi-zero-w-pitail"}
+hw_model=${hw_model:-"raspberry-pi-zero-2-w-pitail"}
 # Architecture
-architecture=${architecture:-"armel"}
+architecture=${architecture:-"armhf"}
 # Desktop manager (xfce, gnome, i3, kde, lxde, mate, e17 or none)
 desktop=${desktop:-"xfce"}
 

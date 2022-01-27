@@ -175,8 +175,9 @@ sync
 # Write the signed u-boot binary to the image so that it will boot
 status "u-Boot"
 cd "${base_dir}"
-git clone --depth 1 -b odroidxu4-v2017.05 https://github.com/hardkernel/u-boot.git
+git clone --depth 1 -b odroidxu4-v2017.05 https://github.com/hardkernel/u-boot.git "${base_dir}"/u-boot
 cd "${base_dir}"/u-boot
+alias python=python3
 make odroid-xu4_defconfig
 make
 cd sd_fuse
