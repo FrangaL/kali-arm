@@ -27,8 +27,7 @@ status_stage3 'Copy rpi services'
 cp -p /bsp/services/rpi/*.service /etc/systemd/system/
 
 status_stage3 'Script mode wlan monitor START/STOP'
-install -m755 /bsp/scripts/monstart /usr/bin/
-install -m755 /bsp/scripts/monstop /usr/bin/
+install -m755 /bsp/scripts/{monstart,monstop} /usr/bin/
 
 status_stage3 'Install the kernel packages'
 echo "deb http://http.re4son-kernel.com/re4son kali-pi main" > /etc/apt/sources.list.d/re4son.list
@@ -58,6 +57,9 @@ EOF
 # Run third stage
 include third_stage
 
+# Compile Raspberry Pi userland
+include rpi_userland
+
 # Clean system
 include clean_system
 
@@ -74,9 +76,9 @@ parted -s -a minimal "${image_dir}/${image_name}.img" mkpart primary "$fstype" "
 make_loop
 # Create file systems
 mkfs_partitions
-# Make fstab.
+# Make fstab
 make_fstab
-# Configure Raspberry Pi firmware (set config.txt to 64-bit)
+# Configure Raspberry Pi firmware (before rsync)
 include rpi_firmware
 # Fix up bluetooth
 sed -i 's/ttyAMA0/serial0/g' "${work_dir}"/boot/cmdline.txt
@@ -93,7 +95,7 @@ status "Rsyncing rootfs into image file"
 rsync -HPavz -q --exclude boot "${work_dir}"/ "${base_dir}"/root/
 sync
 
-status "Rsyncing rootfs into image file (/boot)"
+status "Rsyncing boot into image file (/boot)"
 rsync -rtx -q "${work_dir}"/boot "${base_dir}"/root
 sync
 
