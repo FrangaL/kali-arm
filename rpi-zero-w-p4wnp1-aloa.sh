@@ -27,7 +27,7 @@ machine=$(tr -cd 'A-Za-z0-9' < /dev/urandom | head -c16 ; echo)
 # Custom hostname variable
 hostname=${2:-kali}
 # Custom image file name variable - MUST NOT include .img at the end
-image_name=${3:-kali-linux-$1-rpi0w-p4wnp1-aloa}
+image_name=${3:-kali-linux-$1-rpi-zero-w-p4wnp1-aloa}
 # Suite to use, valid options are:
 # kali-rolling, kali-dev, kali-bleeding-edge, kali-dev-only, kali-experimental, kali-last-snapshot
 suite=${suite:-"kali-rolling"}
@@ -71,7 +71,7 @@ fi
 # Current directory
 repo_dir="$(pwd)"
 # Base directory
-base_dir=${repo_dir}/rpi0w-p4wnp1-"$1"
+base_dir=${repo_dir}/rpi-zero-w-p4wnp1-"$1"
 # Working directory
 work_dir="${base_dir}/kali-${architecture}"
 # Image directory
