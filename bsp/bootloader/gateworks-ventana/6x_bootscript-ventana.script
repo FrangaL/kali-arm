@@ -131,11 +131,11 @@ elif itest.s "x${dtype}" == "xmmc" ; then
   echo "Booting from MMC..."
   part uuid mmc 0:1 uuid
   if test -z "${uuid}" ; then
-     setenv root "root=/dev/mmcblk0p1 rootwait rw rootfstype=ext3"
+     setenv root "root=/dev/mmcblk0p1 rootwait rw rootfstype=ext4"
   else
-     setenv root "root=PARTUUID=${uuid} rootwait rw rootfstype=ext3"
+     setenv root "root=PARTUUID=${uuid} rootwait rw rootfstype=ext4"
   fi
-  setenv fsload "ext2load $dtype 0:1"
+  setenv fsload "ext4load $dtype 0:1"
   setenv rd_addr # ramdisk not needed for IMX6 MMC
 elif itest.s "x${dtype}" == "xusb" ; then
   echo "Booting from USB Mass Storage..."
