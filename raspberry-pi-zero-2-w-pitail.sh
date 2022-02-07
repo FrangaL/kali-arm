@@ -187,6 +187,10 @@ cat << EOF > ${work_dir}/etc/udev/rules.d/70-persistent-net.rules
 SUBSYSTEM=="net", ACTION=="add", DRIVERS=="?*", ATTR{address}=="", ATTR{dev_id}=="0x0", ATTR{type}=="1", KERNEL=="wlan*", NAME="wlan1"
 EOF
 
+# Fix up bluetooth
+sed -i 's/ttyAMA0/serial0/g' "${work_dir}"/boot/cmdline.txt
+echo 'dtparam=krnbt=on' | tee -a "${work_dir}"/boot/config.txt
+
 # Clean system
 include clean_system
 

@@ -78,6 +78,9 @@ mkfs_partitions
 make_fstab
 # Configure Raspberry Pi firmware
 include rpi_firmware
+# Fix up bluetooth
+sed -i 's/ttyAMA0/serial0/g' "${work_dir}"/boot/cmdline.txt
+echo 'dtparam=krnbt=on' | tee -a "${work_dir}"/boot/config.txt
 
 # Create the dirs for the partitions and mount them
 status "Create the dirs for the partitions and mount them"
