@@ -7,4 +7,4 @@
 # More information: https://www.kali.org/docs/arm/raspberry-pi-64-bit/
 #
 
-./raspberry-pi.sh --arch arm64
+./raspberry-pi.sh --arch arm64 "$@"
