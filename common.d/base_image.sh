@@ -103,10 +103,6 @@ install -m755 /bsp/scripts/runonce /usr/sbin/
 cp -rf /bsp/runonce.d /etc
 systemctl enable runonce
 
-status_stage3 'Set a REGDOMAIN'
-# This needs to be done or wireless doesnt work correctly on the RPi 3B+
-sed -i -e 's/REGDOM.*/REGDOMAIN=00/g' /etc/default/crda || true
-
 status_stage3 'Try and make the console a bit nicer. Set the terminus font for a bit nicer display'
 sed -i -e 's/FONTFACE=.*/FONTFACE="Terminus"/' /etc/default/console-setup
 sed -i -e 's/FONTSIZE=.*/FONTSIZE="6x12"/' /etc/default/console-setup
