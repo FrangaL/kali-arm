@@ -40,6 +40,7 @@ status_stage3 'Run u-boot-update'
 u-boot-update
 
 status_stage3 'Install touchpad config file'
+mkdir -p /etc/X11/xorg.conf.d
 install -m644 /bsp/xorg/50-pine64-pinebook.touchpad.conf /etc/X11/xorg.conf.d/
 
 status_stage3 'Add wifi firmware and driver, and attempt to build'
@@ -53,7 +54,7 @@ status_stage3 'Need to package up the wifi driver'
 # (it's a Realtek 8723cs, with the usual Realtek driver quality) still,
 # so for now, we clone it and then build it inside the chroot
 cd /usr/src/
-git clone https://github.com/icenowy/rtl8723cs -b new-driver-by-megous rtl8723cs-2020.02.27
+git clone https://github.com/steev/rtl8723cs -b new-driver-by-megous rtl8723cs-2020.02.27
 cat << __EOF__ > /usr/src/rtl8723cs-2020.02.27/dkms.conf
 PACKAGE_NAME="rtl8723cs"
 PACKAGE_VERSION="2020.02.27"
