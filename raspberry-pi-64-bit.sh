@@ -8,7 +8,7 @@
 #
 
 # Hardware model
-hw_model=${hw_model:-"rpi"}
+hw_model=${hw_model:-"raspberry-pi"}
 # Architecture (arm64, armhf, armel)
 architecture=${architecture:-"arm64"}
 # Desktop manager (xfce, gnome, i3, kde, lxde, mate, e17 or none)
