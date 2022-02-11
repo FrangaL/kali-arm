@@ -273,8 +273,6 @@ systemctl enable smi-hack
 # Resize FS on first run (hopefully)
 systemctl enable rpi-resizerootfs
 
-# Generate SSH host keys on first run
-systemctl enable regenerate_ssh_host_keys
 # Enable sshd
 systemctl enable ssh
 

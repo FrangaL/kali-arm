@@ -252,9 +252,6 @@ install -m644 /bsp/services/rpi/rpi-resizerootfs.service /etc/systemd/system/
 install -m755 /bsp/scripts/rpi-resizerootfs /usr/sbin/
 systemctl enable rpi-resizerootfs
 
-# Generate SSH host keys on first run
-systemctl enable regenerate_ssh_host_keys
-
 # Allow users to use NM over ssh
 install -m644 /bsp/polkit/10-NetworkManager.pkla /var/lib/polkit-1/localauthority/50-local.d
 
