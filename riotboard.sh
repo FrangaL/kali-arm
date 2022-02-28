@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Kali Linux ARM build-script for RIoTboard (64-bit)
+# Kali Linux ARM build-script for RIoTboard (32-bit)
 # Source: https://gitlab.com/kalilinux/build-scripts/kali-arm
 #
 # This is a community script - you will need to generate your own image to use
@@ -19,7 +19,7 @@ if [ "$debug" = true ]; then
 fi
 
 # Architecture
-architecture=${architecture:-"arm64"}
+architecture=${architecture:-"armhf"}
 # Generate a random machine name to be used
 machine=$(tr -cd 'A-Za-z0-9' < /dev/urandom | head -c16 ; echo)
 # Custom hostname variable
