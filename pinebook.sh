@@ -63,7 +63,7 @@ AUTOINSTALL="yes"
 
 CLEAN[0]="make clean"
 
-MAKE[0]="'make' -j4 ARCH=arm64 KVER=5.16.0-kali2-arm64 KSRC=/lib/modules/5.16.0-kali2-arm64/build/"
+MAKE[0]="'make' -j4 ARCH=arm64 KVER=5.16.0-kali1-arm64 KSRC=/lib/modules/5.16.0-kali1-arm64/build/"
 
 BUILT_MODULE_NAME[0]="8723cs"
 
@@ -76,7 +76,7 @@ cd /usr/src/rtl8723cs-2020.02.27
 # 5.14+ warns about reproducable builds, so we remove the date and time of the driver build
 # as warnings are also now errors.
 sed -i '50d' core/rtw_debug.c
-dkms install rtl8723cs/2020.02.27 -k 5.16.0-kali2-arm64
+dkms install rtl8723cs/2020.02.27 -k 5.16.0-kali1-arm64
 
 status_stage3 'Replace the conf file after we have built the module and hope for the best'
 cp /bsp/configs/pinebook-dkms.conf /usr/src/rtl8723cs-2020.02.27/dkms.conf
