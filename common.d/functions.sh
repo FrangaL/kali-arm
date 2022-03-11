@@ -435,7 +435,7 @@ total_time() {
   printf '%d seconds\n' $S
 }
 
-function umount_partitions()_{
+function umount_partitions(){
   # Make sure we are somewhere we are not going to unmount
   cd "${repo_dir}/"
 
