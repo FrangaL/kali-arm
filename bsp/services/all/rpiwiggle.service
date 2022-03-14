@@ -1,6 +1,6 @@
 [Unit]
 Description=Resize filesystem
-After=regenerate_ssh_host_keys.service
+After=regenerate-ssh-host-keys.service
 [Service]
 Type=oneshot
 ExecStart=/root/scripts/rpi-wiggle.sh

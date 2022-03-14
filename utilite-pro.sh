@@ -251,8 +251,6 @@ install -m644 /bsp/services/all/*.service /etc/systemd/system/
 # since it fails to do so properly in a chroot
 systemctl enable smi-hack
 
-# Generate SSH host keys on first run
-systemctl enable regenerate_ssh_host_keys
 # Enable sshd
 systemctl enable ssh
 
