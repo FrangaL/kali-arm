@@ -444,10 +444,10 @@ function umount_partitions(){
 
   # If there is boot partition, unmount that first. Else continue as not every ARM device has one
   [ -n "${bootp}" ] \
-    && umount -l "${bootp}" \
+    && ! mountpoint -q "${base_dir}/root/boot" || umount -q "${base_dir}/root/boot" \
     || true
 
-  umount -l "${rootp}"
+  ! mountpoint -q "${base_dir}/root" || umount -q "${base_dir}/root"
 }
 
 # Clean up all the temporary build stuff and remove the directories.
