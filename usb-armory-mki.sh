@@ -100,7 +100,7 @@ include clean_system
 # Kernel section. If you want to use a custom kernel, or configuration, replace
 # them in this section
 status "Kernel stuff"
-git clone -b linux-5.4.y --depth 1 git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git ${work_dir}/usr/src/kernel
+git clone -b linux-5.15.y --depth 1 git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git ${work_dir}/usr/src/kernel
 cd ${work_dir}/usr/src/kernel
 git rev-parse HEAD > ${work_dir}/usr/src/kernel-at-commit
 touch .scmversion
@@ -109,26 +109,26 @@ export CROSS_COMPILE=arm-none-eabi-
 #patch -p1 --no-backup-if-mismatch < ${repo_dir}/patches/ARM-drop-cc-option-fallbacks-for-architecture-select.patch
 patch -p1 --no-backup-if-mismatch < ${repo_dir}/patches/kali-wifi-injection-5.4.patch
 patch -p1 --no-backup-if-mismatch < ${repo_dir}/patches/0001-wireless-carl9170-Enable-sniffer-mode-promisc-flag-t.patch
-wget $githubraw/f-secure-foundry/usbarmory/master/software/kernel_conf/mark-one/imx53-usbarmory-host.dts -O arch/arm/boot/dts/imx53-usbarmory-host.dts
 wget $githubraw/f-secure-foundry/usbarmory/master/software/kernel_conf/mark-one/imx53-usbarmory-gpio.dts -O arch/arm/boot/dts/imx53-usbarmory-gpio.dts
-wget $githubraw/f-secure-foundry/usbarmory/master/software/kernel_conf/mark-one/imx53-usbarmory-spi.dts -O arch/arm/boot/dts/imx53-usbarmory-spi.dts
+wget $githubraw/f-secure-foundry/usbarmory/master/software/kernel_conf/mark-one/imx53-usbarmory-host.dts -O arch/arm/boot/dts/imx53-usbarmory-host.dts
 wget $githubraw/f-secure-foundry/usbarmory/master/software/kernel_conf/mark-one/imx53-usbarmory-i2c.dts -O arch/arm/boot/dts/imx53-usbarmory-i2c.dts
 wget $githubraw/f-secure-foundry/usbarmory/master/software/kernel_conf/mark-one/imx53-usbarmory-scc2.dts -O arch/arm/boot/dts/imx53-usbarmory-scc2.dts
-cp ${repo_dir}/kernel-configs/usbarmory-5.4.config ${work_dir}/usr/src/kernel/.config
-cp ${repo_dir}/kernel-configs/usbarmory-5.4.config ${work_dir}/usr/src/usbarmory-5.4.config
-make olddefconfig
+wget $githubraw/f-secure-foundry/usbarmory/master/software/kernel_conf/mark-one/imx53-usbarmory-spi.dts -O arch/arm/boot/dts/imx53-usbarmory-spi.dts
+wget $githubraw/f-secure-foundry/usbarmory/master/software/kernel_conf/usbarmory_linux-5.15.defconfig -O ../usbarmory_linux-5.15.defconfig
+cp ../usbarmory_linux-5.15.defconfig arch/arm/configs/
+make usbarmory_linux-5.15.defconfig
 make LOADADDR=0x70008000 -j $(grep -c processor /proc/cpuinfo) uImage modules imx53-usbarmory-gpio.dtb imx53-usbarmory-i2c.dtb imx53-usbarmory-spi.dtb imx53-usbarmory.dtb imx53-usbarmory-host.dtb imx53-usbarmory-scc2.dtb
 make modules_install INSTALL_MOD_PATH=${work_dir}
 cp arch/arm/boot/zImage ${work_dir}/boot/
 cp arch/arm/boot/dts/imx53-usbarmory*.dtb ${work_dir}/boot/
 make mrproper
 # Since these aren't integrated into the kernel yet, mrproper removes them
-cp ${repo_dir}/kernel-configs/usbarmory-5.4.config ${work_dir}/usr/src/kernel/.config
-wget $githubraw/f-secure-foundry/usbarmory/master/software/kernel_conf/mark-one/imx53-usbarmory-host.dts -O arch/arm/boot/dts/imx53-usbarmory-host.dts
+cp ../usbarmory_linux-5.15.defconfig arch/arm/configs/
 wget $githubraw/f-secure-foundry/usbarmory/master/software/kernel_conf/mark-one/imx53-usbarmory-gpio.dts -O arch/arm/boot/dts/imx53-usbarmory-gpio.dts
-wget $githubraw/f-secure-foundry/usbarmory/master/software/kernel_conf/mark-one/imx53-usbarmory-spi.dts -O arch/arm/boot/dts/imx53-usbarmory-spi.dts
+wget $githubraw/f-secure-foundry/usbarmory/master/software/kernel_conf/mark-one/imx53-usbarmory-host.dts -O arch/arm/boot/dts/imx53-usbarmory-host.dts
 wget $githubraw/f-secure-foundry/usbarmory/master/software/kernel_conf/mark-one/imx53-usbarmory-i2c.dts -O arch/arm/boot/dts/imx53-usbarmory-i2c.dts
 wget $githubraw/f-secure-foundry/usbarmory/master/software/kernel_conf/mark-one/imx53-usbarmory-scc2.dts -O arch/arm/boot/dts/imx53-usbarmory-scc2.dts
+wget $githubraw/f-secure-foundry/usbarmory/master/software/kernel_conf/mark-one/imx53-usbarmory-spi.dts -O arch/arm/boot/dts/imx53-usbarmory-spi.dts
 
 # Fix up the symlink for building external modules
 # kernver is used so we don't need to keep track of what the current compiled

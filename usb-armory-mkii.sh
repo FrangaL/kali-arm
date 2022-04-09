@@ -97,7 +97,7 @@ include clean_system
 # Kernel section. If you want to use a custom kernel, or configuration, replace
 # them in this section
 status "Kernel stuff"
-git clone --depth 1 -b linux-5.4.y git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git ${work_dir}/usr/src/kernel
+git clone --depth 1 -b linux-5.15.y git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git ${work_dir}/usr/src/kernel
 cd ${work_dir}/usr/src/kernel
 git rev-parse HEAD > ${work_dir}/usr/src/kernel-at-commit
 touch .scmversion
@@ -106,19 +106,21 @@ export CROSS_COMPILE=arm-linux-gnueabihf-
 #patch -p1 --no-backup-if-mismatch < ${repo_dir}/patches/ARM-drop-cc-option-fallbacks-for-architecture-select.patch
 patch -p1 --no-backup-if-mismatch < ${repo_dir}/patches/kali-wifi-injection-5.4.patch
 patch -p1 --no-backup-if-mismatch < ${repo_dir}/patches/0001-wireless-carl9170-Enable-sniffer-mode-promisc-flag-t.patch
-wget $githubraw/f-secure-foundry/usbarmory/master/software/kernel_conf/mark-two/usbarmory_linux-5.4.config -O .config
+wget $githubraw/f-secure-foundry/usbarmory/master/software/kernel_conf/usbarmory_linux-5.15.defconfig -O ../usbarmory_linux-5.15.defconfig
 wget $githubraw/f-secure-foundry/usbarmory/master/software/kernel_conf/mark-two/imx6ul-usbarmory.dts -O arch/arm/boot/dts/imx6ul-usbarmory.dts
+wget $githubraw/f-secure-foundry/usbarmory/master/software/kernel_conf/mark-two/imx6ulz-usbarmory-tzns.dts -O arch/arm/boot/dts/imx6ulz-usbarmory-tzns.dts
 wget $githubraw/f-secure-foundry/usbarmory/master/software/kernel_conf/mark-two/imx6ulz-usbarmory.dts -O arch/arm/boot/dts/imx6ulz-usbarmory.dts
-cp .config ${work_dir}/usr/src/usbarmory_linux-5.4.config
-make olddefconfig
-make LOADADDR=0x80000000 -j $(grep -c processor /proc/cpuinfo) uImage modules imx6ul-usbarmory.dtb imx6ulz-usbarmory.dtb
+cp ../usbarmory_linux-5.15.defconfig arch/arm/configs/
+make usbarmory_linux-5.15.defconfig
+make LOADADDR=0x80000000 -j $(grep -c processor /proc/cpuinfo) uImage modules imx6ul-usbarmory.dtb imx6ulz-usbarmory-tzns.dtb imx6ulz-usbarmory.dtb
 make modules_install INSTALL_MOD_PATH=${work_dir}
 cp arch/arm/boot/zImage ${work_dir}/boot/
 cp arch/arm/boot/dts/imx6*-usbarmory*.dtb ${work_dir}/boot/
 make mrproper
 # Since these aren't integrated into the kernel yet, mrproper removes them
-cp ../usbarmory_linux-5.4.config ${work_dir}/usr/src/kernel/.config
+cp ../usbarmory_linux-5.15.defconfig arch/arm/configs/
 wget $githubraw/f-secure-foundry/usbarmory/master/software/kernel_conf/mark-two/imx6ul-usbarmory.dts -O arch/arm/boot/dts/imx6ul-usbarmory.dts
+wget $githubraw/f-secure-foundry/usbarmory/master/software/kernel_conf/mark-two/imx6ulz-usbarmory-tzns.dts -O arch/arm/boot/dts/imx6ulz-usbarmory-tzns.dts
 wget $githubraw/f-secure-foundry/usbarmory/master/software/kernel_conf/mark-two/imx6ulz-usbarmory.dts -O arch/arm/boot/dts/imx6ulz-usbarmory.dts
 
 
