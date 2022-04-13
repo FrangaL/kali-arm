@@ -2,7 +2,7 @@
 
 # Create cmdline.txt file
 cat <<EOF > "${work_dir}"/boot/cmdline.txt
-dwc_otg.fiq_fix_enable=2 console=ttyAMA0,115200 kgdboc=ttyAMA0,115200 console=tty1 root=PARTUUID=$root_partuuid rootfstype=$rootfstype elevator=deadline fsck.repair=yes rootwait net.ifnames=0
+console=serial0,115200 console=tty1 root=PARTUUID=$root_partuuid rootfstype=$rootfstype fsck.repair=yes rootwait net.ifnames=0
 EOF
 
 # Copy a default config, with everything commented out so people find it when

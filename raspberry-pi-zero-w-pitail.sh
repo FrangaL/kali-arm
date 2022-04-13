@@ -161,9 +161,6 @@ chmod 0600 /home/kali/.vnc/passwd
 status_stage3 'Remove the creation of the kali user, since we do it above'
 rm /etc/runonce.d/00-add-user
 
-status_stage3 'Enable login over serial (No password)'
-echo "T0:23:respawn:/sbin/agetty -L ttyAMA0 115200 vt100" >> /etc/inittab
-
 status_stage3 'Fixup wireless-regdb signature'
 update-alternatives --set regulatory.db /lib/firmware/regulatory.db-upstream
 EOF
@@ -186,10 +183,6 @@ cat << EOF > ${work_dir}/etc/udev/rules.d/70-persistent-net.rules
 # USB device 0x:0x (ath9k_htc)
 SUBSYSTEM=="net", ACTION=="add", DRIVERS=="?*", ATTR{address}=="", ATTR{dev_id}=="0x0", ATTR{type}=="1", KERNEL=="wlan*", NAME="wlan1"
 EOF
-
-# Fix up bluetooth
-sed -i 's/ttyAMA0/serial0/g' "${work_dir}"/boot/cmdline.txt
-echo 'dtparam=krnbt=on' | tee -a "${work_dir}"/boot/config.txt
 
 # Clean system
 include clean_system
