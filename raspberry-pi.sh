@@ -47,11 +47,11 @@ systemctl enable enable-ssh
 status_stage3 'Disable haveged daemon'
 systemctl disable haveged
 
-status_stage3 'Enable login over serial (No password)'
-echo "T0:23:respawn:/sbin/agetty -L ttyAMA0 115200 vt100" >> /etc/inittab
-
 status_stage3 'Fixup wireless-regdb signature'
 update-alternatives --set regulatory.db /lib/firmware/regulatory.db-upstream
+
+status_stage3 'Enable hciuart for bluetooth'
+systemctl enable hciuart
 EOF
 
 # Run third stage
@@ -77,9 +77,6 @@ mkfs_partitions
 make_fstab
 # Configure Raspberry Pi firmware (before rsync)
 include rpi_firmware
-# Fix up bluetooth
-sed -i 's/ttyAMA0/serial0/g' "${work_dir}"/boot/cmdline.txt
-echo 'dtparam=krnbt=on' | tee -a "${work_dir}"/boot/config.txt
 
 # Create the dirs for the partitions and mount them
 status "Create the dirs for the partitions and mount them"
