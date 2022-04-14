@@ -7,7 +7,12 @@ fi
 
 if [ -f /boot/wpa_supplicant.conf ]; then
   ssid=$(awk -F = '{if($0 ~ /ssid/) print $2}' /boot/wpa_supplicant.conf | tr -d '"')
+  # look for the plaintext ASCII psk in the file as a comment.
   psk=$(awk -F = '{if($0 ~ /#psk/) print $2}' /boot/wpa_supplicant.conf | tr -d '"')
+  # If we did not find the plaintext psk in the comment use the psk as configured.
+  if [ "${psk}" == "" ]; then
+    psk=$(awk -F = '{if($0 ~ /psk/) print $2}' /boot/wpa_supplicant.conf | tr -d '"')
+  fi
   wifi_dev="wlan0"
   if [ -n "$ssid" ] && [ -n "$psk" ] && [ ! "${#psk}" -lt "8" ]; then
     if [ -x "$(command -v nmcli)" ]; then
