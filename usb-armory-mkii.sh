@@ -104,21 +104,21 @@ touch .scmversion
 export ARCH=arm
 export CROSS_COMPILE=arm-linux-gnueabihf-
 #patch -p1 --no-backup-if-mismatch < ${repo_dir}/patches/ARM-drop-cc-option-fallbacks-for-architecture-select.patch
-patch -p1 --no-backup-if-mismatch < ${repo_dir}/patches/kali-wifi-injection-5.4.patch
+patch -p1 --no-backup-if-mismatch < ${repo_dir}/patches/kali-wifi-injection-5.15.patch
 patch -p1 --no-backup-if-mismatch < ${repo_dir}/patches/0001-wireless-carl9170-Enable-sniffer-mode-promisc-flag-t.patch
-wget $githubraw/f-secure-foundry/usbarmory/master/software/kernel_conf/usbarmory_linux-5.15.defconfig -O ../usbarmory_linux-5.15.defconfig
+wget $githubraw/f-secure-foundry/usbarmory/master/software/kernel_conf/usbarmory_linux-5.15.defconfig -O ../usbarmory_linux-5.15_defconfig
 wget $githubraw/f-secure-foundry/usbarmory/master/software/kernel_conf/mark-two/imx6ul-usbarmory.dts -O arch/arm/boot/dts/imx6ul-usbarmory.dts
 wget $githubraw/f-secure-foundry/usbarmory/master/software/kernel_conf/mark-two/imx6ulz-usbarmory-tzns.dts -O arch/arm/boot/dts/imx6ulz-usbarmory-tzns.dts
 wget $githubraw/f-secure-foundry/usbarmory/master/software/kernel_conf/mark-two/imx6ulz-usbarmory.dts -O arch/arm/boot/dts/imx6ulz-usbarmory.dts
-cp ../usbarmory_linux-5.15.defconfig arch/arm/configs/
-make usbarmory_linux-5.15.defconfig
+cp ../usbarmory_linux-5.15_defconfig arch/arm/configs/
+make usbarmory_linux-5.15_defconfig
 make LOADADDR=0x80000000 -j $(grep -c processor /proc/cpuinfo) uImage modules imx6ul-usbarmory.dtb imx6ulz-usbarmory-tzns.dtb imx6ulz-usbarmory.dtb
 make modules_install INSTALL_MOD_PATH=${work_dir}
 cp arch/arm/boot/zImage ${work_dir}/boot/
 cp arch/arm/boot/dts/imx6*-usbarmory*.dtb ${work_dir}/boot/
 make mrproper
 # Since these aren't integrated into the kernel yet, mrproper removes them
-cp ../usbarmory_linux-5.15.defconfig arch/arm/configs/
+cp ../usbarmory_linux-5.15_defconfig arch/arm/configs/
 wget $githubraw/f-secure-foundry/usbarmory/master/software/kernel_conf/mark-two/imx6ul-usbarmory.dts -O arch/arm/boot/dts/imx6ul-usbarmory.dts
 wget $githubraw/f-secure-foundry/usbarmory/master/software/kernel_conf/mark-two/imx6ulz-usbarmory-tzns.dts -O arch/arm/boot/dts/imx6ulz-usbarmory-tzns.dts
 wget $githubraw/f-secure-foundry/usbarmory/master/software/kernel_conf/mark-two/imx6ulz-usbarmory.dts -O arch/arm/boot/dts/imx6ulz-usbarmory.dts
@@ -164,8 +164,8 @@ sync
 
 status "u-Boot"
 cd "${work_dir}"
-wget ftp://ftp.denx.de/pub/u-boot/u-boot-2020.10.tar.bz2
-tar xvf u-boot-2020.10.tar.bz2 && cd u-boot-2020.10
+wget ftp://ftp.denx.de/pub/u-boot/u-boot-2022.01.tar.bz2
+tar xvf u-boot-2022.01.tar.bz2 && cd u-boot-2022.01
 wget $githubraw/inversepath/usbarmory/master/software/u-boot/0001-ARM-mx6-add-support-for-USB-armory-Mk-II-board.patch
 patch -p1 --no-backup-if-mismatch < 0001-ARM-mx6-add-support-for-USB-armory-Mk-II-board.patch
 make distclean
