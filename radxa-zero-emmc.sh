@@ -32,6 +32,17 @@ u-boot-update
 status_stage3 'Copy WiFi/BT firmware'
 mkdir -p /lib/firmware/brcm/
 cp /bsp/firmware/radxa-zero/* /lib/firmware/brcm/
+
+status_stage3 'Add needed extlinux and uenv scripts'
+cp /bsp/scripts/radxa/update_extlinux.sh /usr/local/sbin/
+cp /bsp/scripts/radxa/update_uenv.sh /usr/local/sbin/
+mkdir -p /etc/kernel/postinst.d
+# Be sure to update the cmdline with the correct UUID after creating the img.
+cp /bsp/scripts/radxa/cmdline /etc/kernel
+cp /bsp/scripts/radxa/extlinux /etc/default/extlinux
+cp /bsp/scripts/radxa/zz-uncompress /etc/kernel/postinst.d/
+cp /bsp/scripts/radxa/zz-update-extlinux /etc/kernel/postinst.d/
+cp /bsp/scripts/radxa/zz-update-uenv /etc/kernel/postinst.d/
 EOF
 
 # Run third stage
@@ -44,7 +55,7 @@ trap clean_build ERR SIGTERM SIGINT
 # Kernel section. If you want to use a custom kernel, or configuration, replace
 # them in this section
 status "Kernel stuff"
-git clone --depth 1 -b linux-5.10.y-radxa-zero https://github.com/radxa/kernel.git ${work_dir}/usr/src/kernel
+git clone --depth 1 -b radxa-zero-linux-5.10.y https://github.com/steev/linux.git ${work_dir}/usr/src/kernel
 cd ${work_dir}/usr/src/kernel
 git rev-parse HEAD > ${work_dir}/usr/src/kernel-at-commit
 rm -rf .git
@@ -104,6 +115,8 @@ sed -i -e "s|.*GNU/Linux Rolling|menu label Kali Linux|g" ${work_dir}/boot/extli
 status "Set the default options in /etc/default/u-boot"
 echo 'U_BOOT_MENU_LABEL="Kali Linux"' >> ${work_dir}/etc/default/u-boot
 echo 'U_BOOT_PARAMETERS="earlyprintk console=ttyAML0,115200 console=tty1 swiotlb=1 coherent_pool=1m ro rootwait"' >> ${work_dir}/etc/default/u-boot
+
+# Now we need to correct the initramfs.
 
 status "Rsyncing rootfs into image file"
 rsync -HPavz -q "${work_dir}"/ "${base_dir}"/root/
