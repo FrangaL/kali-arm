@@ -1,0 +1,25 @@
+From ee4b18703941d36d9ff4afbe2a5bdeb764cfc369 Mon Sep 17 00:00:00 2001
+From: Steev Klimaszewski <steev@kali.org>
+Date: Mon, 25 Apr 2022 11:49:43 -0500
+Subject: [PATCH] Enable LIBFDT_OVERLAY for meson
+
+---
+ arch/arm/Kconfig | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
+index 57946f61fa..771709d290 100644
+--- a/arch/arm/Kconfig
++++ b/arch/arm/Kconfig
+@@ -844,6 +844,8 @@ config ARCH_OMAP2PLUS
+ config ARCH_MESON
+ 	bool "Amlogic Meson"
+ 	select GPIO_EXTRA_HEADER
++	select OF_LIBFDT
++	select OF_LIBFDT_OVERLAY
+ 	imply DISTRO_DEFAULTS
+ 	imply DM_RNG
+ 	help
+-- 
+2.35.1
+

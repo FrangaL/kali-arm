@@ -22,7 +22,11 @@ source ./common.d/base_image.sh
 # Third stage
 cat <<EOF >> "${work_dir}"/third-stage
 status_stage3 'Install u-boot-menu'
-eatmydata apt-get install -y u-boot-menu
+eatmydata apt-get install -y u-boot-menu u-boot-tools
+
+# We need "file" for the kernel scripts we run, and it won't be installed if you pass --slim
+# So we always make sure it's installed.
+eatmydata apt-get install -y file
 
 # Note: This just creates an empty /boot/extlinux/extlinux.conf for us to use 
 # later when we install the kernel, and then fixup further down
@@ -43,6 +47,9 @@ cp /bsp/scripts/radxa/extlinux /etc/default/extlinux
 cp /bsp/scripts/radxa/zz-uncompress /etc/kernel/postinst.d/
 cp /bsp/scripts/radxa/zz-update-extlinux /etc/kernel/postinst.d/
 cp /bsp/scripts/radxa/zz-update-uenv /etc/kernel/postinst.d/
+
+status_stage3 'Fixup wireless-regdb signature'
+update-alternatives --set regulatory.db /lib/firmware/regulatory.db-upstream
 EOF
 
 # Run third stage
@@ -71,6 +78,7 @@ cd ..
 # Cross building kernel packages produces broken header packages
 # so only install the headers if we're building on arm64
 if [ "$(arch)" == 'aarch64' ]; then
+  rm linux-libc-dev*.deb
   dpkg --root "${work_dir}" -i linux-*.deb
 else
   dpkg --root "${work_dir}" -i linux-image-*.deb
@@ -85,25 +93,22 @@ make_image
 # Create the disk partitions
 status "Create the disk partitions"
 parted -s "${image_dir}/${image_name}.img" mklabel msdos
-parted -s -a minimal "${image_dir}/${image_name}.img" mkpart primary ext2 4MiB 100%
+parted -s "${image_dir}/${image_name}.img" mkpart primary fat32 16MiB "${bootsize}"MiB
+parted -s -a minimal "${image_dir}/${image_name}.img" mkpart primary "$fstype" "${bootsize}"MiB 100%
 
 # Set the partition variables
-loopdevice=$(losetup --show -fP "${image_dir}/${image_name}.img")
-rootp="${loopdevice}p1"
-
+make_loop
 # Create file systems
-status "Formatting partitions"
-mkfs.ext2 ${rootp}
+mkfs_partitions
+# Make fstab
+make_fstab
 
 # Create the dirs for the partitions and mount them
 status "Create the dirs for the partitions and mount them"
-mkdir -p "${base_dir}"/root
-mount ${rootp} "${base_dir}"/root
-
-# Create an fstab so that we don't mount / read-only
-status "/etc/fstab"
-UUID=$(blkid -s UUID -o value ${rootp})
-echo "UUID=$UUID /               $fstype    errors=remount-ro 0       1" >> ${work_dir}/etc/fstab
+mkdir -p "${base_dir}"/root/
+mount "${rootp}" "${base_dir}"/root
+mkdir -p "${base_dir}"/root/boot
+mount "${bootp}" "${base_dir}"/root/boot
 
 status "Edit the extlinux.conf file to set root uuid and proper name"
 # Ensure we don't have root=/dev/sda3 in the extlinux.conf which comes from running u-boot-menu in a cross chroot
@@ -112,21 +117,28 @@ sed -i -e "0,/append.*/s//append root=UUID=$(blkid -s UUID -o value ${rootp}) ro
 # And we remove the "GNU/Linux because we don't use it
 sed -i -e "s|.*GNU/Linux Rolling|menu label Kali Linux|g" ${work_dir}/boot/extlinux/extlinux.conf
 
+# And we need to edit the /etc/kernel/cmdline file as well
+sed -i -e "s/root=UUID=.*/root=UUID=$(blkid -s UUID -o value ${rootp})/" ${work_dir}/etc/kernel/cmdline
+
 status "Set the default options in /etc/default/u-boot"
 echo 'U_BOOT_MENU_LABEL="Kali Linux"' >> ${work_dir}/etc/default/u-boot
 echo 'U_BOOT_PARAMETERS="earlyprintk console=ttyAML0,115200 console=tty1 swiotlb=1 coherent_pool=1m ro rootwait"' >> ${work_dir}/etc/default/u-boot
 
-# Now we need to correct the initramfs.
-
 status "Rsyncing rootfs into image file"
-rsync -HPavz -q "${work_dir}"/ "${base_dir}"/root/
+rsync -HPavz -q --exclude boot "${work_dir}"/ "${base_dir}"/root/
+sync
+
+status "Rsyncing boot into image file (/boot)"
+rsync -rtx -q "${work_dir}"/boot "${base_dir}"/root
 sync
 
 status "u-Boot"
 cd "${work_dir}"
 git clone https://github.com/radxa/fip.git
-git clone https://github.com/radxa/u-boot.git --depth 1 -b radxa-zero-v2021.07
+#git clone https://github.com/radxa/u-boot.git --depth 1 -b radxa-zero-v2021.07
+git clone https://github.com/u-boot/u-boot.git --depth 1
 cd u-boot
+patch -p1 --no-backup-if-mismatch < "${repo_dir}"/patches/u-boot/radxa/0001-Enable-LIBFDT_OVERLAY-for-meson.patch
 make distclean
 make radxa-zero_config
 make ARCH=arm -j$(nproc)
@@ -134,8 +146,8 @@ cp u-boot.bin ../fip/radxa-zero/bl33.bin
 cd ../fip/radxa-zero/
 make
 # https://wiki.radxa.com/Zero/dev/u-boot
-dd if=u-boot.bin of=${loopdevice} conv=fsync,notrunc bs=1 count=444
-dd if=u-boot.bin of=${loopdevice} conv=fsync,notrunc bs=512 skip=1 seek=1
+dd if=u-boot.bin.sd.bin of=${loopdevice} conv=fsync,notrunc bs=1 count=444
+dd if=u-boot.bin.sd.bin of=${loopdevice} conv=fsync,notrunc bs=512 skip=1 seek=1
 cd "${repo_dir}/"
 rm -rf "${work_dir}"/{fip,u-boot}
 

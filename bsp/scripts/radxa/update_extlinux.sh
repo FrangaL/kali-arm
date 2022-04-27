@@ -54,7 +54,8 @@ emit_kernel() {
       mkdir -p /boot/dtbs
       cp -au "/usr/lib/linux-image-$VERSION" "/boot/dtbs/$VERSION"
     fi
-    echo "    devicetreedir /dtbs/$VERSION/amlogic"
+    #echo "    devicetreedir /dtbs/$VERSION/amlogic"
+    echo "    devicetreedir /dtbs/$VERSION"
   fi
 
   echo "    append $APPEND"
