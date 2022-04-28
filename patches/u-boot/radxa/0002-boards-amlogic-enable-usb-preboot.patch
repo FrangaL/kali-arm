@@ -1,0 +1,24 @@
+From 7ced1d04a3cc0bfa69bd00c9fff3bc6b82702a3a Mon Sep 17 00:00:00 2001
+From: Steev Klimaszewski <steev@kali.org>
+Date: Wed, 27 Apr 2022 15:05:09 -0500
+Subject: [PATCH] boards: amlogic: enable usb preboot
+
+---
+ configs/radxa-zero_defconfig | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/configs/radxa-zero_defconfig b/configs/radxa-zero_defconfig
+index 5e845600b4..fdb1a4b9b2 100644
+--- a/configs/radxa-zero_defconfig
++++ b/configs/radxa-zero_defconfig
+@@ -5,6 +5,8 @@ CONFIG_NR_DRAM_BANKS=1
+ CONFIG_ENV_SIZE=0x2000
+ CONFIG_DM_GPIO=y
+ CONFIG_DEFAULT_DEVICE_TREE="meson-g12a-radxa-zero"
++CONFIG_USE_PREBOOT=y
++CONFIG_PREBOOT="usb start"
+ CONFIG_MESON_G12A=y
+ CONFIG_DEBUG_UART_BASE=0xff803000
+ CONFIG_DEBUG_UART_CLOCK=24000000
+--
+2.35.1
