@@ -287,7 +287,7 @@ EOF
 function make_hosts() {
   set_hostname "${hostname}"
   log " Created /etc/hosts" white
-  cat <<EOF > "${work_dir:=}"/etc/hosts
+  cat <<EOF > "${work_dir}"/etc/hosts
 127.0.1.1       ${hostname:=}
 127.0.0.1       localhost
 ::1             localhost ip6-localhost ip6-loopback
@@ -458,6 +458,7 @@ function clean_build() {
   # Delete files
   log "Cleaning up the temporary build files..." green
   rm -rf "${work_dir}"
+  rm -rf "${base_dir}"
 
   # Done
   log "Done" green
