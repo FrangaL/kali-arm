@@ -8,10 +8,10 @@ debootstrap_base="kali-archive-keyring,eatmydata"
 minimal_pkgs="ca-certificates iw network-manager parted wpasupplicant sudo"
 
 # This is the list of minimal common packages
-common_min_pkgs="$minimal_pkgs apt-transport-https firmware-linux firmware-realtek firmware-atheros \
-firmware-libertas fontconfig ifupdown initramfs-tools kali-defaults man-db mlocate netcat-traditional net-tools \
-pciutils psmisc rfkill screen snmpd snmp tftp tmux unrar usbutils vim wireless-regdb zerofree \
-zsh zsh-autosuggestions zsh-syntax-highlighting"
+common_min_pkgs="$minimal_pkgs apt-transport-https command-not-found firmware-linux firmware-realtek \
+firmware-atheros firmware-libertas fontconfig ifupdown initramfs-tools kali-defaults kali-tweaks \
+man-db mlocate netcat-traditional net-tools pciutils psmisc rfkill screen snmpd snmp tftp tmux unrar \
+usbutils vim wireless-regdb zerofree zsh zsh-autosuggestions zsh-syntax-highlighting"
 # This is the list of common packages
 common_pkgs="$minimal_pkgs kali-linux-core apt-transport-https bluez bluez-firmware dialog \
 ifupdown initramfs-tools inxi libnss-systemd man-db mlocate net-tools network-manager \
