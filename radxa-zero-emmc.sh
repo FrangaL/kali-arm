@@ -8,16 +8,17 @@
 #
 
 # Hardware model
-hw_model=${hw_model:-"radxa-zero-emmc"}
+hw_model=${hw_model:-"radxa-zero"}
 # Architecture
 architecture=${architecture:-"arm64"}
-# Variant name for image and dir build
-variant=${variant:-"${architecture}"}
 # Desktop manager (xfce, gnome, i3, kde, lxde, mate, e17 or none)
 desktop=${desktop:-"xfce"}
 
 # Load default base_image configs
 source ./common.d/base_image.sh
+
+# Network configs
+basic_network
 
 # Third stage
 cat <<EOF >> "${work_dir}"/third-stage
