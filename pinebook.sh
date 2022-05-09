@@ -55,31 +55,11 @@ status_stage3 'Need to package up the wifi driver'
 # so for now, we clone it and then build it inside the chroot
 cd /usr/src/
 git clone https://github.com/steev/rtl8723cs -b new-driver-by-megous rtl8723cs-2020.02.27
-cat << \'__EOF__\' > /usr/src/rtl8723cs-2020.02.27/dkms.conf
-PACKAGE_NAME="rtl8723cs"
-PACKAGE_VERSION="2020.02.27"
-
-AUTOINSTALL="yes"
-
-CLEAN[0]="make clean"
-
-MAKE[0]="'make' -j4 ARCH=arm64 KVER=\$(ls /lib/modules/) KSRC=/lib/modules/\$(ls /lib/modules/)/build/"
-
-BUILT_MODULE_NAME[0]="8723cs"
-
-BUILT_MODULE_LOCATION[0]=""
-
-DEST_MODULE_LOCATION[0]="/kernel/drivers/net/wireless"
-__EOF__
-
 cd /usr/src/rtl8723cs-2020.02.27
 # 5.14+ warns about reproducable builds, so we remove the date and time of the driver build
 # as warnings are also now errors.
 sed -i '50d' core/rtw_debug.c
 dkms install rtl8723cs/2020.02.27 -k \$(ls /lib/modules)
-
-status_stage3 'Replace the conf file after we have built the module and hope for the best'
-cp /bsp/configs/pinebook-dkms.conf /usr/src/rtl8723cs-2020.02.27/dkms.conf
 
 status_stage3 'Enable login over serial (No password)'
 echo "T0:23:respawn:/sbin/agetty -L ttyAMA0 115200 vt100" >> /etc/inittab
