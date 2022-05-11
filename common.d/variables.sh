@@ -29,7 +29,7 @@ locale="en_US.UTF-8"
 # Free space rootfs in MiB
 free_space="300"
 # /boot partition in MiB
-bootsize="128"
+bootsize="256"
 # Select compression, xz or none
 compress="xz"
 # Choose filesystem format to format root partition (ext3 or ext4).
