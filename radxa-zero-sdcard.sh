@@ -26,8 +26,9 @@ status_stage3 'Install u-boot tools'
 eatmydata apt-get install -y u-boot-menu u-boot-tools
 
 # We need "file" for the kernel scripts we run, and it won't be installed if you pass --slim
-# So we always make sure it's installed.
-eatmydata apt-get install -y file
+# So we always make sure it's installed. Also, for hdmi audio, we need to run commands
+# so install alsa-utils for amixer and alsactl availability.
+eatmydata apt-get install -y file alsa-utils
 
 # Note: This just creates an empty /boot/extlinux/extlinux.conf for us to use 
 # later when we install the kernel, and then fixup further down
