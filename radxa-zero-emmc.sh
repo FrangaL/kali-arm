@@ -70,8 +70,6 @@ git rev-parse HEAD > ${work_dir}/usr/src/kernel-at-commit
 rm -rf .git
 export ARCH=arm64
 export CROSS_COMPILE=aarch64-linux-gnu-
-patch -p1 --no-backup-if-mismatch < ${repo_dir}/patches/kali-wifi-injection-5.9.patch
-patch -p1 --no-backup-if-mismatch < ${repo_dir}/patches/0001-wireless-carl9170-Enable-sniffer-mode-promisc-flag-t.patch
 make radxa_zero_defconfig
 make -j $(grep -c processor /proc/cpuinfo) LOCALVERSION="" bindeb-pkg
 make mrproper
