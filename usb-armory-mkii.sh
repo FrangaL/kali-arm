@@ -164,8 +164,8 @@ sync
 
 status "u-Boot"
 cd "${work_dir}"
-wget ftp://ftp.denx.de/pub/u-boot/u-boot-2022.01.tar.bz2
-tar xvf u-boot-2022.01.tar.bz2 && cd u-boot-2022.01
+wget ftp://ftp.denx.de/pub/u-boot/u-boot-2022.04.tar.bz2
+tar xvf u-boot-2022.04.tar.bz2 && cd u-boot-2022.04
 wget $githubraw/inversepath/usbarmory/master/software/u-boot/0001-ARM-mx6-add-support-for-USB-armory-Mk-II-board.patch
 patch -p1 --no-backup-if-mismatch < 0001-ARM-mx6-add-support-for-USB-armory-Mk-II-board.patch
 make distclean

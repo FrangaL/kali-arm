@@ -170,8 +170,8 @@ sync
 
 status "u-Boot"
 cd "${base_dir}"
-wget ftp://ftp.denx.de/pub/u-boot/u-boot-2022.01.tar.bz2
-tar xvf u-boot-2022.01.tar.bz2 && cd u-boot-2022.01
+wget ftp://ftp.denx.de/pub/u-boot/u-boot-2022.04.tar.bz2
+tar xvf u-boot-2022.04.tar.bz2 && cd u-boot-2022.04
 make distclean
 make usbarmory_config
 make ARCH=arm
