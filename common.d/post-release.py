@@ -78,6 +78,7 @@ def generate_manifest(data):
     for key in element.keys():
       print("key is", repr(key))
       if 'board' in element[key]:
+        ## We really only want to do images that are also support: "kali" 
         for image in element[key]['image']:
           print("image is", repr(image))
           ## Example filename
@@ -88,6 +89,8 @@ def generate_manifest(data):
           manifest += "{},kali-linux-{}-{}-{}.img.xz\n".format(image.get('name', default), release, image.get('board', default), image.get('architecture', default))
   return manifest
 
+## We want this because we want to make sure the
+## raspberry pi images don't show up multiple times
 def deduplicate(data):
   clean_data = ""
   lines_seen = set()
