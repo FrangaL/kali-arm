@@ -1,5 +1,6 @@
 # Notes:
 #  - We may be able to get the image-size from the xz file (the metadataa info stores both compressed and uncompressed sizes)
+#  - NetHunter ~ https://gitlab.com/kalilinux/nethunter/build-scripts/kali-nethunter-devices/-/blob/master/devices.cfg
 #
 # $ xz --verbose --list kali-linux-2022.2-radxa-zero-sdcard-slim-arm64.img.xz
 #  kali-linux-2022.2-radxa-zero-sdcard-slim-arm64.img.xz (1/1)
