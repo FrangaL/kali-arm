@@ -49,6 +49,12 @@ status_stage3 'Add wifi firmware and driver, and attempt to build'
 git clone https://github.com/anarsoul/rtl8723bt-firmware
 cd rtl8723bt-firmware
 cp -a rtl_bt /lib/firmware/
+cd ..
+rm -rf rtl8723bt-firmware
+
+# Suspend doesn't work properly so only enable s2idle
+status_stage3 'Enable suspend2idle'
+sed -i s/"#SuspendState=mem standby freeze"/"SuspendState=freeze"/g /etc/systemd/sleep.conf
 
 status_stage3 'Need to package up the wifi driver'
 # (it's a Realtek 8723cs, with the usual Realtek driver quality) still,
