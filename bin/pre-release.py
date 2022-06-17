@@ -23,7 +23,7 @@
 
 import json
 import datetime
-import yaml # install pyyaml
+import yaml # python3 -m pip install pyyaml --user
 import getopt, os, stat, sys
 
 manifest = ""     # Generated automatically (<outputdir>/manifest.json)
