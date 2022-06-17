@@ -31,7 +31,7 @@ devices:
 #      storage: ["sdcard", "emmc", "..."]
 #      notes: ""
 #      images:
-#        - image: "filename of the image (uncompressed) - kali-linux-${version}-<slug>-<architecture>.img"
+#        - image: "suffix filename of the image (uncompressed) -e.g. <slug>-<architecture>.img (prefix is `kali-linux-<version>-`)"
 #          name: "human readable string for download page/documentation"
 #          architecture: "armel/armhf/arm64"
 #          recommended: "true/false - preferred image for the device (if multiple)"
@@ -59,7 +59,7 @@ devices:
       #storage: ["sdcard", "emmc", "..."]
       notes: ""
       images:
-        - image: "kali-linux-${version}-banana-pi-armhf.img"
+        - image: "banana-pi-armhf.img"
           name: "Banana Pi"
           architecture: "armhf"
           recommended: "false"
@@ -85,7 +85,7 @@ devices:
       #storage: ["sdcard", "emmc", "..."]
       notes: ""
       images:
-        - image: "kali-linux-${version}-banana-pro-armhf.img"
+        - image: "banana-pro-armhf.img"
           name: "Banana Pro"
           architecture: "armhf"
           recommended: "false"
@@ -114,7 +114,7 @@ devices:
       #storage: ["sdcard", "emmc", "..."]
       notes: ""
       images:
-        - image: "kali-linux-${version}-beaglebone-black-armhf.img"
+        - image: "beaglebone-black-armhf.img"
           name: "Beaglebone Black"
           architecture: "armhf"
           recommended: "false"
@@ -143,7 +143,7 @@ devices:
       #storage: ["sdcard", "emmc", "..."]
       notes: ""
       images:
-        - image: "kali-linux-${version}-chromebook-exynos-armhf.img"
+        - image: "chromebook-exynos-armhf.img"
           name: "Samsung Chromebook 2 13\""
           architecture: "armhf"
           recommended: "false"
@@ -169,7 +169,7 @@ devices:
       #storage: ["sdcard", "emmc", "..."]
       notes: ""
       images:
-        - image: "kali-linux-${version}-chromebook-exynos-armhf.img"
+        - image: "chromebook-exynos-armhf.img"
           name: "Samsung Chromebook 2 11\""
           architecture: "armhf"
           recommended: "false"
@@ -195,7 +195,7 @@ devices:
       #storage: ["sdcard", "emmc", "..."]
       notes: ""
       images:
-        - image: "kali-linux-${version}-chromebook-exynos-armhf.img"
+        - image: "chromebook-exynos-armhf.img"
           name: "Samsung Chromebook"
           architecture: "armhf"
           recommended: "false"
@@ -221,7 +221,7 @@ devices:
       #storage: ["sdcard", "emmc", "..."]
       notes: ""
       images:
-        - image: "kali-linux-${version}-chromebook-exynos-armhf.img"
+        - image: "chromebook-exynos-armhf.img"
           name: "HP Chromebook 11 G1"
           architecture: "armhf"
           recommended: "false"
@@ -247,7 +247,7 @@ devices:
       #storage: ["sdcard", "emmc", "..."]
       notes: ""
       images:
-        - image: "kali-linux-${version}-chromebook-nyan-armhf.img"
+        - image: "chromebook-nyan-armhf.img"
           name: "Acer Chromebook 13 (CB5-311)"
           architecture: "armhf"
           recommended: "false"
@@ -273,7 +273,7 @@ devices:
       #storage: ["sdcard", "emmc", "..."]
       notes: ""
       images:
-        - image: "kali-linux-${version}-chromebook-veyron-armhf.img"
+        - image: "chromebook-veyron-armhf.img"
           name: "ASUS Chromebook Flip C100PA"
           architecture: "armhf"
           recommended: "false"
@@ -302,7 +302,7 @@ devices:
       #storage: ["sdcard", "emmc", "..."]
       notes: ""
       images:
-        - image: "kali-linux-${version}-trimslice-armhf.img"
+        - image: "trimslice-armhf.img"
           name: "CompuLab Trimslice"
           architecture: "armhf"
           recommended: "false"
@@ -328,7 +328,7 @@ devices:
       #storage: ["sdcard", "emmc", "..."]
       notes: ""
       images:
-        - image: "kali-linux-${version}-utilite-pro-armhf.img"
+        - image: "utilite-pro-armhf.img"
           name: "CompuLab Utilite Pro"
           architecture: "armhf"
           recommended: "false"
@@ -357,7 +357,7 @@ devices:
       #storage: ["sdcard", "emmc", "..."]
       notes: ""
       images:
-        - image: "kali-linux-${version}-cubieboard2-armhf.img"
+        - image: "cubieboard2-armhf.img"
           name: "Cubieboard2"
           architecture: "armhf"
           recommended: "false"
@@ -383,7 +383,7 @@ devices:
       #storage: ["sdcard", "emmc", "..."]
       notes: ""
       images:
-        - image: "kali-linux-${version}-cubietruck-armhf.img"
+        - image: "cubietruck-armhf.img"
           name: "Cubietruck"
           architecture: "armhf"
           recommended: "false"
@@ -412,7 +412,7 @@ devices:
       #storage: ["sdcard", "emmc", "..."]
       notes: ""
       images:
-        - image: "kali-linux-${version}-cubox-armhf.img"
+        - image: "cubox-armhf.img"
           name: "SolidRun CuBox"
           architecture: "armhf"
           recommended: "false"
@@ -438,7 +438,7 @@ devices:
       #storage: ["sdcard", "emmc", "..."]
       notes: ""
       images:
-        - image: "kali-linux-${version}-cubox-i4pro-armhf.img"
+        - image: "cubox-i4pro-armhf.img"
           name: "SolidRun CuBox i4Pro"
           architecture: "armhf"
           recommended: "false"
@@ -467,7 +467,7 @@ devices:
       #storage: ["sdcard", "emmc", "..."]
       notes: ""
       images:
-        - image: "kali-linux-${version}-gateworks-newport-armhf.img"
+        - image: "gateworks-newport-armhf.img"
           name: "Gateworks Newport"
           architecture: "armhf"
           recommended: "false"
@@ -493,7 +493,7 @@ devices:
       #storage: ["sdcard", "emmc", "..."]
       notes: ""
       images:
-        - image: "kali-linux-${version}-gateworks-ventana-armhf.img"
+        - image: "gateworks-ventana-armhf.img"
           name: "Gateworks Ventana"
           architecture: "armhf"
           recommended: "false"
@@ -529,7 +529,7 @@ devices:
       #storage: ["sdcard", "emmc", "..."]
       notes: ""
       images:
-        - image: "kali-linux-${version}-efikamx-armhf.img"
+        - image: "efikamx-armhf.img"
           name: "Genesi EfikaMX Smarttop"
           architecture: "armhf"
           recommended: "false"
@@ -555,7 +555,7 @@ devices:
       storage: ["sdcard", "emmc"]
       notes: ""
       images:
-        - image: "kali-linux-${version}-efikamx-armhf.img"
+        - image: "efikamx-armhf.img"
           name: "Genesi EfikaMX Smartbook"
           architecture: "armhf"
           recommended: "false"
@@ -584,7 +584,7 @@ devices:
       #storage: ["sdcard", "emmc", "..."]
       notes: ""
       images:
-        - image: "kali-linux-${version}-nanopc-t-arm64.img"
+        - image: "nanopc-t-arm64.img"
           name: "NanoPC T3"
           architecture: "arm64"
           recommended: "false"
@@ -610,7 +610,7 @@ devices:
       #storage: ["sdcard", "emmc", "..."]
       notes: ""
       images:
-        - image: "kali-linux-${version}-nanopc-t-arm64.img"
+        - image: "nanopc-t-arm64.img"
           name: "NanoPC T3+"
           architecture: "arm64"
           recommended: "false"
@@ -636,7 +636,7 @@ devices:
       #storage: ["sdcard", "emmc", "..."]
       notes: ""
       images:
-        - image: "kali-linux-${version}-nanopc-t-arm64.img"
+        - image: "nanopc-t-arm64.img"
           name: "NanoPC T4"
           architecture: "arm64"
           recommended: "false"
@@ -662,7 +662,7 @@ devices:
       #storage: ["sdcard", "emmc", "..."]
       notes: "Our recommended high-range ARM tiny-form"
       images:
-        - image: "kali-linux-${version}-nanopi-neo-plus2-arm64.img"
+        - image: "nanopi-neo-plus2-arm64.img"
           name: "NanoPi NEO Plus2"
           architecture: "arm64"
           recommended: "false"
@@ -688,7 +688,7 @@ devices:
       #storage: ["sdcard", "emmc", "..."]
       notes: ""
       images:
-        - image: "kali-linux-${version}-nanopi2-armhf.img"
+        - image: "nanopi2-armhf.img"
           name: "NanoPi2"
           architecture: "armhf"
           recommended: "false"
@@ -717,7 +717,7 @@ devices:
       #storage: ["sdcard", "emmc", "..."]
       notes: ""
       images:
-        - image: "kali-linux-${version}-odroid-c-armhf.img"
+        - image: "odroid-c-armhf.img"
           name: "ODROID-C0"
           architecture: "armhf"
           recommended: "false"
@@ -743,7 +743,7 @@ devices:
       #storage: ["sdcard", "emmc", "..."]
       notes: ""
       images:
-        - image: "kali-linux-${version}-odroid-c-armhf.img"
+        - image: "odroid-c-armhf.img"
           name: "ODROID-C1"
           architecture: "armhf"
           recommended: "false"
@@ -769,7 +769,7 @@ devices:
       #storage: ["sdcard", "emmc", "..."]
       notes: ""
       images:
-        - image: "kali-linux-${version}-odroid-c-armhf.img"
+        - image: "odroid-c-armhf.img"
           name: "ODROID-C1+"
           architecture: "armhf"
           recommended: "false"
@@ -795,7 +795,7 @@ devices:
       storage: ["sdcard", "emmc"]
       notes: ""
       images:
-        - image: "kali-linux-${version}-odroid-c2-arm64.img"
+        - image: "odroid-c2-arm64.img"
           name: "ODROID-C2"
           architecture: "arm64"
           recommended: "false"
@@ -821,7 +821,7 @@ devices:
       #storage: ["sdcard", "emmc", "..."]
       notes: ""
       images:
-        - image: "kali-linux-${version}-odroid-u-armhf.img"
+        - image: "odroid-u-armhf.img"
           name: "ODROID-U2"
           architecture: "armhf"
           recommended: "false"
@@ -847,7 +847,7 @@ devices:
       #storage: ["sdcard", "emmc", "..."]
       notes: ""
       images:
-        - image: "kali-linux-${version}-odroid-u-armhf.img"
+        - image: "odroid-u-armhf.img"
           name: "ODROID-U3"
           architecture: "armhf"
           recommended: "false"
@@ -873,7 +873,7 @@ devices:
       #storage: ["sdcard", "emmc", "..."]
       notes: ""
       images:
-        - image: "kali-linux-${version}-odroid-xu3-armhf.img"
+        - image: "odroid-xu3-armhf.img"
           name: "ODROID-XU3"
           architecture: "armhf"
           recommended: "false"
@@ -899,7 +899,7 @@ devices:
       #storage: ["sdcard", "emmc", "..."]
       notes: ""
       images:
-        - image: "kali-linux-${version}-odroid-xu3-armhf.img"
+        - image: "odroid-xu3-armhf.img"
           name: "ODROID-XU4"
           architecture: "armhf"
           recommended: "false"
@@ -925,7 +925,7 @@ devices:
       #storage: ["sdcard", "emmc", "..."]
       notes: ""
       images:
-        - image: "kali-linux-${version}-odroid-w-armel.img"
+        - image: "odroid-w-armel.img"
           name: "ODROID-W"
           architecture: "armel"
           recommended: "false"
@@ -951,7 +951,7 @@ devices:
       #storage: ["sdcard", "emmc", "..."]
       notes: ""
       images:
-        - image: "kali-linux-${version}-odroid-w-devkit-armel.img"
+        - image: "odroid-w-devkit-armel.img"
           name: "ODROID-W Dev Kit"
           architecture: "armel"
           recommended: "false"
@@ -980,7 +980,7 @@ devices:
       #storage: ["sdcard", "emmc", "..."]
       notes: ""
       images:
-        - image: "kali-linux-${version}-imx6-ull-evk-armhf.img"
+        - image: "imx6-ull-evk-armhf.img"
           #name: "human readable string for download page/documentation"
           architecture: "armhf"
           recommended: "false"
@@ -1006,7 +1006,7 @@ devices:
       #storage: ["sdcard", "emmc", "..."]
       notes: ""
       images:
-        - image: "kali-linux-${version}-riotboard-armhf.img"
+        - image: "riotboard-armhf.img"
           name: "RIoTBoard"
           architecture: "armhf"
           recommended: "false"
@@ -1035,7 +1035,7 @@ devices:
       #storage: ["sdcard", "emmc", "..."]
       notes: ""
       images:
-        - image: "kali-linux-${version}-pinebook-arm64.img"
+        - image: "pinebook-arm64.img"
           name: "Pinebook"
           architecture: "arm64"
           recommended: "false"
@@ -1061,7 +1061,7 @@ devices:
       #storage: ["sdcard", "emmc", "..."]
       notes: "Our recommended ARM laptop"
       images:
-        - image: "kali-linux-${version}-pinebook-pro-arm64.img"
+        - image: "pinebook-pro-arm64.img"
           name: "Pinebook Pro"
           architecture: "arm64"
           recommended: "false"
@@ -1090,7 +1090,7 @@ devices:
       #storage: ["sdcard", "emmc", "..."]
       notes: ""
       images:
-        - image: "kali-linux-${version}-radxa-zero-emmc-arm64.img"
+        - image: "radxa-zero-emmc-arm64.img"
           name: "Radxa Zero (emmc)"
           architecture: "arm64"
           recommended: "true"
@@ -1100,7 +1100,7 @@ devices:
           kernel: "custom"
           kernel-version: "5.10.112"
           image-notes: ""
-        - image: "kali-linux-${version}-radxa-zero-sdcard-arm64.img"
+        - image: "radxa-zero-sdcard-arm64.img"
           name: "Radxa Zero (sdcard)"
           architecture: "arm64"
           recommended: "false"
@@ -1129,7 +1129,7 @@ devices:
       #storage: ["sdcard", "emmc", "..."]
       notes: ""
       images:
-        - image: "kali-linux-${version}-raspberry-pi-armhf.img"
+        - image: "raspberry-pi-armhf.img"
           name: "Raspberry Pi 2, 3, 4 and 400 (32-bit)"
           architecture: "armhf"
           recommended: "true"
@@ -1139,7 +1139,7 @@ devices:
           kernel: "custom"
           #kernel-version: "$(uname -r)"
           image-notes: ""
-        - image: "kali-linux-${version}-raspberry-pi-arm64.img"
+        - image: "raspberry-pi-arm64.img"
           name: "RaspberryPi 2 (v1.2), 3, 4, and 400 (64-bit)"
           architecture: "arm64"
           recommended: "false"
@@ -1165,7 +1165,7 @@ devices:
       #storage: ["sdcard", "emmc", "..."]
       notes: ""
       images:
-        - image: "kali-linux-${version}-raspberry-pi-armhf.img"
+        - image: "raspberry-pi-armhf.img"
           name: "RaspberryPi 2, 3, 4, and 400 (32-bit)"
           architecture: "armhf"
           recommended: "true"
@@ -1175,7 +1175,7 @@ devices:
           kernel: "custom"
           #kernel-version: "$(uname -r)"
           image-notes: ""
-        - image: "kali-linux-${version}-raspberry-pi-arm64.img"
+        - image: "raspberry-pi-arm64.img"
           name: "RaspberryPi 2 (v1.2), 3, 4, and 400 (64-bit)"
           architecture: "arm64"
           recommended: "false"
@@ -1201,7 +1201,7 @@ devices:
       #storage: ["sdcard", "emmc", "..."]
       notes: "Our recommended high-end (8GB) & low-end (2GB) ARM Single Board Computer (SBC)"
       images:
-        - image: "kali-linux-${version}-raspberry-pi-armhf.img"
+        - image: "raspberry-pi-armhf.img"
           name: "RaspberryPi 2, 3, 4 and 400 (32-bit)"
           architecture: "armhf"
           recommended: "true"
@@ -1211,7 +1211,7 @@ devices:
           kernel: "custom"
           #kernel-version: "$(uname -r)"
           image-notes: ""
-        - image: "kali-linux-${version}-raspberry-pi-arm64.img"
+        - image: "raspberry-pi-arm64.img"
           name: "RaspberryPi 2 (v1.2), 3, 4, and 400 (64-bit)"
           architecture: "arm64"
           recommended: "false"
@@ -1237,7 +1237,7 @@ devices:
       #storage: ["sdcard", "emmc", "..."]
       notes: ""
       images:
-        - image: "kali-linux-${version}-raspberry-pi-armhf.img"
+        - image: "raspberry-pi-armhf.img"
           name: "RaspberryPi 2, 3, 4, and 400 (32-bit)"
           architecture: "armhf"
           recommended: "true"
@@ -1247,7 +1247,7 @@ devices:
           kernel: "custom"
           #kernel-version: "$(uname -r)"
           image-notes: ""
-        - image: "kali-linux-${version}-raspberry-pi-arm64.img"
+        - image: "raspberry-pi-arm64.img"
           name: "RaspberryPi 2 (v1.2), 3, 4, and 400 (64-bit)"
           architecture: "arm64"
           recommended: "false"
@@ -1273,7 +1273,7 @@ devices:
       storage: ["sdcard"]
       notes: "Our recommended low-range ARM tiny-form"
       images:
-        - image: "kali-linux-${version}-raspberry-pi-zero-w-armel.img"
+        - image: "raspberry-pi-zero-w-armel.img"
           name: "Raspberry Pi Zero W"
           architecture: "armel"
           recommended: "false"
@@ -1283,7 +1283,7 @@ devices:
           kernel: "custom"
           kernel-version: "5.10.103"
           image-notes: ""
-        - image: "kali-linux-${version}-raspberry-pi-zero-w-pitail-armel.img"
+        - image: "raspberry-pi-zero-w-pitail-armel.img"
           name: "RaspberryPi Zero W (PiTail)"
           architecture: "armel"
           recommended: "false"
@@ -1309,7 +1309,7 @@ devices:
       #storage: ["sdcard", "emmc", "..."]
       notes: ""
       images:
-        - image: "kali-linux-${version}-raspberry-pi-zero-2-w-armhf.img"
+        - image: "raspberry-pi-zero-2-w-armhf.img"
           name: "RaspberryPi Zero 2 W"
           architecture: "armhf"
           recommended: "false"
@@ -1319,7 +1319,7 @@ devices:
           kernel: "custom"
           kernel-version: "5.10.103"
           image-notes: ""
-        - image: "kali-linux-${version}-raspberry-pi-zero-2-w-pitail-armhf.img"
+        - image: "raspberry-pi-zero-2-w-pitail-armhf.img"
           name: "RaspberryPi Zero 2 W (PiTail)"
           architecture: "armhf"
           recommended: "false"
@@ -1344,7 +1344,7 @@ devices:
       storage: ["sdcard"]
       notes: ""
       images:
-        - image: "kali-linux-${version}-raspberry-pi1-armel.img"
+        - image: "raspberry-pi1-armel.img"
           name: "Raspberry Pi 1 (Original)"
           architecture: "armel"
           recommended: "false"
@@ -1372,7 +1372,7 @@ devices:
       storage: ["sdcard"]
       notes: ""
       images:
-        - image: "kali-linux-${version}-usb-armory-mki-armhf.img"
+        - image: "usb-armory-mki-armhf.img"
           name: "USBArmory MKI"
           architecture: "armhf"
           recommended: "false"
@@ -1398,7 +1398,7 @@ devices:
       storage: ["sdcard", "emmc"]
       notes: ""
       images:
-        - image: "kali-linux-${version}-usb-armory-mkii-armhf.img"
+        - image: "usb-armory-mkii-armhf.img"
           name: "USBArmory MKII"
           architecture: "armhf"
           recommended: "false"
