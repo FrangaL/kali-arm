@@ -2,15 +2,20 @@
 title: Kali ARM Statistics
 ---
 
+## Devices
+
+- [Devices](devices.html)
+- [Device Stats](device-stats.html)
+
 ## Images
 
-- [Images](arm-images.html)
-- [Images Stats](arm-imagestats.html)
+- [Images](images.html)
+- [Image Overview](image-overview.html)
+- [Image Stats](image-stats.html)
 
-## Kernel
+## Kernels
 
-- [Kernel](arm-kernels.html)
-- [Kernel Stats](arm-kernelstats.html)
+- [Kernel Stats](kernel-stats.html)
 
 - - -
 

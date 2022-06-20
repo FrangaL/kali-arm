@@ -4,10 +4,16 @@ import yaml # python3 -m pip install pyyaml --user
 from datetime import datetime
 import sys
 
-OUTPUT_FILE = './image-stats.md'
+OUTPUT_FILE = './kernel-stats.md'
 INPUT_FILE = './devices.yml'
 repo_msg = "\n_This table was generated automatically on {} from the [Kali ARM GitLab repository](https://gitlab.com/kalilinux/build-scripts/kali-arm)_\n".format(datetime.now().strftime("%Y-%B-%d %H:%M:%S"))
-qty_images = 0
+qty_kernels = 0
+qty_versions = {
+                'custom':  0,
+                'kali':    0,
+                'vendor':  0,
+                'unknown': 0
+               }
 
 ## Input:
 ## ------------------------------------------------------------ ##
@@ -23,9 +29,9 @@ def yaml_parse(content):
     return yaml.safe_load(result)
 
 def generate_table(data):
-    global qty_images
+    global qty_kernels, qty_versions
     images = []
-    default = ""
+    default = "unknown"
 
     # Iterate over per input (depth 1)
     for yaml in data['devices']:
@@ -39,17 +45,22 @@ def generate_table(data):
                     if 'images' in key:
                         # Iterate over image (depth 3)
                         for image in board[key]:
-                            images.append("{} ({})".format(image.get('name', default),
-                                                           image.get('architecture', default)))
+                            if image['name'] not in images:
+                                images.append(image['name']) # ALT: images.append(image['image'])
+                                qty_kernels += 1
+                                qty_versions[(image.get('kernel', default))] += 1
+                            #else:
+                            #    print('DUP {} / {}'.format(image['name'], image['image']))
                 if 'images' not in board.keys():
                     print("[i] Possible issue with: " + board.get('board', default) + " (no images)")
 
-    table  = "| Image Name (Architecture) |\n"
-    table += "|---------------------------|\n"
+    table  = "| Kernel | Qty |\n"
+    table += "|--------|-----|\n"
+
     # iterate over all the devices
-    for device in sorted(set(images)):
-        table += "| {} |\n".format(device)
-    qty_images = len(set(images))
+    for v in qty_versions:
+        table += "| {} | {} |\n".format(v.capitalize(),
+                                        str(qty_versions[v]))
     return table
 
 def read_file(file):
@@ -65,9 +76,9 @@ def write_file(data, file):
     try:
         with open(file, 'w') as f:
             meta  = '---\n'
-            meta += 'title: Kali ARM Image Statistics\n'
+            meta += 'title: Kali ARM Kernel Statistics\n'
             meta += '---\n\n'
-            stats  = "- The official [Kali ARM repository](https://gitlab.com/kalilinux/build-scripts/kali-arm) contains build-scripts to create [**{}** unique Kali ARM images](images.html)\n".format(str(qty_images))
+            stats  = "- The official [Kali ARM repository](https://gitlab.com/kalilinux/build-scripts/kali-arm) contains build-scripts to create [**{}** unique Kali ARM images](images.html)\n".format(str(qty_kernels))
             stats += "- [Kali ARM Statistics](index.html)\n\n"
             f.write(str(meta))
             f.write(str(stats))
@@ -80,7 +91,7 @@ def write_file(data, file):
     return 0
 
 def print_summary():
-    print('Images: {}'.format(qty_images))
+    print('Kernels: {}'.format(qty_kernels))
 
 def main(argv):
     # Assign variables

@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-# REF: https://gitlab.com/kalilinux/nethunter/build-scripts/kali-nethunter-devices/-/blob/52cbfb36/scripts/generate_images_stats.py
 import yaml # python3 -m pip install pyyaml --user
 from datetime import datetime
 import sys
 
-OUTPUT_FILE = './image-stats.md'
+OUTPUT_FILE = './device-stats.md'
 INPUT_FILE = './devices.yml'
 repo_msg = "\n_This table was generated automatically on {} from the [Kali ARM GitLab repository](https://gitlab.com/kalilinux/build-scripts/kali-arm)_\n".format(datetime.now().strftime("%Y-%B-%d %H:%M:%S"))
+qty_devices = 0
 qty_images = 0
 
 ## Input:
@@ -23,9 +23,10 @@ def yaml_parse(content):
     return yaml.safe_load(result)
 
 def generate_table(data):
-    global qty_images
-    images = []
+    global qty_devices, qty_images
     default = ""
+    table  = "| Vendor | Board | Images |\n"
+    table += "|--------|-------|--------|\n"
 
     # Iterate over per input (depth 1)
     for yaml in data['devices']:
@@ -33,23 +34,11 @@ def generate_table(data):
         for vendor in yaml.keys():
             # Iterate over board (depth 2)
             for board in yaml[vendor]:
-                # Iterate over per board
-                for key in board.keys():
-                    # Check if there is an image for the board
-                    if 'images' in key:
-                        # Iterate over image (depth 3)
-                        for image in board[key]:
-                            images.append("{} ({})".format(image.get('name', default),
-                                                           image.get('architecture', default)))
-                if 'images' not in board.keys():
-                    print("[i] Possible issue with: " + board.get('board', default) + " (no images)")
-
-    table  = "| Image Name (Architecture) |\n"
-    table += "|---------------------------|\n"
-    # iterate over all the devices
-    for device in sorted(set(images)):
-        table += "| {} |\n".format(device)
-    qty_images = len(set(images))
+                qty_devices += 1
+                qty_images += len(board.get('images', default))
+                table += "| {} | {} | {} |\n".format(vendor,
+                                                     board.get('board', default),
+                                                     len(board.get('images', default)))
     return table
 
 def read_file(file):
@@ -65,9 +54,9 @@ def write_file(data, file):
     try:
         with open(file, 'w') as f:
             meta  = '---\n'
-            meta += 'title: Kali ARM Image Statistics\n'
+            meta += 'title: Kali ARM Device Statistics\n'
             meta += '---\n\n'
-            stats  = "- The official [Kali ARM repository](https://gitlab.com/kalilinux/build-scripts/kali-arm) contains build-scripts to create [**{}** unique Kali ARM images](images.html)\n".format(str(qty_images))
+            stats  = "- The official [Kali ARM repository](https://gitlab.com/kalilinux/build-scripts/kali-arm) contains build-scripts to support [**{}** Kali ARM devices](devices.html)\n".format(str(str(qty_devices)))
             stats += "- [Kali ARM Statistics](index.html)\n\n"
             f.write(str(meta))
             f.write(str(stats))
@@ -80,7 +69,8 @@ def write_file(data, file):
     return 0
 
 def print_summary():
-    print('Images: {}'.format(qty_images))
+    print('Devices: {}'.format(qty_devices))
+    print('Images : {}'.format(qty_images))
 
 def main(argv):
     # Assign variables

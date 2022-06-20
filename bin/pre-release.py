@@ -86,11 +86,11 @@ def yaml_parse(content):
             result += line + "\n"
     return yaml.safe_load(result)
 
-def jsonarray(devices, manufacture, name, filename, recommended, slug):
-    if not manufacture in devices:
-        devices[manufacture] = []
+def jsonarray(devices, vendor, name, filename, recommended, slug):
+    if not vendor in devices:
+        devices[vendor] = []
     jsondata = {"name": name, "filename": filename, "recommended": recommended, "slug": slug}
-    devices[manufacture].append(jsondata)
+    devices[vendor].append(jsondata)
     return devices
 
 def generate_manifest(data):
@@ -100,10 +100,10 @@ def generate_manifest(data):
 
     # Iterate over per input (depth 1)
     for yaml in data['devices']:
-        # Iterate over manufactures
-        for manufacture in yaml.keys():
+        # Iterate over vendors
+        for vendor in yaml.keys():
             # Iterate over board (depth 2)
-            for board in yaml[manufacture]:
+            for board in yaml[vendor]:
                 qty_devices += 1
                 # Iterate over per board
                 for key in board.keys():
@@ -116,7 +116,7 @@ def generate_manifest(data):
                             filename = "kali-linux-{}-{}".format(release, image.get('image', default))
                             recommended = image.get('recommended', default)
                             slug = image.get('slug', default)
-                            jsonarray(devices, manufacture, name, filename, recommended, slug)
+                            jsonarray(devices, vendor, name, filename, recommended, slug)
     return json.dumps(devices, indent = 2)
 
 def deduplicate(data):

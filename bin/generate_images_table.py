@@ -9,6 +9,7 @@ INPUT_FILE = './devices.yml'
 repo_msg = "\n_This table was generated automatically on {} from the [Kali ARM GitLab repository](https://gitlab.com/kalilinux/build-scripts/kali-arm)_\n".format(datetime.now().strftime("%Y-%B-%d %H:%M:%S"))
 qty_devices = 0
 qty_images = 0
+qty_images_released = 0
 
 ## Input:
 ## ------------------------------------------------------------ ##
@@ -23,19 +24,20 @@ def yaml_parse(content):
             result += line + "\n"
     return yaml.safe_load(result)
 
-def generate_device_table(data):
-    global qty_devices
-    global qty_images
+def generate_table(data):
+    global qty_devices, qty_images, qty_images_released
+    images = []
+    images_released = []
     default = ""
-    table  = "| Display Name | Device | Kernel ID | Android Version | Rootfs | Status | Documentation Link | Notes |\n"
-    table += "|--------------|--------|-----------|-----------------|--------|--------|--------------------|-------|\n"
+    table  = "| Image Name | Filename | Architecture | Recommended | Support | Documentation | Kernel | Kernel Version | Notes |\n"
+    table += "|------------|----------|--------------|-------------|---------|---------------|--------|----------------|-------|\n"
 
     # Iterate over per input (depth 1)
     for yaml in data['devices']:
-        # Iterate over manufactures
-        for manufacture in yaml.keys():
+        # Iterate over vendors
+        for vendor in yaml.keys():
             # Iterate over board (depth 2)
-            for board in yaml[manufacture]:
+            for board in yaml[vendor]:
                 qty_devices += 1
                 # Iterate over per board
                 for key in board.keys():
@@ -43,63 +45,79 @@ def generate_device_table(data):
                     if 'images' in key:
                         # Iterate over image (depth 3)
                         for image in board[key]:
-                            qty_images += 1
+                            #qty_images += 1
+                            images.append("{}".format(image.get('name', default)))
+                            support = image.get('support', default)
+                            if support == "kali":
+                                #qty_images_released += 1
+                                images_released.append("{}".format(image.get('name', default)))
+                            slug = image.get('slug', default)
+                            if slug:
+                                slug = "[{0}](https://www.kali.org/docs/arm/{0})".format(slug)
                             table += "| {} | {} | {} | {} | {} | {} | {} | {} |\n".format(image.get('name', default),
-                                                                                          key,
-                                                                                          image.get('id', default),
-                                                                                          image.get('os', default),
-                                                                                          image.get('rootfs', default),
-                                                                                          image.get('status', default),
-                                                                                          image.get('doco', default),
-                                                                                          image.get('note', default))
+                                                                                          image.get('image', default),
+                                                                                          image.get('architecture', default),
+                                                                                          image.get('recommended', default),
+                                                                                          image.get('support', default),
+                                                                                          slug,
+                                                                                          image.get('kernel', default),
+                                                                                          image.get('kernel-version', default),
+                                                                                          image.get('image-notes', default))
+                if 'images' not in board.keys():
+                    print("[i] Possible issue with: " + board.get('board', default) + " (no images)")
+    qty_images = len(set(images))
+    qty_images_released = len(set(images_released))
     return table
 
-def readfile(file):
+def read_file(file):
     try:
         with open(file) as f:
             data = f.read()
             f.close()
     except Exception as e:
         print("[-] Cannot open input file: {} - {}".format(file, e))
-
     return data
 
-def writefile(data, file):
-    global repo_msg
+def write_file(data, file):
     try:
         with open(file, 'w') as f:
             meta  = '---\n'
-            meta += 'title: Official Kali ARM Images\n'
+            meta += 'title: Kali ARM Images\n'
             meta += '---\n\n'
-            stats  = "- The Kali ARM repository contains kernels for [**{}** devices](arm-image-stats.html)\n".format(str(qty_devices))
-            stats += "- The next release cycle will include **{}** [Kali ARM images](https://www.kali.org/get-kali/)\n\n".format(str(qty_images))
+            stats  = "- The official [Kali ARM repository](https://gitlab.com/kalilinux/build-scripts/kali-arm) contains build-scripts to create [**{}** unique Kali ARM images](image-stats.html) for **{}** devices\n".format(str(qty_images), str(qty_devices))
+            stats += "- The [next release](https://www.kali.org/releases/) cycle will include [**{}** Kali ARM images](image-stats.html) _([ready to download](https://www.kali.org/get-kali/#kali-arm))_\n".format(str(qty_images_released))
+            stats += "- [Kali ARM Statistics](index.html)\n\n"
             f.write(str(meta))
             f.write(str(stats))
             f.write(str(data))
             f.write(str(repo_msg))
             f.close()
-            print('File: {} successfully written'.format(OUTPUT_FILE))
+            print('[+] File: {} successfully written'.format(OUTPUT_FILE))
     except Exception as e:
         print("[-] Cannot write to output file: {} - {}".format(file, e))
     return 0
 
+def print_summary():
+    print('Devices        : {}'.format(qty_devices))
+    print('Images         : {}'.format(qty_images))
+    print('Images Released: {}'.format(qty_images_released))
+
 def main(argv):
     # Assign variables
-    data = readfile(INPUT_FILE)
+    data = read_file(INPUT_FILE)
 
     # Get data
     res = yaml_parse(data)
-    generated_markdown = generate_device_table(res)
+    generated_markdown = generate_table(res)
 
     # Create markdown file
-    writefile(generated_markdown, OUTPUT_FILE)
+    write_file(generated_markdown, OUTPUT_FILE)
 
-    # Print result and exit
-    print('Devices: {}'.format(qty_devices))
-    print('Images : {}'.format(qty_images))
+    # Print result
+    print_summary()
 
+    # Exit
     exit(0)
 
 if __name__ == "__main__":
     main(sys.argv[1:])
-
