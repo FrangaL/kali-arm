@@ -31,19 +31,19 @@
 devices:
   - banana:
       - board: "banana-pi"
-        # cpu: "cpu model/chipset"
-        # cpu-cores: "1/2/3/4..."
-        # gpu: "gpu name"
-        # ram: "DDR2/DDR3..."
-        # ram-size: ["512", "1024", "..."]
-        # ethernet: "0/1/2/3/4..."
-        # ethernet-speed: "0/10/100/1000"
-        # wifi: "0/2.4GHz/5GHz"
-        # bluetooth: "true/false"
-        # usb2: "0/1/2/3/4..."
-        # usb3: "0/1/2/3/4..."
-        # storage: ["sdcard", "emmc", "..."]
-        notes: ""
+        cpu: "Allwinner A20"
+        cpu-cores: "2"
+        gpu: "Mali 400MP2"
+        ram: "DDR3"
+        ram-size: ["1024"]
+        ethernet: "1"
+        ethernet-speed: "10/100/1000"
+        wifi: "0"
+        bluetooth: "false"
+        usb2: "2"
+        usb3: "0"
+        storage: ["sdcard", "sata"]
+        notes: "rootfs can be on sata, but needs to boot from sdcard"
         images:
           - image: "banana-pi-armhf.img"
             name: "Banana Pi"
@@ -52,24 +52,24 @@ devices:
             support: "community"
             slug: "banana-pi"
             build-script: "banana-pi.sh"
-            # kernel: "custom/kali/vendor"
-            # kernel-version: "$(uname -r)"
+            kernel: "kali"
+            kernel-version: "5.18.0-kali1-arm64"
             image-notes: ""
 
       - board: "banana-pro"
-        # cpu: "cpu model/chipset"
-        # cpu-cores: "1/2/3/4..."
-        # gpu: "gpu name"
-        # ram: "DDR2/DDR3..."
-        # ram-size: ["512", "1024", "..."]
-        # ethernet: "0/1/2/3/4..."
-        # ethernet-speed: "0/10/100/1000"
-        # wifi: "0/2.4GHz/5GHz"
-        # bluetooth: "true/false"
-        # usb2: "0/1/2/3/4..."
-        # usb3: "0/1/2/3/4..."
-        # storage: ["sdcard", "emmc", "..."]
-        notes: ""
+        cpu: "Allwinner A20"
+        cpu-cores: "2"
+        gpu: "Mali 400MP2"
+        ram: "DDR3"
+        ram-size: ["1024"]
+        ethernet: "1"
+        ethernet-speed: "0/10/100/1000"
+        wifi: "2.4GHz/5GHz"
+        bluetooth: "true"
+        usb2: "2"
+        usb3: "0"
+        storage: ["sdcard", "sata"]
+        notes: "rootfs can be on sata, but needs to boot from sdcard"
         images:
           - image: "banana-pro-armhf.img"
             name: "Banana Pro"
@@ -78,24 +78,24 @@ devices:
             support: "community"
             slug: "banana-pro"
             build-script: "banana-pro.sh"
-            # kernel: "custom/kali/vendor"
-            # kernel-version: "$(uname -r)"
+            kernel: "kali"
+            kernel-version: "5.18.0-kali1-arm64"
             image-notes: ""
 
   - beagle:
       - board: "beaglebone-black"
-        # cpu: "cpu model/chipset"
-        # cpu-cores: "1/2/3/4..."
-        # gpu: "gpu name"
-        # ram: "DDR2/DDR3..."
-        # ram-size: ["512", "1024", "..."]
-        # ethernet: "0/1/2/3/4..."
-        # ethernet-speed: "0/10/100/1000"
-        # wifi: "0/2.4GHz/5GHz"
-        # bluetooth: "true/false"
-        # usb2: "0/1/2/3/4..."
-        # usb3: "0/1/2/3/4..."
-        # storage: ["sdcard", "emmc", "..."]
+        cpu: "Texas Instruments Sitara AM335x"
+        cpu-cores: "1"
+        gpu: "SGX530"
+        ram: "DDR2/DDR3..."
+        ram-size: ["512", "1024", "..."]
+        ethernet: "0/1/2/3/4..."
+        ethernet-speed: "0/10/100/1000"
+        wifi: "0/2.4GHz/5GHz"
+        bluetooth: "true/false"
+        usb2: "0/1/2/3/4..."
+        usb3: "0"
+        storage: ["sdcard"]
         notes: ""
         images:
           - image: "beaglebone-black-armhf.img"
@@ -105,25 +105,26 @@ devices:
             support: "community"
             slug: "beaglebone-black"
             build-script: "beaglebone-black.sh"
-            # kernel: "custom/kali/vendor"
-            # kernel-version: "$(uname -r)"
+            kernel: "custom"
+            kernel-version: "4.14.108"
             image-notes: ""
 
   - chromebook:
       - board: "chromebook-exynos-peach-pi"
-        # cpu: "cpu model/chipset"
-        # cpu-cores: "1/2/3/4..."
-        # gpu: "gpu name"
-        # ram: "DDR2/DDR3..."
-        # ram-size: ["512", "1024", "..."]
-        # ethernet: "0/1/2/3/4..."
-        # ethernet-speed: "0/10/100/1000"
-        # wifi: "0/2.4GHz/5GHz"
-        # bluetooth: "true/false"
-        # usb2: "0/1/2/3/4..."
-        # usb3: "0/1/2/3/4..."
-        # storage: ["sdcard", "emmc", "..."]
-        notes: ""
+        cpu: "Exynos 5800"
+        cpu-cores: "8"
+        gpu: "Mali T628 MP6"
+        ram: "DDR3"
+        ram-size: ["4096"]
+        ethernet: "0"
+        ethernet-speed: "0"
+        wifi: "2.4GHz/5GHz"
+        bluetooth: "true"
+        usb2: "1"
+        usb3: "1"
+        storage: ["sdcard", "usb", "emmc"]
+        notes: ">-
+                Kali only supports booting from sdcard or usb."
         images:
           - image: "chromebook-exynos-armhf.img"
             name: "Samsung Chromebook 2 13\""
@@ -132,24 +133,26 @@ devices:
             support: "community"
             slug: "chromebook-exynos"
             build-script: "chromebook-exynos.sh"
-            # kernel: "custom/kali/vendor"
-            # kernel-version: "$(uname -r)"
-            image-notes: ""
+            kernel: "custom"
+            kernel-version: "3.8"
+            image-notes: ">-
+                Kali only supports booting from sdcard or usb."
 
       - board: "chromebook-exynos-peach-pit"
-        # cpu: "cpu model/chipset"
-        # cpu-cores: "1/2/3/4..."
-        # gpu: "gpu name"
-        # ram: "DDR2/DDR3..."
-        # ram-size: ["512", "1024", "..."]
-        # ethernet: "0/1/2/3/4..."
-        # ethernet-speed: "0/10/100/1000"
-        # wifi: "0/2.4GHz/5GHz"
-        # bluetooth: "true/false"
-        # usb2: "0/1/2/3/4..."
-        # usb3: "0/1/2/3/4..."
-        # storage: ["sdcard", "emmc", "..."]
-        notes: ""
+        cpu: "Exynos 5420"
+        cpu-cores: "8"
+        gpu: "Mali T628 MP6"
+        ram: "DDR3"
+        ram-size: ["4096"]
+        ethernet: "0"
+        ethernet-speed: "0"
+        wifi: "2.4GHz/5GHz"
+        bluetooth: "true"
+        usb2: "1"
+        usb3: "1"
+        storage: ["sdcard", "usb", "emmc"]
+        notes: ">-
+                Kali only supports booting from sdcard or usb."
         images:
           - image: "chromebook-exynos-armhf.img"
             name: "Samsung Chromebook 2 11\""
@@ -158,24 +161,25 @@ devices:
             support: "community"
             slug: "chromebook-exynos"
             build-script: "chromebook-exynos.sh"
-            # kernel: "custom/kali/vendor"
-            # kernel-version: "$(uname -r)"
+            kernel: "vendor"
+            kernel-version: "3.8"
             image-notes: ""
 
       - board: "chromebook-exynos-snow"
-        # cpu: "cpu model/chipset"
-        # cpu-cores: "1/2/3/4..."
-        # gpu: "gpu name"
-        # ram: "DDR2/DDR3..."
-        # ram-size: ["512", "1024", "..."]
-        # ethernet: "0/1/2/3/4..."
-        # ethernet-speed: "0/10/100/1000"
-        # wifi: "0/2.4GHz/5GHz"
-        # bluetooth: "true/false"
-        # usb2: "0/1/2/3/4..."
-        # usb3: "0/1/2/3/4..."
-        # storage: ["sdcard", "emmc", "..."]
-        notes: ""
+        cpu: "Exynos 5250"
+        cpu-cores: "2"
+        gpu: "Mali T604"
+        ram: "DDR3"
+        ram-size: ["2048"]
+        ethernet: "0"
+        ethernet-speed: "0"
+        wifi: "2.4GHz/5GHz"
+        bluetooth: "true"
+        usb2: "2"
+        usb3: "0"
+        storage: ["sdcard", "usb", "emmc"]
+        notes: ">-
+                Kali only supports booting from sdcard or usb."
         images:
           - image: "chromebook-exynos-armhf.img"
             name: "Samsung Chromebook"
@@ -184,24 +188,25 @@ devices:
             support: "community"
             slug: "chromebook-exynos"
             build-script: "chromebook-exynos.sh"
-            # kernel: "custom/kali/vendor"
-            # kernel-version: "$(uname -r)"
+            kernel: "vendor"
+            kernel-version: "3.8"
             image-notes: ""
 
       - board: "chromebook-exynos-spring"
-        # cpu: "cpu model/chipset"
-        # cpu-cores: "1/2/3/4..."
-        # gpu: "gpu name"
-        # ram: "DDR2/DDR3..."
-        # ram-size: ["512", "1024", "..."]
-        # ethernet: "0/1/2/3/4..."
-        # ethernet-speed: "0/10/100/1000"
-        # wifi: "0/2.4GHz/5GHz"
-        # bluetooth: "true/false"
-        # usb2: "0/1/2/3/4..."
-        # usb3: "0/1/2/3/4..."
-        # storage: ["sdcard", "emmc", "..."]
-        notes: ""
+        cpu: "Exynos 5250"
+        cpu-cores: "2"
+        gpu: "Mali T604"
+        ram: "DDR3"
+        ram-size: ["2048"]
+        ethernet: "0"
+        ethernet-speed: "0"
+        wifi: "2.4GHz/5GHz"
+        bluetooth: "true"
+        usb2: "2"
+        usb3: "0"
+        storage: ["sdcard", "usb", "emmc"]
+        notes: ">-
+                Kali only supports booting from sdcard or usb."
         images:
           - image: "chromebook-exynos-armhf.img"
             name: "HP Chromebook 11 G1"
@@ -210,24 +215,25 @@ devices:
             support: "community"
             slug: "chromebook-exynos"
             build-script: "chromebook-exynos.sh"
-            # kernel: "custom/kali/vendor"
-            # kernel-version: "$(uname -r)"
+            kernel: "vendor"
+            kernel-version: "3.8"
             image-notes: ""
 
       - board: "chromebook-nyan-big"
-        # cpu: "cpu model/chipset"
-        # cpu-cores: "1/2/3/4..."
-        # gpu: "gpu name"
-        # ram: "DDR2/DDR3..."
-        # ram-size: ["512", "1024", "..."]
-        # ethernet: "0/1/2/3/4..."
-        # ethernet-speed: "0/10/100/1000"
-        # wifi: "0/2.4GHz/5GHz"
-        # bluetooth: "true/false"
-        # usb2: "0/1/2/3/4..."
-        # usb3: "0/1/2/3/4..."
-        # storage: ["sdcard", "emmc", "..."]
-        notes: ""
+        cpu: "NVIDIA Tegra Logan K1"
+        cpu-cores: "4"
+        gpu: "gpu name"
+        ram: "DDR3"
+        ram-size: ["2048"]
+        ethernet: "0"
+        ethernet-speed: "0"
+        wifi: "2.4GHz/5GHz"
+        bluetooth: "true"
+        usb2: "0"
+        usb3: "2"
+        storage: ["sdcard", "usb", "emmc"]
+        notes: ">-
+                Kali only supports booting from sdcard or usb."
         images:
           - image: "chromebook-nyan-armhf.img"
             name: "Acer Chromebook 13 (CB5-311)"
@@ -236,8 +242,8 @@ devices:
             support: "community"
             slug: "chromebook-nyan"
             build-script: "chromebook-nyan.sh"
-            # kernel: "custom/kali/vendor"
-            # kernel-version: "$(uname -r)"
+            kernel: "vendor"
+            kernel-version: "3.10"
             image-notes: ""
 
       - board: "chromebook-veyron-minnie"
@@ -253,7 +259,8 @@ devices:
         # usb2: "0/1/2/3/4..."
         # usb3: "0/1/2/3/4..."
         # storage: ["sdcard", "emmc", "..."]
-        notes: ""
+        notes: ">-
+                Kali only supports booting from sdcard or usb."
         images:
           - image: "chromebook-veyron-armhf.img"
             name: "ASUS Chromebook Flip C100PA"
@@ -268,18 +275,18 @@ devices:
 
   - compulab:
       - board: "trimslice"
-        # cpu: "cpu model/chipset"
-        # cpu-cores: "1/2/3/4..."
+        cpu: "NVIDIA Tegra 2"
+        cpu-cores: "2"
         # gpu: "gpu name"
         # ram: "DDR2/DDR3..."
         # ram-size: ["512", "1024", "..."]
-        # ethernet: "0/1/2/3/4..."
-        # ethernet-speed: "0/10/100/1000"
+        ethernet: "1"
+        ethernet-speed: "10/100"
         # wifi: "0/2.4GHz/5GHz"
         # bluetooth: "true/false"
-        # usb2: "0/1/2/3/4..."
-        # usb3: "0/1/2/3/4..."
-        # storage: ["sdcard", "emmc", "..."]
+        usb2: "4"
+        usb3: "0"
+        storage: ["sdcard"]
         notes: ""
         images:
           - image: "trimslice-armhf.img"
@@ -641,7 +648,7 @@ devices:
         # usb2: "0/1/2/3/4..."
         # usb3: "0/1/2/3/4..."
         # storage: ["sdcard", "emmc", "..."]
-        notes: "Our recommended high-range ARM tiny-form"
+        notes: "Our preferred high-range ARM tiny-form"
         images:
           - image: "nanopi-neo-plus2-arm64.img"
             name: "NanoPi NEO Plus2"
@@ -1034,7 +1041,7 @@ devices:
         # usb2: "0/1/2/3/4..."
         # usb3: "0/1/2/3/4..."
         # storage: ["sdcard", "emmc", "..."]
-        notes: "Our recommended ARM laptop"
+        notes: "Our preferred ARM laptop"
         images:
           - image: "pinebook-pro-arm64.img"
             name: "Pinebook Pro"
@@ -1050,19 +1057,19 @@ devices:
 
   - radxa:
       - board: "radxa-zero"
-        # cpu: "cpu model/chipset"
-        # cpu-cores: "1/2/3/4..."
-        # gpu: "gpu name"
-        # ram: "DDR2/DDR3..."
-        # ram-size: ["512", "1024", "..."]
-        # ethernet: "0/1/2/3/4..."
-        # ethernet-speed: "0/10/100/1000"
-        # wifi: "0/2.4GHz/5GHz"
-        # bluetooth: "true/false"
-        # usb2: "0/1/2/3/4..."
-        # usb3: "0/1/2/3/4..."
-        # storage: ["sdcard", "emmc", "..."]
-        notes: ""
+        cpu: "Amlogic S905Y2"
+        cpu-cores: "4"
+        gpu: "Mali G31 MP2"
+        ram: "LPDDR4"
+        ram-size: ["1024", "2048", "4096"]
+        ethernet: "0"
+        ethernet-speed: "0"
+        wifi: ["AP6212", "AP6256"]
+        bluetooth: "true"
+        usb2: "1"
+        usb3: "1"
+        storage: ["sdcard", "emmc", "..."]
+        notes: "The 1GB versions do not have eMMC"
         images:
           - image: "radxa-zero-emmc-arm64.img"
             name: "Radxa Zero (emmc)"
@@ -1072,7 +1079,7 @@ devices:
             slug: "radxa-zero-emmc"
             build-script: "radxa-zero-emmc.sh"
             kernel: "custom"
-            kernel-version: "5.10.112"
+            kernel-version: "5.10.123"
             image-notes: ""
           - image: "radxa-zero-sdcard-arm64.img"
             name: "Radxa Zero (sdcard)"
@@ -1082,23 +1089,23 @@ devices:
             slug: "radxa-zero-sdcard"
             build-script: "radxa-zero-sdcard.sh"
             kernel: "custom"
-            kernel-version: "5.10.112"
+            kernel-version: "5.10.123"
             image-notes: ""
 
   - raspberrypi:
       - board: "raspberry-pi-2"
-        # cpu: "cpu model/chipset"
-        # cpu-cores: "1/2/3/4..."
-        # gpu: "gpu name"
-        # ram: "DDR2/DDR3..."
-        # ram-size: ["512", "1024", "..."]
-        # ethernet: "0/1/2/3/4..."
-        # ethernet-speed: "0/10/100/1000"
-        # wifi: "0/2.4GHz/5GHz"
-        # bluetooth: "true/false"
-        # usb2: "0/1/2/3/4..."
-        # usb3: "0/1/2/3/4..."
-        # storage: ["sdcard", "emmc", "..."]
+        cpu: "Broadcom BCM2836/BCM2837"
+        cpu-cores: "4"
+        gpu: "Broadcom VideoCore IV"
+        ram: "LPDDR2"
+        ram-size: "1024"
+        ethernet: "1"
+        ethernet-speed: "10/100"
+        wifi: "0"
+        bluetooth: "false"
+        usb2: "4"
+        usb3: "0"
+        storage: ["sdcard", "usb"]
         notes: ""
         images:
           - image: "raspberry-pi-armhf.img"
@@ -1109,7 +1116,7 @@ devices:
             slug: "rasberry-pi-2"
             build-script: "raspberry-pi.sh"
             kernel: "custom"
-            # kernel-version: "$(uname -r)"
+            kernel-version: "5.10.103"
             image-notes: ""
           - image: "raspberry-pi-arm64.img"
             name: "Raspberry Pi 2 (v1.2), 3, 4 and 400 (64-bit)"
@@ -1119,22 +1126,22 @@ devices:
             slug: "raspberry-pi-2"
             build-script: "raspberry-pi-64-bit.sh"
             kernel: "custom"
-            # kernel-version: "$(uname -r)"
+            kernel-version: "5.10.103"
             image-notes: ""
 
       - board: "rasbperry-pi-3"
-        # cpu: "cpu model/chipset"
-        # cpu-cores: "1/2/3/4..."
-        # gpu: "gpu name"
-        # ram: "DDR2/DDR3..."
-        # ram-size: ["512", "1024", "..."]
-        # ethernet: "0/1/2/3/4..."
-        # ethernet-speed: "0/10/100/1000"
-        # wifi: "0/2.4GHz/5GHz"
-        # bluetooth: "true/false"
-        # usb2: "0/1/2/3/4..."
-        # usb3: "0/1/2/3/4..."
-        # storage: ["sdcard", "emmc", "..."]
+        cpu: "Broadcom BCM2837"
+        cpu-cores: "4"
+        gpu: "Broadcom VideoCore IV"
+        ram: "LPDDR2"
+        ram-size: ["1024"]
+        ethernet: "1"
+        ethernet-speed: "10/100"
+        wifi: "2.4GHz/5GHz"
+        bluetooth: "true"
+        usb2: "4"
+        usb3: "0"
+        storage: ["sdcard", "usb"]
         notes: ""
         images:
           - image: "raspberry-pi-armhf.img"
@@ -1145,7 +1152,7 @@ devices:
             slug: "raspberry-pi-3"
             build-script: "raspberry-pi.sh"
             kernel: "custom"
-            # kernel-version: "$(uname -r)"
+            kernel-version: "5.10.103"
             image-notes: ""
           - image: "raspberry-pi-arm64.img"
             name: "Raspberry Pi 2 (v1.2), 3, 4 and 400 (64-bit)"
@@ -1155,22 +1162,22 @@ devices:
             slug: "raspberry-pi-3-64"
             build-script: "raspberry-pi-64-bit.sh"
             kernel: "custom"
-            # kernel-version: "$(uname -r)"
+            kernel-version: "5.10.103"
             image-notes: ""
 
       - board: "raspberry-pi-4"
-        # cpu: "cpu model/chipset"
-        # cpu-cores: "1/2/3/4..."
-        # gpu: "gpu name"
-        # ram: "DDR2/DDR3..."
-        # ram-size: ["512", "1024", "..."]
-        # ethernet: "0/1/2/3/4..."
-        # ethernet-speed: "0/10/100/1000"
-        # wifi: "0/2.4GHz/5GHz"
-        # bluetooth: "true/false"
-        # usb2: "0/1/2/3/4..."
-        # usb3: "0/1/2/3/4..."
-        # storage: ["sdcard", "emmc", "..."]
+        cpu: "Broadcom BCM2711"
+        cpu-cores: "4"
+        gpu: "Broadcom VideoCore VI"
+        ram: "LPDDR4"
+        ram-size: ["1024", "2048", "4096", "8096"]
+        ethernet: "1"
+        ethernet-speed: "10/100/1000"
+        wifi: "2.4GHz/5GHz"
+        bluetooth: "true"
+        usb2: "2"
+        usb3: "2"
+        storage: ["sdcard", "usb"]
         notes: "Our recommended high-end (8GB) & low-end (2GB) ARM Single Board Computer"
         images:
           - image: "raspberry-pi-armhf.img"
@@ -1181,7 +1188,7 @@ devices:
             slug: "raspberry-pi-4"
             build-script: "raspberry-pi.sh"
             kernel: "custom"
-            # kernel-version: "$(uname -r)"
+            kernel-version: "5.10.103"
             image-notes: ""
           - image: "raspberry-pi-arm64.img"
             name: "Raspberry Pi 2 (v1.2), 3, 4 and 400 (64-bit)"
@@ -1191,23 +1198,23 @@ devices:
             slug: "raspberry-pi-400"
             build-script: "raspberry-pi-64-bit.sh"
             kernel: "custom"
-            # kernel-version: "$(uname -r)"
+            kernel-version: "5.10.103"
             image-notes: ""
 
       - board: "raspberry-pi-400"
-        # cpu: "cpu model/chipset"
-        # cpu-cores: "1/2/3/4..."
-        # gpu: "gpu name"
-        # ram: "DDR2/DDR3..."
-        # ram-size: ["512", "1024", "..."]
-        # ethernet: "0/1/2/3/4..."
-        # ethernet-speed: "0/10/100/1000"
-        # wifi: "0/2.4GHz/5GHz"
-        # bluetooth: "true/false"
-        # usb2: "0/1/2/3/4..."
-        # usb3: "0/1/2/3/4..."
-        # storage: ["sdcard", "emmc", "..."]
-        notes: ""
+        cpu: "Broadcom BCM2711"
+        cpu-cores: "1/2/3/4..."
+        gpu: "VideoCore VI"
+        ram: "LPDDR4"
+        ram-size: ["4096"]
+        ethernet: "1"
+        ethernet-speed: "10/100/1000"
+        wifi: "2.4GHz/5GHz"
+        bluetooth: "true"
+        usb2: "1"
+        usb3: "2"
+        storage: ["sdcard", "usb"]
+        notes: "No nexmon support for the Raspberry Pi 400"
         images:
           - image: "raspberry-pi-armhf.img"
             name: "Raspberry Pi 2, 3, 4 and 400 (32-bit)"
@@ -1227,13 +1234,13 @@ devices:
             slug: "raspberry-pi-400"
             build-script: "raspberry-pi-64-bit.sh"
             kernel: "custom"
-            # kernel-version: "$(uname -r)"
+            kernel-version: "5.10.103"
             image-notes: ""
 
       - board: "raspberry-pi-zero-w"
-        # cpu: "cpu model/chipset"
-        # cpu-cores: "1/2/3/4..."
-        # gpu: "gpu name"
+        cpu: "Broadcom BCM2835"
+        cpu-cores: "1"
+        gpu: "Broadcom VideoCore IV"
         # ram: "DDR2/DDR3..."
         ram-size: ["512"]
         ethernet: "0"
@@ -1243,7 +1250,7 @@ devices:
         usb2: "0"
         usb3: "1"
         storage: ["sdcard"]
-        notes: "Our recommended low-range ARM tiny-form"
+        notes: "Our preferred low-range ARM tiny-form"
         images:
           - image: "raspberry-pi-zero-w-armel.img"
             name: "Raspberry Pi Zero W"
@@ -1267,18 +1274,18 @@ devices:
             image-notes: ""
 
       - board: "raspberry-pi-zero-2-w"
-        # cpu: "cpu model/chipset"
-        # cpu-cores: "1/2/3/4..."
-        # gpu: "gpu name"
-        # ram: "DDR2/DDR3..."
-        # ram-size: ["512", "1024", "..."]
-        # ethernet: "0/1/2/3/4..."
-        # ethernet-speed: "0/10/100/1000"
-        # wifi: "0/2.4GHz/5GHz"
-        # bluetooth: "true/false"
-        # usb2: "0/1/2/3/4..."
-        # usb3: "0/1/2/3/4..."
-        # storage: ["sdcard", "emmc", "..."]
+        cpu: "Broadcom BCM2710"
+        cpu-cores: "4"
+        gpu: "Broadcom VideoCore IV"
+        ram: "LPDDR2"
+        ram-size: ["512"]
+        ethernet: "0"
+        ethernet-speed: "0"
+        wifi: "2.4GHz/5GHz"
+        bluetooth: "true"
+        usb2: "1"
+        usb3: "0"
+        storage: ["sdcard", "usb"]
         notes: ""
         images:
           - image: "raspberry-pi-zero-2-w-armhf.img"
@@ -1302,9 +1309,9 @@ devices:
             image-notes: ""
 
       - board: "raspberry-pi1"
-        # cpu: "cpu model/chipset"
+        cpu: "Broadcom BCM2835"
         cpu-cores: "1"
-        # gpu: "gpu name"
+        gpu: "Broadcom VideoCore IV"
         # ram: "DDR2/DDR3..."
         ram-size: ["256", "512"]
         ethernet: "0"
