@@ -1,0 +1,52 @@
+# REF: https://gitlab.com/kalilinux/nethunter/build-scripts/kali-nethunter-devices/-/blob/cf3ca7ae/.gitlab-ci.yml
+
+## Docker image: https://hub.docker.com/_/python
+image: docker.io/python:3.7
+
+stages:
+  - linting
+  - generate_documentation
+
+.install_prerequesites_pip: &install_prerequesites_pip |
+  pip install -r .gitlab/requirements.txt
+
+.setup_for_html: &setup_for_html |
+  apt-get update
+  apt-get -y install pandoc
+
+linting:
+  stage: linting
+  allow_failure: yes
+  rules:
+    - if: $CI_MERGE_REQUEST_ID             # Execute jobs in merge request context
+    - if: $CI_COMMIT_BRANCH == 'master'    # Execute jobs when a new commit is pushed to master branch
+  script:
+    - *install_prerequesites_pip
+    - yamllint devices.yml
+
+pages:
+  stage: generate_documentation
+  rules:
+    - if: $CI_COMMIT_BRANCH == 'master'    # Execute jobs when a new commit is pushed to master branch
+  script:
+    - *install_prerequesites_pip
+    - *setup_for_html
+    - ./bin/generate_devices_stats.py
+    - ./bin/generate_devices_table.py
+    - ./bin/generate_images_overview.py
+    - ./bin/generate_images_stats.py
+    - ./bin/generate_images_table.py
+    - ./bin/generate_kernel_stats.py
+    - mkdir -p ./public/
+    - cp ./.gitlab/public.css ./public/
+    - pandoc -s ./.gitlab/www.md    -o ./public/index.html          -c public.css
+    - pandoc -s ./device-stats.md   -o ./public/device-stats.html   -c public.css
+    - pandoc -s ./devices.md        -o ./public/devices.html        -c public.css
+    - pandoc -s ./image-overview.md -o ./public/image-overview.html -c public.css
+    - pandoc -s ./image-stats.md    -o ./public/image-stats.html    -c public.css
+    - pandoc -s ./images.md         -o ./public/images.html         -c public.css
+    - pandoc -s ./kernel-stats.md   -o ./public/kernel-stats.html   -c public.css
+  artifacts:
+    paths:
+      - ./public
+    expire_in: 1 week
