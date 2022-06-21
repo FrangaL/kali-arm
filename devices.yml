@@ -91,16 +91,16 @@ devices:
         cpu: "Texas Instruments Sitara AM335x"
         cpu-cores: "1"
         gpu: "SGX530"
-        # ram: "DDR2/DDR3..."
-        # ram-size: ["512", "1024", "..."]
-        # ethernet: "0/1/2/3/4..."
-        ethernet-speed: "1000"
-        # wifi: "0/2.4GHz/5GHz"
-        # bluetooth: "true/false"
-        # usb2: "0/1/2/3/4..."
+        ram: "DDR3"
+        ram-size: ["512"]
+        ethernet: "1"
+        ethernet-speed: "10/100"
+        wifi: "0"
+        bluetooth: "false"
+        usb2: "1"
         usb3: "0"
-        storage: ["sdcard"]
-        notes: ""
+        storage: ["sdcard", "emmc"]
+        notes: "eMMC is only 4GB in size"
         images:
           - image: "beaglebone-black-armhf.img"
             name: "Beaglebone Black"
@@ -285,7 +285,7 @@ devices:
         # ram: "DDR2/DDR3..."
         # ram-size: ["512", "1024", "..."]
         ethernet: "1"
-        ethernet-speed: "100"
+        ethernet-speed: "10/100"
         # wifi: "0/2.4GHz/5GHz"
         # bluetooth: "true/false"
         usb2: "4"
@@ -518,18 +518,18 @@ devices:
   - genesi:
       - board: "efika-mx-smarttop"
         name: "EFIKA MX Smarttop"
-        # cpu: "cpu model/chipset"
-        # cpu-cores: "1/2/3/4..."
-        # gpu: "gpu name"
-        # ram: "DDR2/DDR3..."
-        # ram-size: ["512", "1024", "..."]
-        # ethernet: "0/1/2/3/4..."
-        # ethernet-speed: "0/10/100/1000"
-        # wifi: "0/2.4GHz/5GHz"
-        # bluetooth: "true/false"
-        # usb2: "0/1/2/3/4..."
-        # usb3: "0/1/2/3/4..."
-        # storage: ["sdcard", "emmc", "..."]
+        cpu: "Freescale i.MX515"
+        cpu-cores: "1"
+        gpu: "Adreno 530"
+        ram: "DDR2"
+        ram-size: ["512"]
+        ethernet: "1"
+        ethernet-speed: "10/100"
+        wifi: "2.4GHz"
+        bluetooth: "false"
+        usb2: "2"
+        usb3: "0"
+        storage: ["sdcard", "pata ssd"]
         notes: ""
         images:
           - image: "efikamx-armhf.img"
@@ -545,18 +545,18 @@ devices:
 
       - board: "efika-mx-smartbook"
         name: "EFIKA MX Smartbook"
-        # cpu: "cpu model/chipset"
-        # cpu-cores: "1/2/3/4..."
-        # gpu: "gpu name"
-        # ram: "DDR2/DDR3..."
-        # ram-size: ["512", "1024", "..."]
-        # ethernet: "0/1/2/3/4..."
-        # ethernet-speed: "0/10/100/1000"
-        # wifi: "0/2.4GHz/5GHz"
-        # bluetooth: "true/false"
-        # usb2: "0/1/2/3/4..."
-        # usb3: "0/1/2/3/4..."
-        storage: ["sdcard", "emmc"]
+        cpu: "Freescale i.MX515"
+        cpu-cores: "1"
+        gpu: "Adreno 530"
+        ram: "DDR2"
+        ram-size: ["512"]
+        ethernet: "0"
+        ethernet-speed: "0"
+        wifi: "2.4GHz"
+        bluetooth: "true"
+        usb2: "2"
+        usb3: "0"
+        storage: ["sdcard", "pata ssd"]
         notes: ""
         images:
           - image: "efikamx-armhf.img"
@@ -573,19 +573,20 @@ devices:
   - friendlyelec:
       - board: "nanopc-t3"
         name: "NanoPC-T3"
-        # cpu: "cpu model/chipset"
-        # cpu-cores: "1/2/3/4..."
-        # gpu: "gpu name"
-        # ram: "DDR2/DDR3..."
-        # ram-size: ["512", "1024", "..."]
-        # ethernet: "0/1/2/3/4..."
-        # ethernet-speed: "0/10/100/1000"
-        # wifi: "0/2.4GHz/5GHz"
-        # bluetooth: "true/false"
-        # usb2: "0/1/2/3/4..."
-        # usb3: "0/1/2/3/4..."
-        # storage: ["sdcard", "emmc", "..."]
-        notes: ""
+        cpu: "Samsung S5P6818"
+        cpu-cores: "8"
+        gpu: "SGX540"
+        ram: "DDR3"
+        ram-size: ["1024", "2048"]
+        ethernet: "1"
+        ethernet-speed: "10/100/1000"
+        wifi: "2.4GHz"
+        bluetooth: "true"
+        usb2: "4"
+        usb3: "0"
+        storage: ["sdcard", "emmc"]
+        notes: "eMMC is 8GB
+                2 USB ports via pin headers"
         images:
           - image: "nanopc-t-arm64.img"
             name: "NanoPC T3"
@@ -600,19 +601,20 @@ devices:
 
       - board: "nanopc-t3+"
         name: "NanoPC T3+"
-        # cpu: "cpu model/chipset"
-        # cpu-cores: "1/2/3/4..."
-        # gpu: "gpu name"
-        # ram: "DDR2/DDR3..."
-        # ram-size: ["512", "1024", "..."]
-        # ethernet: "0/1/2/3/4..."
-        # ethernet-speed: "0/10/100/1000"
-        # wifi: "0/2.4GHz/5GHz"
-        # bluetooth: "true/false"
-        # usb2: "0/1/2/3/4..."
-        # usb3: "0/1/2/3/4..."
-        # storage: ["sdcard", "emmc", "..."]
-        notes: ""
+        cpu: "Samsung S5P6818"
+        cpu-cores: "8"
+        gpu: "SGX540"
+        ram: "DDR3"
+        ram-size: ["2048"]
+        ethernet: "1"
+        ethernet-speed: "10/100/1000"
+        wifi: "2.4GHz"
+        bluetooth: "true"
+        usb2: "4"
+        usb3: "0"
+        storage: ["sdcard", "emmc"]
+        notes: "eMMC is 16GB
+                1 USB port via pin headers"
         images:
           - image: "nanopc-t-arm64.img"
             name: "NanoPC T3+"
@@ -621,25 +623,25 @@ devices:
             support: "community"
             slug: "nanopc-t"
             build-script: "nanopc-t.sh"
-            # kernel: "custom/kali/vendor"
-            # kernel-version: "$(uname -r)"
+            kernel: "vendor"
+            kernel-version: "4.4"
             image-notes: ""
 
       - board: "nanopc-t4"
         name: "NanoPC T4"
-        # cpu: "cpu model/chipset"
-        # cpu-cores: "1/2/3/4..."
-        # gpu: "gpu name"
-        # ram: "DDR2/DDR3..."
-        # ram-size: ["512", "1024", "..."]
-        # ethernet: "0/1/2/3/4..."
-        # ethernet-speed: "0/10/100/1000"
-        # wifi: "0/2.4GHz/5GHz"
-        # bluetooth: "true/false"
-        # usb2: "0/1/2/3/4..."
-        # usb3: "0/1/2/3/4..."
-        # storage: ["sdcard", "emmc", "..."]
-        notes: ""
+        cpu: "Rockchip RK3399"
+        cpu-cores: "6"
+        gpu: "Mali T864"
+        ram: "LPDDR3"
+        ram-size: ["4096"]
+        ethernet: "1"
+        ethernet-speed: "10/100/1000"
+        wifi: "2.4GHz/5GHz"
+        bluetooth: "true"
+        usb2: "2"
+        usb3: "1"
+        storage: ["sdcard", "emmc"]
+        notes: "One m.2 M-key slot, only compatible with M.2 2280 moules"
         images:
           - image: "nanopc-t-arm64.img"
             name: "NanoPC T4"
@@ -648,25 +650,27 @@ devices:
             support: "community"
             slug: "nanopc-t"
             build-script: "nanopc-t.sh"
-            # kernel: "custom/kali/vendor"
-            # kernel-version: "$(uname -r)"
+            kernel: "vendor"
+            kernel-version: "4.4"
             image-notes: ""
 
       - board: "nanopi-neo-plus2"
         name: "NanoPi NEO Plus2"
-        # cpu: "cpu model/chipset"
-        # cpu-cores: "1/2/3/4..."
-        # gpu: "gpu name"
-        # ram: "DDR2/DDR3..."
-        # ram-size: ["512", "1024", "..."]
-        # ethernet: "0/1/2/3/4..."
-        # ethernet-speed: "0/10/100/1000"
-        # wifi: "0/2.4GHz/5GHz"
-        # bluetooth: "true/false"
-        # usb2: "0/1/2/3/4..."
-        # usb3: "0/1/2/3/4..."
-        # storage: ["sdcard", "emmc", "..."]
-        notes: "Our preferred high-range ARM tiny-form"
+        cpu: "Allwinner H5"
+        cpu-cores: "4"
+        gpu: "Mali 450 MP4"
+        ram: "DDR3"
+        ram-size: ["1024"]
+        ethernet: "1"
+        ethernet-speed: "10/100/1000"
+        wifi: "2.4GHz"
+        bluetooth: "true"
+        usb2: "2"
+        usb3: "0"
+        storage: ["sdcard", "emmc"]
+        notes: "Our preferred high-range ARM tiny-form
+                eMMC is 8GB and soldered on
+                No video output"
         images:
           - image: "nanopi-neo-plus2-arm64.img"
             name: "NanoPi NEO Plus2"
@@ -675,24 +679,51 @@ devices:
             support: "community"
             slug: "nanopi-neo-plus2"
             build-script: "nanopi-neo-plus2.sh"
+            kernel: "kali"
+            kernel-version: "$(uname -r)"
+            image-notes: "5.17.0-kali3-arm64"
+
+      - board: "nanopi2"
+        name: "NanoPi2"
+        cpu: "Samsung S5P4418"
+        cpu-cores: "4"
+        gpu: "Mali 400MP"
+        ram: "DDR3"
+        ram-size: ["1024"]
+        ethernet: "0"
+        ethernet-speed: "0"
+        wifi: "2.4GHz"
+        bluetooth: "true"
+        usb2: "1"
+        usb3: "0"
+        storage: ["sdcard"]
+        notes: "Has 2 Micro SD card slots"
+        images:
+          - image: "nanopi2-armhf.img"
+            name: "NanoPi2"
+            architecture: "armhf"
+            preferred-image: "false"
+            support: "eol"
+            slug: "nanopi2"
+            build-script: "nanopi2.sh"
             # kernel: "custom/kali/vendor"
             # kernel-version: "$(uname -r)"
             image-notes: ""
 
-      - board: "nanopi2"
+      - board: "nanopi2-fire"
         name: "NanoPi2"
-        # cpu: "cpu model/chipset"
-        # cpu-cores: "1/2/3/4..."
+        cpu: "Samsung S5P4418"
+        cpu-cores: "4"
         # gpu: "gpu name"
-        # ram: "DDR2/DDR3..."
-        # ram-size: ["512", "1024", "..."]
-        # ethernet: "0/1/2/3/4..."
-        # ethernet-speed: "0/10/100/1000"
-        # wifi: "0/2.4GHz/5GHz"
-        # bluetooth: "true/false"
-        # usb2: "0/1/2/3/4..."
-        # usb3: "0/1/2/3/4..."
-        # storage: ["sdcard", "emmc", "..."]
+        ram: "DDR3"
+        ram-size: ["1024"]
+        ethernet: "1"
+        ethernet-speed: "10/100/1000"
+        wifi: "2.4GHz"
+        bluetooth: "true"
+        usb2: "1"
+        usb3: "0"
+        storage: ["sdcard"]
         notes: ""
         images:
           - image: "nanopi2-armhf.img"
@@ -709,18 +740,18 @@ devices:
   - hardkernel:
       - board: "odroid-c0"
         name: "ODROID-C0"
-        # cpu: "cpu model/chipset"
-        # cpu-cores: "1/2/3/4..."
-        # gpu: "gpu name"
-        # ram: "DDR2/DDR3..."
-        # ram-size: ["512", "1024", "..."]
-        # ethernet: "0/1/2/3/4..."
-        # ethernet-speed: "0/10/100/1000"
-        # wifi: "0/2.4GHz/5GHz"
-        # bluetooth: "true/false"
-        # usb2: "0/1/2/3/4..."
-        # usb3: "0/1/2/3/4..."
-        # storage: ["sdcard", "emmc", "..."]
+        cpu: "Amlogic S805"
+        cpu-cores: "4"
+        gpu: "Mali 450"
+        ram: "DDR3"
+        ram-size: ["1024"]
+        ethernet: "1"
+        ethernet-speed: "10/100/1000"
+        wifi: "0"
+        bluetooth: "false"
+        usb2: "4"
+        usb3: "0"
+        storage: ["sdcard", "emmc"]
         notes: ""
         images:
           - image: "odroid-c-armhf.img"
@@ -736,18 +767,18 @@ devices:
 
       - board: "odroid-c1"
         name: "ODROID-C1"
-        # cpu: "cpu model/chipset"
-        # cpu-cores: "1/2/3/4..."
-        # gpu: "gpu name"
-        # ram: "DDR2/DDR3..."
-        # ram-size: ["512", "1024", "..."]
-        # ethernet: "0/1/2/3/4..."
-        # ethernet-speed: "0/10/100/1000"
-        # wifi: "0/2.4GHz/5GHz"
-        # bluetooth: "true/false"
-        # usb2: "0/1/2/3/4..."
-        # usb3: "0/1/2/3/4..."
-        # storage: ["sdcard", "emmc", "..."]
+        cpu: "Amlogic S805"
+        cpu-cores: "4"
+        gpu: "Mali 450"
+        ram: "DDR3"
+        ram-size: ["1024"]
+        ethernet: "1"
+        ethernet-speed: "10/100/1000"
+        wifi: "0"
+        bluetooth: "false"
+        usb2: "4"
+        usb3: "0"
+        storage: ["sdcard", "emmc"]
         notes: ""
         images:
           - image: "odroid-c-armhf.img"
@@ -763,18 +794,18 @@ devices:
 
       - board: "odroid-c1+"
         name: "ODROID-C1+"
-        # cpu: "cpu model/chipset"
-        # cpu-cores: "1/2/3/4..."
-        # gpu: "gpu name"
-        # ram: "DDR2/DDR3..."
-        # ram-size: ["512", "1024", "..."]
-        # ethernet: "0/1/2/3/4..."
-        # ethernet-speed: "0/10/100/1000"
-        # wifi: "0/2.4GHz/5GHz"
-        # bluetooth: "true/false"
-        # usb2: "0/1/2/3/4..."
-        # usb3: "0/1/2/3/4..."
-        # storage: ["sdcard", "emmc", "..."]
+        cpu: "Amlogic S805"
+        cpu-cores: "4"
+        gpu: "Mali 450"
+        ram: "DDR3"
+        ram-size: ["1024"]
+        ethernet: "1"
+        ethernet-speed: "10/100/1000"
+        wifi: "0"
+        bluetooth: "false"
+        usb2: "4"
+        usb3: "0"
+        storage: ["sdcard", "emmc"]
         notes: ""
         images:
           - image: "odroid-c-armhf.img"
@@ -792,15 +823,15 @@ devices:
         name: "ODROID-C2"
         cpu: "Amlogic S905"
         cpu-cores: "4"
-        # gpu: "gpu name"
-        # ram: "DDR2/DDR3..."
-        # ram-size: ["512", "1024", "..."]
+        gpu: "Mali 450 MP3"
+        ram: "DDR3"
+        ram-size: ["2048"]
         ethernet: "1"
-        # ethernet-speed: "0/10/100/1000"
-        # wifi: "0/2.4GHz/5GHz"
-        # bluetooth: "true/false"
+        ethernet-speed: "10/100/1000"
+        wifi: "0"
+        bluetooth: "false"
         usb2: "4"
-        # usb3: "0/1/2/3/4..."
+        usb3: "0"
         storage: ["sdcard", "emmc"]
         notes: ""
         images:
@@ -898,18 +929,18 @@ devices:
 
       - board: "odroid-xu4"
         name: "ODROID-XU4"
-        # cpu: "cpu model/chipset"
-        # cpu-cores: "1/2/3/4..."
-        # gpu: "gpu name"
-        # ram: "DDR2/DDR3..."
-        # ram-size: ["512", "1024", "..."]
-        # ethernet: "0/1/2/3/4..."
-        # ethernet-speed: "0/10/100/1000"
-        # wifi: "0/2.4GHz/5GHz"
-        # bluetooth: "true/false"
-        # usb2: "0/1/2/3/4..."
-        # usb3: "0/1/2/3/4..."
-        # storage: ["sdcard", "emmc", "..."]
+        cpu: "Samsung Exynos5422"
+        cpu-cores: "8"
+        gpu: "Mali T628-MP6"
+        ram: "LPDDR3"
+        ram-size: ["2048"]
+        ethernet: "1"
+        ethernet-speed: "10/100/1000"
+        wifi: "0"
+        bluetooth: "false"
+        usb2: "1"
+        usb3: "2"
+        storage: ["sdcard", "emmc"]
         notes: ""
         images:
           - image: "odroid-xu3-armhf.img"
@@ -925,19 +956,19 @@ devices:
 
       - board: "odroid-w"
         name: "ODROID-W"
-        # cpu: "cpu model/chipset"
-        # cpu-cores: "1/2/3/4..."
-        # gpu: "gpu name"
-        # ram: "DDR2/DDR3..."
-        # ram-size: ["512", "1024", "..."]
-        # ethernet: "0/1/2/3/4..."
-        # ethernet-speed: "0/10/100/1000"
-        # wifi: "0/2.4GHz/5GHz"
-        # bluetooth: "true/false"
-        # usb2: "0/1/2/3/4..."
-        # usb3: "0/1/2/3/4..."
-        # storage: ["sdcard", "emmc", "..."]
-        notes: ""
+        cpu: "Broadcom BCM2835"
+        cpu-cores: "1"
+        gpu: "Broadcom VideoCore IV"
+        ram: "LPDDR2"
+        ram-size: ["512"]
+        ethernet: "0"
+        ethernet-speed: "0"
+        wifi: "0"
+        bluetooth: "false"
+        usb2: "1"
+        usb3: "0"
+        storage: ["sdcard", "emmc"]
+        notes: "Can use a Raspberry Pi 1 (Original) image as they are compatible"
         images:
           - image: "odroid-w-armel.img"
             name: "ODROID-W"
@@ -952,19 +983,19 @@ devices:
 
       - board: "odroid-w-devkit"
         name: "ODROID-W-DEVKIT"
-        # cpu: "cpu model/chipset"
-        # cpu-cores: "1/2/3/4..."
-        # gpu: "gpu name"
-        # ram: "DDR2/DDR3..."
-        # ram-size: ["512", "1024", "..."]
-        # ethernet: "0/1/2/3/4..."
-        # ethernet-speed: "0/10/100/1000"
-        # wifi: "0/2.4GHz/5GHz"
-        # bluetooth: "true/false"
-        # usb2: "0/1/2/3/4..."
-        # usb3: "0/1/2/3/4..."
-        # storage: ["sdcard", "emmc", "..."]
-        notes: ""
+        cpu: "Broadcom BCM2835"
+        cpu-cores: "1"
+        gpu: "Broadcom VideoCore IV"
+        ram: "LPDDR2"
+        ram-size: ["512"]
+        ethernet: "1"
+        ethernet-speed: "10/100"
+        wifi: "0"
+        bluetooth: "false"
+        usb2: "1"
+        usb3: "0"
+        storage: ["sdcard", "emmc"]
+        notes: "Also called the ODROID-W Docking board"
         images:
           - image: "odroid-w-devkit-armel.img"
             name: "ODROID-W (Dev Kit)"
@@ -1007,19 +1038,23 @@ devices:
 
       - board: "riotboard"
         name: "RIoTboard"
-        # cpu: "cpu model/chipset"
-        # cpu-cores: "1/2/3/4..."
-        # gpu: "gpu name"
-        # ram: "DDR2/DDR3..."
-        # ram-size: ["512", "1024", "..."]
-        # ethernet: "0/1/2/3/4..."
-        # ethernet-speed: "0/10/100/1000"
-        # wifi: "0/2.4GHz/5GHz"
-        # bluetooth: "true/false"
-        # usb2: "0/1/2/3/4..."
-        # usb3: "0/1/2/3/4..."
-        # storage: ["sdcard", "emmc", "..."]
-        notes: ""
+        cpu: "NXP i.MX6"
+        cpu-cores: "1"
+        gpu: "Vivante GC320"
+        ram: "DDR3"
+        ram-size: ["1024"]
+        ethernet: "1"
+        ethernet-speed: "10/100/1000"
+        wifi: "0"
+        bluetooth: "false"
+        usb2: "5"
+        usb3: "0"
+        storage: ["sdcard", "emmc"]
+        notes: "DIP switch settings are needed to boot from sdcard
+                Flash boot: 10110111
+                Boot from sd: 10100101
+                One USB port is mini-USB OTG
+                eMMC is 4GB"
         images:
           - image: "riotboard-armhf.img"
             name: "RIoTBoard"
@@ -1028,26 +1063,26 @@ devices:
             support: "community"
             slug: "riotboard"
             build-script: "riotboard.sh"
-            # kernel: "custom/kali/vendor"
-            # kernel-version: "$(uname -r)"
+            kernel: "kali"
+            kernel-version: "5.17.0-kali3-arm64"
             image-notes: ""
 
   - pine64:
       - board: "pinebook"
         name: "Pinebook"
-        # cpu: "cpu model/chipset"
-        # cpu-cores: "1/2/3/4..."
-        # gpu: "gpu name"
-        # ram: "DDR2/DDR3..."
-        # ram-size: ["512", "1024", "..."]
-        # ethernet: "0/1/2/3/4..."
-        # ethernet-speed: "0/10/100/1000"
-        # wifi: "0/2.4GHz/5GHz"
-        # bluetooth: "true/false"
-        # usb2: "0/1/2/3/4..."
-        # usb3: "0/1/2/3/4..."
-        # storage: ["sdcard", "emmc", "..."]
-        notes: ""
+        cpu: "Allwinner A64"
+        cpu-cores: "4"
+        gpu: "Mali 400-MP2"
+        ram: "LPDDR3"
+        ram-size: ["2048"]
+        ethernet: "0"
+        ethernet-speed: "0"
+        wifi: "2.4GHz/5GHz"
+        bluetooth: "true"
+        usb2: "2"
+        usb3: "0"
+        storage: ["sdcard", "emmc"]
+        notes: "Suspend does not work, upstream kernel issue"
         images:
           - image: "pinebook-arm64.img"
             name: "Pinebook"
@@ -1056,25 +1091,26 @@ devices:
             support: "kali"
             slug: "pinebook"
             build-script: "pinebook.sh"
-            # kernel: "custom/kali/vendor"
-            # kernel-version: "$(uname -r)"
+            kernel: "kali"
+            kernel-version: "5.17.0-kali3-arm64"
             image-notes: ""
 
       - board: "pinebook-pro"
         name: "Pinebook Pro"
-        # cpu: "cpu model/chipset"
-        # cpu-cores: "1/2/3/4..."
-        # gpu: "gpu name"
-        # ram: "DDR2/DDR3..."
-        # ram-size: ["512", "1024", "..."]
-        # ethernet: "0/1/2/3/4..."
-        # ethernet-speed: "0/10/100/1000"
-        # wifi: "0/2.4GHz/5GHz"
-        # bluetooth: "true/false"
-        # usb2: "0/1/2/3/4..."
-        # usb3: "0/1/2/3/4..."
-        # storage: ["sdcard", "emmc", "..."]
-        notes: "Our preferred ARM laptop"
+        cpu: "Rockchip RK3399"
+        cpu-cores: "6"
+        gpu: "Mali T860-MP4"
+        ram: "LPDDR4"
+        ram-size: ["4096"]
+        ethernet: "0"
+        ethernet-speed: "0"
+        wifi: "2.4GHz/5GHz"
+        bluetooth: "true"
+        usb2: "1"
+        usb3: "2"
+        storage: ["sdcard", "emmc", "nvme"]
+        notes: "Our preferred ARM laptop
+                NVME support should work but is untested"
         images:
           - image: "pinebook-pro-arm64.img"
             name: "Pinebook Pro"
@@ -1083,8 +1119,8 @@ devices:
             support: "kali"
             slug: "pinebook-pro"
             build-script: "pinebook-pro.sh"
-            # kernel: "custom/kali/vendor"
-            # kernel-version: "$(uname -r)"
+            kernel: "kali"
+            kernel-version: "5.17.0-kali3-arm64"
             image-notes: ""
 
   - radxa:
@@ -1101,7 +1137,7 @@ devices:
         bluetooth: "true"
         usb2: "1"
         usb3: "1"
-        # storage: ["sdcard", "emmc", "..."]
+        storage: ["sdcard", "emmc"]
         notes: "The 1GB versions do not have eMMC"
         images:
           - image: "radxa-zero-emmc-arm64.img"
@@ -1240,7 +1276,7 @@ devices:
       - board: "raspberry-pi-400"
         name: "Raspberry Pi 400"
         cpu: "Broadcom BCM2711"
-        # cpu-cores: "1/2/3/4..."
+        cpu-cores: "4"
         gpu: "VideoCore VI"
         ram: "LPDDR4"
         ram-size: ["4096"]
@@ -1261,7 +1297,7 @@ devices:
             slug: "raspberry-pi-400"
             build-script: "raspberry-pi.sh"
             kernel: "custom"
-            # kernel-version: "$(uname -r)"
+            kernel-version: "5.10.103"
             image-notes: ""
           - image: "raspberry-pi-arm64.img"
             name: "Raspberry Pi 2 (v1.2), 3, 4 and 400 (64-bit)"
@@ -1279,7 +1315,7 @@ devices:
         cpu: "Broadcom BCM2835"
         cpu-cores: "1"
         gpu: "Broadcom VideoCore IV"
-        # ram: "DDR2/DDR3..."
+        ram: "DDR2"
         ram-size: ["512"]
         ethernet: "0"
         ethernet-speed: "0"
@@ -1352,7 +1388,7 @@ devices:
         cpu: "Broadcom BCM2835"
         cpu-cores: "1"
         gpu: "Broadcom VideoCore IV"
-        # ram: "DDR2/DDR3..."
+        ram: "DDR2"
         ram-size: ["256", "512"]
         ethernet: "0"
         ethernet-speed: "100"
@@ -1376,15 +1412,15 @@ devices:
   - usbarmory:
       - board: "usb-armory-mki"
         name: "USB Armory MKI"
-        # cpu: "cpu model/chipset"
-        # cpu-cores: "1/2/3/4..."
-        # gpu: "gpu name"
-        # ram: "DDR2/DDR3..."
-        # ram-size: ["512", "1024", "..."]
+        cpu: "NXP i.MX53"
+        cpu-cores: "1"
+        gpu: "Adreno 530"
+        ram: "DDR3"
+        ram-size: ["512"]
         ethernet: "0"
         ethernet-speed: "0"
-        # wifi: "0/2.4GHz/5GHz"
-        # bluetooth: "true/false"
+        wifi: "0"
+        bluetooth: "false"
         usb2: "1"
         usb3: "0"
         storage: ["sdcard"]
@@ -1398,14 +1434,14 @@ devices:
             slug: "usb-armory-mki"
             build-script: "usb-armory-mki.sh"
             kernel: "vendor"
-            # kernel-version: "$(uname -r)"
+            kernel-version: "5.15"
             image-notes: ""
 
       - board: "usb-armory-mkii"
         name: "USB Armory MKII"
         cpu: "i.MX6ULZ"
         cpu-cores: "1"
-        # gpu: "gpu name"
+        gpu: ""
         ram: "DDR3"
         ram-size: ["512", "1024"]
         ethernet: "0"
