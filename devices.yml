@@ -251,19 +251,20 @@ devices:
 
       - board: "chromebook-veyron-minnie"
         name: "Chromebook Veyron (ASUS Flip)"
-        # cpu: "cpu model/chipset"
-        # cpu-cores: "1/2/3/4..."
-        # gpu: "gpu name"
-        # ram: "DDR2/DDR3..."
-        # ram-size: ["512", "1024", "..."]
-        # ethernet: "0/1/2/3/4..."
-        # ethernet-speed: "0/10/100/1000"
-        # wifi: "0/2.4GHz/5GHz"
-        # bluetooth: "true/false"
-        # usb2: "0/1/2/3/4..."
-        # usb3: "0/1/2/3/4..."
-        # storage: ["sdcard", "emmc", "..."]
-        notes: "Kali only supports booting from sdcard or usb"
+        cpu: "Rockchip RK3288"
+        cpu-cores: "4"
+        gpu: "Mali T764"
+        ram: "LPDDR3"
+        ram-size: ["2048", "4096"]
+        ethernet: "0"
+        ethernet-speed: "0"
+        wifi: "2.4GHz/5GHz"
+        bluetooth: "true"
+        usb2: "2"
+        usb3: "0"
+        storage: ["sdcard", "emmc", "usb"]
+        notes: "Kali only supports booting from sdcard or usb
+                eMMC is 16GB"
         images:
           - image: "chromebook-veyron-armhf.img"
             name: "ASUS Chromebook Flip C100PA"
@@ -281,17 +282,18 @@ devices:
         name: "Trimslice"
         cpu: "NVIDIA Tegra 2"
         cpu-cores: "2"
-        # gpu: "gpu name"
-        # ram: "DDR2/DDR3..."
-        # ram-size: ["512", "1024", "..."]
+        gpu: "GeForce"
+        ram: "DDR2"
+        ram-size: ["1024"]
         ethernet: "1"
         ethernet-speed: "10/100"
-        # wifi: "0/2.4GHz/5GHz"
-        # bluetooth: "true/false"
+        wifi: "2.4GHz"
+        bluetooth: "true"
         usb2: "4"
         usb3: "0"
         storage: ["sdcard"]
-        notes: ""
+        notes: "Not all models have wireless or bluetooth
+                DVI-D port only handles resolutions up to 1680x1050"
         images:
           - image: "trimslice-armhf.img"
             name: "CompuLab Trimslice"
@@ -306,18 +308,18 @@ devices:
 
       - board: "utilite-pro"
         name: "Utilite Pro"
-        # cpu: "cpu model/chipset"
-        # cpu-cores: "1/2/3/4..."
-        # gpu: "gpu name"
-        # ram: "DDR2/DDR3..."
-        # ram-size: ["512", "1024", "..."]
-        # ethernet: "0/1/2/3/4..."
-        # ethernet-speed: "0/10/100/1000"
-        # wifi: "0/2.4GHz/5GHz"
-        # bluetooth: "true/false"
-        # usb2: "0/1/2/3/4..."
-        # usb3: "0/1/2/3/4..."
-        # storage: ["sdcard", "emmc", "..."]
+        cpu: "NXP i.MX6"
+        cpu-cores: "4"
+        gpu: "Vivante GC2000"
+        ram: "DDR3"
+        ram-size: ["2048"]
+        ethernet: "2"
+        ethernet-speed: "10/100/1000"
+        wifi: "2.4GHz"
+        bluetooth: "true"
+        usb2: "4"
+        usb3: "0"
+        storage: ["sdcard", "emmc", "..."]
         notes: ""
         images:
           - image: "utilite-pro-armhf.img"
@@ -334,19 +336,20 @@ devices:
   - cubie:
       - board: "cubieboard2"
         name: "CubieBoard2"
-        # cpu: "cpu model/chipset"
-        # cpu-cores: "1/2/3/4..."
-        # gpu: "gpu name"
-        # ram: "DDR2/DDR3..."
-        # ram-size: ["512", "1024", "..."]
-        # ethernet: "0/1/2/3/4..."
-        # ethernet-speed: "0/10/100/1000"
-        # wifi: "0/2.4GHz/5GHz"
-        # bluetooth: "true/false"
-        # usb2: "0/1/2/3/4..."
-        # usb3: "0/1/2/3/4..."
-        # storage: ["sdcard", "emmc", "..."]
-        notes: ""
+        cpu: "Allwinner A20"
+        cpu-cores: "2"
+        gpu: "Mali 400-MP2"
+        ram: "DDR3"
+        ram-size: ["1024"]
+        ethernet: "1"
+        ethernet-speed: "10/100"
+        wifi: "0"
+        bluetooth: "false"
+        usb2: "3"
+        usb3: "0"
+        storage: ["sdcard", "NAND flash", "sata"]
+        notes: "NAND flash is 4GB
+                One USB port is OTG"
         images:
           - image: "cubieboard2-armhf.img"
             name: "Cubieboard2"
@@ -361,19 +364,19 @@ devices:
 
       - board: "cubietruck"
         name: "CubieTruck (CubieBoard3)"
-        # cpu: "cpu model/chipset"
-        # cpu-cores: "1/2/3/4..."
-        # gpu: "gpu name"
-        # ram: "DDR2/DDR3..."
-        # ram-size: ["512", "1024", "..."]
-        # ethernet: "0/1/2/3/4..."
-        # ethernet-speed: "0/10/100/1000"
-        # wifi: "0/2.4GHz/5GHz"
-        # bluetooth: "true/false"
-        # usb2: "0/1/2/3/4..."
-        # usb3: "0/1/2/3/4..."
-        # storage: ["sdcard", "emmc", "..."]
-        notes: ""
+        cpu: "Allwinner A20"
+        cpu-cores: "2"
+        gpu: "Mali 400-MP2"
+        ram: "DDR3"
+        ram-size: ["2048"]
+        ethernet: "1"
+        ethernet-speed: "10/100/1000"
+        wifi: "2.4GHz"
+        bluetooth: "true"
+        usb2: "3"
+        usb3: "0"
+        storage: ["sdcard", "NAND flash", "sata"]
+        notes: "NAND flash is 8GB"
         images:
           - image: "cubietruck-armhf.img"
             name: "Cubietruck"
