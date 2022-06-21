@@ -1,14 +1,15 @@
 # REF: https://gitlab.com/kalilinux/nethunter/build-scripts/kali-nethunter-devices/-/blob/master/devices.cfg
 
 # - vendor:
-#   - board: "board name"
+#   - board: "board-name"
+#     name: "human readable string"
 #     cpu: "cpu model/chipset"
 #     cpu-cores: "1/2/3/4..."
 #     gpu: "gpu name"
 #     ram: "DDR2/DDR3..."
 #     ram-size: ["512", "1024", "..."]
 #     ethernet: "0/1/2/3/4..."
-#     ethernet-speed: "0/10/100/1000"
+#     ethernet-speed: "0/10/100/1000" (Just leave the fastest option)
 #     wifi: "0/2.4GHz/5GHz"
 #     bluetooth: "true/false"
 #     usb2: "0/1/2/3/4..."
@@ -31,13 +32,14 @@
 devices:
   - banana:
       - board: "banana-pi"
+        name: "Banana Pi"
         cpu: "Allwinner A20"
         cpu-cores: "2"
         gpu: "Mali 400MP2"
         ram: "DDR3"
         ram-size: ["1024"]
         ethernet: "1"
-        ethernet-speed: "10/100/1000"
+        ethernet-speed: "1000"
         wifi: "0"
         bluetooth: "false"
         usb2: "2"
@@ -57,13 +59,14 @@ devices:
             image-notes: ""
 
       - board: "banana-pro"
+        name: "Banana Pro"
         cpu: "Allwinner A20"
         cpu-cores: "2"
         gpu: "Mali 400MP2"
         ram: "DDR3"
         ram-size: ["1024"]
         ethernet: "1"
-        ethernet-speed: "0/10/100/1000"
+        ethernet-speed: "1000"
         wifi: "2.4GHz/5GHz"
         bluetooth: "true"
         usb2: "2"
@@ -84,16 +87,17 @@ devices:
 
   - beagle:
       - board: "beaglebone-black"
+        name: "BeagleBone Black"
         cpu: "Texas Instruments Sitara AM335x"
         cpu-cores: "1"
         gpu: "SGX530"
-        ram: "DDR2/DDR3..."
-        ram-size: ["512", "1024", "..."]
-        ethernet: "0/1/2/3/4..."
-        ethernet-speed: "0/10/100/1000"
-        wifi: "0/2.4GHz/5GHz"
-        bluetooth: "true/false"
-        usb2: "0/1/2/3/4..."
+        # ram: "DDR2/DDR3..."
+        # ram-size: ["512", "1024", "..."]
+        # ethernet: "0/1/2/3/4..."
+        ethernet-speed: "1000"
+        # wifi: "0/2.4GHz/5GHz"
+        # bluetooth: "true/false"
+        # usb2: "0/1/2/3/4..."
         usb3: "0"
         storage: ["sdcard"]
         notes: ""
@@ -111,6 +115,7 @@ devices:
 
   - chromebook:
       - board: "chromebook-exynos-peach-pi"
+        name: "Chromebook Exynos (Samsung Chromebook 2 peach_pi)"
         cpu: "Exynos 5800"
         cpu-cores: "8"
         gpu: "Mali T628 MP6"
@@ -123,8 +128,7 @@ devices:
         usb2: "1"
         usb3: "1"
         storage: ["sdcard", "usb", "emmc"]
-        notes: ">-
-                Kali only supports booting from sdcard or usb."
+        notes: "Kali only supports booting from sdcard or usb"
         images:
           - image: "chromebook-exynos-armhf.img"
             name: "Samsung Chromebook 2 13\""
@@ -135,10 +139,10 @@ devices:
             build-script: "chromebook-exynos.sh"
             kernel: "custom"
             kernel-version: "3.8"
-            image-notes: ">-
-                Kali only supports booting from sdcard or usb."
+            image-notes: "Kali only supports booting from sdcard or usb"
 
       - board: "chromebook-exynos-peach-pit"
+        name: "Chromebook Exynos (Samsung Chromebook 2 peach_pit)"
         cpu: "Exynos 5420"
         cpu-cores: "8"
         gpu: "Mali T628 MP6"
@@ -151,8 +155,7 @@ devices:
         usb2: "1"
         usb3: "1"
         storage: ["sdcard", "usb", "emmc"]
-        notes: ">-
-                Kali only supports booting from sdcard or usb."
+        notes: "Kali only supports booting from sdcard or usb"
         images:
           - image: "chromebook-exynos-armhf.img"
             name: "Samsung Chromebook 2 11\""
@@ -166,6 +169,7 @@ devices:
             image-notes: ""
 
       - board: "chromebook-exynos-snow"
+        name: "Chromebook Exynos (Samsung Chromebook daisy_snow)"
         cpu: "Exynos 5250"
         cpu-cores: "2"
         gpu: "Mali T604"
@@ -178,8 +182,7 @@ devices:
         usb2: "2"
         usb3: "0"
         storage: ["sdcard", "usb", "emmc"]
-        notes: ">-
-                Kali only supports booting from sdcard or usb."
+        notes: "Kali only supports booting from sdcard or usb"
         images:
           - image: "chromebook-exynos-armhf.img"
             name: "Samsung Chromebook"
@@ -193,6 +196,7 @@ devices:
             image-notes: ""
 
       - board: "chromebook-exynos-spring"
+        name: "Chromebook Exynos (HP daisy_spring)"
         cpu: "Exynos 5250"
         cpu-cores: "2"
         gpu: "Mali T604"
@@ -205,8 +209,7 @@ devices:
         usb2: "2"
         usb3: "0"
         storage: ["sdcard", "usb", "emmc"]
-        notes: ">-
-                Kali only supports booting from sdcard or usb."
+        notes: "Kali only supports booting from sdcard or usb"
         images:
           - image: "chromebook-exynos-armhf.img"
             name: "HP Chromebook 11 G1"
@@ -220,6 +223,7 @@ devices:
             image-notes: ""
 
       - board: "chromebook-nyan-big"
+        name: "Chromebook Nyan (Acer Tegra)"
         cpu: "NVIDIA Tegra Logan K1"
         cpu-cores: "4"
         gpu: "gpu name"
@@ -232,8 +236,7 @@ devices:
         usb2: "0"
         usb3: "2"
         storage: ["sdcard", "usb", "emmc"]
-        notes: ">-
-                Kali only supports booting from sdcard or usb."
+        notes: "Kali only supports booting from sdcard or usb"
         images:
           - image: "chromebook-nyan-armhf.img"
             name: "Acer Chromebook 13 (CB5-311)"
@@ -247,6 +250,7 @@ devices:
             image-notes: ""
 
       - board: "chromebook-veyron-minnie"
+        name: "Chromebook Veyron (ASUS Flip)"
         # cpu: "cpu model/chipset"
         # cpu-cores: "1/2/3/4..."
         # gpu: "gpu name"
@@ -259,8 +263,7 @@ devices:
         # usb2: "0/1/2/3/4..."
         # usb3: "0/1/2/3/4..."
         # storage: ["sdcard", "emmc", "..."]
-        notes: ">-
-                Kali only supports booting from sdcard or usb."
+        notes: "Kali only supports booting from sdcard or usb"
         images:
           - image: "chromebook-veyron-armhf.img"
             name: "ASUS Chromebook Flip C100PA"
@@ -275,13 +278,14 @@ devices:
 
   - compulab:
       - board: "trimslice"
+        name: "Trimslice"
         cpu: "NVIDIA Tegra 2"
         cpu-cores: "2"
         # gpu: "gpu name"
         # ram: "DDR2/DDR3..."
         # ram-size: ["512", "1024", "..."]
         ethernet: "1"
-        ethernet-speed: "10/100"
+        ethernet-speed: "100"
         # wifi: "0/2.4GHz/5GHz"
         # bluetooth: "true/false"
         usb2: "4"
@@ -301,6 +305,7 @@ devices:
             image-notes: ""
 
       - board: "utilite-pro"
+        name: "Utilite Pro"
         # cpu: "cpu model/chipset"
         # cpu-cores: "1/2/3/4..."
         # gpu: "gpu name"
@@ -328,6 +333,7 @@ devices:
 
   - cubie:
       - board: "cubieboard2"
+        name: "CubieBoard2"
         # cpu: "cpu model/chipset"
         # cpu-cores: "1/2/3/4..."
         # gpu: "gpu name"
@@ -354,6 +360,7 @@ devices:
             image-notes: ""
 
       - board: "cubietruck"
+        name: "CubieTruck (CubieBoard3)"
         # cpu: "cpu model/chipset"
         # cpu-cores: "1/2/3/4..."
         # gpu: "gpu name"
@@ -381,6 +388,7 @@ devices:
 
   - cubox:
       - board: "cubox"
+        name: "CuBox"
         # cpu: "cpu model/chipset"
         # cpu-cores: "1/2/3/4..."
         # gpu: "gpu name"
@@ -407,6 +415,7 @@ devices:
             image-notes: ""
 
       - board: "cubox-i4pro"
+        name: "Cubox-i4Pro"
         # cpu: "cpu model/chipset"
         # cpu-cores: "1/2/3/4..."
         # gpu: "gpu name"
@@ -434,6 +443,7 @@ devices:
 
   - gateworks:
       - board: "gateworks-newport"
+        name: "Gateworks Newport"
         # cpu: "cpu model/chipset"
         # cpu-cores: "1/2/3/4..."
         # gpu: "gpu name"
@@ -460,6 +470,7 @@ devices:
             image-notes: ""
 
       - board: "gateworks-ventana"
+        name: "Gateworks Ventana"
         # cpu: "cpu model/chipset"
         # cpu-cores: "1/2/3/4..."
         # gpu: "gpu name"
@@ -489,6 +500,7 @@ devices:
   # It's not just a single image, it's a zip file with a bunch of things in it
   - gemini:
       - board: "gemini-pro"
+        name: "Gemini PDA"
         # cpu: "cpu model/chipset"
         # cpu-cores: "1/2/3/4..."
         # gpu: "gpu name"
@@ -505,6 +517,7 @@ devices:
 
   - genesi:
       - board: "efika-mx-smarttop"
+        name: "EFIKA MX Smarttop"
         # cpu: "cpu model/chipset"
         # cpu-cores: "1/2/3/4..."
         # gpu: "gpu name"
@@ -531,6 +544,7 @@ devices:
             image-notes: ""
 
       - board: "efika-mx-smartbook"
+        name: "EFIKA MX Smartbook"
         # cpu: "cpu model/chipset"
         # cpu-cores: "1/2/3/4..."
         # gpu: "gpu name"
@@ -558,6 +572,7 @@ devices:
 
   - friendlyelec:
       - board: "nanopc-t3"
+        name: "NanoPC-T3"
         # cpu: "cpu model/chipset"
         # cpu-cores: "1/2/3/4..."
         # gpu: "gpu name"
@@ -584,6 +599,7 @@ devices:
             image-notes: ""
 
       - board: "nanopc-t3+"
+        name: "NanoPC T3+"
         # cpu: "cpu model/chipset"
         # cpu-cores: "1/2/3/4..."
         # gpu: "gpu name"
@@ -610,6 +626,7 @@ devices:
             image-notes: ""
 
       - board: "nanopc-t4"
+        name: "NanoPC T4"
         # cpu: "cpu model/chipset"
         # cpu-cores: "1/2/3/4..."
         # gpu: "gpu name"
@@ -636,6 +653,7 @@ devices:
             image-notes: ""
 
       - board: "nanopi-neo-plus2"
+        name: "NanoPi NEO Plus2"
         # cpu: "cpu model/chipset"
         # cpu-cores: "1/2/3/4..."
         # gpu: "gpu name"
@@ -662,6 +680,7 @@ devices:
             image-notes: ""
 
       - board: "nanopi2"
+        name: "NanoPi2"
         # cpu: "cpu model/chipset"
         # cpu-cores: "1/2/3/4..."
         # gpu: "gpu name"
@@ -689,6 +708,7 @@ devices:
 
   - hardkernel:
       - board: "odroid-c0"
+        name: "ODROID-C0"
         # cpu: "cpu model/chipset"
         # cpu-cores: "1/2/3/4..."
         # gpu: "gpu name"
@@ -715,6 +735,7 @@ devices:
             image-notes: ""
 
       - board: "odroid-c1"
+        name: "ODROID-C1"
         # cpu: "cpu model/chipset"
         # cpu-cores: "1/2/3/4..."
         # gpu: "gpu name"
@@ -741,6 +762,7 @@ devices:
             image-notes: ""
 
       - board: "odroid-c1+"
+        name: "ODROID-C1+"
         # cpu: "cpu model/chipset"
         # cpu-cores: "1/2/3/4..."
         # gpu: "gpu name"
@@ -767,6 +789,7 @@ devices:
             image-notes: ""
 
       - board: "odroid-c2"
+        name: "ODROID-C2"
         cpu: "Amlogic S905"
         cpu-cores: "4"
         # gpu: "gpu name"
@@ -793,6 +816,7 @@ devices:
             image-notes: ""
 
       - board: "odroid-u2"
+        name: "ODROID-U2"
         # cpu: "cpu model/chipset"
         # cpu-cores: "1/2/3/4..."
         # gpu: "gpu name"
@@ -819,6 +843,7 @@ devices:
             image-notes: ""
 
       - board: "odroid-u3"
+        name: "ODROID-U3"
         # cpu: "cpu model/chipset"
         # cpu-cores: "1/2/3/4..."
         # gpu: "gpu name"
@@ -845,6 +870,7 @@ devices:
             image-notes: ""
 
       - board: "odroid-xu3"
+        name: "ODROID-XU3"
         # cpu: "cpu model/chipset"
         # cpu-cores: "1/2/3/4..."
         # gpu: "gpu name"
@@ -871,6 +897,7 @@ devices:
             image-notes: ""
 
       - board: "odroid-xu4"
+        name: "ODROID-XU4"
         # cpu: "cpu model/chipset"
         # cpu-cores: "1/2/3/4..."
         # gpu: "gpu name"
@@ -897,6 +924,7 @@ devices:
             image-notes: ""
 
       - board: "odroid-w"
+        name: "ODROID-W"
         # cpu: "cpu model/chipset"
         # cpu-cores: "1/2/3/4..."
         # gpu: "gpu name"
@@ -923,6 +951,7 @@ devices:
             image-notes: ""
 
       - board: "odroid-w-devkit"
+        name: "ODROID-W-DEVKIT"
         # cpu: "cpu model/chipset"
         # cpu-cores: "1/2/3/4..."
         # gpu: "gpu name"
@@ -950,6 +979,7 @@ devices:
 
   - nxp:
       - board: "imx-6ull-evk"
+        name: "i.MX 6ULL EVK"
         # cpu: "cpu model/chipset"
         # cpu-cores: "1/2/3/4..."
         # gpu: "gpu name"
@@ -976,6 +1006,7 @@ devices:
             image-notes: ""
 
       - board: "riotboard"
+        name: "RIoTboard"
         # cpu: "cpu model/chipset"
         # cpu-cores: "1/2/3/4..."
         # gpu: "gpu name"
@@ -1003,6 +1034,7 @@ devices:
 
   - pine64:
       - board: "pinebook"
+        name: "Pinebook"
         # cpu: "cpu model/chipset"
         # cpu-cores: "1/2/3/4..."
         # gpu: "gpu name"
@@ -1029,6 +1061,7 @@ devices:
             image-notes: ""
 
       - board: "pinebook-pro"
+        name: "Pinebook Pro"
         # cpu: "cpu model/chipset"
         # cpu-cores: "1/2/3/4..."
         # gpu: "gpu name"
@@ -1054,9 +1087,9 @@ devices:
             # kernel-version: "$(uname -r)"
             image-notes: ""
 
-
   - radxa:
       - board: "radxa-zero"
+        name: "Radxa Zero"
         cpu: "Amlogic S905Y2"
         cpu-cores: "4"
         gpu: "Mali G31 MP2"
@@ -1068,7 +1101,7 @@ devices:
         bluetooth: "true"
         usb2: "1"
         usb3: "1"
-        storage: ["sdcard", "emmc", "..."]
+        # storage: ["sdcard", "emmc", "..."]
         notes: "The 1GB versions do not have eMMC"
         images:
           - image: "radxa-zero-emmc-arm64.img"
@@ -1094,13 +1127,14 @@ devices:
 
   - raspberrypi:
       - board: "raspberry-pi-2"
+        name: "Raspberry Pi 2 (1.1)"
         cpu: "Broadcom BCM2836/BCM2837"
         cpu-cores: "4"
         gpu: "Broadcom VideoCore IV"
         ram: "LPDDR2"
         ram-size: "1024"
         ethernet: "1"
-        ethernet-speed: "10/100"
+        ethernet-speed: "100"
         wifi: "0"
         bluetooth: "false"
         usb2: "4"
@@ -1130,13 +1164,14 @@ devices:
             image-notes: ""
 
       - board: "rasbperry-pi-3"
+        name: "Raspberry Pi 3"
         cpu: "Broadcom BCM2837"
         cpu-cores: "4"
         gpu: "Broadcom VideoCore IV"
         ram: "LPDDR2"
         ram-size: ["1024"]
         ethernet: "1"
-        ethernet-speed: "10/100"
+        ethernet-speed: "100"
         wifi: "2.4GHz/5GHz"
         bluetooth: "true"
         usb2: "4"
@@ -1166,13 +1201,14 @@ devices:
             image-notes: ""
 
       - board: "raspberry-pi-4"
+        name: "Raspberry Pi 4"
         cpu: "Broadcom BCM2711"
         cpu-cores: "4"
         gpu: "Broadcom VideoCore VI"
         ram: "LPDDR4"
         ram-size: ["1024", "2048", "4096", "8096"]
         ethernet: "1"
-        ethernet-speed: "10/100/1000"
+        ethernet-speed: "1000"
         wifi: "2.4GHz/5GHz"
         bluetooth: "true"
         usb2: "2"
@@ -1202,13 +1238,14 @@ devices:
             image-notes: ""
 
       - board: "raspberry-pi-400"
+        name: "Raspberry Pi 400"
         cpu: "Broadcom BCM2711"
-        cpu-cores: "1/2/3/4..."
+        # cpu-cores: "1/2/3/4..."
         gpu: "VideoCore VI"
         ram: "LPDDR4"
         ram-size: ["4096"]
         ethernet: "1"
-        ethernet-speed: "10/100/1000"
+        ethernet-speed: "1000"
         wifi: "2.4GHz/5GHz"
         bluetooth: "true"
         usb2: "1"
@@ -1238,6 +1275,7 @@ devices:
             image-notes: ""
 
       - board: "raspberry-pi-zero-w"
+        name: "Raspberry Pi Zero W"
         cpu: "Broadcom BCM2835"
         cpu-cores: "1"
         gpu: "Broadcom VideoCore IV"
@@ -1274,6 +1312,7 @@ devices:
             image-notes: ""
 
       - board: "raspberry-pi-zero-2-w"
+        name: "Raspberry Pi Zero 2 W"
         cpu: "Broadcom BCM2710"
         cpu-cores: "4"
         gpu: "Broadcom VideoCore IV"
@@ -1309,6 +1348,7 @@ devices:
             image-notes: ""
 
       - board: "raspberry-pi1"
+        name: "Raspberry Pi 1 (Original)"
         cpu: "Broadcom BCM2835"
         cpu-cores: "1"
         gpu: "Broadcom VideoCore IV"
@@ -1335,6 +1375,7 @@ devices:
 
   - usbarmory:
       - board: "usb-armory-mki"
+        name: "USB Armory MKI"
         # cpu: "cpu model/chipset"
         # cpu-cores: "1/2/3/4..."
         # gpu: "gpu name"
@@ -1361,6 +1402,7 @@ devices:
             image-notes: ""
 
       - board: "usb-armory-mkii"
+        name: "USB Armory MKII"
         cpu: "i.MX6ULZ"
         cpu-cores: "1"
         # gpu: "gpu name"

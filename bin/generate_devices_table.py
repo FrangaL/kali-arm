@@ -35,7 +35,7 @@ def generate_table(data):
             for board in yaml[vendor]:
                 qty_devices += 1
                 table += "| {} | {} | {} | {} | {} | {} | {} | {} | {} | {} | {} | {} | {} | {} |\n".format(vendor,
-                                                                                                            board.get('board', default),
+                                                                                                            board.get('name', default),
                                                                                                             board.get('cpu', default),
                                                                                                             board.get('cpu-cores', default),
                                                                                                             board.get('gpu', default),
