@@ -392,19 +392,19 @@ devices:
   - cubox:
       - board: "cubox"
         name: "CuBox"
-        # cpu: "cpu model/chipset"
-        # cpu-cores: "1/2/3/4..."
-        # gpu: "gpu name"
-        # ram: "DDR2/DDR3..."
-        # ram-size: ["512", "1024", "..."]
-        # ethernet: "0/1/2/3/4..."
-        # ethernet-speed: "0/10/100/1000"
-        # wifi: "0/2.4GHz/5GHz"
-        # bluetooth: "true/false"
-        # usb2: "0/1/2/3/4..."
-        # usb3: "0/1/2/3/4..."
-        # storage: ["sdcard", "emmc", "..."]
-        notes: ""
+        cpu: "Marvell Armada 510"
+        cpu-cores: "2"
+        gpu: "Vivante GC600"
+        ram: "DDR2/DDR3..."
+        ram-size: ["1024"]
+        ethernet: "1"
+        ethernet-speed: "1000"
+        wifi: "0"
+        bluetooth: "false"
+        usb2: "2"
+        usb3: "0"
+        storage: ["sdcard", "eSATA"]
+        notes: "eSATA can not be used for rootfs"
         images:
           - image: "cubox-armhf.img"
             name: "SolidRun CuBox"
@@ -448,19 +448,21 @@ devices:
   - gateworks:
       - board: "gateworks-newport"
         name: "Gateworks Newport"
-        # cpu: "cpu model/chipset"
-        # cpu-cores: "1/2/3/4..."
+        cpu: "Cavium OcteanTX"
+        cpu-cores: "2"
         # gpu: "gpu name"
-        # ram: "DDR2/DDR3..."
-        # ram-size: ["512", "1024", "..."]
-        # ethernet: "0/1/2/3/4..."
-        # ethernet-speed: "0/10/100/1000"
-        # wifi: "0/2.4GHz/5GHz"
-        # bluetooth: "true/false"
-        # usb2: "0/1/2/3/4..."
-        # usb3: "0/1/2/3/4..."
-        # storage: ["sdcard", "emmc", "..."]
-        notes: ""
+        ram: "DDR4"
+        ram-size: ["1024"]
+        ethernet: "1"
+        ethernet-speed: "1000"
+        wifi: "0"
+        bluetooth: "false"
+        usb2: "0"
+        usb3: "1"
+        storage: ["sdcard", "emmc"]
+        notes: "eMMC is 8GB
+                Two Half card Mini PCIe sockets, one provides USB 2.0 support
+                U-blox ZOE-MQ8 GNSS GPS receiver"
         images:
           - image: "gateworks-newport-armhf.img"
             name: "Gateworks Newport"
@@ -475,19 +477,19 @@ devices:
 
       - board: "gateworks-ventana"
         name: "Gateworks Ventana"
-        # cpu: "cpu model/chipset"
-        # cpu-cores: "1/2/3/4..."
-        # gpu: "gpu name"
-        # ram: "DDR2/DDR3..."
-        # ram-size: ["512", "1024", "..."]
-        # ethernet: "0/1/2/3/4..."
-        # ethernet-speed: "0/10/100/1000"
-        # wifi: "0/2.4GHz/5GHz"
-        # bluetooth: "true/false"
-        # usb2: "0/1/2/3/4..."
-        # usb3: "0/1/2/3/4..."
-        # storage: ["sdcard", "emmc", "..."]
-        notes: ""
+        cpu: "NXP i.MX6"
+        cpu-cores: "4"
+        gpu: "Vivante GC2000"
+        ram: "DDR3"
+        ram-size: ["512", "1024", "2048", "4096"]
+        ethernet: "1"
+        ethernet-speed: "1000"
+        wifi: "0"
+        bluetooth: "false"
+        usb2: "2"
+        usb3: "0"
+        storage: ["sdcard", "mSATA"]
+        notes: "Different models have different storage, memory, and networking options"
         images:
           - image: "gateworks-ventana-armhf.img"
             name: "Gateworks Ventana"
@@ -505,18 +507,18 @@ devices:
   - gemini:
       - board: "gemini-pro"
         name: "Gemini PDA"
-        # cpu: "cpu model/chipset"
-        # cpu-cores: "1/2/3/4..."
-        # gpu: "gpu name"
-        # ram: "DDR2/DDR3..."
-        # ram-size: ["512", "1024", "..."]
-        # ethernet: "0/1/2/3/4..."
-        # ethernet-speed: "0/10/100/1000"
-        # wifi: "0/2.4GHz/5GHz"
-        # bluetooth: "true/false"
-        # usb2: "0/1/2/3/4..."
-        # usb3: "0/1/2/3/4..."
-        # storage: ["sdcard", "emmc", "..."]
+        cpu: "MediaTek Deca Core Helio X25/X27"
+        cpu-cores: "10"
+        gpu: "Mali T880 MP4"
+        ram: "LPDDR3"
+        ram-size: ["4096"]
+        ethernet: "0"
+        ethernet-speed: "0"
+        wifi: "2.4GHz/5GHz"
+        bluetooth: "true"
+        usb2: "2"
+        usb3: "0"
+        storage: ["sdcard", "emmc"]
         notes: ""
 
   - genesi:
@@ -718,7 +720,7 @@ devices:
         name: "NanoPi2"
         cpu: "Samsung S5P4418"
         cpu-cores: "4"
-        # gpu: "gpu name"
+        gpu: "Mali 400MP"
         ram: "DDR3"
         ram-size: ["1024"]
         ethernet: "1"
@@ -852,18 +854,18 @@ devices:
 
       - board: "odroid-u2"
         name: "ODROID-U2"
-        # cpu: "cpu model/chipset"
-        # cpu-cores: "1/2/3/4..."
-        # gpu: "gpu name"
-        # ram: "DDR2/DDR3..."
-        # ram-size: ["512", "1024", "..."]
-        # ethernet: "0/1/2/3/4..."
-        # ethernet-speed: "0/10/100/1000"
-        # wifi: "0/2.4GHz/5GHz"
-        # bluetooth: "true/false"
-        # usb2: "0/1/2/3/4..."
-        # usb3: "0/1/2/3/4..."
-        # storage: ["sdcard", "emmc", "..."]
+        cpu: "Samsung Exynos4412 Prime"
+        cpu-cores: "4"
+        gpu: "Mali 400"
+        ram: "LPDDR2"
+        ram-size: ["2048"]
+        ethernet: "1"
+        ethernet-speed: "100"
+        wifi: "0"
+        bluetooth: "false"
+        usb2: "2"
+        usb3: "0"
+        storage: ["sdcard", "emmc"]
         notes: ""
         images:
           - image: "odroid-u-armhf.img"
@@ -879,18 +881,18 @@ devices:
 
       - board: "odroid-u3"
         name: "ODROID-U3"
-        # cpu: "cpu model/chipset"
-        # cpu-cores: "1/2/3/4..."
-        # gpu: "gpu name"
-        # ram: "DDR2/DDR3..."
-        # ram-size: ["512", "1024", "..."]
-        # ethernet: "0/1/2/3/4..."
-        # ethernet-speed: "0/10/100/1000"
-        # wifi: "0/2.4GHz/5GHz"
-        # bluetooth: "true/false"
-        # usb2: "0/1/2/3/4..."
-        # usb3: "0/1/2/3/4..."
-        # storage: ["sdcard", "emmc", "..."]
+        cpu: "Samsung Exynos4412 Prime"
+        cpu-cores: "4"
+        gpu: "Mali 400"
+        ram: "LPDDR2"
+        ram-size: ["2048"]
+        ethernet: "1"
+        ethernet-speed: "100"
+        wifi: "0"
+        bluetooth: "false"
+        usb2: "2"
+        usb3: "0"
+        storage: ["sdcard", "emmc"]
         notes: ""
         images:
           - image: "odroid-u-armhf.img"
@@ -906,18 +908,18 @@ devices:
 
       - board: "odroid-xu3"
         name: "ODROID-XU3"
-        # cpu: "cpu model/chipset"
-        # cpu-cores: "1/2/3/4..."
-        # gpu: "gpu name"
-        # ram: "DDR2/DDR3..."
-        # ram-size: ["512", "1024", "..."]
-        # ethernet: "0/1/2/3/4..."
-        # ethernet-speed: "0/10/100/1000"
-        # wifi: "0/2.4GHz/5GHz"
-        # bluetooth: "true/false"
-        # usb2: "0/1/2/3/4..."
-        # usb3: "0/1/2/3/4..."
-        # storage: ["sdcard", "emmc", "..."]
+        cpu: "Samsung Exynos5422"
+        cpu-cores: "4"
+        gpu: "Mali T628 MP6"
+        ram: "LPDDR3"
+        ram-size: ["2048"]
+        ethernet: "1"
+        ethernet-speed: "100"
+        wifi: "0"
+        bluetooth: "false"
+        usb2: "4"
+        usb3: "2"
+        storage: ["sdcard", "emmc"]
         notes: ""
         images:
           - image: "odroid-xu3-armhf.img"
@@ -1015,19 +1017,19 @@ devices:
   - nxp:
       - board: "imx-6ull-evk"
         name: "i.MX 6ULL EVK"
-        # cpu: "cpu model/chipset"
-        # cpu-cores: "1/2/3/4..."
-        # gpu: "gpu name"
-        # ram: "DDR2/DDR3..."
-        # ram-size: ["512", "1024", "..."]
-        # ethernet: "0/1/2/3/4..."
-        # ethernet-speed: "0/10/100/1000"
-        # wifi: "0/2.4GHz/5GHz"
-        # bluetooth: "true/false"
-        # usb2: "0/1/2/3/4..."
-        # usb3: "0/1/2/3/4..."
-        # storage: ["sdcard", "emmc", "..."]
-        notes: ""
+        cpu: "NXP i.MX6 ULL"
+        cpu-cores: "1"
+        gpu: "Vivante GC2000"
+        ram: "DDR3"
+        ram-size: ["4096"]
+        ethernet: "2"
+        ethernet-speed: "100"
+        wifi: "0"
+        bluetooth: "false"
+        usb2: "2"
+        usb3: "0"
+        storage: ["sdcard"]
+        notes: "Footprint on board for eMMC or NAND flash"
         images:
           - image: "imx6-ull-evk-armhf.img"
             name: "i.MX 6ULL EVK"
