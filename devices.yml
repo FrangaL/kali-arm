@@ -1194,7 +1194,7 @@ devices:
             architecture: "arm64"
             preferred-image: "false"
             support: "kali"
-            slug: "raspberry-pi-3-64"
+            slug: "raspberry-pi-3"
             build-script: "raspberry-pi-64-bit.sh"
             kernel: "custom"
             kernel-version: "5.10.103"
