@@ -94,7 +94,7 @@ devices:
         ram: "DDR3"
         ram-size: ["512"]
         ethernet: "1"
-        ethernet-speed: "10/100"
+        ethernet-speed: "100"
         wifi: "0"
         bluetooth: "false"
         usb2: "1"
@@ -286,7 +286,7 @@ devices:
         ram: "DDR2"
         ram-size: ["1024"]
         ethernet: "1"
-        ethernet-speed: "10/100"
+        ethernet-speed: "100"
         wifi: "2.4GHz"
         bluetooth: "true"
         usb2: "4"
@@ -314,7 +314,7 @@ devices:
         ram: "DDR3"
         ram-size: ["2048"]
         ethernet: "2"
-        ethernet-speed: "10/100/1000"
+        ethernet-speed: "1000"
         wifi: "2.4GHz"
         bluetooth: "true"
         usb2: "4"
@@ -342,7 +342,7 @@ devices:
         ram: "DDR3"
         ram-size: ["1024"]
         ethernet: "1"
-        ethernet-speed: "10/100"
+        ethernet-speed: "100"
         wifi: "0"
         bluetooth: "false"
         usb2: "3"
@@ -370,7 +370,7 @@ devices:
         ram: "DDR3"
         ram-size: ["2048"]
         ethernet: "1"
-        ethernet-speed: "10/100/1000"
+        ethernet-speed: "1000"
         wifi: "2.4GHz"
         bluetooth: "true"
         usb2: "3"
@@ -419,19 +419,20 @@ devices:
 
       - board: "cubox-i4pro"
         name: "Cubox-i4Pro"
-        # cpu: "cpu model/chipset"
-        # cpu-cores: "1/2/3/4..."
-        # gpu: "gpu name"
-        # ram: "DDR2/DDR3..."
-        # ram-size: ["512", "1024", "..."]
-        # ethernet: "0/1/2/3/4..."
-        # ethernet-speed: "0/10/100/1000"
-        # wifi: "0/2.4GHz/5GHz"
-        # bluetooth: "true/false"
-        # usb2: "0/1/2/3/4..."
-        # usb3: "0/1/2/3/4..."
-        # storage: ["sdcard", "emmc", "..."]
-        notes: ""
+        cpu: "NXP i.MX6"
+        cpu-cores: "4"
+        gpu: "Vivante GC2000"
+        ram: "DDR3"
+        ram-size: ["2048"]
+        ethernet: "1"
+        ethernet-speed: "1000"
+        wifi: "2.4GHz"
+        bluetooth: "true"
+        usb2: "2"
+        usb3: "0"
+        storage: ["sdcard", "emmc", "..."]
+        notes: "One USB port is OTG
+                eMMC is 8GB"
         images:
           - image: "cubox-i4pro-armhf.img"
             name: "SolidRun CuBox i4Pro"
@@ -527,7 +528,7 @@ devices:
         ram: "DDR2"
         ram-size: ["512"]
         ethernet: "1"
-        ethernet-speed: "10/100"
+        ethernet-speed: "100"
         wifi: "2.4GHz"
         bluetooth: "false"
         usb2: "2"
@@ -582,7 +583,7 @@ devices:
         ram: "DDR3"
         ram-size: ["1024", "2048"]
         ethernet: "1"
-        ethernet-speed: "10/100/1000"
+        ethernet-speed: "1000"
         wifi: "2.4GHz"
         bluetooth: "true"
         usb2: "4"
@@ -610,7 +611,7 @@ devices:
         ram: "DDR3"
         ram-size: ["2048"]
         ethernet: "1"
-        ethernet-speed: "10/100/1000"
+        ethernet-speed: "1000"
         wifi: "2.4GHz"
         bluetooth: "true"
         usb2: "4"
@@ -638,7 +639,7 @@ devices:
         ram: "LPDDR3"
         ram-size: ["4096"]
         ethernet: "1"
-        ethernet-speed: "10/100/1000"
+        ethernet-speed: "1000"
         wifi: "2.4GHz/5GHz"
         bluetooth: "true"
         usb2: "2"
@@ -665,7 +666,7 @@ devices:
         ram: "DDR3"
         ram-size: ["1024"]
         ethernet: "1"
-        ethernet-speed: "10/100/1000"
+        ethernet-speed: "1000"
         wifi: "2.4GHz"
         bluetooth: "true"
         usb2: "2"
@@ -721,7 +722,7 @@ devices:
         ram: "DDR3"
         ram-size: ["1024"]
         ethernet: "1"
-        ethernet-speed: "10/100/1000"
+        ethernet-speed: "1000"
         wifi: "2.4GHz"
         bluetooth: "true"
         usb2: "1"
@@ -749,7 +750,7 @@ devices:
         ram: "DDR3"
         ram-size: ["1024"]
         ethernet: "1"
-        ethernet-speed: "10/100/1000"
+        ethernet-speed: "1000"
         wifi: "0"
         bluetooth: "false"
         usb2: "4"
@@ -776,7 +777,7 @@ devices:
         ram: "DDR3"
         ram-size: ["1024"]
         ethernet: "1"
-        ethernet-speed: "10/100/1000"
+        ethernet-speed: "1000"
         wifi: "0"
         bluetooth: "false"
         usb2: "4"
@@ -803,7 +804,7 @@ devices:
         ram: "DDR3"
         ram-size: ["1024"]
         ethernet: "1"
-        ethernet-speed: "10/100/1000"
+        ethernet-speed: "1000"
         wifi: "0"
         bluetooth: "false"
         usb2: "4"
@@ -830,7 +831,7 @@ devices:
         ram: "DDR3"
         ram-size: ["2048"]
         ethernet: "1"
-        ethernet-speed: "10/100/1000"
+        ethernet-speed: "1000"
         wifi: "0"
         bluetooth: "false"
         usb2: "4"
@@ -938,7 +939,7 @@ devices:
         ram: "LPDDR3"
         ram-size: ["2048"]
         ethernet: "1"
-        ethernet-speed: "10/100/1000"
+        ethernet-speed: "1000"
         wifi: "0"
         bluetooth: "false"
         usb2: "1"
@@ -992,7 +993,7 @@ devices:
         ram: "LPDDR2"
         ram-size: ["512"]
         ethernet: "1"
-        ethernet-speed: "10/100"
+        ethernet-speed: "100"
         wifi: "0"
         bluetooth: "false"
         usb2: "1"
@@ -1047,7 +1048,7 @@ devices:
         ram: "DDR3"
         ram-size: ["1024"]
         ethernet: "1"
-        ethernet-speed: "10/100/1000"
+        ethernet-speed: "1000"
         wifi: "0"
         bluetooth: "false"
         usb2: "5"
