@@ -53,7 +53,7 @@ def generate_table(data):
                                 images_released.append("{}".format(image.get('name', default)))
                             slug = image.get('slug', default)
                             if slug:
-                                slug = "[{0}](https://www.kali.org/docs/arm/{0})".format(slug)
+                                slug = "[{0}](https://www.kali.org/docs/arm/{0}/)".format(slug)
                             table += "| {} | {} | {} | {} | {} | {} | {} | {} |\n".format(image.get('name', default),
                                                                                           image.get('image', default),
                                                                                           image.get('architecture', default),
