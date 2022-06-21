@@ -37,7 +37,7 @@ def generate_table(data):
                 qty_devices += 1
                 qty_images += len(board.get('images', default))
                 table += "| {} | {} | {} |\n".format(vendor,
-                                                     board.get('board', default),
+                                                     board.get('name', default),
                                                      len(board.get('images', default)))
     return table
 
