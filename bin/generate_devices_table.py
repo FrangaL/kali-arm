@@ -40,6 +40,7 @@ def generate_table(data):
                                                                                                             board.get('cpu-cores', default),
                                                                                                             board.get('gpu', default),
                                                                                                             board.get('ram', default),
+                                                                                                            board.get('ram-size', default),
                                                                                                             board.get('ethernet', default),
                                                                                                             board.get('ethernet-speed', default),
                                                                                                             board.get('wifi', default),
