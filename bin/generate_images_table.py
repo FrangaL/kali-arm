@@ -6,7 +6,7 @@ import sys
 
 OUTPUT_FILE = './images.md'
 INPUT_FILE = './devices.yml'
-repo_msg = "\n_This table was generated automatically on {} from the [Kali ARM GitLab repository](https://gitlab.com/kalilinux/build-scripts/kali-arm)_\n".format(datetime.now().strftime("%Y-%B-%d %H:%M:%S"))
+repo_msg = "\n_This table was [generated automatically](https://gitlab.com/kalilinux/build-scripts/kali-arm/-/blob/master/devices.yml) on {} from the [Kali ARM GitLab repository](https://gitlab.com/kalilinux/build-scripts/kali-arm)_\n".format(datetime.now().strftime("%Y-%B-%d %H:%M:%S"))
 qty_devices = 0
 qty_images = 0
 qty_images_released = 0
@@ -29,8 +29,8 @@ def generate_table(data):
     images = []
     images_released = []
     default = ""
-    table  = "| Image Name | Filename | Architecture | Preferred | Support | Documentation | Kernel | Kernel Version | Notes |\n"
-    table += "|------------|----------|--------------|-----------|---------|---------------|--------|----------------|-------|\n"
+    table  = "| Image Name | Filename | Architecture | Preferred | Support | [Documentation](https://www.kali.org/docs/arm/) | [Kernel](kernel.html) | Kernel Version | Notes |\n"
+    table += "|------------|----------|--------------|-----------|---------|-------------------------------------------------|-----------------------|----------------|-------|\n"
 
     # Iterate over per input (depth 1)
     for yaml in data['devices']:
@@ -84,7 +84,7 @@ def write_file(data, file):
             meta  = '---\n'
             meta += 'title: Kali ARM Images\n'
             meta += '---\n\n'
-            stats  = "- The official [Kali ARM repository](https://gitlab.com/kalilinux/build-scripts/kali-arm) contains build-scripts to create [**{}** unique Kali ARM images](image-stats.html) for **{}** devices\n".format(str(qty_images), str(qty_devices))
+            stats  = "- The official [Kali ARM repository](https://gitlab.com/kalilinux/build-scripts/kali-arm) contains [build-scripts]((https://gitlab.com/kalilinux/build-scripts/kali-arm)) to create [**{}** unique Kali ARM images](image-stats.html) for **{}** devices\n".format(str(qty_images), str(qty_devices))
             stats += "- The [next release](https://www.kali.org/releases/) cycle will include [**{}** Kali ARM images](image-stats.html) _([ready to download](https://www.kali.org/get-kali/#kali-arm))_\n".format(str(qty_images_released))
             stats += "- [Kali ARM Statistics](index.html)\n\n"
             f.write(str(meta))

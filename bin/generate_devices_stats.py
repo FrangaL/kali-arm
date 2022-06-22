@@ -5,7 +5,7 @@ import sys
 
 OUTPUT_FILE = './device-stats.md'
 INPUT_FILE = './devices.yml'
-repo_msg = "\n_This table was generated automatically on {} from the [Kali ARM GitLab repository](https://gitlab.com/kalilinux/build-scripts/kali-arm)_\n".format(datetime.now().strftime("%Y-%B-%d %H:%M:%S"))
+repo_msg = "\n_This table was [generated automatically](https://gitlab.com/kalilinux/build-scripts/kali-arm/-/blob/master/devices.yml) on {} from the [Kali ARM GitLab repository](https://gitlab.com/kalilinux/build-scripts/kali-arm)_\n".format(datetime.now().strftime("%Y-%B-%d %H:%M:%S"))
 qty_devices = 0
 qty_images = 0
 
@@ -25,8 +25,8 @@ def yaml_parse(content):
 def generate_table(data):
     global qty_devices, qty_images
     default = ""
-    table  = "| Vendor | Board | Images |\n"
-    table += "|--------|-------|--------|\n"
+    table  = "| Vendor | Board | [Images](images.html) |\n"
+    table += "|--------|-------|-----------------------|\n"
 
     # Iterate over per input (depth 1)
     for yaml in data['devices']:
@@ -56,7 +56,7 @@ def write_file(data, file):
             meta  = '---\n'
             meta += 'title: Kali ARM Device Statistics\n'
             meta += '---\n\n'
-            stats  = "- The official [Kali ARM repository](https://gitlab.com/kalilinux/build-scripts/kali-arm) contains build-scripts to support [**{}** Kali ARM devices](devices.html)\n".format(str(str(qty_devices)))
+            stats  = "- The official [Kali ARM repository](https://gitlab.com/kalilinux/build-scripts/kali-arm) contains [build-scripts]((https://gitlab.com/kalilinux/build-scripts/kali-arm)) to support [**{}** Kali ARM devices](devices.html)\n".format(str(str(qty_devices)))
             stats += "- [Kali ARM Statistics](index.html)\n\n"
             f.write(str(meta))
             f.write(str(stats))

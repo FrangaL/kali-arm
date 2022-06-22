@@ -6,7 +6,7 @@ import sys
 
 OUTPUT_FILE = './kernel-stats.md'
 INPUT_FILE = './devices.yml'
-repo_msg = "\n_This table was generated automatically on {} from the [Kali ARM GitLab repository](https://gitlab.com/kalilinux/build-scripts/kali-arm)_\n".format(datetime.now().strftime("%Y-%B-%d %H:%M:%S"))
+repo_msg = "\n_This table was [generated automatically](https://gitlab.com/kalilinux/build-scripts/kali-arm/-/blob/master/devices.yml) on {} from the [Kali ARM GitLab repository](https://gitlab.com/kalilinux/build-scripts/kali-arm)_\n".format(datetime.now().strftime("%Y-%B-%d %H:%M:%S"))
 qty_kernels = 0
 qty_versions = {
                 'custom':  0,
@@ -78,7 +78,7 @@ def write_file(data, file):
             meta  = '---\n'
             meta += 'title: Kali ARM Kernel Statistics\n'
             meta += '---\n\n'
-            stats  = "- The official [Kali ARM repository](https://gitlab.com/kalilinux/build-scripts/kali-arm) contains build-scripts to create [**{}** unique Kali ARM images](images.html)\n".format(str(qty_kernels))
+            stats  = "- The official [Kali ARM repository](https://gitlab.com/kalilinux/build-scripts/kali-arm) contains [build-scripts]((https://gitlab.com/kalilinux/build-scripts/kali-arm)) to create [**{}** unique Kali ARM images](images.html)\n".format(str(qty_kernels))
             stats += "- [Kali ARM Statistics](index.html)\n\n"
             f.write(str(meta))
             f.write(str(stats))

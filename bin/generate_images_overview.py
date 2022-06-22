@@ -6,7 +6,7 @@ import sys
 
 OUTPUT_FILE = './image-overview.md'
 INPUT_FILE = './devices.yml'
-repo_msg = "\n_This table was generated automatically on {} from the [Kali ARM GitLab repository](https://gitlab.com/kalilinux/build-scripts/kali-arm)_\n".format(datetime.now().strftime("%Y-%B-%d %H:%M:%S"))
+repo_msg = "\n_This table was [generated automatically](https://gitlab.com/kalilinux/build-scripts/kali-arm/-/blob/master/devices.yml) on {} from the [Kali ARM GitLab repository](https://gitlab.com/kalilinux/build-scripts/kali-arm)_\n".format(datetime.now().strftime("%Y-%B-%d %H:%M:%S"))
 qty_devices = 0
 qty_images = 0
 qty_image_kali = 0
@@ -31,7 +31,7 @@ def generate_table(data):
     global qty_devices, qty_images, qty_image_kali, qty_image_community, qty_image_eol, qty_image_unknown
     images = []
     default = ""
-    table  = "| [Device](https://www.kali.org/docs/arm/) | [Build-Script](https://gitlab.com/kalilinux/build-scripts/kali-arm/) | [Official Image](https://www.kali.org/get-kali/#kali-arm) | Community Image | Retired Image |\n"
+    table  = "| [Device](https://www.kali.org/docs/arm/) | [Build-Script](https://gitlab.com/kalilinux/build-scripts/kali-arm/) | [Official Image](https://www.kali.org/get-kali/#kali-arm) | Community Image | EOL/Retired Image |\n"
     table += "|--------|--------------|----------------|-----------------|---------------|\n"
 
     # Iterate over per input (depth 1)
@@ -94,8 +94,8 @@ def write_file(data, file):
             meta  = '---\n'
             meta += 'title: Kali ARM Image Overview\n'
             meta += '---\n\n'
-            stats  = "- The official [Kali ARM repository](https://gitlab.com/kalilinux/build-scripts/kali-arm) contains build-scripts to create [**{}** unique Kali ARM images](image-stats.html) for **{}** devices\n".format(str(qty_images), str(qty_devices))
-            stats += "- The [next release](https://www.kali.org/releases/) cycle will include [**{}** Kali ARM images](image-stats.html) _([ready to download](https://www.kali.org/get-kali/#kali-arm))_, **{}** images which can be built, and {} retired images\n".format(str(qty_image_kali), str(qty_image_community), str(qty_image_eol))
+            stats  = "- The official [Kali ARM repository](https://gitlab.com/kalilinux/build-scripts/kali-arm) contains [build-scripts]((https://gitlab.com/kalilinux/build-scripts/kali-arm)) to create [**{}** unique Kali ARM images](image-stats.html) for **{}** devices\n".format(str(qty_images), str(qty_devices))
+            stats += "- The [next release](https://www.kali.org/releases/) cycle will include [**{}** Kali ARM images](image-stats.html) _([ready to download](https://www.kali.org/get-kali/#kali-arm))_, **{}** images which can be [built](https://gitlab.com/kalilinux/build-scripts/kali-arm), and {} retired images\n".format(str(qty_image_kali), str(qty_image_community), str(qty_image_eol))
             stats += "- [Kali ARM Statistics](index.html)\n\n"
             f.write(str(meta))
             f.write(str(stats))
