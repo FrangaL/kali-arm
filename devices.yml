@@ -1173,7 +1173,7 @@ devices:
         cpu-cores: "4"
         gpu: "Broadcom VideoCore IV"
         ram: "LPDDR2"
-        ram-size: "1024"
+        ram-size: ["1024"]
         ethernet: "1"
         ethernet-speed: "100"
         wifi: "0"
