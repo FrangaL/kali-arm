@@ -5,7 +5,7 @@ import sys
 
 OUTPUT_FILE = './devices.md'
 INPUT_FILE = './devices.yml'
-repo_msg = "\n_This table was generated automatically on {} from the [Kali ARM GitLab repository](https://gitlab.com/kalilinux/build-scripts/kali-arm)_\n".format(datetime.now().strftime("%Y-%B-%d %H:%M:%S"))
+repo_msg = "\n_This table was [generated automatically](https://gitlab.com/kalilinux/build-scripts/kali-arm/-/blob/master/devices.yml) on {} from the [Kali ARM GitLab repository](https://gitlab.com/kalilinux/build-scripts/kali-arm)_\n".format(datetime.now().strftime("%Y-%B-%d %H:%M:%S"))
 qty_devices = 0
 
 ## Input:
@@ -24,8 +24,8 @@ def yaml_parse(content):
 def generate_table(data):
     global qty_devices
     default = ""
-    table  = "| Vendor | Board | CPU | CPU Cores | GPU | RAM | RAM Size (MB) | Ethernet | Ethernet Speed | Wi-Fi | Bluetooth | USB2 | USB3 | Storage | Notes |\n"
-    table += "|--------|-------|-----|-----------|-----|-----|---------------|----------|----------------|-------|-----------|------|------|---------|-------|\n"
+    table  = "| Vendor | Board | CPU | CPU Cores | GPU | RAM | RAM Size (MB) | Ethernet | Ethernet Speed (MB) | Wi-Fi | Bluetooth | USB2 | USB3 | Storage | Notes |\n"
+    table += "|--------|-------|-----|-----------|-----|-----|---------------|----------|---------------------|-------|-----------|------|------|---------|-------|\n"
 
     # Iterate over per input (depth 1)
     for yaml in data['devices']:
@@ -34,7 +34,7 @@ def generate_table(data):
             # Iterate over board (depth 2)
             for board in yaml[vendor]:
                 qty_devices += 1
-                table += "| {} | {} | {} | {} | {} | {} | {} | {} | {} | {} | {} | {} | {} | {} |\n".format(vendor,
+                table += "| {} | {} | {} | {} | {} | {} | {} | {} | {} | {} | {} | {} | {} | {} | {} |\n".format(vendor,
                                                                                                             board.get('name', default),
                                                                                                             board.get('cpu', default),
                                                                                                             board.get('cpu-cores', default),
@@ -79,7 +79,7 @@ def write_file(data, file):
     return 0
 
 def print_summary():
-    print('Devices        : {}'.format(qty_devices))
+    print('Devices: {}'.format(qty_devices))
 
 def main(argv):
     # Assign variables
