@@ -11,4 +11,4 @@ public/
 # Generated documentation
 kernel*.md
 image*.md
-device*.sh
+device*.md
