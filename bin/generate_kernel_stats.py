@@ -11,8 +11,7 @@ qty_kernels = 0
 qty_versions = {
                 'custom':  0,
                 'kali':    0,
-                'vendor':  0,
-                'unknown': 0
+                'vendor':  0
                }
 
 ## Input:
