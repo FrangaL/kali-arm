@@ -37,13 +37,13 @@ def generate_table(data):
                 ram_size = ""
                 storage = ""
                 i = 0
-                for f in board.get('ram-size', default):
+                for f in sorted(board.get('ram-size', default)):
                     if i > 0:
                         ram_size += ", "
                     ram_size += f
                     i += 1
                 i = 0
-                for f in board.get('storage', default):
+                for f in sorted(board.get('storage', default)):
                     if i > 0:
                         storage += ", "
                     storage += f
