@@ -273,8 +273,8 @@ devices:
             support: "community"
             slug: "chromebook-veyron"
             build-script: "chromebook-veyron.sh"
-            # kernel: "custom/kali/vendor"
-            # kernel-version: "$(uname -r)"
+            kernel: "custom"
+            kernel-version: "4.19"
             image-notes: ""
 
   - compulab:
@@ -302,8 +302,8 @@ devices:
             support: "community"
             slug: "trimslice"
             build-script: "trimslice.sh"
-            # kernel: "custom/kali/vendor"
-            # kernel-version: "$(uname -r)"
+            kernel: "kali"
+            kernel-version: "5.18.0-kali1-arm64"
             image-notes: ""
 
       - board: "utilite-pro"
@@ -329,8 +329,8 @@ devices:
             support: "community"
             slug: "utilite-pro"
             build-script: "utilite-pro.sh"
-            # kernel: "custom/kali/vendor"
-            # kernel-version: "$(uname -r)"
+            kernel: "vendor"
+            kernel-version: "3.10"
             image-notes: ""
 
   - cubie:
@@ -358,8 +358,8 @@ devices:
             support: "community"
             slug: "cubieboard2"
             build-script: "cubieboard2.sh"
-            # kernel: "custom/kali/vendor"
-            # kernel-version: "$(uname -r)"
+            kernel: "custom"
+            kernel-version: "3.4"
             image-notes: ""
 
       - board: "cubietruck"
@@ -385,8 +385,8 @@ devices:
             support: "community"
             slug: "cubietruck"
             build-script: "cubietruck.sh"
-            # kernel: "custom/kali/vendor"
-            # kernel-version: "$(uname -r)"
+            kernel: "custom"
+            kernel-version: "3.4"
             image-notes: ""
 
   - cubox:
@@ -413,8 +413,8 @@ devices:
             support: "community"
             slug: "cubox"
             build-script: "cubox.sh"
-            # kernel: "custom/kali/vendor"
-            # kernel-version: "$(uname -r)"
+            kernel: "custom"
+            kernel-version: "3.6.9"
             image-notes: ""
 
       - board: "cubox-i4pro"
@@ -441,8 +441,8 @@ devices:
             support: "community"
             slug: "cubox-i4pro"
             build-script: "cubox-i4pro.sh"
-            # kernel: "custom/kali/vendor"
-            # kernel-version: "$(uname -r)"
+            kernel: "kali"
+            kernel-version: "5.18.0-kali1-arm64"
             image-notes: ""
 
   - gateworks:
@@ -471,8 +471,8 @@ devices:
             support: "kali"
             slug: "gateworks-newport"
             build-script: "gateworks-newport.sh"
-            # kernel: "custom/kali/vendor"
-            # kernel-version: "$(uname -r)"
+            kernel: "vendor"
+            kernel-version: "5.4.45"
             image-notes: ""
 
       - board: "gateworks-ventana"
@@ -498,8 +498,8 @@ devices:
             support: "kali"
             slug: "gateworks-ventana"
             build-script: "gateworks-ventana.sh"
-            # kernel: "custom/kali/vendor"
-            # kernel-version: "$(uname -r)"
+            kernel: "vendor"
+            kernel-version: "4.20.7"
             image-notes: ""
 
   # This one is special and isn't built from the build-scripts repo
@@ -601,8 +601,8 @@ devices:
             support: "community"
             slug: "nanopc-t"
             build-script: "nanopc-t.sh"
-            # kernel: "custom/kali/vendor"
-            # kernel-version: "$(uname -r)"
+            kernel: "vendor"
+            kernel-version: "4.4"
             image-notes: ""
 
       - board: "nanopc-t3+"
@@ -687,7 +687,7 @@ devices:
             build-script: "nanopi-neo-plus2.sh"
             kernel: "kali"
             kernel-version: "$(uname -r)"
-            image-notes: "5.17.0-kali3-arm64"
+            image-notes: "5.18.0-kali1-arm64"
 
       - board: "nanopi2"
         name: "NanoPi2"
@@ -712,8 +712,8 @@ devices:
             support: "eol"
             slug: "nanopi2"
             build-script: "nanopi2.sh"
-            # kernel: "custom/kali/vendor"
-            # kernel-version: "$(uname -r)"
+            kernel: "vendor"
+            kernel-version: "3.4"
             image-notes: ""
 
       - board: "nanopi2-fire"
@@ -739,8 +739,8 @@ devices:
             support: "eol"
             slug: "nanopi2"
             build-script: "nanopi2.sh"
-            # kernel: "custom/kali/vendor"
-            # kernel-version: "$(uname -r)"
+            kernel: "vendor"
+            kernel-version: "3.4"
             image-notes: ""
 
   - hardkernel:
@@ -767,8 +767,8 @@ devices:
             support: "community"
             slug: "odroid-c"
             build-script: "odroid-c.sh"
-            # kernel: "custom/kali/vendor"
-            # kernel-version: "$(uname -r)"
+            kernel: "vendor"
+            kernel-version: "3.10"
             image-notes: ""
 
       - board: "odroid-c1"
@@ -794,8 +794,8 @@ devices:
             support: "community"
             slug: "odroid-c"
             build-script: "odroid-c.sh"
-            # kernel: "custom/kali/vendor"
-            # kernel-version: "$(uname -r)"
+            kernel: "vendor"
+            kernel-version: "3.10"
             image-notes: ""
 
       - board: "odroid-c1+"
@@ -821,8 +821,8 @@ devices:
             support: "community"
             slug: "odroid-c"
             build-script: "odroid-c.sh"
-            # kernel: "custom/kali/vendor"
-            # kernel-version: "$(uname -r)"
+            kernel: "vendor"
+            kernel-version: "3.10"
             image-notes: ""
 
       - board: "odroid-c2"
@@ -849,7 +849,7 @@ devices:
             slug: "odroid-c2"
             build-script: "odroid-c2.sh"
             kernel: "kali"
-            kernel-version: "5.17.0-kali3-arm64"
+            kernel-version: "5.18.0-kali1-arm64"
             image-notes: ""
 
       - board: "odroid-u2"
@@ -875,8 +875,8 @@ devices:
             support: "community"
             slug: "odroid-u"
             build-script: "odroid-u.sh"
-            # kernel: "custom/kali/vendor"
-            # kernel-version: "$(uname -r)"
+            kernel: "vendor"
+            kernel-version: "3.8"
             image-notes: ""
 
       - board: "odroid-u3"
@@ -902,8 +902,8 @@ devices:
             support: "community"
             slug: "odroid-u"
             build-script: "odroid-u.sh"
-            # kernel: "custom/kali/vendor"
-            # kernel-version: "$(uname -r)"
+            kernel: "vendor"
+            kernel-version: "3.8"
             image-notes: ""
 
       - board: "odroid-xu3"
@@ -929,8 +929,8 @@ devices:
             support: "community"
             slug: "odroid-xu3"
             build-script: "odroid-xu3.sh"
-            # kernel: "custom/kali/vendor"
-            # kernel-version: "$(uname -r)"
+            kernel: "vendor"
+            kernel-version: "4.14"
             image-notes: ""
 
       - board: "odroid-xu4"
@@ -956,8 +956,8 @@ devices:
             support: "community"
             slug: "odroid-xu3"
             build-script: "odroid-xu3.sh"
-            # kernel: "custom/kali/vendor"
-            # kernel-version: "$(uname -r)"
+            kernel: "vendor"
+            kernel-version: "4.14"
             image-notes: ""
 
       - board: "odroid-w"
@@ -983,8 +983,8 @@ devices:
             support: "eol"
             # slug: "odroid-w"
             build-script: "odroid-w.sh"
-            # kernel: "custom/kali/vendor"
-            # kernel-version: "$(uname -r)"
+            kernel: "custom"
+            kernel-version: "5.10.103"
             image-notes: ""
 
       - board: "odroid-w-devkit"
@@ -1010,8 +1010,8 @@ devices:
             support: "eol"
             # slug: "odroid-w-devkit"
             build-script: "odroid-w-devkit.sh"
-            # kernel: "custom/kali/vendor"
-            # kernel-version: "$(uname -r)"
+            kernel: "custom"
+            kernel-version: "5.10.103"
             image-notes: ""
 
   - nxp:
@@ -1038,8 +1038,8 @@ devices:
             support: "community"
             slug: "imx-6ull-evk"
             build-script: "imx-6ull-evk.sh"
-            # kernel: "custom/kali/vendor"
-            # kernel-version: "$(uname -r)"
+            kernel: "vendor"
+            kernel-version: "5.10.120"
             image-notes: ""
 
       - board: "riotboard"
@@ -1070,7 +1070,7 @@ devices:
             slug: "riotboard"
             build-script: "riotboard.sh"
             kernel: "kali"
-            kernel-version: "5.17.0-kali3-arm64"
+            kernel-version: "5.18.0-kali1-arm64"
             image-notes: ""
 
   - pine64:
@@ -1098,7 +1098,7 @@ devices:
             slug: "pinebook"
             build-script: "pinebook.sh"
             kernel: "kali"
-            kernel-version: "5.17.0-kali3-arm64"
+            kernel-version: "5.18.0-kali1-arm64"
             image-notes: ""
 
       - board: "pinebook-pro"
@@ -1126,7 +1126,7 @@ devices:
             slug: "pinebook-pro"
             build-script: "pinebook-pro.sh"
             kernel: "kali"
-            kernel-version: "5.17.0-kali3-arm64"
+            kernel-version: "5.18.0-kali1-arm64"
             image-notes: ""
 
   - radxa:
