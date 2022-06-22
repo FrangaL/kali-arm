@@ -319,7 +319,7 @@ devices:
         bluetooth: "true"
         usb2: "4"
         usb3: "0"
-        storage: ["sdcard", "emmc", "..."]
+        #storage: ["sdcard", "emmc", "..."]
         notes: ""
         images:
           - image: "utilite-pro-armhf.img"
@@ -395,7 +395,7 @@ devices:
         cpu: "Marvell Armada 510"
         cpu-cores: "2"
         gpu: "Vivante GC600"
-        ram: "DDR2/DDR3..."
+        #ram: "DDR2/DDR3..."
         ram-size: ["1024"]
         ethernet: "1"
         ethernet-speed: "1000"
@@ -430,7 +430,7 @@ devices:
         bluetooth: "true"
         usb2: "2"
         usb3: "0"
-        storage: ["sdcard", "emmc", "..."]
+        #storage: ["sdcard", "emmc", "..."]
         notes: "One USB port is OTG
                 eMMC is 8GB"
         images:
@@ -502,8 +502,6 @@ devices:
             kernel-version: "4.20.7"
             image-notes: ""
 
-  # This one is special and isn't built from the build-scripts repo
-  # It's not just a single image, it's a zip file with a bunch of things in it
   - gemini:
       - board: "gemini-pro"
         name: "Gemini PDA"
@@ -519,7 +517,8 @@ devices:
         usb2: "2"
         usb3: "0"
         storage: ["sdcard", "emmc"]
-        notes: ""
+        notes: "This one is special and isn't built from the build-scripts repo.
+                It's not just a single image, it's a zip file with a bunch of things in it"
 
   - genesi:
       - board: "efika-mx-smarttop"
