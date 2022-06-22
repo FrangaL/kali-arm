@@ -29,7 +29,7 @@ def generate_table(data):
     images = []
     images_released = []
     default = ""
-    table  = "| Image Name | Filename | Architecture | Preferred | Support | [Documentation](https://www.kali.org/docs/arm/) | [Kernel](kernel.html) | Kernel Version | Notes |\n"
+    table  = "| Image Name | Filename | Architecture | Preferred | Support | [Documentation](https://www.kali.org/docs/arm/) | [Kernel](kernel-stats.html) | Kernel Version | Notes |\n"
     table += "|------------|----------|--------------|-----------|---------|-------------------------------------------------|-----------------------|----------------|-------|\n"
 
     # Iterate over per input (depth 1)
