@@ -57,7 +57,7 @@ def generate_table(data):
                             table += "| {} | {} | {} | {} | {} | {} | {} | {} |\n".format(image.get('name', default),
                                                                                           image.get('image', default),
                                                                                           image.get('architecture', default),
-                                                                                          image.get('preferred', default),
+                                                                                          image.get('preferred-image', default),
                                                                                           image.get('support', default),
                                                                                           slug,
                                                                                           image.get('kernel', default),
