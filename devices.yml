@@ -1,31 +1,31 @@
 # REF: https://gitlab.com/kalilinux/nethunter/build-scripts/kali-nethunter-devices/-/blob/master/devices.cfg
 
 # - vendor:
-#   - board: "board-name"
-#     name: "human readable string"
+#   - board: "device-name"
+#     name: "human readable string of board/device"
 #     cpu: "cpu model/chipset"
 #     cpu-cores: "1/2/3/4..."
 #     gpu: "gpu name"
-#     ram: "DDR2/DDR3..."
+#     ram: "DDR2/LPDDR3..."
 #     ram-size: ["512", "1024", "..."]
-#     ethernet: "0/1/2/3/4..."
+#     ethernet: "0/1/2/3/4..."  (0 means hardware isn't supported)
 #     ethernet-speed: "0/10/100/1000" (Just leave the fastest option)
 #     wifi: "0/2.4GHz/5GHz"
 #     bluetooth: "true/false"
-#     usb2: "0/1/2/3/4..."
-#     usb3: "0/1/2/3/4..."
+#     usb2: "0/1/2/3/4..." (0 means hardware isn't supported)
+#     usb3: "0/1/2/3/4..." (0 means hardware isn't supported)
 #     storage: ["sdcard", "emmc", "..."]
 #     notes: "anything to mention about the board/device"
 #     images:
-#       - image: "suffix for uncompressed filename: <slug>-<architecture>.img. prefix is `kali-linux-<version>-`"
-#         name: "human readable string for download page/documentation"
+#       - image: "suffix for uncompressed filename: <slug>-<architecture>.img.   prefix is `kali-linux-<version>-`"
+#         name: "human readable string of image for download page/documentation"
 #         architecture: "armel/armhf/arm64"
 #         preferred-image: "true/false - if multiple images, which is preferred"
 #         support: "kali/community/eol"
 #         slug: "what the documentation slug URL is on kali-docs" https://www.kali.org/docs/arm/<slug>/
 #         build-script: "build-script filename.sh" https://gitlab.com/kalilinux/build-scripts/kali-arm/<build-script>
 #         kernel: "custom/kali/vendor"
-#         kernel-version: "$(uname -r)"
+#         kernel-version: "output of $(uname -r)"
 #         image-notes: "anything to mention about the image"
 
 ---
