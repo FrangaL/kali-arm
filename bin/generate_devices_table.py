@@ -34,20 +34,34 @@ def generate_table(data):
             # Iterate over board (depth 2)
             for board in yaml[vendor]:
                 qty_devices += 1
+                ram_size = ""
+                storage = ""
+                i = 0
+                for f in board.get('ram-size', default):
+                    if i > 0:
+                        ram_size += ", "
+                    ram_size += f
+                    i += 1
+                i = 0
+                for f in board.get('storage', default):
+                    if i > 0:
+                        storage += ", "
+                    storage += f
+                    i += 1
                 table += "| {} | {} | {} | {} | {} | {} | {} | {} | {} | {} | {} | {} | {} | {} | {} |\n".format(vendor,
                                                                                                             board.get('name', default),
                                                                                                             board.get('cpu', default),
                                                                                                             board.get('cpu-cores', default),
                                                                                                             board.get('gpu', default),
                                                                                                             board.get('ram', default),
-                                                                                                            board.get('ram-size', default),
+                                                                                                            ram_size,
                                                                                                             board.get('ethernet', default),
                                                                                                             board.get('ethernet-speed', default),
                                                                                                             board.get('wifi', default),
                                                                                                             board.get('bluetooth', default),
                                                                                                             board.get('usb2', default),
                                                                                                             board.get('usb3', default),
-                                                                                                            board.get('storage', default),
+                                                                                                            storage,
                                                                                                             board.get('notes', default))
     return table
 
