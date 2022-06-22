@@ -24,8 +24,8 @@ def yaml_parse(content):
 def generate_table(data):
     global qty_devices
     default = ""
-    table  = "| Vendor | Board | CPU | CPU Cores | GPU | RAM | RAM Size | Ethernet | Ethernet Speed | Wi-Fi | Bluetooth | USB2 | USB3 | Storage | Notes |\n"
-    table += "|--------|-------|-----|-----------|-----|-----|----------|----------|----------------|-------|-----------|------|------|---------|-------|\n"
+    table  = "| Vendor | Board | CPU | CPU Cores | GPU | RAM | RAM Size (MB) | Ethernet | Ethernet Speed | Wi-Fi | Bluetooth | USB2 | USB3 | Storage | Notes |\n"
+    table += "|--------|-------|-----|-----------|-----|-----|---------------|----------|----------------|-------|-----------|------|------|---------|-------|\n"
 
     # Iterate over per input (depth 1)
     for yaml in data['devices']:
