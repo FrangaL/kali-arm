@@ -673,7 +673,7 @@ devices:
         usb2: "2"
         usb3: "0"
         storage: ["sdcard", "emmc"]
-        notes: "Our preferred high-range ARM tiny-form
+        notes: "<b>Our preferred high-range ARM tiny-form</b>
                 eMMC is 8GB and soldered on
                 No video output"
         images:
@@ -1114,7 +1114,7 @@ devices:
         usb2: "1"
         usb3: "2"
         storage: ["sdcard", "emmc", "nvme"]
-        notes: "Our preferred ARM laptop
+        notes: "<b>Our preferred ARM laptop</b>
                 NVME support should work but is untested"
         images:
           - image: "pinebook-pro-arm64.img"
@@ -1255,7 +1255,7 @@ devices:
         usb2: "2"
         usb3: "2"
         storage: ["sdcard", "usb"]
-        notes: "Our recommended high-end (8GB) & low-end (2GB) ARM Single Board Computer"
+        notes: "<b>Our recommended high-end (8GB) & low-end (2GB) ARM Single Board Computer (SBC)</b>"
         images:
           - image: "raspberry-pi-armhf.img"
             name: "Raspberry Pi 2, 3, 4 and 400 (32-bit)"
