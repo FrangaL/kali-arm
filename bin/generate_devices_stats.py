@@ -25,8 +25,8 @@ def yaml_parse(content):
 def generate_table(data):
     global qty_devices, qty_images
     default = ""
-    table  = "| Vendor | Board | [Images](images.html) |\n"
-    table += "|--------|-------|-----------------------|\n"
+    table  = "| Vendor | [Board](devices.html) | [Images](images.html) |\n"
+    table += "|--------|-----------------------|-----------------------|\n"
 
     # Iterate over per input (depth 1)
     for yaml in data['devices']:

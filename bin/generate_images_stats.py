@@ -44,7 +44,7 @@ def generate_table(data):
                 if 'images' not in board.keys():
                     print("[i] Possible issue with: " + board.get('board', default) + " (no images)")
 
-    table  = "| Image Name (Architecture) |\n"
+    table  = "| [Image Name](images.html) (Architecture) |\n"
     table += "|---------------------------|\n"
     # iterate over all the devices
     for device in sorted(set(images)):

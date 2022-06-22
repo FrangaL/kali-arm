@@ -31,8 +31,8 @@ def generate_table(data):
     global qty_devices, qty_images, qty_image_kali, qty_image_community, qty_image_eol, qty_image_unknown
     images = []
     default = ""
-    table  = "| [Device](https://www.kali.org/docs/arm/) | [Build-Script](https://gitlab.com/kalilinux/build-scripts/kali-arm/) | [Official Image](https://www.kali.org/get-kali/#kali-arm) | Community Image | EOL/Retired Image |\n"
-    table += "|--------|--------------|----------------|-----------------|---------------|\n"
+    table  = "| [Device Name](https://www.kali.org/docs/arm/) | [Build-Script](https://gitlab.com/kalilinux/build-scripts/kali-arm/) | [Official Image](https://www.kali.org/get-kali/#kali-arm) | Community Image | EOL/Retired Image |\n"
+    table += "|---------------|--------------|----------------|-----------------|---------------|\n"
 
     # Iterate over per input (depth 1)
     for yaml in data['devices']:
