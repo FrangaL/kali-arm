@@ -263,7 +263,7 @@ devices:
         usb2: "2"
         usb3: "0"
         storage: ["sdcard", "emmc", "usb"]
-        notes: "Kali only supports booting from sdcard or usb
+        notes: "Kali only supports booting from sdcard or usb.
                 eMMC is 16GB"
         images:
           - image: "chromebook-veyron-armhf.img"
@@ -292,7 +292,7 @@ devices:
         usb2: "4"
         usb3: "0"
         storage: ["sdcard"]
-        notes: "Not all models have wireless or bluetooth
+        notes: "Not all models have wireless or bluetooth.
                 DVI-D port only handles resolutions up to 1680x1050"
         images:
           - image: "trimslice-armhf.img"
@@ -348,7 +348,7 @@ devices:
         usb2: "3"
         usb3: "0"
         storage: ["sdcard", "NAND flash", "sata"]
-        notes: "NAND flash is 4GB
+        notes: "NAND flash is 4GB.
                 One USB port is OTG"
         images:
           - image: "cubieboard2-armhf.img"
@@ -431,7 +431,7 @@ devices:
         usb2: "2"
         usb3: "0"
         #storage: ["sdcard", "emmc", "..."]
-        notes: "One USB port is OTG
+        notes: "One USB port is OTG.
                 eMMC is 8GB"
         images:
           - image: "cubox-i4pro-armhf.img"
@@ -460,8 +460,8 @@ devices:
         usb2: "0"
         usb3: "1"
         storage: ["sdcard", "emmc"]
-        notes: "eMMC is 8GB
-                Two Half card Mini PCIe sockets, one provides USB 2.0 support
+        notes: "eMMC is 8GB.
+                Two Half card Mini PCIe sockets, one provides USB 2.0 support.
                 U-blox ZOE-MQ8 GNSS GPS receiver"
         images:
           - image: "gateworks-newport-armhf.img"
@@ -590,7 +590,7 @@ devices:
         usb2: "4"
         usb3: "0"
         storage: ["sdcard", "emmc"]
-        notes: "eMMC is 8GB
+        notes: "eMMC is 8GB.
                 2 USB ports via pin headers"
         images:
           - image: "nanopc-t-arm64.img"
@@ -618,7 +618,7 @@ devices:
         usb2: "4"
         usb3: "0"
         storage: ["sdcard", "emmc"]
-        notes: "eMMC is 16GB
+        notes: "eMMC is 16GB.
                 1 USB port via pin headers"
         images:
           - image: "nanopc-t-arm64.img"
@@ -673,8 +673,8 @@ devices:
         usb2: "2"
         usb3: "0"
         storage: ["sdcard", "emmc"]
-        notes: "<b>Our preferred high-range ARM tiny-form</b>
-                eMMC is 8GB and soldered on
+        notes: "<b>Our preferred high-range ARM tiny-form</b>.
+                eMMC is 8GB and soldered on.
                 No video output"
         images:
           - image: "nanopi-neo-plus2-arm64.img"
@@ -1055,10 +1055,10 @@ devices:
         usb2: "5"
         usb3: "0"
         storage: ["sdcard", "emmc"]
-        notes: "DIP switch settings are needed to boot from sdcard
-                Flash boot: 10110111
-                Boot from sd: 10100101
-                One USB port is mini-USB OTG
+        notes: "DIP switch settings are needed to boot from sdcard.
+                Flash boot: 10110111.
+                Boot from sd: 10100101.
+                One USB port is mini-USB OTG.
                 eMMC is 4GB"
         images:
           - image: "riotboard-armhf.img"
@@ -1114,7 +1114,7 @@ devices:
         usb2: "1"
         usb3: "2"
         storage: ["sdcard", "emmc", "nvme"]
-        notes: "<b>Our preferred ARM laptop</b>
+        notes: "<b>Our preferred ARM laptop</b>.
                 NVME support should work but is untested"
         images:
           - image: "pinebook-pro-arm64.img"
@@ -1255,7 +1255,7 @@ devices:
         usb2: "2"
         usb3: "2"
         storage: ["sdcard", "usb"]
-        notes: "<b>Our recommended high-end (8GB) & low-end (2GB) ARM Single Board Computer (SBC)</b>"
+        notes: "<b>Our preferred high-end (8GB) & low-end (2GB) ARM Single Board Computer (SBC)</b>"
         images:
           - image: "raspberry-pi-armhf.img"
             name: "Raspberry Pi 2, 3, 4 and 400 (32-bit)"
