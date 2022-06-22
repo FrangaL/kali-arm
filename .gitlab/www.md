@@ -23,5 +23,6 @@ title: Kali ARM Statistics
 
 - [Kali Linux Home](https://www.kali.org/)
 - [Download ARM images](https://www.kali.org/get-kali/#kali-arm)
+- [Kali Linux ARM Documentation](https://www.kali.org/docs/arm/)
 - [Kali ARM Build-Scripts](https://gitlab.com/kalilinux/build-scripts/kali-arm)
 - [Kali ARM `devices.yml`](https://gitlab.com/kalilinux/build-scripts/kali-arm/-/blob/master/devices.yml)
