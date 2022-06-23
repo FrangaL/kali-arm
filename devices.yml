@@ -430,7 +430,7 @@ devices:
         bluetooth: "true"
         usb2: "2"
         usb3: "0"
-        #storage: ["sdcard", "emmc", "..."]
+        storage: ["sdcard", "emmc"]
         notes: "One USB port is OTG.
                 eMMC is 8GB"
         images:
