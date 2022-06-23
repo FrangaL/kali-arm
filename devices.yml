@@ -319,7 +319,7 @@ devices:
         bluetooth: "true"
         usb2: "4"
         usb3: "0"
-        #storage: ["sdcard", "emmc", "..."]
+        storage: ["sdcard", "SATA SSD"]
         notes: ""
         images:
           - image: "utilite-pro-armhf.img"
@@ -1082,7 +1082,7 @@ devices:
         ram-size: ["2048"]
         ethernet: "0"
         ethernet-speed: "0"
-        wifi: "2.4GHz/5GHz"
+        wifi: ["Realtek 8723CS"]
         bluetooth: "true"
         usb2: "2"
         usb3: "0"
@@ -1109,7 +1109,7 @@ devices:
         ram-size: ["4096"]
         ethernet: "0"
         ethernet-speed: "0"
-        wifi: "2.4GHz/5GHz"
+        wifi: ["AMPAK AP6256"]
         bluetooth: "true"
         usb2: "1"
         usb3: "2"
@@ -1138,7 +1138,7 @@ devices:
         ram-size: ["1024", "2048", "4096"]
         ethernet: "0"
         ethernet-speed: "0"
-        wifi: ["AP6212", "AP6256"]
+        wifi: ["AMPAK AP6212", "AMPAK AP6256"]
         bluetooth: "true"
         usb2: "1"
         usb3: "1"
@@ -1250,7 +1250,7 @@ devices:
         ram-size: ["1024", "2048", "4096", "8096"]
         ethernet: "1"
         ethernet-speed: "1000"
-        wifi: "2.4GHz/5GHz"
+        wifi: ["Broadcom BCM4345/6"]
         bluetooth: "true"
         usb2: "2"
         usb3: "2"
