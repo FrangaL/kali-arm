@@ -22,6 +22,12 @@ def yaml_parse(content):
             result += line + "\n"
     return yaml.safe_load(result)
 
+# https://stackoverflow.com/a/11150413
+def natural_sort(l):
+    convert = lambda text: int(text) if text.isdigit() else text.lower()
+    alphanum_key = lambda key: [convert(c) for c in re.split('([0-9]+)', key)]
+    return sorted(l, key=alphanum_key)
+
 def generate_table(data):
     global qty_devices
     default = ""
@@ -38,13 +44,13 @@ def generate_table(data):
                 ram_size = ""
                 storage = ""
                 i = 0
-                for f in sorted(board.get('ram-size', default)):
+                for f in natural_sort(board.get('ram-size', default)):
                     if i > 0:
                         ram_size += ", "
                     ram_size += f
                     i += 1
                 i = 0
-                for f in sorted(board.get('storage', default)):
+                for f in natural_sort(board.get('storage', default)):
                     if i > 0:
                         storage += ", "
                     storage += f
