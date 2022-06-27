@@ -1082,12 +1082,13 @@ devices:
         ram-size: ["2048"]
         ethernet: "0"
         ethernet-speed: "0"
-        wifi: ["Realtek 8723CS"]
+        #wifi: ["Realtek 8723CS"]
         bluetooth: "true"
         usb2: "2"
         usb3: "0"
         storage: ["sdcard", "emmc"]
-        notes: "Suspend does not work, upstream kernel issue"
+        notes: "Suspend does not work, upstream kernel issue.
+                Wi-Fi Realtek 8723CS."
         images:
           - image: "pinebook-arm64.img"
             name: "Pinebook"
@@ -1109,13 +1110,14 @@ devices:
         ram-size: ["4096"]
         ethernet: "0"
         ethernet-speed: "0"
-        wifi: ["AMPAK AP6256"]
+        #wifi: ["AMPAK AP6256"]
         bluetooth: "true"
         usb2: "1"
         usb3: "2"
         storage: ["sdcard", "emmc", "nvme"]
         notes: "<b>Our preferred ARM laptop</b>.
-                NVME support should work but is untested"
+                NVME support should work but is untested.
+                WiFi: AMPAK AP6256."
         images:
           - image: "pinebook-pro-arm64.img"
             name: "Pinebook Pro"
@@ -1138,12 +1140,13 @@ devices:
         ram-size: ["1024", "2048", "4096"]
         ethernet: "0"
         ethernet-speed: "0"
-        wifi: ["AMPAK AP6212", "AMPAK AP6256"]
+        #wifi: ["AMPAK AP6212", "AMPAK AP6256"]
         bluetooth: "true"
         usb2: "1"
         usb3: "1"
         storage: ["sdcard", "emmc"]
-        notes: "The 1GB versions do not have eMMC"
+        notes: "The 1GB versions do not have eMMC.
+                WiFi: AMPAK AP6212 AMPAK AP6256."
         images:
           - image: "radxa-zero-emmc-arm64.img"
             name: "Radxa Zero (emmc)"
@@ -1250,12 +1253,13 @@ devices:
         ram-size: ["1024", "2048", "4096", "8096"]
         ethernet: "1"
         ethernet-speed: "1000"
-        wifi: ["Broadcom BCM4345/6"]
+        #wifi: ["Broadcom BCM4345/6"]
         bluetooth: "true"
         usb2: "2"
         usb3: "2"
         storage: ["sdcard", "usb"]
-        notes: "<b>Our preferred high-end (8GB) & low-end (2GB) ARM Single Board Computer (SBC)</b>"
+        notes: "<b>Our preferred high-end (8GB) & low-end (2GB) ARM Single Board Computer (SBC)</b>.
+                WiFi: Broadcom BCM4345/6."
         images:
           - image: "raspberry-pi-armhf.img"
             name: "Raspberry Pi 2, 3, 4 and 400 (32-bit)"
