@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # REF: https://www.kali.org/docs/arm/
-import yaml # python3 -m pip install pyyaml --user
 from datetime import datetime
 import sys
+import yaml # python3 -m pip install pyyaml --user
 
 OUTPUT_FILE = './image-overview.md'
 INPUT_FILE = './devices.yml'
