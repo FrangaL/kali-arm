@@ -38,6 +38,7 @@ pages:
     - ./bin/generate_images_table.py
     - ./bin/generate_kernel_stats.py
     - mkdir -p ./public/
+    - cp ./.gitlab/404.html   ./public/
     - cp ./.gitlab/public.css ./public/
     - pandoc -s ./.gitlab/www.md    -o ./public/index.html          -c public.css
     - pandoc -s ./device-stats.md   -o ./public/device-stats.html   -c public.css
