@@ -470,8 +470,6 @@ function check_trap() {
   clean_build
   exit 1
 }
-# If there is an issue, run the above function
-trap check_trap INT ERR SIGTERM SIGINT
 
 # Show progress
 status() {

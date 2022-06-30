@@ -11,6 +11,8 @@ set -e
 # shellcheck source=/dev/null
 source ./common.d/functions.sh
 
+# If there is any issue (as well as at the end), run check_trap (from ./common.d/functions.sh)
+trap check_trap INT ERR SIGTERM SIGINT EXIT
 # Load common variables
 source ./common.d/variables.sh
 # Checks script environment
