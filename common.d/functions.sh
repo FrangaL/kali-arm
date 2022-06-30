@@ -98,9 +98,6 @@ function arguments() {
     esac
   done
 }
-debug=0
-extra=0
-arguments $*
 
 # Function to include common files
 function include() {
@@ -477,5 +474,3 @@ status() {
   [[ $debug = 1 ]] && timestamp="($(date +"%Y-%m-%d %H:%M:%S"))" || timestamp=""
   log " ✅ ${status_i}/${status_t}:$(tput sgr0) $1 $timestamp" green
 }
-status_i=0
-status_t=$(($(grep '.*status ' $0 common.d/*.sh | wc -l) -1))

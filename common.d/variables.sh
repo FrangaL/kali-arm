@@ -103,3 +103,10 @@ if [ -f "${repo_dir}"/builder.txt ]; then
       | sort -u \
     || true
 fi
+
+## From ./common.d/functions.sh
+debug=0
+extra=0
+arguments $*
+status_i=0
+status_t=$(($(grep '.*status ' $0 common.d/*.sh | wc -l) -1))
