@@ -98,9 +98,6 @@ function arguments() {
     esac
   done
 }
-debug=0
-extra=0
-arguments $*
 
 # Function to include common files
 function include() {
@@ -108,7 +105,7 @@ function include() {
   if [[ -f "common.d/${file}.sh" ]]; then
     log " ✅ Load common file:$(tput sgr0) ${file}" green
     # shellcheck source=/dev/null
-    source "common.d/${file}.sh"
+    source "common.d/${file}.sh" "$@"
     return 0
   else
     log " ⚠️  Fail to load ${file} file" red
@@ -313,11 +310,11 @@ function make_swap() {
 function print_config() {
   log "\n Compilation info" bold
   name_model="$(sed -n '3'p $0)"
-  log "Hardware model: $(tput sgr0) ${name_model#* for}" cyan
-  log "Architecture: $(tput sgr0) $architecture" cyan
-  log "OS build: $(tput sgr0) $suite $version" cyan
-  log "Desktop manager: $(tput sgr0) $desktop" cyan
-  log "The base_dir thinks it is: $(tput sgr0) ${base_dir} \n" cyan
+  log "Hardware model: $(tput sgr0)${name_model#* for}" cyan
+  log "Architecture: $(tput sgr0)$architecture" cyan
+  log "OS build: $(tput sgr0)$suite $version" cyan
+  log "Desktop manager: $(tput sgr0)$desktop" cyan
+  log "The base_dir thinks it is: $(tput sgr0)${base_dir}\n" cyan
   sleep 1.5
 }
 
@@ -466,12 +463,10 @@ function clean_build() {
 }
 
 function check_trap() {
-  log "\n ⚠️  An error has occurred !\n" red
+  log "\n ⚠️  An error has occurred!\n" red
   clean_build
   exit 1
 }
-# If there is an issue, run the above function
-trap check_trap INT ERR SIGTERM SIGINT
 
 # Show progress
 status() {
@@ -479,5 +474,3 @@ status() {
   [[ $debug = 1 ]] && timestamp="($(date +"%Y-%m-%d %H:%M:%S"))" || timestamp=""
   log " ✅ ${status_i}/${status_t}:$(tput sgr0) $1 $timestamp" green
 }
-status_i=0
-status_t=$(($(grep '.*status ' $0 common.d/*.sh | wc -l) -1))
