@@ -27,7 +27,7 @@ rm -rf /var/cache/debconf/*-old
 rm -rf /var/cache/apt/archives/*
 rm -rf /etc/apt/apt.conf.d/apt_opts
 rm -rf /etc/apt/apt.conf.d/99_norecommends
-for logs in $(find /var/log -type f); do > $logs; done
+for logs in $(find /var/log -type f); do echo > $logs; done
 history -c
 EOF
 
