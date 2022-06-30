@@ -82,8 +82,8 @@ githubraw="https://raw.githubusercontent.com"
 
 # DNS server
 nameserver=${nameserver:-"8.8.8.8"}
-# workaround for LP: #520465
 
+# workaround for LP: #520465 ~ https://bugs.launchpad.net/ubuntu/+bug/520465
 export MALLOC_CHECK_=0
 
 # Proxy
