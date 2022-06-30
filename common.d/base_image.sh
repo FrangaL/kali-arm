@@ -3,30 +3,39 @@
 # Every Kali ARM image starts with this
 #
 
+# shellcheck disable=SC2154
+# shellcheck source=/dev/null
+
 # Stop on error
 set -e
 
-# shellcheck disable=SC2154
 # Load general functions
-# shellcheck source=/dev/null
 source ./common.d/functions.sh
 
 # If there is any issue (as well as at the end), run check_trap (from ./common.d/functions.sh)
 trap check_trap INT ERR SIGTERM SIGINT EXIT
+
 # Load common variables
 source ./common.d/variables.sh
+
 # Checks script environment
 source ./common.d/check.sh
+
 # Packages build list
 include packages
+
 # Execute initial debootstrap
 debootstrap_exec http://http.kali.org/kali
+
 # Enable eatmydata in compilation
 include eatmydata
+
 # debootstrap second stage
 systemd-nspawn_exec eatmydata /debootstrap/debootstrap --second-stage
+
 # Define sources.list
 sources_list
+
 # APT options
 include apt_options
 
