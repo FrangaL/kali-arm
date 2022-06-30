@@ -105,7 +105,7 @@ function include() {
   if [[ -f "common.d/${file}.sh" ]]; then
     log " ✅ Load common file:$(tput sgr0) ${file}" green
     # shellcheck source=/dev/null
-    source "common.d/${file}.sh"
+    source "common.d/${file}.sh" "$@"
     return 0
   else
     log " ⚠️  Fail to load ${file} file" red
