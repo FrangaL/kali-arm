@@ -35,10 +35,10 @@ function usage() {
     # Desktop manager (xfce, gnome, kde, i3, i3-gaps, lxde, mate, e17 or none)
     $0 --desktop kde or $0 --desktop=kde
 
-    # Minimal image - no desktop manager
+    # Minimal image - no desktop manager (alias to --desktop=none)
     $0 --minimal or $0 -m
 
-    # Slim image - no desktop manager & cli tools
+    # Slim image - no desktop manager & no Kali tools
     $0 --slim or $0 -s
 
     # Enable debug & log file (./logs/<file>.log)
