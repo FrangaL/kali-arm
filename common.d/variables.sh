@@ -113,3 +113,6 @@ extra=0
 arguments $*
 status_i=0
 status_t=$(($(grep '.*status ' $0 common.d/*.sh | wc -l) -1))
+
+## Enable colour
+colour_output="yes"

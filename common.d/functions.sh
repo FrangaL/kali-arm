@@ -14,7 +14,14 @@ function log() {
     white) color=$(tput setaf 15) ;;
     *) text="$1" ;;
   esac
-  [ -z "$text" ] && echo -e "$color $1 $(tput sgr0)" || echo -e "$text"
+
+  if [ "$colour_output" == "no" ]; then
+    text="$1"
+  fi
+
+  [ -z "$text" ] \
+    && echo -e "$color $1 $(tput sgr0)" \
+    || echo -e "$text"
 }
 
 # Usage function
@@ -38,6 +45,9 @@ function usage() {
 
     # Perform extra checks on the images build
     $0 --extra or $0 -x
+
+    # Remove color from output
+    $0 --no-color or $0 --no-colour
 
     # Help screen (this)
     $0 --help or $0 -h
@@ -91,6 +101,8 @@ function arguments() {
       -x | --extra)
         log "Extra Checks: Enabled" green
         extra="1";;
+      --no-color | --no-colour)
+        colour_output="no";;
       -h | -help | --help)
         usage;;
       *)
