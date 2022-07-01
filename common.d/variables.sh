@@ -110,7 +110,6 @@ PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 ## From ./common.d/functions.sh
 debug=0
 extra=0
-arguments $*
 status_i=0
 status_t=$(($(grep '.*status ' $0 common.d/*.sh | wc -l) -1))
 

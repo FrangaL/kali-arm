@@ -12,13 +12,17 @@ set -e
 # Load general functions
 source ./common.d/functions.sh
 
+# Load common variables
+source ./common.d/variables.sh
+
+# Read in any command line arguments
+arguments $*
+
 # If there is any issues, run check_trap (from ./common.d/functions.sh)
 trap check_trap INT ERR SIGTERM SIGINT
 # Always at the end, run clean_build (from ./common.d/functions.sh)
 trap clean_build EXIT
 
-# Load common variables
-source ./common.d/variables.sh
 
 # Checks script environment
 source ./common.d/check.sh
