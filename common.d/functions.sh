@@ -14,7 +14,15 @@ function log() {
     white) color=$(tput setaf 15) ;;
     *) text="$1" ;;
   esac
-  [ -z "$text" ] && echo -e "$color $1 $(tput sgr0)" || echo -e "$text"
+
+  ## --no-color
+  if [ "$colour_output" == "no" ]; then
+    echo -e "$1"
+  elif [ -z "$text" ]; then
+    echo -e "$color $1 $(tput sgr0)"
+  else
+    echo -e "$text"
+  fi
 }
 
 # Usage function
@@ -27,10 +35,10 @@ function usage() {
     # Desktop manager (xfce, gnome, kde, i3, i3-gaps, lxde, mate, e17 or none)
     $0 --desktop kde or $0 --desktop=kde
 
-    # Minimal image - no desktop manager
+    # Minimal image - no desktop manager (alias to --desktop=none)
     $0 --minimal or $0 -m
 
-    # Slim image - no desktop manager & cli tools
+    # Slim image - no desktop manager & no Kali tools
     $0 --slim or $0 -s
 
     # Enable debug & log file (./logs/<file>.log)
@@ -38,6 +46,9 @@ function usage() {
 
     # Perform extra checks on the images build
     $0 --extra or $0 -x
+
+    # Remove color from output
+    $0 --no-color or $0 --no-colour
 
     # Help screen (this)
     $0 --help or $0 -h
@@ -91,6 +102,8 @@ function arguments() {
       -x | --extra)
         log "Extra Checks: Enabled" green
         extra="1";;
+      --no-color | --no-colour)
+        colour_output="no";;
       -h | -help | --help)
         usage;;
       *)
