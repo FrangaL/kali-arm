@@ -12,8 +12,10 @@ set -e
 # Load general functions
 source ./common.d/functions.sh
 
-# If there is any issue (as well as at the end), run check_trap (from ./common.d/functions.sh)
-trap check_trap INT ERR SIGTERM SIGINT EXIT
+# If there is any issues, run check_trap (from ./common.d/functions.sh)
+trap check_trap INT ERR SIGTERM SIGINT
+# Always at the end, run clean_build (from ./common.d/functions.sh)
+trap clean_build EXIT
 
 # Load common variables
 source ./common.d/variables.sh
