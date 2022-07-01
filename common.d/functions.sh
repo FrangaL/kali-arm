@@ -15,13 +15,14 @@ function log() {
     *) text="$1" ;;
   esac
 
+  ## --no-color
   if [ "$colour_output" == "no" ]; then
-    text="$1"
+    echo -e "$1"
+  elif [ -z "$text" ]; then
+    echo -e "$color $1 $(tput sgr0)"
+  else
+    echo -e "$text"
   fi
-
-  [ -z "$text" ] \
-    && echo -e "$color $1 $(tput sgr0)" \
-    || echo -e "$text"
 }
 
 # Usage function
