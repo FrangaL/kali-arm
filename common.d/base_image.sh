@@ -12,11 +12,12 @@ set -e
 # Load general functions
 source ./common.d/functions.sh
 
-# Load common variables
-source ./common.d/variables.sh
-
 # Read in any command line arguments
 arguments $*
+
+# Load common variables
+# Needs to come after arguments, given the values are used as variables
+source ./common.d/variables.sh
 
 # If there is any issues, run check_trap (from ./common.d/functions.sh)
 trap check_trap INT ERR SIGTERM SIGINT
