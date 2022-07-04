@@ -31,7 +31,7 @@ def natural_sort(l):
 def generate_table(data):
     global qty_devices
     default = ""
-    table  = "| Vendor | Board | CPU | CPU Cores | GPU | RAM | RAM Size (MB) | Ethernet | Ethernet Speed (MB) | Wi-Fi | Bluetooth | USB2 | USB3 | Storage |    Notes    |\n"
+    table  = "| Vendor | Board | CPU | CPU Cores | GPU | RAM | RAM Size (MB) | Ethernet | Ethernet Speed (MB) | Wi-Fi | Bluetooth | USB2 | USB3 | Storage |        Notes        |\n"
     table += "|--------|-------|-----|-----------|-----|-----|---------------|----------|---------------------|-------|-----------|------|------|---------|---------------------|\n"
 
     # Iterate over per input (depth 1)
