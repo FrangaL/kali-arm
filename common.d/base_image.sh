@@ -24,7 +24,6 @@ trap check_trap INT ERR SIGTERM SIGINT
 # Always at the end, run clean_build (from ./common.d/functions.sh)
 trap clean_build EXIT
 
-
 # Checks script environment
 source ./common.d/check.sh
 

@@ -29,7 +29,8 @@ machine=$(dbus-uuidgen)
 hostname=${hostname:-kali}
 
 # If hw_model is set, add it to hostname
-[ -n "${hw_model:=}" ] && [ "${hostname:=}" = "kali" ] && hostname="kali-${hw_model}"
+[ -n "${hw_model:=}" ] && [ "${hostname:=}" = "kali" ] \
+  && hostname="kali-${hw_model}"
 
 # Suite to use, valid options are:
 # kali-rolling, kali-dev, kali-bleeding-edge, kali-dev-only, kali-experimental, kali-last-snapshot
