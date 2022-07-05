@@ -1,8 +1,8 @@
 # Folders
-base/
-local/
-logs/
-images/
+base/*
+local/*
+logs/*
+images/*
 # Files
 builder.txt
 .DS_Store
