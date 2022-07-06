@@ -1254,7 +1254,7 @@ devices:
         ram-size: ["1024", "2048", "4096", "8096"]
         ethernet: "1"
         ethernet-speed: "1000"
-        wifi: ["2.4GHz/5GHz"]
+        wifi: "2.4GHz/5GHz"
         bluetooth: "true"
         usb2: "2"
         usb3: "2"
