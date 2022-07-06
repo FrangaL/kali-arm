@@ -462,6 +462,8 @@ function umount_partitions(){
 
 # Clean up all the temporary build stuff and remove the directories.
 function clean_build() {
+  log "Cleaning up" green
+
   # unmount anything that may be mounted
   umount_partitions
 
