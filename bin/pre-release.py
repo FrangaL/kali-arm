@@ -109,14 +109,16 @@ def generate_manifest(data):
                 for key in board.keys():
                     # Check if there is an image for the board
                     if 'images' in key:
-                        # Iterate over image (depth 3)
+                        # Check that it's not eol or community supported (depth 3)
+                        # Iterate over image (depth 4)
                         for image in board[key]:
-                            qty_images += 1
-                            name = image.get('name', default)
-                            filename = "kali-linux-{}-{}".format(release, image.get('image', default))
-                            preferred = image.get('preferred-image', default)
-                            slug = image.get('slug', default)
-                            jsonarray(devices, vendor, name, filename, preferred, slug)
+                            if image.get('support') == "kali":
+                                qty_images += 1
+                                name = image.get('name', default)
+                                filename = "kali-linux-{}-{}".format(release, image.get('image', default))
+                                preferred = image.get('preferred-image', default)
+                                slug = image.get('slug', default)
+                                jsonarray(devices, vendor, name, filename, preferred, slug)
     return json.dumps(devices, indent = 2)
 
 def deduplicate(data):
