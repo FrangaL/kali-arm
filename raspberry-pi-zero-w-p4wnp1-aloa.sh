@@ -407,6 +407,9 @@ cd ${TOPDIR}
 
 # RPI Firmware
 git clone --depth 1 https://github.com/raspberrypi/firmware.git rpi-firmware
+cd rpi-firmware
+git checkout 86e3ccc # We want the 4.14.80 firmware as we are still using the 4.14.80 kernel
+cd ..
 cp -rf rpi-firmware/boot/* ${work_dir}/boot/
 # copy over Pi specific libs (video core) and binaries (dtoverlay,dtparam ...)
 cp -rf rpi-firmware/opt/* ${work_dir}/opt/
@@ -447,9 +450,7 @@ patch -p1 --no-backup-if-mismatch < ${base_dir}/../patches/11647f99b4de6bc460e10
 # For now this is left as manual step, as the normal user shouldn't have a need to recompile kernel parts on the Pi itself
 
 
-# Set default defconfig
 export ARCH=arm
-# use hard float with RPi cross compiler toolchain, as described here: https://www.raspberrypi.org/documentation/linux/kernel/building.md
 export CROSS_COMPILE=arm-linux-gnueabi-
 
 # Set default defconfig
