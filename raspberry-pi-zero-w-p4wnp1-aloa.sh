@@ -7,7 +7,7 @@
 # More information: https://www.kali.org/docs/arm/raspberry-pi-zero-w/
 #
 # This script is purposely different from the others due to its heavily customized nature
-#
+# Due to the nexmon firmware's lack of recognizing arm64, this script cannot be run on an arm64 host.
 
 # Stop on error
 set -e
@@ -406,11 +406,11 @@ EOF
 cd ${TOPDIR}
 
 # RPI Firmware
-git clone -b 1.20181112 --depth 1 https://github.com/raspberrypi/firmware.git rpi-firmware
-cp -rf rpi-firmware/boot/* ${work_dir}/boot/
+git clone -b 1.20181112 --depth 1 https://github.com/raspberrypi/firmware.git ${work_dir}/rpi-firmware
+cp -rf ${work_dir}/rpi-firmware/boot/* ${work_dir}/boot/
 # copy over Pi specific libs (video core) and binaries (dtoverlay,dtparam ...)
-cp -rf rpi-firmware/opt/* ${work_dir}/opt/
-rm -rf rpi-firmware
+cp -rf ${work_dir}/rpi-firmware/opt/* ${work_dir}/opt/
+rm -rf ${work_dir}/rpi-firmware
 
 # Build nexmon firmware outside the build system, if we can (use repository with driver and firmware for P4wnP1)
 cd "${base_dir}"
