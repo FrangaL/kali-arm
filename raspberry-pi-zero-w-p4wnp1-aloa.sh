@@ -406,10 +406,7 @@ EOF
 cd ${TOPDIR}
 
 # RPI Firmware
-git clone --depth 1 https://github.com/raspberrypi/firmware.git rpi-firmware
-cd rpi-firmware
-git checkout 86e3ccc # We want the 4.14.80 firmware as we are still using the 4.14.80 kernel
-cd ..
+git clone -b 1.20181112 --depth 1 https://github.com/raspberrypi/firmware.git rpi-firmware
 cp -rf rpi-firmware/boot/* ${work_dir}/boot/
 # copy over Pi specific libs (video core) and binaries (dtoverlay,dtparam ...)
 cp -rf rpi-firmware/opt/* ${work_dir}/opt/
