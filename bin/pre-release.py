@@ -25,6 +25,7 @@ import json
 import datetime
 import yaml # python3 -m pip install pyyaml --user
 import getopt, os, stat, sys
+import hashlib # sha256 support
 
 manifest = ""     # Generated automatically (<outputdir>/manifest.json)
 release = ""
@@ -120,6 +121,20 @@ def generate_manifest(data):
                                 slug = image.get('slug', default)
                                 jsonarray(devices, vendor, name, filename, preferred, slug)
     return json.dumps(devices, indent = 2)
+
+def hash_file(filename):
+    # This function returns the SHA-256 hash
+    h = hashlib.sha256()
+
+    # open file for reading, binary
+    with open(filename, 'rb') as file:
+        chunk = 0
+        while chunk != b'':
+            # read only 1024 bytes at a time
+            chunk = file.read(1024)
+            h.update(chunk)
+    return h.hexdigest()
+
 
 def deduplicate(data):
     # Remove duplicate lines
