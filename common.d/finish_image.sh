@@ -34,8 +34,22 @@ e2fsck -y -f "${rootp}"
 status "Remove loop devices"
 losetup -d "${loopdevice}"
 
+# Create sha256sum file of the UNCOMPRESSED image file
+log "Generate sha256sum: $(tput sgr0) ($img)" green
+cd "${image_dir}"
+shasum -a 256 "${image_name}.img" > "${image_name}.img.sha256sum"
+cd "${repo_dir}"
+
 # Compress image compilation
 compress_img
+
+# Create sha256sum file of the COMPRESSED image file
+if [ -f "${image_dir}/${image_name}.img.$compress" ]; then
+  log "Generate sha256sum: $(tput sgr0) ($img.$compress)" green
+  cd "${image_dir}"
+  shasum -a 256 "${image_name}.img.$compress" > "${image_name}.img.$compress.sha256sum"
+  cd "${repo_dir}"
+fi
 
 # Clean up all the temporary build stuff and remove the directories
 clean_build
