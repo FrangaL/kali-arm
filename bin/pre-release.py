@@ -135,7 +135,10 @@ def hash_file(filename):
             h.update(chunk)
     return h.hexdigest()
 
-
+# We don't want to dedupe everything, we want it to only do so based on the "name"
+# and we want to remove the stanza, rather than just that line.
+# Ideally, we look at vendor, then check if the "name" already exists
+# if so, leave off that stanza.
 def deduplicate(data):
     # Remove duplicate lines
     clean_data = ""
@@ -187,7 +190,7 @@ def main(argv):
 
     # Get data
     res = yaml_parse(data)
-    manifest_list = generate_manifest(res)
+    manifest_list = deduplicate(generate_manifest(res))
 
     # Create output directory if required
     createdir(outputdir)
