@@ -1357,7 +1357,7 @@ devices:
             kernel-version: "5.10.103"
             image-notes: ""
           - image: "raspberry-pi-zero-w-p4wnp1-aloa-armel.img"
-          name: "Raspberry Pi Zero W (P4wnP1 A.L.O.A)"
+            name: "Raspberry Pi Zero W (P4wnP1 A.L.O.A)"
             architecture: "armel"
             preferred-image: "false"
             support: "kali"
