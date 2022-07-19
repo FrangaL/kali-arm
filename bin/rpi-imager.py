@@ -46,6 +46,7 @@
 ## }
 ##
 ## What we currently end up with:
+## With deduplicate:
 ##
 ## {
 ##   "raspberrypi": [
@@ -68,7 +69,69 @@
 ##     }
 ##   ]
 ## }
-
+##
+## Without deduplicate:
+##
+## {
+##   "raspberrypi": [
+##     {
+##       "name": "Raspberry Pi 2, 3, 4 and 400 (32-bit)",
+##       "filename": "kali-linux-2022.3-raspberry-pi-armhf.img"
+##     },
+##     {
+##       "name": "Raspberry Pi 2 (v1.2), 3, 4 and 400 (64-bit)",
+##       "filename": "kali-linux-2022.3-raspberry-pi-arm64.img"
+##     },
+##     {
+##       "name": "Raspberry Pi 2, 3, 4 and 400 (32-bit)",
+##       "filename": "kali-linux-2022.3-raspberry-pi-armhf.img"
+##     },
+##     {
+##       "name": "Raspberry Pi 2 (v1.2), 3, 4 and 400 (64-bit)",
+##       "filename": "kali-linux-2022.3-raspberry-pi-arm64.img"
+##     },
+##     {
+##       "name": "Raspberry Pi 2, 3, 4 and 400 (32-bit)",
+##       "filename": "kali-linux-2022.3-raspberry-pi-armhf.img"
+##     },
+##     {
+##       "name": "Raspberry Pi 2 (v1.2), 3, 4 and 400 (64-bit)",
+##       "filename": "kali-linux-2022.3-raspberry-pi-arm64.img"
+##     },
+##     {
+##       "name": "Raspberry Pi 2, 3, 4 and 400 (32-bit)",
+##       "filename": "kali-linux-2022.3-raspberry-pi-armhf.img"
+##     },
+##     {
+##       "name": "Raspberry Pi 2 (v1.2), 3, 4 and 400 (64-bit)",
+##       "filename": "kali-linux-2022.3-raspberry-pi-arm64.img"
+##     },
+##     {
+##       "name": "Raspberry Pi Zero W",
+##       "filename": "kali-linux-2022.3-raspberry-pi-zero-w-armel.img"
+##     },
+##     {
+##       "name": "Raspberry Pi Zero W (PiTail)",
+##       "filename": "kali-linux-2022.3-raspberry-pi-zero-w-pitail-armel.img"
+##     },
+##     {
+##       "name": "Raspberry Pi Zero W (P4wnP1 A.L.O.A)",
+##       "filename": "kali-linux-2022.3-raspberry-pi-zero-w-p4wnp1-aloa-armel.img"
+##     },
+##     {
+##       "name": "Raspberry Pi Zero 2 W",
+##       "filename": "kali-linux-2022.3-raspberry-pi-zero-2-w-armhf.img"
+##     },
+##     {
+##       "name": "Raspberry Pi Zero 2 W (PiTail)",
+##       "filename": "kali-linux-2022.3-raspberry-pi-zero-2-w-pitail-armhf.img"
+##     },
+##     {
+##       "name": "Raspberry Pi 1 (Original)",
+##      "filename": "kali-linux-2022.3-raspberry-pi1-armel.img"
+##     }
+##   ]
+## }
 import json
 import datetime
 import yaml # python3 -m pip install pyyaml --user
@@ -218,7 +281,8 @@ def main(argv):
 
     # Get data
     res = yaml_parse(data)
-    manifest_list = deduplicate(generate_manifest(res))
+    #manifest_list = deduplicate(generate_manifest(res))
+    manifest_list = generate_manifest(res)
 
     # Create output directory if required
     createdir(outputdir)
