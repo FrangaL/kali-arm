@@ -94,6 +94,20 @@ def jsonarray(devices, vendor, name, filename, preferred, slug):
     devices[vendor].append(jsondata)
     return devices
 
+# We don't want to dedupe every line, we want it to only do so based on the "name"
+# and we want to remove the stanza, rather than just that line.
+# Ideally, we look at vendor, then check if the "name" already exists
+# if so, leave off that stanza.
+def deduplicate(data):
+    # Remove duplicate lines
+    clean_data = ""
+    lines_seen = set()
+    for line in data.splitlines():
+        if line not in lines_seen: # not a duplicate
+            clean_data += line + "\n"
+            lines_seen.add(line)
+    return clean_data
+
 def generate_manifest(data):
     global release, qty_devices, qty_images
     default = ""
@@ -120,7 +134,7 @@ def generate_manifest(data):
                                 preferred = image.get('preferred-image', default)
                                 slug = image.get('slug', default)
                                 jsonarray(devices, vendor, name, filename, preferred, slug)
-    return json.dumps(devices, indent = 2)
+    return deduplicate(json.dumps(devices, indent = 2))
 
 def hash_file(filename):
     # This function returns the SHA-256 hash
@@ -134,20 +148,6 @@ def hash_file(filename):
             chunk = file.read(1024)
             h.update(chunk)
     return h.hexdigest()
-
-# We don't want to dedupe every line, we want it to only do so based on the "name"
-# and we want to remove the stanza, rather than just that line.
-# Ideally, we look at vendor, then check if the "name" already exists
-# if so, leave off that stanza.
-def deduplicate(data):
-    # Remove duplicate lines
-    clean_data = ""
-    lines_seen = set()
-    for line in data.splitlines():
-        if line not in lines_seen: # not a duplicate
-            clean_data += line + "\n"
-            lines_seen.add(line)
-    return clean_data
 
 def createdir(dir):
     try:
