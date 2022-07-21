@@ -24,7 +24,7 @@ add_interface eth0
 # Third stage
 cat <<EOF >> "${work_dir}"/third-stage
 status_stage3 'Ensure mkimage is available'
-eatmydata apt-get install -y uboot-tools
+eatmydata apt-get install -y u-boot-tools
 
 status_stage3 'We replace the u-boot menu defaults here so we can make sure the build system does not poison it'
 # We use _EOF_ so that the third-stage script doesn't end prematurely

@@ -27,7 +27,7 @@ status_stage3 'Install dhcp server'
 eatmydata apt-get install -y isc-dhcp-server || eatmydata apt-get install -y --fix-broken
 
 status_stage3 'Ensure mkimage is available'
-eatmydata apt-get install -y uboot-tools
+eatmydata apt-get install -y u-boot-tools
 
 status_stage3 'Bootloader'
 install -m644 /bsp/bootloader/gateworks-ventana/6x_bootscript-ventana.script /boot/6x_bootscript-ventana.script
