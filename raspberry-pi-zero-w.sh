@@ -82,7 +82,12 @@ include rpi_firmware
 # Create the dirs for the partitions and mount them
 status "Create the dirs for the partitions and mount them"
 mkdir -p "${base_dir}"/root/
+# Test only
+if [[ $fstype == ext4 ]]; then
+mount -t ext4 -o noatime,data=writeback,barrier=0,nobh "${rootp}" "${base_dir}"/root
+else
 mount "${rootp}" "${base_dir}"/root
+fi
 mkdir -p "${base_dir}"/root/boot
 mount "${bootp}" "${base_dir}"/root/boot
 
