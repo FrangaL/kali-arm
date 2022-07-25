@@ -134,7 +134,7 @@ def generate_manifest(data):
                                 preferred = image.get('preferred-image', default)
                                 slug = image.get('slug', default)
                                 jsonarray(devices, vendor, name, filename, preferred, slug)
-    return deduplicate(json.dumps(devices, indent = 2))
+    return json.dumps(devices, indent = 2)
 
 def hash_file(filename):
     # This function returns the SHA-256 hash
