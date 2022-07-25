@@ -123,4 +123,7 @@ sed -i -e 's/FONTSIZE=.*/FONTSIZE="6x12"/' /etc/default/console-setup
 
 status_stage3 'Fix startup time from 5 minutes to 15 secs on raise interface'
 sed -i 's/^TimeoutStartSec=5min/TimeoutStartSec=15/g' "/usr/lib/systemd/system/networking.service"
+
+status_stage3 'Mask smartmontools service'
+systemctl mask smartmontools
 EOF
