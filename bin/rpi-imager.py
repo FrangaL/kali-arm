@@ -13,7 +13,7 @@
 ## - "<outputdir>/rpi-imager.json": manifest file mapping image name to display name
 ##
 ## Dependencies:
-##   sudo apt -y install python3 python3-yaml
+##   sudo apt -y install python3 python3-yaml python3-jinja2
 ##
 ## Usage:
 ##  ./bin/rpi-imager.py -i <input file> -o <output directory> -r <release>
@@ -26,7 +26,7 @@ import datetime
 import yaml # python3 -m pip install pyyaml --user
 import getopt, os, stat, sys
 
-manifest = ""     # Generated automatically (<outputdir>/manifest.json)
+manifest = ""     # Generated automatically (<outputdir>/rpi-imager.json)
 release = ""
 outputdir = ""
 inputfile = ""
@@ -37,6 +37,12 @@ qty_devices = 0
 ## ------------------------------------------------------------ ##
 ## See: ./devices.yml
 ##      https://gitlab.com/kalilinux/build-scripts/kali-arm/-/blob/master/devices.yml
+##
+## See: ./images/*.img.sha256sum (uncompressed image sha256sum - to get the sha256sum
+##      ./images/*.img.xz.sha256sum (compressed image sha256sum - to get the sha256sum
+##      ./images/*.img.xz (compressed image; we use xz to look at the metadata to get compressed/uncompressed size)
+##      unxz --verbose --list kali-linux-2022.2-pinebook-pro-arm64.img.xz | grep Compressed | awk '{ print substr($5,2); }' ## 401013776
+##      unxz --verbose --list kali-linux-2022.2-pinebook-pro-arm64.img.xz | grep Uncompressed | awk '{ print substr($5,2); }' ## 2254857830 
 
 def bail(message = "", strerror = ""):
     outstr = ""
