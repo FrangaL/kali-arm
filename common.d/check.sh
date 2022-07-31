@@ -19,6 +19,14 @@ if [ ! -e /usr/bin/qemu-aarch64-static ]; then
   log "Please run ./commond.d/build_deps.sh" red
   exit 1
 fi
+# Check for the kali archive keyring
+if [ ! -e /usr/share/keyrings/kali-archive-keyring.gpg ]; then
+  log "Error: missing kali-archive-keyring" red
+  log "Please download the latest version from" red
+  log "https://kali.download/kali/pool/main/k/kali-archive-keyring" red
+  log "and install it manually." red
+  exit 1
+fi
 
 # Check exist bsp directory.
 if [ ! -e "bsp" ]; then
