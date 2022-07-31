@@ -16,15 +16,16 @@
 ##   sudo apt -y install python3 python3-yaml python3-jinja2
 ##
 ## Usage:
-##  ./bin/rpi-imager.py -i <input file> -o <output directory> -r <release>
+##  ./bin/post-release.py -i <input file> -o <output directory> -r <release>
 ##
 ## E.g.:
-## ./bin/rpi-imager.py -i devices.yml -o images/ -r 2022.3
+## ./bin/post-release.py -i devices.yml -o images/ -r 2022.3
 
 import json
 import datetime
 import yaml # python3 -m pip install pyyaml --user
 import getopt, os, stat, sys
+from jinja2 import Environment, FileSystemLoader
 
 manifest = ""     # Generated automatically (<outputdir>/rpi-imager.json)
 release = ""
@@ -32,6 +33,8 @@ outputdir = ""
 inputfile = ""
 qty_images = 0
 qty_devices = 0
+environment = Environment(loader=FileSystemLoader("bin/"))
+template = environment.get_template("rpi-imager.j2")
 
 ## Input:
 ## ------------------------------------------------------------ ##
