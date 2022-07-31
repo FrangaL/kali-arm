@@ -7,6 +7,19 @@ if [[ $EUID -ne 0 ]]; then
   exit 1
 fi
 
+# Check for systemd-nspawn
+if [ ! -e /usr/bin/systemd-nspawn ]; then
+  log "Error: missing systemd-nspawn" red
+  log "Please run ./common.d/build_deps.sh" red
+  exit 1
+fi
+# Check for qemu-user-static
+if [ ! -e /usr/bin/qemu-aarch64-static ]; then
+  log "Error: missing QEMU" red
+  log "Please run ./commond.d/build_deps.sh" red
+  exit 1
+fi
+
 # Check exist bsp directory.
 if [ ! -e "bsp" ]; then
   log "Error: missing bsp directory structure" red
