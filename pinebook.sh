@@ -56,6 +56,18 @@ rm -rf rtl8723bt-firmware
 status_stage3 'Enable suspend2idle'
 sed -i s/"#SuspendState=mem standby freeze"/"SuspendState=freeze"/g /etc/systemd/sleep.conf
 
+# The wireless driver is iffy coming out of suspend
+# So in order to work properly, we need to remove it before suspend and
+# add it back after.
+status_stage3 'Create script add or remove wifi driver at suspend/resume'
+cat __EOF__ < /usr/lib/systemd/system-sleep/8723.sh
+#!/bin/bash
+[ "$1" = "post" ] && exec /usr/sbin/modprobe 8723cs
+[ "$1" = "pre" ] && exec /usr/sbin/modprobe -r 8723cs
+exit 0
+__EOF__
+chmod +x /usr/lib/systemd/system-sleep/8723cs.sh
+
 status_stage3 'Need to package up the wifi driver'
 # (it's a Realtek 8723cs, with the usual Realtek driver quality) still,
 # so for now, we clone it and then build it inside the chroot
