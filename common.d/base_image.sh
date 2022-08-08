@@ -134,6 +134,21 @@ install -m755 /bsp/scripts/runonce /usr/sbin/
 cp -rf /bsp/runonce.d /etc
 systemctl enable runonce
 
+# Install Powershell 7.1.3
+# c0ntra reports that newer than this has issues connecting to SOC-200
+status_stage3 'Install powershell 7.1.3'
+if [[ ${architecture} != armel ]; then
+  if [[ ${architecture} == "arm64" ]]; then
+    curl -L -o /tmp/powershell.tar.gz https://github.com/PowerShell/PowerShell/releases/download/v7.1.3/powershell-7.1.3-linux-arm64.tar.gz
+  else
+    curl -L -o /tmp/powershell.tar.gz https://github.com/PowerShell/PowerShell/releases/download/v7.1.3/powershell-7.1.3-linux-arm32.tar.gz
+  fi
+    mkdir -p /opt/microsoft/powershell/7
+    tar -zf  /tmp/powershell -C /opt/microsoft/powershell/7
+    chmod +x /opt/microsoft/powershell/7/pwsh
+    ln -s /opt/microsoft/powershell/7/pwsh
+fi
+
 status_stage3 'Try and make the console a bit nicer. Set the terminus font for a bit nicer display'
 sed -i -e 's/FONTFACE=.*/FONTFACE="Terminus"/' /etc/default/console-setup
 sed -i -e 's/FONTSIZE=.*/FONTSIZE="6x12"/' /etc/default/console-setup
