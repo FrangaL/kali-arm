@@ -466,7 +466,7 @@ devices:
         images:
           - image: "gateworks-newport-armhf.img"
             name: "Gateworks Newport"
-            architecture: "armhf"
+            architecture: "arm64"
             preferred-image: "false"
             support: "kali"
             slug: "gateworks-newport"
