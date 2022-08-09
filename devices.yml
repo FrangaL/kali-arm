@@ -729,7 +729,7 @@ devices:
         usb2: "1"
         usb3: "0"
         storage: ["sdcard"]
-        notes: ""
+        notes: "Has 1 Micro SD card slot"
         images:
           - image: "nanopi2-armhf.img"
             name: "NanoPi2"
