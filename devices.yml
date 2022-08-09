@@ -1429,7 +1429,7 @@ devices:
             kernel-version: "5.10.103"
             image-notes: ""
 
-  - usbarmory:
+  - withsecure:
       - board: "usb-armory-mki"
         name: "USB Armory MKI"
         cpu: "NXP i.MX53"
