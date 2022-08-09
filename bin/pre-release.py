@@ -25,7 +25,6 @@ import json
 import datetime
 import yaml # python3 -m pip install pyyaml --user
 import getopt, os, stat, sys
-import hashlib # sha256 support
 
 manifest = ""     # Generated automatically (<outputdir>/manifest.json)
 release = ""
@@ -94,20 +93,6 @@ def jsonarray(devices, vendor, name, filename, preferred, slug):
     devices[vendor].append(jsondata)
     return devices
 
-# We don't want to dedupe every line, we want it to only do so based on the "name"
-# and we want to remove the stanza, rather than just that line.
-# Ideally, we look at vendor, then check if the "name" already exists
-# if so, leave off that stanza.
-def deduplicate(data):
-    # Remove duplicate lines
-    clean_data = ""
-    lines_seen = set()
-    for line in data.splitlines():
-        if line not in lines_seen: # not a duplicate
-            clean_data += line + "\n"
-            lines_seen.add(line)
-    return clean_data
-
 def generate_manifest(data):
     global release, qty_devices, qty_images
     default = ""
@@ -124,30 +109,25 @@ def generate_manifest(data):
                 for key in board.keys():
                     # Check if there is an image for the board
                     if 'images' in key:
-                        # Check that it's not eol or community supported (depth 3)
-                        # Iterate over image (depth 4)
+                        # Iterate over image (depth 3)
                         for image in board[key]:
-                            if image.get('support') == "kali":
-                                qty_images += 1
-                                name = image.get('name', default)
-                                filename = "kali-linux-{}-{}".format(release, image.get('image', default))
-                                preferred = image.get('preferred-image', default)
-                                slug = image.get('slug', default)
-                                jsonarray(devices, vendor, name, filename, preferred, slug)
+                            qty_images += 1
+                            name = image.get('name', default)
+                            filename = "kali-linux-{}-{}".format(release, image.get('image', default))
+                            preferred = image.get('preferred-image', default)
+                            slug = image.get('slug', default)
+                            jsonarray(devices, vendor, name, filename, preferred, slug)
     return json.dumps(devices, indent = 2)
 
-def hash_file(filename):
-    # This function returns the SHA-256 hash
-    h = hashlib.sha256()
-
-    # open file for reading, binary
-    with open(filename, 'rb') as file:
-        chunk = 0
-        while chunk != b'':
-            # read only 1024 bytes at a time
-            chunk = file.read(1024)
-            h.update(chunk)
-    return h.hexdigest()
+def deduplicate(data):
+    # Remove duplicate lines
+    clean_data = ""
+    lines_seen = set()
+    for line in data.splitlines():
+        if line not in lines_seen: # not a duplicate
+            clean_data += line + "\n"
+            lines_seen.add(line)
+    return clean_data
 
 def createdir(dir):
     try:
@@ -190,7 +170,7 @@ def main(argv):
 
     # Get data
     res = yaml_parse(data)
-    manifest_list = deduplicate(generate_manifest(res))
+    manifest_list = generate_manifest(res)
 
     # Create output directory if required
     createdir(outputdir)
