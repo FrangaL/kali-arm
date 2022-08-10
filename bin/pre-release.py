@@ -30,8 +30,9 @@ manifest = ""     # Generated automatically (<outputdir>/manifest.json)
 release = ""
 outputdir = ""
 inputfile = ""
-qty_images = 0
 qty_devices = 0
+qty_images = 0
+qty_release_images = 0
 
 ## Input:
 ## ------------------------------------------------------------ ##
@@ -94,7 +95,7 @@ def jsonarray(devices, vendor, name, filename, preferred, slug):
     return devices
 
 def generate_manifest(data):
-    global release, qty_devices, qty_images
+    global release, qty_devices, qty_images, qty_release_images
     default = ""
     devices = {}
 
@@ -102,6 +103,8 @@ def generate_manifest(data):
     for yaml in data['devices']:
         # Iterate over vendors
         for vendor in yaml.keys():
+            # Ready to have a unique name in the entry
+            img_seen = set()
             # Iterate over board (depth 2)
             for board in yaml[vendor]:
                 qty_devices += 1
@@ -112,22 +115,18 @@ def generate_manifest(data):
                         # Iterate over image (depth 3)
                         for image in board[key]:
                             qty_images += 1
-                            name = image.get('name', default)
-                            filename = "kali-linux-{}-{}".format(release, image.get('image', default))
-                            preferred = image.get('preferred-image', default)
-                            slug = image.get('slug', default)
-                            jsonarray(devices, vendor, name, filename, preferred, slug)
+                            # Check that it's not EOL or community supported
+                            if image.get('support') == "kali":
+                                name = image.get('name', default)
+                                # If we haven't seen this image before for this vendor
+                                if name not in img_seen:
+                                    img_seen.add(name)
+                                    qty_release_images += 1
+                                    filename = "kali-linux-{}-{}".format(release, image.get('image', default))
+                                    preferred = image.get('preferred-image', default)
+                                    slug = image.get('slug', default)
+                                    jsonarray(devices, vendor, name, filename, preferred, slug)
     return json.dumps(devices, indent = 2)
-
-def deduplicate(data):
-    # Remove duplicate lines
-    clean_data = ""
-    lines_seen = set()
-    for line in data.splitlines():
-        if line not in lines_seen: # not a duplicate
-            clean_data += line + "\n"
-            lines_seen.add(line)
-    return clean_data
 
 def createdir(dir):
     try:
@@ -180,8 +179,9 @@ def main(argv):
 
     # Print result and exit
     print('\nStats:')
-    print('  - Devices\t: {}'.format(qty_devices))
-    print('  - Images\t: {}'.format(qty_images))
+    print('  - Total devices\t: {}'.format(qty_devices))
+    print('  - Total images\t: {}'.format(qty_images))
+    print('  - {} images\t: {}'.format(release, qty_release_images))
     print("\n")
     print('Manifest file created\t: {}'.format(manifest))
 
