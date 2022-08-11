@@ -16,6 +16,7 @@ command fc-cache && fc-cache -frs
 rm -rf /tmp/*
 rm -rf /etc/*-
 rm -rf /hs_err*
+rm -rf /etc/console-setup/cached_*
 rm -rf /userland
 rm -rf /opt/vc/src
 rm -rf /third-stage

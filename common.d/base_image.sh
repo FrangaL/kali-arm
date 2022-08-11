@@ -90,9 +90,26 @@ cat <<EOF >> "${work_dir}/third-stage"
 status_stage3 'ntp does not always sync the date, but systemd-timesyncd does, so we remove ntp and reinstall it with this'
 eatmydata apt-get install -y systemd-timesyncd --autoremove
 
-status_stage3 'Linux console/keyboard configuration'
-echo 'console-common console-data/keymap/policy select Select keymap from full list' | debconf-set-selections
-echo 'console-common console-data/keymap/full select en-latin1-nodeadkeys' | debconf-set-selections
+status_stage3 'Set various defaults in debconf'
+debconf-set-selections -v << _EOF_
+# Disable popularity-contest
+popularity-contest popularity-contest/participate boolean false
+
+# Disable the encfs error message
+encfs encfs/security-information boolean true
+encfs encfs/security-information seen true
+
+# Random other questions
+console-common console-data/keymap/policy select "Select keymap from full list"
+console-common console-data/keymap/full select en-latin1-nodeadkeys
+console-setup console-setup/charmap47 select UTF-8
+samba-common samba-common/dhcp boolean false
+kismet-capture-common kismet-capture-common/install-users string
+kismet-capture-common kismet-capture-common/install-setuid boolean true
+wireshark-common wireshark-common/install-setuid boolean true
+sslh sslh/inetd_or_standalone select standalone
+atftpd atftpd/use_inetd boolean false
+_EOF_
 
 status_stage3 'Copy all services'
 cp -p /bsp/services/all/*.service /etc/systemd/system/
@@ -116,6 +133,21 @@ status_stage3 'Enable runonce script'
 install -m755 /bsp/scripts/runonce /usr/sbin/
 cp -rf /bsp/runonce.d /etc
 systemctl enable runonce
+
+# Install Powershell 7.1.3
+# c0ntra reports that newer than this has issues connecting to SOC-200
+status_stage3 'Install powershell 7.1.3'
+if [[ ${architecture} != armel ]]; then
+  if [[ ${architecture} == "arm64" ]]; then
+    curl -L -o /tmp/powershell.tar.gz https://github.com/PowerShell/PowerShell/releases/download/v7.1.3/powershell-7.1.3-linux-arm64.tar.gz
+  else
+    curl -L -o /tmp/powershell.tar.gz https://github.com/PowerShell/PowerShell/releases/download/v7.1.3/powershell-7.1.3-linux-arm32.tar.gz
+  fi
+    mkdir -p /opt/microsoft/powershell/7
+    tar -xf  /tmp/powershell.tar.gz -C /opt/microsoft/powershell/7
+    chmod +x /opt/microsoft/powershell/7/pwsh
+    ln -s /opt/microsoft/powershell/7/pwsh
+fi
 
 status_stage3 'Try and make the console a bit nicer. Set the terminus font for a bit nicer display'
 sed -i -e 's/FONTFACE=.*/FONTFACE="Terminus"/' /etc/default/console-setup
