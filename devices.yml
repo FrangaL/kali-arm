@@ -180,7 +180,6 @@ devices:
             kernel-version: "5.10.103"
             image-notes: ""
 
-
       - board: "raspberry-pi1"
         name: "Raspberry Pi 1 (Original)"
         cpu: "Broadcom BCM2835"
@@ -288,6 +287,64 @@ devices:
             build-script: "raspberry-pi-zero-w-p4wnp1-aloa.sh"
             kernel: "custom"
             kernel-version: "4.14.80"
+            image-notes: ""
+
+  - pine64:
+      - board: "pinebook"
+        name: "Pinebook"
+        cpu: "Allwinner A64"
+        cpu-cores: "4"
+        gpu: "Mali 400-MP2"
+        ram: "LPDDR3"
+        ram-size: ["2048"]
+        ethernet: "0"
+        ethernet-speed: "0"
+        wifi: "2.4GHz/5GHz"
+        bluetooth: "true"
+        usb2: "2"
+        usb3: "0"
+        storage: ["sdcard", "emmc"]
+        notes: "Suspend does not work, upstream kernel issue.
+                Wi-Fi Realtek 8723CS."
+        images:
+          - image: "pinebook-arm64.img"
+            name: "Pinebook"
+            architecture: "arm64"
+            preferred-image: "false"
+            support: "kali"
+            slug: "pinebook"
+            build-script: "pinebook.sh"
+            kernel: "kali"
+            kernel-version: "5.18.0-kali1-arm64"
+            image-notes: ""
+
+      - board: "pinebook-pro"
+        name: "Pinebook Pro"
+        cpu: "Rockchip RK3399"
+        cpu-cores: "6"
+        gpu: "Mali T860-MP4"
+        ram: "LPDDR4"
+        ram-size: ["4096"]
+        ethernet: "0"
+        ethernet-speed: "0"
+        wifi: "2.4GHz/5GHz"
+        bluetooth: "true"
+        usb2: "1"
+        usb3: "2"
+        storage: ["sdcard", "emmc", "nvme"]
+        notes: "<b>Our preferred ARM laptop</b>.
+                NVME support should work but is untested.
+                WiFi: AMPAK AP6256."
+        images:
+          - image: "pinebook-pro-arm64.img"
+            name: "Pinebook Pro"
+            architecture: "arm64"
+            preferred-image: "false"
+            support: "kali"
+            slug: "pinebook-pro"
+            build-script: "pinebook-pro.sh"
+            kernel: "kali"
+            kernel-version: "5.18.0-kali1-arm64"
             image-notes: ""
 
   - banana:
@@ -1328,64 +1385,6 @@ devices:
             support: "community"
             slug: "riotboard"
             build-script: "riotboard.sh"
-            kernel: "kali"
-            kernel-version: "5.18.0-kali1-arm64"
-            image-notes: ""
-
-  - pine64:
-      - board: "pinebook"
-        name: "Pinebook"
-        cpu: "Allwinner A64"
-        cpu-cores: "4"
-        gpu: "Mali 400-MP2"
-        ram: "LPDDR3"
-        ram-size: ["2048"]
-        ethernet: "0"
-        ethernet-speed: "0"
-        wifi: "2.4GHz/5GHz"
-        bluetooth: "true"
-        usb2: "2"
-        usb3: "0"
-        storage: ["sdcard", "emmc"]
-        notes: "Suspend does not work, upstream kernel issue.
-                Wi-Fi Realtek 8723CS."
-        images:
-          - image: "pinebook-arm64.img"
-            name: "Pinebook"
-            architecture: "arm64"
-            preferred-image: "false"
-            support: "kali"
-            slug: "pinebook"
-            build-script: "pinebook.sh"
-            kernel: "kali"
-            kernel-version: "5.18.0-kali1-arm64"
-            image-notes: ""
-
-      - board: "pinebook-pro"
-        name: "Pinebook Pro"
-        cpu: "Rockchip RK3399"
-        cpu-cores: "6"
-        gpu: "Mali T860-MP4"
-        ram: "LPDDR4"
-        ram-size: ["4096"]
-        ethernet: "0"
-        ethernet-speed: "0"
-        wifi: "2.4GHz/5GHz"
-        bluetooth: "true"
-        usb2: "1"
-        usb3: "2"
-        storage: ["sdcard", "emmc", "nvme"]
-        notes: "<b>Our preferred ARM laptop</b>.
-                NVME support should work but is untested.
-                WiFi: AMPAK AP6256."
-        images:
-          - image: "pinebook-pro-arm64.img"
-            name: "Pinebook Pro"
-            architecture: "arm64"
-            preferred-image: "false"
-            support: "kali"
-            slug: "pinebook-pro"
-            build-script: "pinebook-pro.sh"
             kernel: "kali"
             kernel-version: "5.18.0-kali1-arm64"
             image-notes: ""
