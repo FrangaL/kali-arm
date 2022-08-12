@@ -61,7 +61,7 @@ sed -i s/"#SuspendState=mem standby freeze"/"SuspendState=freeze"/g /etc/systemd
 # add it back after.
 status_stage3 'Create script add or remove wifi driver at suspend/resume'
 mkdir -p /usr/lib/systemd/system-sleep/
-cat __EOF__ < /usr/lib/systemd/system-sleep/8723.sh
+cat __EOF__ < /usr/lib/systemd/system-sleep/8723cs.sh
 #!/bin/bash
 [ "$1" = "post" ] && exec /usr/sbin/modprobe 8723cs
 [ "$1" = "pre" ] && exec /usr/sbin/modprobe -r 8723cs
