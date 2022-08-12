@@ -162,7 +162,7 @@ def generate_manifest(data):
                                     try:
                                         unxz = subprocess.check_output("unxz --verbose --list {}/{}.xz | grep 'Uncompressed'".format(imagedir, filename), shell=True)
                                         extract_size = re.findall(r'\((.*?) B\)', str(unxz))[0]
-                                        extract_size = extract_size.replace(',','')
+                                        extract_size = extract_size.replace(',', '')
                                     except subprocess.CalledProcessError as e:
                                         #print("command '{}' return with error (code {})".format(e.cmd, e.returncode))
                                         extract_size = "0"
