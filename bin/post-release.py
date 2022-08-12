@@ -98,16 +98,18 @@ def jsonarray(devices, vendor, name, url, extract_size, extract_sha256, image_do
     if not vendor in devices:
         devices[vendor] = []
 
-    jsondata = {"name": name,
-                "description": "Kali Linux ARM image for the {}".format(name),
-                "url": url,
-                "icon": "https://www.kali.org/images/favicon.svg",
-                "release_date": datetime.datetime.today().strftime("%Y-%m-%d"),
-                "extract_size": extract_size,
-                "extract_sha256": extract_sha256,
-                "image_download_size": "{}".format(image_download_size),
-                "image_download_sha256": image_download_sha256,
-                "website": "https://www.kali.org/"}
+    jsondata = {
+                  "name": name,
+                  "description": "Kali Linux ARM image for the {}".format(name),
+                  "url": url,
+                  "icon": "https://www.kali.org/images/favicon.svg",
+                  "website": "https://www.kali.org/",
+                  "release_date": datetime.datetime.today().strftime("%Y-%m-%d"),
+                  "extract_size": extract_size,
+                  "extract_sha256": extract_sha256,
+                  "image_download_size": "{}".format(image_download_size),
+                  "image_download_sha256": image_download_sha256
+                }
     devices[vendor].append(jsondata)
     return devices
 
