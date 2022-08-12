@@ -107,7 +107,7 @@ def jsonarray(devices, vendor, name, url, extract_size, extract_sha256, image_do
                   "release_date": datetime.datetime.today().strftime("%Y-%m-%d"),
                   "extract_size": extract_size,
                   "extract_sha256": extract_sha256,
-                  "image_download_size": "{}".format(image_download_size),
+                  "image_download_size": image_download_size,
                   "image_download_sha256": image_download_sha256
                 }
     devices[vendor].append(jsondata)
@@ -165,9 +165,10 @@ def generate_manifest(data):
                                         unxz = subprocess.check_output("unxz --verbose --list {}/{}.xz | grep 'Uncompressed'".format(imagedir, filename), shell=True)
                                         extract_size = re.findall(r'\((.*?) B\)', str(unxz))[0]
                                         extract_size = extract_size.replace(',', '')
+                                        extract_size = int(extract_size)
                                     except subprocess.CalledProcessError as e:
                                         #print("command '{}' return with error (code {})".format(e.cmd, e.returncode))
-                                        extract_size = "0"
+                                        extract_size = 0
 
                                    #image_download_size = os.stat('{}/{}.xz'.format(imagedir, filename)).st_size
                                     image_download_size = os.path.getsize('{}/{}.xz'.format(imagedir, filename))
