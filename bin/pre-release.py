@@ -6,23 +6,22 @@
 ###############################################
 ## Script to prepare Kali ARM quarterly release
 ##
-## This should be run after images are created.
+## This should be run either before or after images are created.
 ##
 ## It parses the YAML sections of the devices.yml and creates:
-##
 ## - "<outputdir>/manifest.json": manifest file mapping image name to display name
 ##
 ## Dependencies:
 ##   sudo apt -y install python3 python3-yaml
 ##
 ## Usage:
-##  ./bin/pre-release.py -i <input file> -o <output directory> -r <release>
+##  ./bin/pre-release.py -i <input file> -r <release> -o <output directory>
 ##
 ## E.g.:
-## ./bin/pre-release.py -i devices.yml -o images/ -r 2022.3
+## ./bin/pre-release.py -i devices.yml -r 2022.3 -o images/
 
-import json
 import datetime
+import json
 import yaml # python3 -m pip install pyyaml --user
 import getopt, os, stat, sys
 
@@ -44,6 +43,7 @@ def bail(message = "", strerror = ""):
     prog = sys.argv[0]
     if message != "":
         outstr = "\nError: {}".format(message)
+
     if strerror != "":
         outstr += "\nMessage: {}\n".format(strerror)
     else:
@@ -66,10 +66,10 @@ def getargs(argv):
                 bail()
             elif opt in ("-i", "--inputfile"):
                 inputfile = arg
-            elif opt in ("-o", "--outputdir"):
-                outputdir = arg.rstrip("/")
             elif opt in ("-r", "--release"):
                 release = arg
+            elif opt in ("-o", "--outputdirectory"):
+                outputdir = arg.rstrip("/")
             else:
                 bail("Unrecognised argument: " + opt)
     else:
@@ -90,7 +90,10 @@ def yaml_parse(content):
 def jsonarray(devices, vendor, name, filename, preferred, slug):
     if not vendor in devices:
         devices[vendor] = []
-    jsondata = {"name": name, "filename": filename, "preferred": preferred, "slug": slug}
+    jsondata = {"name": name,
+                "filename": filename,
+                "preferred": preferred,
+                "slug": slug}
     devices[vendor].append(jsondata)
     return devices
 
@@ -122,6 +125,7 @@ def generate_manifest(data):
                                 if name not in img_seen:
                                     img_seen.add(name)
                                     qty_release_images += 1
+
                                     filename = "kali-linux-{}-{}".format(release, image.get('image', default))
                                     preferred = image.get('preferred-image', default)
                                     slug = image.get('slug', default)
