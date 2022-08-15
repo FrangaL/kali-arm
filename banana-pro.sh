@@ -27,7 +27,7 @@ status_stage3 'Copy rpi services'
 cp -p /bsp/services/rpi/*.service /etc/systemd/system/
 
 status_stage3 'Install the kernel packages'
-eatmydata apt-get install -y linux-image-armmp u-boot-menu u-boot-sunxi
+eatmydata apt-get install -y linux-image-armmp ${allwinner}
 
 status_stage3 'Enable login over serial (No password)'
 echo "T0:23:respawn:/sbin/agetty -L ttyAMA0 115200 vt100" >> /etc/inittab

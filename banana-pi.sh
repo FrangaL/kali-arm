@@ -27,7 +27,7 @@ status_stage3 'Copy rpi services'
 cp -p /bsp/services/rpi/*.service /etc/systemd/system/
 
 status_stage3 'Install the kernel packages'
-eatmydata apt-get install -y linux-image-armmp u-boot-menu u-boot-sunxi
+eatmydata apt-get install -y linux-image-armmp ${allwinner}
 
 status_stage3 'Load the ethernet module since it does not load automatically at boot'
 echo "sunxi_emac" >> /etc/modules
