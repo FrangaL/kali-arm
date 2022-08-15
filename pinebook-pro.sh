@@ -28,10 +28,7 @@ cat <<EOF >> "${work_dir}"/third-stage
 # We use the one that armbian has in their repository at
 # https://github.com/armbian/firmware/
 # It uses the 43456 files.
-eatmydata apt-get install -y dkms linux-image-arm64 u-boot-menu u-boot-rockchip
-
-status_stage3 'Install bluez for bluetooth'
-eatmydata apt-get install -y bluez bluez-firmware
+eatmydata apt-get install -y linux-image-arm64 ${rockchip}
 
 status_stage3 'Touchpad settings'
 mkdir -p /etc/X11/xorg.conf.d/
@@ -48,11 +45,9 @@ systemctl enable bluetooth
 status_stage3 'Enable suspend2idle'
 sed -i s/"#SuspendState=mem standby freeze"/"SuspendState=freeze"/g /etc/systemd/sleep.conf
 
-status_stage3 'Enable login over serial (No password)'
+status_stage3 'Enable login over serial'
 echo "T0:23:respawn:/sbin/agetty -L ttyAMA0 115200 vt100" >> /etc/inittab
 
-status_stage3 'Fixup wireless-regdb signature'
-update-alternatives --set regulatory.db /lib/firmware/regulatory.db-upstream
 EOF
 
 # Run third stage
