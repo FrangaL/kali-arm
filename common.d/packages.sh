@@ -3,13 +3,13 @@
 log " selecting packages ..." gray
 
 # This list is included by debootstrap and has to be comma separated.
-debootstrap_base="kali-archive-keyring,eatmydata,iw,network-manager,parted,sudo,wpasupplicant"
+debootstrap_base="kali-archive-keyring,ca-certificates,eatmydata,iw,parted,sudo,wpasupplicant"
 
 # This is the list of minimal common packages
 common_pkgs="kali-linux-core apt-transport-https bluez bluez-firmware dialog \
 firmware-linux firmware-realtek firmware-atheros firmware-libertas fontconfig \
-initramfs-tools inxi libnss-systemd net-tools pciutils psmisc tmux triggerhappy \
-usbutils vim wireless-regdb zerofree"
+initramfs-tools inxi libnss-systemd net-tools network-manager pciutils psmisc \
+tmux triggerhappy usbutils vim wireless-regdb zerofree"
 
 services="ssh openvpn tightvncserver"
 
