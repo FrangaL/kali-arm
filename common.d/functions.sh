@@ -138,7 +138,7 @@ function systemd-nspawn_exec() {
 # Create the rootfs - not much to modify here, except maybe throw in some more packages if you want.
 function debootstrap_exec() {
   status " debootstrap ${suite} $*"
-  eatmydata debootstrap --foreign --keyring=/usr/share/keyrings/kali-archive-keyring.gpg --components="${components}" \
+  eatmydata debootstrap --merged-usr --keyring=/usr/share/keyrings/kali-archive-keyring.gpg --components="${components}" \
     --include="${debootstrap_base}" --arch "${architecture}" "${suite}" "${work_dir}" "$@"
 }
 

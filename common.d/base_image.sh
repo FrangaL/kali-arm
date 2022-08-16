@@ -33,12 +33,6 @@ include packages
 # Execute initial debootstrap
 debootstrap_exec http://http.kali.org/kali
 
-# Enable eatmydata in compilation
-include eatmydata
-
-# debootstrap second stage
-systemd-nspawn_exec eatmydata /debootstrap/debootstrap --second-stage
-
 # Define sources.list
 sources_list
 
