@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
-from datetime import datetime
 import sys
+from datetime import datetime
+
 import yaml # python3 -m pip install pyyaml --user
 
 OUTPUT_FILE = './device-stats.md'

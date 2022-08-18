@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 # REF: https://gitlab.com/kalilinux/nethunter/build-scripts/kali-nethunter-devices/-/blob/52cbfb36/scripts/generate_images_stats.py
-from datetime import datetime
 import sys
+from datetime import datetime
+
 import yaml # python3 -m pip install pyyaml --user
 
 OUTPUT_FILE = './image-stats.md'

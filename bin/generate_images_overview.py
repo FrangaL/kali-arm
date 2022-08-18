@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 # REF: https://www.kali.org/docs/arm/
-from datetime import datetime
 import sys
+from datetime import datetime
+
 import yaml # python3 -m pip install pyyaml --user
 
 OUTPUT_FILE = './image-overview.md'

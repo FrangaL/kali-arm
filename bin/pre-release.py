@@ -21,9 +21,13 @@
 ## ./bin/pre-release.py -i devices.yml -r 2022.3 -o images/
 
 import datetime
+import getopt
 import json
+import os
+import stat
+import sys
+
 import yaml # python3 -m pip install pyyaml --user
-import getopt, os, stat, sys
 
 manifest = ""     # Generated automatically (<outputdir>/manifest.json)
 release = ""

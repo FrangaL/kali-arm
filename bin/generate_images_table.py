@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 # REF: https://gitlab.com/kalilinux/nethunter/build-scripts/kali-nethunter-devices/-/blob/95ad7d2b/scripts/generate_images_table.py
-from datetime import datetime
 import sys
+from datetime import datetime
+
 import yaml # python3 -m pip install pyyaml --user
 
 OUTPUT_FILE = './images.md'
