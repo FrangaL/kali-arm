@@ -21,7 +21,6 @@ qty_images = 0
 
 def yaml_parse(content):
     result = ""
-
     lines = content.split('\n')
 
     for line in lines:
