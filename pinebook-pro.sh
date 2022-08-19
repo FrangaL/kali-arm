@@ -53,6 +53,10 @@ echo "T0:23:respawn:/sbin/agetty -L ttyAMA0 115200 vt100" >> /etc/inittab
 
 status_stage3 'Fixup wireless-regdb signature'
 update-alternatives --set regulatory.db /lib/firmware/regulatory.db-upstream
+
+status_stage3 'Add in 43455 firmware for newer model Pinebook Pro'
+mkdir -p /lib/firmware/brcm/
+cp -a /bsp/firmware/pbp/* /lib/firmware/brcm/
 EOF
 
 # Run third stage
