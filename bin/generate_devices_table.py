@@ -1,15 +1,17 @@
 #!/usr/bin/env python3
+
 import re
 import sys
 from datetime import datetime
 
 import yaml  # python3 -m pip install pyyaml --user
 
-OUTPUT_FILE = './devices.md'
-INPUT_FILE = './devices.yml'
+OUTPUT_FILE = "./devices.md"
+INPUT_FILE = "./devices.yml"
 
-repo_msg = "\n_This table was [generated automatically](https://gitlab.com/kalilinux/build-scripts/kali-arm/-/blob/master/devices.yml) on {} from the [Kali ARM GitLab repository](https://gitlab.com/kalilinux/build-scripts/kali-arm)_\n".format(
-    datetime.now().strftime("%Y-%B-%d %H:%M:%S"))
+repo_msg = f"""
+_This table was [generated automatically](https://gitlab.com/kalilinux/build-scripts/kali-arm/-/blob/master/devices.yml) on {datetime.now().strftime('%Y-%B-%d %H:%M:%S')} from the [Kali ARM GitLab repository](https://gitlab.com/kalilinux/build-scripts/kali-arm)_
+"""
 
 qty_devices = 0
 
@@ -50,7 +52,7 @@ def generate_table(data):
     table += "|--------|-------|-----|-----------|-----|-----|---------------|----------|---------------------|-------|-----------|------|------|---------|---------------------|\n"
 
     # Iterate over per input (depth 1)
-    for yaml in data['devices']:
+    for yaml in data["devices"]:
         # Iterate over vendors
         for vendor in yaml.keys():
             # Iterate over board (depth 2)
@@ -63,48 +65,25 @@ def generate_table(data):
 
                 i = 0
 
-                for f in natural_sort(board.get('ram-size', default)):
+                for f in natural_sort(board.get("ram-size", default)):
                     if i > 0:
                         ram_size += ", "
 
                     ram_size += f
+
                     i += 1
 
                 i = 0
 
-                for f in natural_sort(board.get('storage', default)):
+                for f in natural_sort(board.get("storage", default)):
                     if i > 0:
                         storage += ", "
 
                     storage += f
+
                     i += 1
 
-                table += "| {} | {} | {} | {} | {} | {} | {} | {} | {} | {} | {} | {} | {} | {} | {} |\n".format(vendor,
-                                                                                                                 board.get(
-                                                                                                                     'name', default),
-                                                                                                                 board.get(
-                                                                                                                     'cpu', default),
-                                                                                                                 board.get(
-                                                                                                                     'cpu-cores', default),
-                                                                                                                 board.get(
-                                                                                                                     'gpu', default),
-                                                                                                                 board.get(
-                                                                                                                     'ram', default),
-                                                                                                                 ram_size,
-                                                                                                                 board.get(
-                                                                                                                     'ethernet', default),
-                                                                                                                 board.get(
-                                                                                                                     'ethernet-speed', default),
-                                                                                                                 board.get(
-                                                                                                                     'wifi', default),
-                                                                                                                 board.get(
-                                                                                                                     'bluetooth', default),
-                                                                                                                 board.get(
-                                                                                                                     'usb2', default),
-                                                                                                                 board.get(
-                                                                                                                     'usb3', default),
-                                                                                                                 storage,
-                                                                                                                 board.get('notes', default))
+                table += f"| {vendor} | {board.get('name', default)} | {board.get('cpu', default)} | {board.get('cpu-cores', default)} | {board.get('gpu', default)} | {board.get('ram', default)} | {ram_size} | {board.get('ethernet', default)} | {board.get('ethernet-speed', default)} | {board.get('wifi', default)} | {board.get('bluetooth', default)} | {board.get('usb2', default)} | {board.get('usb3', default)} | {storage} | {board.get('notes', default)} |\n"
 
     return table
 
@@ -113,41 +92,38 @@ def read_file(file):
     try:
         with open(file) as f:
             data = f.read()
-            f.close()
 
     except Exception as e:
-        print("[-] Cannot open input file: {} - {}".format(file, e))
+        print(f"[-] Cannot open input file: {file} - {e}")
 
     return data
 
 
 def write_file(data, file):
     try:
-        with open(file, 'w') as f:
-            meta = '---\n'
-            meta += 'title: Kali ARM Devices\n'
-            meta += '---\n\n'
+        with open(file, "w") as f:
+            meta = "---\n"
+            meta += "title: Kali ARM Devices\n"
+            meta += "---\n\n"
 
-            stats = "- The official [Kali ARM repository](https://gitlab.com/kalilinux/build-scripts/kali-arm) contains build-scripts to support [**{}** Kali ARM devices](device-stats.html)\n".format(
-                str(str(qty_devices)))
+            stats = f"- The official [Kali ARM repository](https://gitlab.com/kalilinux/build-scripts/kali-arm) contains build-scripts to support [**{qty_devices}** Kali ARM devices](device-stats.html)\n"
             stats += "- [Kali ARM Statistics](index.html)\n\n"
 
             f.write(str(meta))
             f.write(str(stats))
             f.write(str(data))
             f.write(str(repo_msg))
-            f.close()
-            
-            print('[+] File: {} successfully written'.format(OUTPUT_FILE))
+
+            print(f"[+] File: {OUTPUT_FILE} successfully written")
 
     except Exception as e:
-        print("[-] Cannot write to output file: {} - {}".format(file, e))
+        print(f"[-] Cannot write to output file: {file} - {e}")
 
     return 0
 
 
 def print_summary():
-    print('Devices: {}'.format(qty_devices))
+    print(f"Devices: {qty_devices}")
 
 
 def main(argv):

@@ -1,15 +1,17 @@
 #!/usr/bin/env python3
 # REF: https://www.kali.org/docs/arm/
+
 import sys
 from datetime import datetime
 
 import yaml  # python3 -m pip install pyyaml --user
 
-OUTPUT_FILE = './image-overview.md'
-INPUT_FILE = './devices.yml'
+OUTPUT_FILE = "./image-overview.md"
+INPUT_FILE = "./devices.yml"
 
-repo_msg = "\n_This table was [generated automatically](https://gitlab.com/kalilinux/build-scripts/kali-arm/-/blob/master/devices.yml) on {} from the [Kali ARM GitLab repository](https://gitlab.com/kalilinux/build-scripts/kali-arm)_\n".format(
-    datetime.now().strftime("%Y-%B-%d %H:%M:%S"))
+repo_msg = f"""
+_This table was [generated automatically](https://gitlab.com/kalilinux/build-scripts/kali-arm/-/blob/master/devices.yml) on {datetime.now().strftime('%Y-%B-%d %H:%M:%S')} from the [Kali ARM GitLab repository](https://gitlab.com/kalilinux/build-scripts/kali-arm)_
+"""
 
 qty_devices = 0
 qty_images = 0
@@ -26,10 +28,10 @@ qty_image_unknown = 0
 
 def yaml_parse(content):
     result = ""
-    lines = content.split('\n')
+    lines = content.split("\n")
 
     for line in lines:
-        if line.strip() and not line.strip().startswith('#'):
+        if line.strip() and not line.strip().startswith("#"):
             result += line + "\n"
 
     return yaml.safe_load(result)
@@ -46,39 +48,40 @@ def generate_table(data):
     table += "|---------------|--------------|----------------|-----------------|---------------|\n"
 
     # Iterate over per input (depth 1)
-    for yaml in data['devices']:
+    for yaml in data["devices"]:
         # Iterate over vendors
         for vendor in yaml.keys():
             # Iterate over board (depth 2)
             for board in yaml[vendor]:
                 qty_devices += 1
+                
                 # Iterate over per board
                 for key in board.keys():
                     # Check if there is an image for the board
-                    if 'images' in key:
+                    if "images" in key:
                         # Iterate over image (depth 3)
                         for image in board[key]:
-                            if image['name'] not in images:
-                                # ALT: images.append(image['image'])
-                                images.append(image['name'])
+                            if image["name"] not in images:
+                                # ALT: images.append(image["image"])
+                                images.append(image["name"])
 
                                 qty_images += 1
 
                                 build_script = image.get(
-                                    'build-script', default)
+                                    "build-script",
+                                    default
+                                )
 
                                 if build_script:
-                                    build_script = "[{0}](https://gitlab.com/kalilinux/build-scripts/kali-arm/-/blob/master/{0})".format(
-                                        build_script)
+                                    build_script = f"[{build_script}](https://gitlab.com/kalilinux/build-scripts/kali-arm/-/blob/master/{build_script})"
 
-                                name = image.get('name', default)
-                                slug = image.get('slug', default)
+                                name = image.get("name", default)
+                                slug = image.get("slug", default)
 
                                 if name and slug:
-                                    name = "[{}](https://www.kali.org/docs/arm/{}/)".format(
-                                        name, slug)
+                                    name = f"[{name}](https://www.kali.org/docs/arm/{slug}/)"
 
-                                support = image.get('support', default)
+                                support = image.get("support", default)
 
                                 if support == "kali":
                                     status = "x |  | "
@@ -96,15 +99,13 @@ def generate_table(data):
                                     status = " |  | "
                                     qty_image_unknown += 1
 
-                                table += "| {} | {} | {} |\n".format(name,
-                                                                     build_script,
-                                                                     status)
+                                table += f"| {name} | {build_script} | {status} |\n"
+                            
                             # else:
-                            #    print('DUP {} / {}'.format(image['name'], image['image']))
+                            #    print(f"DUP {image["name"]} / {image["image"]}")
 
-                if 'images' not in board.keys():
-                    print("[i] Possible issue with: " +
-                          board.get('board', default) + " (no images)")
+                if "images" not in board.keys():
+                    print(f"[i] Possible issue with: {board.get('board', default)} (no images)")
 
     return table
 
@@ -113,48 +114,44 @@ def read_file(file):
     try:
         with open(file) as f:
             data = f.read()
-            f.close()
 
     except Exception as e:
-        print("[-] Cannot open input file: {} - {}".format(file, e))
+        print(f"[-] Cannot open input file: {file} - {e}")
 
     return data
 
 
 def write_file(data, file):
     try:
-        with open(file, 'w') as f:
-            meta = '---\n'
-            meta += 'title: Kali ARM Image Overview\n'
-            meta += '---\n\n'
+        with open(file, "w") as f:
+            meta = "---\n"
+            meta += "title: Kali ARM Image Overview\n"
+            meta += "---\n\n"
 
-            stats = "- The official [Kali ARM repository](https://gitlab.com/kalilinux/build-scripts/kali-arm) contains [build-scripts]((https://gitlab.com/kalilinux/build-scripts/kali-arm)) to create [**{}** unique Kali ARM images](image-stats.html) for **{}** devices\n".format(
-                str(qty_images), str(qty_devices))
-            stats += "- The [next release](https://www.kali.org/releases/) cycle will include [**{}** Kali ARM images](image-stats.html) _([ready to download](https://www.kali.org/get-kali/#kali-arm))_, **{}** images which can be [built](https://gitlab.com/kalilinux/build-scripts/kali-arm), and {} retired images\n".format(
-                str(qty_image_kali), str(qty_image_community), str(qty_image_eol))
+            stats = f"- The official [Kali ARM repository](https://gitlab.com/kalilinux/build-scripts/kali-arm) contains [build-scripts]((https://gitlab.com/kalilinux/build-scripts/kali-arm)) to create [**{qty_images}** unique Kali ARM images](image-stats.html) for **{qty_devices}** devices\n"
+            stats += f"- The [next release](https://www.kali.org/releases/) cycle will include [**{qty_image_kali}** Kali ARM images](image-stats.html) _([ready to download](https://www.kali.org/get-kali/#kali-arm))_, **{qty_image_community}** images which can be [built](https://gitlab.com/kalilinux/build-scripts/kali-arm), and {qty_image_eol} retired images\n"
             stats += "- [Kali ARM Statistics](index.html)\n\n"
 
             f.write(str(meta))
             f.write(str(stats))
             f.write(str(data))
             f.write(str(repo_msg))
-            f.close()
 
-            print('[+] File: {} successfully written'.format(OUTPUT_FILE))
+            print(f"[+] File: {OUTPUT_FILE} successfully written")
 
     except Exception as e:
-        print("[-] Cannot write to output file: {} - {}".format(file, e))
+        print(f"[-] Cannot write to output file: {file} - {e}")
 
     return 0
 
 
 def print_summary():
-    print('Devices: {}'.format(qty_devices))
-    print('Images : {}'.format(qty_images))
-    print('- Kali     : {}'.format(qty_image_kali))
-    print('- Community: {}'.format(qty_image_community))
-    print('- EOL      : {}'.format(qty_image_eol))
-    print('- Unknown  : {}'.format(qty_image_unknown))
+    print(f"Devices: {qty_devices}")
+    print(f"Images : {qty_images}")
+    print(f"- Kali     : {qty_image_kali}")
+    print(f"- Community: {qty_image_community}")
+    print(f"- EOL      : {qty_image_eol}")
+    print(f"- Unknown  : {qty_image_unknown}")
 
 
 def main(argv):
