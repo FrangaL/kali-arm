@@ -44,8 +44,8 @@ qty_images = 0
 qty_release_images = 0
 
 file_ext = [
-    "xz", 
-    "xz.sha256sum", 
+    "xz",
+    "xz.sha256sum",
     "sha256sum"
     ]
 
@@ -223,7 +223,7 @@ def generate_manifest(data):
                                             str(unxz)
                                         )[0]
                                         extract_size = extract_size.replace(
-                                            ",", 
+                                            ",",
                                             ""
                                             )
                                         extract_size = int(extract_size)
@@ -235,13 +235,13 @@ def generate_manifest(data):
                                     #image_download_size = os.stat(f'{imagedir}/{filename}.xz').st_size
                                     image_download_size = os.path.getsize(f"{imagedir}/{filename}.xz")
                                     jsonarray(
-                                        devices, 
-                                        "os_list", 
-                                        name, 
-                                        url, 
-                                        extract_size, 
-                                        extract_sha256, 
-                                        image_download_size, 
+                                        devices,
+                                        "os_list",
+                                        name,
+                                        url,
+                                        extract_size,
+                                        extract_sha256,
+                                        image_download_size,
                                         image_download_sha256
                                         )
 

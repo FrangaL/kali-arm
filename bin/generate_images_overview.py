@@ -54,7 +54,7 @@ def generate_table(data):
             # Iterate over board (depth 2)
             for board in yaml[vendor]:
                 qty_devices += 1
-                
+
                 # Iterate over per board
                 for key in board.keys():
                     # Check if there is an image for the board
@@ -100,7 +100,7 @@ def generate_table(data):
                                     qty_image_unknown += 1
 
                                 table += f"| {name} | {build_script} | {status} |\n"
-                            
+
                             # else:
                             #    print(f"DUP {image["name"]} / {image["image"]}")
 
