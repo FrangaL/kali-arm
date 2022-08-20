@@ -37,4 +37,5 @@ kernel=kernel8l-alt.img
 # Tell firmware to go 64-bit mode
 arm_64bit=1
 EOF
+
 fi

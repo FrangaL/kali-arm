@@ -7,6 +7,7 @@ for archive in "${work_dir}"/var/cache/apt/archives/*eatmydata*.deb; do
   dpkg-deb --fsys-tarfile "$archive" >"${work_dir}"/eatmydata
   tar -xkf "${work_dir}"/eatmydata -C "${work_dir}"
   rm -f "${work_dir}"/eatmydata
+
 done
 
 # Prepare dpkg to use eatmydata
@@ -25,4 +26,5 @@ done
 export LD_PRELOAD
 exec "\$0-eatmydata" --force-unsafe-io "\$@"
 EOF
+
 chmod 0755 "${work_dir}"/usr/bin/dpkg

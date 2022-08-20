@@ -96,6 +96,7 @@ export MALLOC_CHECK_=0
 # Load build configuration
 if [ -f "${repo_dir}"/builder.txt ]; then
   echo "Loading: "${repo_dir}"/builder.txt"
+  
   # shellcheck source=/dev/null
   source "${repo_dir}"/builder.txt
 
@@ -103,6 +104,7 @@ if [ -f "${repo_dir}"/builder.txt ]; then
     && grep -v '#' "${repo_dir}"/builder.txt \
       | sort -u \
     || true
+
 fi
 
 # Incase `su` was used
