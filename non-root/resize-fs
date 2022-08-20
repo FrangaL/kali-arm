@@ -4,31 +4,31 @@
 
 # Get device and partition numbers/names
 # Root Partition
-  PART_DEV=`findmnt / -o source -n`
+PART_DEV=$(findmnt / -o source -n)
 
-# Remove '/dev/' from the name 
-  PART_NAME=`echo $PART_DEV | cut -d "/" -f 3`
+# Remove '/dev/' from the name
+PART_NAME=$(echo $PART_DEV | cut -d "/" -f 3)
 
 # Set just the name of the device, usually mmcblk0
-  DEV_NAME=`echo /sys/block/*/${PART_NAME} | cut -d "/" -f 4`
+DEV_NAME=$(echo /sys/block/*/${PART_NAME} | cut -d "/" -f 4)
 
 # Add /dev/ to device name
-  DEV="/dev/${DEV_NAME}"
+DEV="/dev/${DEV_NAME}"
 
 # Get Number of device as single digit integer
-  PART_NUM=`cat /sys/block/${DEV_NAME}/${PART_NAME}/partition`
+PART_NUM=$(cat /sys/block/${DEV_NAME}/${PART_NAME}/partition)
 
 # Get size of SDCard (final sector)
-  SECTOR_SIZE=`cat /sys/block/${DEV_NAME}/size`
+SECTOR_SIZE=$(cat /sys/block/${DEV_NAME}/size)
 
 # Set the ending sector that the partition should be resized too
-  END_SECTOR=`expr $SECTOR_SIZE - 1`
+END_SECTOR=$(expr $SECTOR_SIZE - 1)
 
-# resize the partition
+# Resize the partition
 echo ", +" | sfdisk --no-reread -N $PART_NUM $DEV
 
-# reload the partitions in the kernel
+# Reload the partitions in the kernel
 partx -u $DEV
 
-# resize
+# Resize
 resize2fs $PART_DEV
