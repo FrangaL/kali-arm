@@ -14,82 +14,119 @@ set -e
 # debug=true
 
 if [ "$debug" = true ]; then
-  exec > >(tee -a -i "${0%.*}.log") 2>&1
-  set -x
+    exec > >(tee -a -i "${0%.*}.log") 2>&1
+    set -x
+
 fi
 
 # Architecture
 architecture=${architecture:-"armhf"}
+
 # Generate a random machine name to be used
-machine=$(tr -cd 'A-Za-z0-9' < /dev/urandom | head -c16 ; echo)
+machine=$(
+    tr -cd 'A-Za-z0-9' </dev/urandom | head -c16
+    echo
+)
+
 # Custom hostname variable
 hostname=${2:-kali}
+
 # Custom image file name variable - MUST NOT include .img at the end
 image_name=${3:-kali-linux-$1-chromebook-nyan}
+
 # Suite to use, valid options are:
 # kali-rolling, kali-dev, kali-bleeding-edge, kali-dev-only, kali-experimental, kali-last-snapshot
 suite=${suite:-"kali-rolling"}
+
 # Free space rootfs in MiB
 free_space="300"
+
 # /boot partition in MiB
 bootsize="128"
+
 # Select compression, xz or none
 compress="xz"
+
 # Choose filesystem format to format (ext3 or ext4)
 fstype="ext3"
+
 # If you have your own preferred mirrors, set them here
 mirror=${mirror:-"http://http.kali.org/kali"}
+
 # GitLab URL Kali repository
 kaligit="https://gitlab.com/kalilinux"
+
 # GitHub raw URL
 githubraw="https://raw.githubusercontent.com"
 
 # Check EUID=0 you can run any binary as root
 if [[ $EUID -ne 0 ]]; then
-  echo "This script must be run as root or have super user permissions" >&2
-  echo "Use: sudo $0 ${1:-2.0} ${2:-kali}" >&2
-  exit 1
+    echo "This script must be run as root or have super user permissions" >&2
+    echo "Use: sudo $0 ${1:-2.0} ${2:-kali}" >&2
+
+    exit 1
+
 fi
 
 # Pass version number
-if [[ $# -eq 0 ]] ; then
-  echo "Please pass version number, e.g. $0 2.0, and (if you want) a hostname, default is kali" >&2
-  exit 0
+if [[ $# -eq 0 ]]; then
+    echo "Please pass version number, e.g. $0 2.0, and (if you want) a hostname, default is kali" >&2
+    exit 0
+
 fi
 
 # Check exist bsp directory
 if [ ! -e "bsp" ]; then
-  echo "Error: missing bsp directory structure" >&2
-  echo "Please clone the full repository ${kaligit}/build-scripts/kali-arm" >&2
-  exit 255
+    echo "Error: missing bsp directory structure" >&2
+    echo "Please clone the full repository ${kaligit}/build-scripts/kali-arm" >&2
+
+    exit 255
+
 fi
 
 # Current directory
 repo_dir="$(pwd)"
+
 # Base directory
 base_dir=${repo_dir}/nyan-"$1"
+
 # Working directory
 work_dir="${base_dir}/kali-${architecture}"
 
 # Check directory build
 if [ -e "${base_dir}" ]; then
-  echo "${base_dir} directory exists, will not continue" >&2
-  exit 1
+    echo "${base_dir} directory exists, will not continue" >&2
+
+    exit 1
+
 elif [[ ${repo_dir} =~ [[:space:]] ]]; then
-  echo "The directory "\"${repo_dir}"\" contains whitespace. Not supported." >&2
-  exit 1
+    echo "The directory "\"${repo_dir}"\" contains whitespace. Not supported." >&2
+
+    exit 1
+
 else
-  echo "The base_dir thinks it is: ${base_dir}"
-  mkdir -p ${base_dir}
+    echo "The base_dir thinks it is: ${base_dir}"
+    mkdir -p ${base_dir}
+
 fi
 
 components="main,contrib,non-free"
+
 arm="kali-linux-arm ntpdate"
-base="apt-transport-https apt-utils bash-completion console-setup dialog e2fsprogs ifupdown initramfs-tools inxi iw man-db mlocate netcat-traditional net-tools parted pciutils psmisc rfkill screen tmux unrar usbutils vim wget whiptail zerofree"
-desktop="kali-desktop-xfce kali-root-login xserver-xorg-video-fbdev xserver-xorg-input-libinput xserver-xorg-input-synaptics xfonts-terminus xinput"
+
+base="apt-transport-https apt-utils bash-completion console-setup dialog e2fsprogs \
+ifupdown initramfs-tools inxi iw man-db mlocate net-tools netcat-traditional parted \
+pciutils psmisc rfkill screen tmux unrar usbutils vim wget whiptail zerofree"
+
+desktop="kali-desktop-xfce kali-root-login xfonts-terminus xinput \
+xserver-xorg-input-libinput xserver-xorg-input-synaptics xserver-xorg-video-fbdev"
+
 tools="kali-linux-default"
+
 services="apache2 atftpd"
-extras="alsa-utils bc bison bluez bluez-firmware kali-linux-core libnss-systemd libssl-dev triggerhappy"
+
+extras="alsa-utils bc bison bluez bluez-firmware kali-linux-core libnss-systemd \
+libssl-dev triggerhappy"
 
 packages="${arm} ${base} ${services}"
 
@@ -100,76 +137,90 @@ kernel_release="R71-11151.B-# This is a community script - you will need to gene
 # apt_cacher=off
 # By default the proxy settings are local, but you can define an external proxy
 # proxy_url="http://external.intranet.local"
-apt_cacher=${apt_cacher:-"$(lsof -i :3142|cut -d ' ' -f3 | uniq | sed '/^\s*$/d')"}
+apt_cacher=${apt_cacher:-"$(lsof -i :3142 | cut -d ' ' -f3 | uniq | sed '/^\s*$/d')"}
 if [ -n "$proxy_url" ]; then
-  export http_proxy=$proxy_url
-elif [ "$apt_cacher" = "apt-cacher-ng" ] ; then
-  if [ -z "$proxy_url" ]; then
-    proxy_url=${proxy_url:-"http://127.0.0.1:3142/"}
     export http_proxy=$proxy_url
-  fi
+
+elif [ "$apt_cacher" = "apt-cacher-ng" ]; then
+    if [ -z "$proxy_url" ]; then
+        proxy_url=${proxy_url:-"http://127.0.0.1:3142/"}
+        export http_proxy=$proxy_url
+
+    fi
 fi
 
 # Detect architecture
 if [[ "${architecture}" == "arm64" ]]; then
-        qemu_bin="/usr/bin/qemu-aarch64-static"
-        lib_arch="aarch64-linux-gnu"
+    qemu_bin="/usr/bin/qemu-aarch64-static"
+    lib_arch="aarch64-linux-gnu"
+
 elif [[ "${architecture}" == "armhf" ]]; then
-        qemu_bin="/usr/bin/qemu-arm-static"
-        lib_arch="arm-linux-gnueabihf"
+    qemu_bin="/usr/bin/qemu-arm-static"
+    lib_arch="arm-linux-gnueabihf"
+
 elif [[ "${architecture}" == "armel" ]]; then
-        qemu_bin="/usr/bin/qemu-arm-static"
-        lib_arch="arm-linux-gnueabi"
+    qemu_bin="/usr/bin/qemu-arm-static"
+    lib_arch="arm-linux-gnueabi"
+
 fi
 
 # create the rootfs - not much to modify here, except maybe throw in some more packages if you want
-eatmydata debootstrap --foreign --keyring=/usr/share/keyrings/kali-archive-keyring.gpg --include=kali-archive-keyring,eatmydata \
-  --components=${components} --arch ${architecture} ${suite} ${work_dir} http://http.kali.org/kali
+eatmydata debootstrap --foreign \
+    --keyring=/usr/share/keyrings/kali-archive-keyring.gpg \
+    --include=kali-archive-keyring,eatmydata \
+    --components=${components} \
+    --arch ${architecture} ${suite} ${work_dir} http://http.kali.org/kali
 
 # systemd-nspawn environment
-systemd-nspawn_exec(){
-  LANG=C systemd-nspawn -q --bind-ro ${qemu_bin} -M ${machine} -D ${work_dir} "$@"
+systemd-nspawn_exec() {
+    LANG=C systemd-nspawn -q --bind-ro ${qemu_bin} -M ${machine} -D ${work_dir} "$@"
 }
 
 # We need to manually extract eatmydata to use it for the second stage
 for archive in ${work_dir}/var/cache/apt/archives/*eatmydata*.deb; do
-  dpkg-deb --fsys-tarfile "$archive" > ${work_dir}/eatmydata
-  tar -xkf ${work_dir}/eatmydata -C ${work_dir}
-  rm -f ${work_dir}/eatmydata
+    dpkg-deb --fsys-tarfile "$archive" >${work_dir}/eatmydata
+    tar -xkf ${work_dir}/eatmydata -C ${work_dir}
+    rm -f ${work_dir}/eatmydata
+
 done
 
 # Prepare dpkg to use eatmydata
 systemd-nspawn_exec dpkg-divert --divert /usr/bin/dpkg-eatmydata --rename --add /usr/bin/dpkg
 
-cat > ${work_dir}/usr/bin/dpkg << EOF
+cat >${work_dir}/usr/bin/dpkg <<EOF
 #!/bin/sh
 if [ -e /usr/lib/${lib_arch}/libeatmydata.so ]; then
     [ -n "\${LD_PRELOAD}" ] && LD_PRELOAD="\$LD_PRELOAD:"
     LD_PRELOAD="\$LD_PRELOAD\$so"
+
 fi
+
 for so in /usr/lib/${lib_arch}/libeatmydata.so; do
     [ -n "\$LD_PRELOAD" ] && LD_PRELOAD="\$LD_PRELOAD:"
     LD_PRELOAD="\$LD_PRELOAD\$so"
+
 done
+
 export LD_PRELOAD
 exec "\$0-eatmydata" --force-unsafe-io "\$@"
 EOF
+
 chmod 0755 ${work_dir}/usr/bin/dpkg
 
 # debootstrap second stage
 systemd-nspawn_exec eatmydata /debootstrap/debootstrap --second-stage
 
-cat << EOF > ${work_dir}/etc/apt/sources.list
+cat <<EOF >${work_dir}/etc/apt/sources.list
 deb ${mirror} ${suite} ${components//,/ }
 #deb-src ${mirror} ${suite} ${components//,/ }
 EOF
 
 # Set hostname
-echo "${hostname}" > ${work_dir}/etc/hostname
+echo "${hostname}" >${work_dir}/etc/hostname
 
 # So X doesn't complain, we add kali to hosts
-cat << EOF > ${work_dir}/etc/hosts
-127.0.0.1       ${hostname}    localhost
+cat <<EOF >${work_dir}/etc/hosts
+127.0.0.1       ${hostname} localhost
 ::1             localhost ip6-localhost ip6-loopback
 fe00::0         ip6-localnet
 ff00::0         ip6-mcastprefix
@@ -178,31 +229,33 @@ ff02::2         ip6-allrouters
 EOF
 
 # Disable IPv6
-cat << EOF > ${work_dir}/etc/modprobe.d/ipv6.conf
+cat <<EOF >${work_dir}/etc/modprobe.d/ipv6.conf
 # Don't load ipv6 by default
 alias net-pf-10 off
 EOF
 
-cat << EOF > ${work_dir}/etc/network/interfaces
+cat <<EOF >${work_dir}/etc/network/interfaces
 auto lo
 iface lo inet loopback
 EOF
 
 # DNS server
-echo "nameserver ${nameserver}" > "${work_dir}"/etc/resolv.conf
+echo "nameserver ${nameserver}" >"${work_dir}"/etc/resolv.conf
 
 # Copy directory bsp into build dir
 cp -rp bsp ${work_dir}
 
-export MALLOC_CHECK_=0 # workaround for LP: #520465
+# Workaround for LP: #520465
+export MALLOC_CHECK_=0
 
 # Enable the use of http proxy in third-stage in case it is enabled
 if [ -n "$proxy_url" ]; then
-  echo "Acquire::http { Proxy \"$proxy_url\" };" > ${work_dir}/etc/apt/apt.conf.d/66proxy
+    echo "Acquire::http { Proxy \"$proxy_url\" };" >${work_dir}/etc/apt/apt.conf.d/66proxy
+
 fi
 
 # Third stage
-cat << EOF > ${work_dir}/third-stage
+cat <<EOF >${work_dir}/third-stage
 #!/bin/bash -e
 export DEBIAN_FRONTEND=noninteractive
 
@@ -285,7 +338,7 @@ systemd-nspawn_exec /third-stage
 systemd-nspawn_exec dpkg-divert --remove --rename /usr/bin/dpkg
 
 # Clean system
-systemd-nspawn_exec << 'EOF'
+systemd-nspawn_exec <<'EOF'
 rm -f /0
 rm -rf /bsp
 fc-cache -frs
@@ -306,18 +359,20 @@ EOF
 
 # Disable the use of http proxy in case it is enabled
 if [ -n "$proxy_url" ]; then
-  unset http_proxy
-  rm -rf ${work_dir}/etc/apt/apt.conf.d/66proxy
+    unset http_proxy
+    rm -rf ${work_dir}/etc/apt/apt.conf.d/66proxy
+
 fi
 
 # Mirror & suite replacement
 if [[ ! -z "${4}" || ! -z "${5}" ]]; then
-  mirror=${4}
-  suite=${5}
+    mirror=${4}
+    suite=${5}
+
 fi
 
 # Define sources.list
-cat << EOF > ${work_dir}/etc/apt/sources.list
+cat <<EOF >${work_dir}/etc/apt/sources.list
 deb ${mirror} ${suite} ${components//,/ }
 #deb-src ${mirror} ${suite} ${components//,/ }
 EOF
@@ -337,18 +392,20 @@ mkdir -p ${work_dir}/usr/src/kernel/firmware/nvidia/tegra124/
 cp ${work_dir}/lib/firmware/nvidia/tegra124/xusb.bin firmware/nvidia/tegra124/
 cp ${repo_dir}/kernel-configs/# This is a community script - you will need to generate your own image to usebook-3.10.config .config
 cp ${repo_dir}/kernel-configs/# This is a community script - you will need to generate your own image to usebook-3.10.config ${work_dir}/usr/src/nyan.config
-git rev-parse HEAD > ${work_dir}/usr/src/kernel-at-commit
+git rev-parse HEAD >${work_dir}/usr/src/kernel-at-commit
 export ARCH=arm
+
 # Edit the CROSS_COMPILE variable as needed
 export CROSS_COMPILE="${base_dir}"/gcc-arm-linux-gnueabihf-4.7/bin/arm-linux-gnueabihf-
-patch -p1 --no-backup-if-mismatch < ${repo_dir}/patches/mac80211-3.8.patch
-patch -p1 --no-backup-if-mismatch < ${work_dir}/patches/0001-mwifiex-do-not-create-AP-and-P2P-interfaces-upon-dri-3.8.patch
-patch -p1 --no-backup-if-mismatch < ${work_dir}/patches/0001-Comment-out-a-pr_debug-print.patch
+patch -p1 --no-backup-if-mismatch <${repo_dir}/patches/mac80211-3.8.patch
+patch -p1 --no-backup-if-mismatch <${work_dir}/patches/0001-mwifiex-do-not-create-AP-and-P2P-interfaces-upon-dri-3.8.patch
+patch -p1 --no-backup-if-mismatch <${work_dir}/patches/0001-Comment-out-a-pr_debug-print.patch
 make WIFIVERSION="-3.8" oldconfig || die "Kernel config options added"
 make WIFIVERSION="-3.8" -j $(grep -c processor /proc/cpuinfo)
 make WIFIVERSION="-3.8" dtbs
 make WIFIVERSION="-3.8" modules_install INSTALL_MOD_PATH=${work_dir}
-cat << __EOF__ > ${work_dir}/usr/src/kernel/arch/arm/boot/kernel-nyan.its
+
+cat <<__EOF__ >${work_dir}/usr/src/kernel/arch/arm/boot/kernel-nyan.its
 /dts-v1/;
 
 / {
@@ -356,7 +413,7 @@ cat << __EOF__ > ${work_dir}/usr/src/kernel/arch/arm/boot/kernel-nyan.its
     #address-cells = <1>;
     images {
         kernel@1{
-   description = "kernel";
+            description = "kernel";
             data = /incbin/("zImage");
             type = "kernel_noload";
             arch = "arm";
@@ -365,6 +422,7 @@ cat << __EOF__ > ${work_dir}/usr/src/kernel/arch/arm/boot/kernel-nyan.its
             load = <0>;
             entry = <0>;
         };
+
         fdt@1{
             description = "tegra124-nyan-big-rev0_2.dtb";
             data = /incbin/("dts/tegra124-nyan-big-rev0_2.dtb");
@@ -375,6 +433,7 @@ cat << __EOF__ > ${work_dir}/usr/src/kernel/arch/arm/boot/kernel-nyan.its
                 algo = "sha1";
             };
         };
+
         fdt@2{
             description = "tegra124-nyan-big-rev3_7.dtb";
             data = /incbin/("dts/tegra124-nyan-big-rev3_7.dtb");
@@ -385,6 +444,7 @@ cat << __EOF__ > ${work_dir}/usr/src/kernel/arch/arm/boot/kernel-nyan.its
                 algo = "sha1";
             };
         };
+
         fdt@3{
             description = "tegra124-nyan-big-rev8_9.dtb";
             data = /incbin/("dts/tegra124-nyan-big-rev8_9.dtb");
@@ -395,6 +455,7 @@ cat << __EOF__ > ${work_dir}/usr/src/kernel/arch/arm/boot/kernel-nyan.its
                 algo = "sha1";
             };
         };
+
         fdt@4{
             description = "tegra124-nyan-blaze.dtb";
             data = /incbin/("dts/tegra124-nyan-blaze.dtb");
@@ -405,6 +466,7 @@ cat << __EOF__ > ${work_dir}/usr/src/kernel/arch/arm/boot/kernel-nyan.its
                 algo = "sha1";
             };
         };
+
         fdt@5{
             description = "tegra124-nyan-rev0.dtb";
             data = /incbin/("dts/tegra124-nyan-rev0.dtb");
@@ -415,6 +477,7 @@ cat << __EOF__ > ${work_dir}/usr/src/kernel/arch/arm/boot/kernel-nyan.its
                 algo = "sha1";
             };
         };
+
         fdt@6{
             description = "tegra124-nyan-rev1.dtb";
             data = /incbin/("dts/tegra124-nyan-rev1.dtb");
@@ -425,6 +488,7 @@ cat << __EOF__ > ${work_dir}/usr/src/kernel/arch/arm/boot/kernel-nyan.its
                 algo = "sha1";
             };
         };
+
         fdt@7{
             description = "tegra124-nyan-kitty-rev0_3.dtb";
             data = /incbin/("dts/tegra124-nyan-kitty-rev0_3.dtb");
@@ -435,6 +499,7 @@ cat << __EOF__ > ${work_dir}/usr/src/kernel/arch/arm/boot/kernel-nyan.its
                 algo = "sha1";
             };
         };
+
         fdt@8{
             description = "tegra124-nyan-kitty-rev8.dtb";
             data = /incbin/("dts/tegra124-nyan-kitty-rev8.dtb");
@@ -446,36 +511,45 @@ cat << __EOF__ > ${work_dir}/usr/src/kernel/arch/arm/boot/kernel-nyan.its
             };
         };
     };
+
     configurations {
         default = "conf@1";
+
         conf@1{
             kernel = "kernel@1";
             fdt = "fdt@1";
         };
+
         conf@2{
             kernel = "kernel@1";
             fdt = "fdt@2";
         };
+
         conf@3{
             kernel = "kernel@1";
             fdt = "fdt@3";
         };
+
         conf@4{
             kernel = "kernel@1";
             fdt = "fdt@4";
         };
+
         conf@5{
             kernel = "kernel@1";
             fdt = "fdt@5";
         };
+
         conf@6{
             kernel = "kernel@1";
             fdt = "fdt@6";
         };
+
         conf@7{
             kernel = "kernel@1";
             fdt = "fdt@7";
         };
+
         conf@8{
             kernel = "kernel@1";
             fdt = "fdt@8";
@@ -483,11 +557,12 @@ cat << __EOF__ > ${work_dir}/usr/src/kernel/arch/arm/boot/kernel-nyan.its
     };
 };
 __EOF__
+
 cd ${work_dir}/usr/src/kernel/arch/arm/boot
 mkimage -f kernel-nyan.its nyan-big-kernel
 
 # BEHOLD THE POWER OF PARTUUID/PARTNROFF
-echo "noinitrd console=tty1 quiet root=PARTUUID=%U/PARTNROFF=1 rootwait rw lsm.module_locking=0 net.ifnames=0 rootfstype=$fstype" > cmdline
+echo "noinitrd console=tty1 quiet root=PARTUUID=%U/PARTNROFF=1 rootwait rw lsm.module_locking=0 net.ifnames=0 rootfstype=$fstype" >cmdline
 
 # Pulled from # This is a community script - you will need to generate your own image to useOS, this is exactly what they do because there's no
 # # bootloader in the kernel partition on ARM
@@ -496,9 +571,10 @@ dd if=/dev/zero of=bootloader.bin bs=512 count=1
 vbutil_kernel --arch arm --pack "${base_dir}"/kernel.bin --keyblock /usr/share/vboot/devkeys/kernel.keyblock --signprivate /usr/share/vboot/devkeys/kernel_data_key.vbprivk --version 1 --config cmdline --bootloader bootloader.bin --vmlinuz nyan-big-kernel
 
 cd ${work_dir}/usr/src/kernel
+
 # Clean up our build of the kernel, then copy the config and run make
 # modules_prepare so that users can more easily build kernel modules..
-make WIFIVERSION="-3.8"  mrproper
+make WIFIVERSION="-3.8" mrproper
 cp ../nyan.config .config
 cd "${base_dir}"
 
@@ -514,23 +590,23 @@ ln -s /usr/src/kernel source
 cd "${base_dir}"
 
 # Lid switch
-cat << EOF > ${work_dir}/etc/udev/rules.d/99-tegra-lid-switch.rules
+cat <<EOF >${work_dir}/etc/udev/rules.d/99-tegra-lid-switch.rules
 ACTION=="remove", GOTO="tegra_lid_switch_end"
 SUBSYSTEM=="input", KERNEL=="event*", SUBSYSTEMS=="platform", KERNELS=="gpio-keys.4", TAG+="power-switch"
 LABEL="tegra_lid_switch_end"
 EOF
 
 # Bit of a hack, this is so the eMMC doesn't show up on the desktop
-cat << EOF > ${work_dir}/etc/udev/rules.d/99-hide-emmc-partitions.rules
+cat <<EOF >${work_dir}/etc/udev/rules.d/99-hide-emmc-partitions.rules
 KERNEL=="mmcblk0*", ENV{UDISKS_IGNORE}="1"
 EOF
 
 # Disable uap0 and p2p0 interfaces in NetworkManager
 mkdir -p ${work_dir}/etc/NetworkManager/
-printf '\n[keyfile]\nunmanaged-devices=interface-name:p2p0\n' >> ${work_dir}/etc/NetworkManager/NetworkManager.conf
+printf '\n[keyfile]\nunmanaged-devices=interface-name:p2p0\n' >>${work_dir}/etc/NetworkManager/NetworkManager.conf
 
 #nvidia device nodes
-cat << EOF > ${work_dir}/lib/udev/rules.d/51-nvrm.rules
+cat <<EOF >${work_dir}/lib/udev/rules.d/51-nvrm.rules
 KERNEL=="knvmap", GROUP="video", MODE="0660"
 KERNEL=="nvhdcp1", GROUP="video", MODE="0660"
 KERNEL=="nvhost-as-gpu", GROUP="video", MODE="0660"
@@ -566,8 +642,8 @@ cd "${base_dir}"
 
 # Calculate the space to create the image
 root_size=$(du -s -B1 ${work_dir} --exclude=${work_dir}/boot | cut -f1)
-root_extra=$((${root_size}/1024/1000*5*1024/5))
-raw_size=$(($((${free_space}*1024))+${root_extra}+$((${bootsize}*1024))+4096))
+root_extra=$((${root_size} / 1024 / 1000 * 5 * 1024 / 5))
+raw_size=$(($((${free_space} * 1024)) + ${root_extra} + $((${bootsize} * 1024)) + 4096))
 
 # Create the disk and partition it
 echo "Creating image file ${image_name}.img"
@@ -577,31 +653,34 @@ cgpt create -z "${image_dir}/${image_name}.img"
 cgpt create "${image_dir}/${image_name}.img"
 
 cgpt add -i 1 -t kernel -b 8192 -s 32768 -l kernel -S 1 -T 5 -P 10 "${image_dir}/${image_name}.img"
-cgpt add -i 2 -t data -b 40960 -s `expr $(cgpt show "${image_dir}/${image_name}.img" | grep 'Sec GPT table' | awk '{ print \$1 }')  - 40960` -l Root "${image_dir}/${image_name}.img"
+cgpt add -i 2 -t data -b 40960 -s $(expr $(cgpt show "${image_dir}/${image_name}.img" | grep 'Sec GPT table' | awk '{ print \$1 }') - 40960) -l Root "${image_dir}/${image_name}.img"
 
-loopdevice=`losetup -f --show ${repo_dir}/${image_name}.img`
-device=`kpartx -va ${loopdevice} | sed 's/.*\(loop[0-9]\+\)p.*/\1/g' | head -1`
+loopdevice=$(losetup -f --show ${repo_dir}/${image_name}.img)
+device=$(kpartx -va ${loopdevice} | sed 's/.*\(loop[0-9]\+\)p.*/\1/g' | head -1)
 sleep 5
 device="/dev/mapper/${device}"
 bootp=${device}p1
 rootp=${device}p2
 
 if [[ $fstype == ext4 ]]; then
-  features="-O ^64bit,^metadata_csum"
+    features="-O ^64bit,^metadata_csum"
+
 elif [[ $fstype == ext3 ]]; then
-  features="-O ^64bit"
+    features="-O ^64bit"
+
 fi
+
 mkfs $features -t $fstype -L ROOTFS ${rootp}
 
 mkdir -p "${base_dir}"/root
 mount ${rootp} "${base_dir}"/root
 
 # We do this down here to get rid of the build system's resolv.conf after running through the build
-echo "nameserver ${nameserver}" > "${work_dir}"/etc/resolv.conf
+echo "nameserver ${nameserver}" >"${work_dir}"/etc/resolv.conf
 
 # Create an fstab so that we don't mount / read-only
 UUID=$(blkid -s UUID -o value ${rootp})
-echo "UUID=$UUID /               $fstype    errors=remount-ro 0       1" >> ${work_dir}/etc/fstab
+echo "UUID=$UUID /               $fstype    errors=remount-ro 0       1" >>${work_dir}/etc/fstab
 
 echo "Rsyncing rootfs into image file"
 rsync -HPavz -q ${work_dir}/ ${base_dir}/root/
@@ -617,38 +696,54 @@ cgpt repair ${loopdevice}
 kpartx -dv ${loopdevice}
 losetup -d ${loopdevice}
 
-
 # Limit CPU function
-limit_cpu (){
-  rand=$(tr -cd 'A-Za-z0-9' < /dev/urandom | head -c4 ; echo) # Random name group
-  cgcreate -g cpu:/cpulimit-${rand} # Name of group cpulimit
-  cgset -r cpu.shares=800 cpulimit-${rand} # Max 1024
-  cgset -r cpu.cfs_quota_us=80000 cpulimit-${rand} # Max 100000
-  # Retry command
-  local n=1; local max=5; local delay=2
-  while true; do
-    cgexec -g cpu:cpulimit-${rand} "$@" && break || {
-      if [[ $n -lt $max ]]; then
-        ((n++))
-        echo -e "\e[31m Command failed. Attempt $n/$max \033[0m"
-        sleep $delay;
-      else
-        echo "The command has failed after $n attempts."
-        break
-      fi
-    }
-  done
+limit_cpu() {
+    # Random name group
+    rand=$(
+        tr -cd 'A-Za-z0-9' </dev/urandom | head -c4
+        echo
+    )
+
+    cgcreate -g cpu:/cpulimit-${rand}                # Name of group cpulimit
+    cgset -r cpu.shares=800 cpulimit-${rand}         # Max 1024
+    cgset -r cpu.cfs_quota_us=80000 cpulimit-${rand} # Max 100000
+
+    # Retry command
+    local n=1
+    local max=5
+    local delay=2
+
+    while true; do
+        cgexec -g cpu:cpulimit-${rand} "$@" && break || {
+            if [[ $n -lt $max ]]; then
+                ((n++))
+                echo -e "\e[31m Command failed. Attempt $n/$max \033[0m"
+
+                sleep $delay
+
+            else
+                echo "The command has failed after $n attempts."
+
+                break
+
+            fi
+        }
+
+    done
 }
 
 if [ $compress = xz ]; then
-  if [ $(arch) == 'x86_64' ]; then
-    echo "Compressing ${image_name}.img"
-    [ $(nproc) \< 3 ] || cpu_cores=3 # cpu_cores = Number of cores to use
-    limit_cpu pixz -p ${cpu_cores:-2} "${image_dir}/${image_name}.img" # -p Nº cpu cores use
-    chmod 0644 ${repo_dir}/${image_name}.img.xz
-  fi
+    if [ $(arch) == 'x86_64' ]; then
+        echo "Compressing ${image_name}.img"
+        [ $(nproc) -lt 3 ] || cpu_cores=3                                  # cpu_cores = Number of cores to use
+        limit_cpu pixz -p ${cpu_cores:-2} "${image_dir}/${image_name}.img" # -p Nº cpu cores use
+        chmod 0644 ${repo_dir}/${image_name}.img.xz
+
+    fi
+
 else
-  chmod 0644 "${image_dir}/${image_name}.img"
+    chmod 0644 "${image_dir}/${image_name}.img"
+
 fi
 
 # Clean up all the temporary build stuff and remove the directories
