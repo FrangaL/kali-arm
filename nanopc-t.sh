@@ -9,8 +9,10 @@
 
 # Hardware model
 hw_model=${hw_model:-"nanopc-t"}
+
 # Architecture
 architecture=${architecture:-"arm64"}
+
 # Desktop manager (xfce, gnome, i3, kde, lxde, mate, e17 or none)
 desktop=${desktop:-"xfce"}
 
@@ -23,7 +25,7 @@ add_interface eth0
 #add_interface wlan0
 
 # Third stage
-cat <<EOF >> "${work_dir}"/third-stage
+cat <<EOF >>"${work_dir}"/third-stage
 status_stage3 'Enable login over serial (No password)'
 echo "T0:23:respawn:/sbin/agetty -L ttyAMA0 115200 vt100" >> /etc/inittab
 
@@ -42,12 +44,12 @@ include clean_system
 status "Kernel section"
 git clone --depth 1 https://github.com/friendlyarm/linux -b nanopi2-v4.4.y ${work_dir}/usr/src/kernel
 cd ${work_dir}/usr/src/kernel/
-git rev-parse HEAD > ${work_dir}/usr/src/kernel-at-commit
+git rev-parse HEAD >${work_dir}/usr/src/kernel-at-commit
 touch .scmversion
 export ARCH=arm64
 #export CROSS_COMPILE="${base_dir}"/gcc-arm-linux-gnueabihf-4.7/bin/arm-linux-gnueabihf-
 export CROSS_COMPILE=aarch64-linux-gnu-
-patch -p1 --no-backup-if-mismatch < ${repo_dir}/patches/kali-wifi-injection-4.4.patch
+patch -p1 --no-backup-if-mismatch <${repo_dir}/patches/kali-wifi-injection-4.4.patch
 make nanopi3_linux_defconfig
 make -j $(grep -c processor /proc/cpuinfo)
 make modules_install INSTALL_MOD_PATH=${work_dir}
@@ -95,8 +97,10 @@ parted -s -a minimal "${image_dir}/${image_name}.img" mkpart primary "$fstype" "
 
 # Set the partition variables
 make_loop
+
 # Create file systems
 mkfs_partitions
+
 # Make fstab.
 make_fstab
 
@@ -130,7 +134,7 @@ dd if="${base_dir}"/bootloader/fip-loader.img of=${loopdevice} bs=512 seek=129
 dd if="${base_dir}"/bootloader/fip-secure.img of=${loopdevice} bs=512 seek=769
 dd if="${base_dir}"/bootloader/fip-nonsecure.img of=${loopdevice} bs=512 seek=3841
 
-cat << EOF > "${base_dir}"/bootloader/env.conf
+cat <<EOF >"${base_dir}"/bootloader/env.conf
 # U-Boot environment for Debian, Ubuntu
 #
 # Copyright (C) Guangzhou FriendlyARM Computer Tech. Co., Ltd
