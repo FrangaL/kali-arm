@@ -9,8 +9,10 @@
 
 # Hardware model
 hw_model=${hw_model:-"raspberry-pi-zero-2-w-pitail"}
+
 # Architecture
 architecture=${architecture:-"armhf"}
+
 # Desktop manager (xfce, gnome, i3, kde, lxde, mate, e17 or none)
 desktop=${desktop:-"xfce"}
 
@@ -54,9 +56,8 @@ mkdir -p ${work_dir}/etc/skel/.vnc/
 wget -O ${work_dir}/etc/skel/.vnc/xstartup https://raw.githubusercontent.com/Re4son/RPi-Tweaks/master/vncservice/xstartup
 chmod 0750 ${work_dir}/etc/skel/.vnc/xstartup
 
-
 # Third stage
-cat <<EOF >> "${work_dir}"/third-stage
+cat <<EOF >>"${work_dir}"/third-stage
 status_stage3 'Create kali user'
 # Normally this would be done by runonce, however, because this image is special, and needs the kali home directory
 # to exist before the first boot, we create it here, and remove the script that does it in the runonce stuff later.
@@ -169,17 +170,17 @@ EOF
 include third_stage
 
 ## Fix the the infamous “Authentication Required to Create Managed Color Device” in vnc
-cat << EOF > ${work_dir}/etc/polkit-1/localauthority/50-local.d/45-allow-colord.pkla
+cat <<EOF >${work_dir}/etc/polkit-1/localauthority/50-local.d/45-allow-colord.pkla
 [Allow Colord all Users]
-Identity=unix-user:*
-Action=org.freedesktop.color-manager.create-device;org.freedesktop.color-manager.create-profile;org.freedesktop.color-manager.delete-device;org.freedesktop.color-manager.delete-profile;org.freedesktop.color-manager.modify-device;org.freedesktop.color-manager.modify-profile
-ResultAny=no
-ResultInactive=no
-ResultActive=yes
+    Identity=unix-user:*
+    Action=org.freedesktop.color-manager.create-device;org.freedesktop.color-manager.create-profile;org.freedesktop.color-manager.delete-device;org.freedesktop.color-manager.delete-profile;org.freedesktop.color-manager.modify-device;org.freedesktop.color-manager.modify-profile
+    ResultAny=no
+    ResultInactive=no
+    ResultActive=yes
 EOF
 
 status 'Always put our favourite adapter as wlan1'
-cat << EOF > ${work_dir}/etc/udev/rules.d/70-persistent-net.rules
+cat <<EOF >${work_dir}/etc/udev/rules.d/70-persistent-net.rules
 # USB device 0x:0x (ath9k_htc)
 SUBSYSTEM=="net", ACTION=="add", DRIVERS=="?*", ATTR{address}=="", ATTR{dev_id}=="0x0", ATTR{type}=="1", KERNEL=="wlan*", NAME="wlan1"
 EOF
@@ -200,19 +201,24 @@ parted -s -a minimal "${image_dir}/${image_name}.img" mkpart primary "$fstype" "
 
 # Set the partition variables
 make_loop
+
 # Create file systems
 mkfs_partitions
+
 # Make fstab.
 make_fstab
 
 # Create the dirs for the partitions and mount them
 status "Create the dirs for the partitions and mount them"
 mkdir -p "${base_dir}"/root/
+
 if [[ $fstype == ext4 ]]; then
-mount -t ext4 -o noatime,data=writeback,barrier=0 "${rootp}" "${base_dir}"/root
+    mount -t ext4 -o noatime,data=writeback,barrier=0 "${rootp}" "${base_dir}"/root
 else
-mount "${rootp}" "${base_dir}"/root
+    mount "${rootp}" "${base_dir}"/root
+
 fi
+
 mkdir -p "${base_dir}"/root/boot
 mount "${bootp}" "${base_dir}"/root/boot
 
