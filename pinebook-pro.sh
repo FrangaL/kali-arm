@@ -9,8 +9,10 @@
 
 # Hardware model
 hw_model=${hw_model:-"pinebook-pro"}
+
 # Architecture
 architecture=${architecture:-"arm64"}
+
 # Desktop manager (xfce, gnome, i3, kde, lxde, mate, e17 or none)
 desktop=${desktop:-"xfce"}
 
@@ -23,7 +25,7 @@ basic_network
 #add_interface wlan0
 
 # Third stage
-cat <<EOF >> "${work_dir}"/third-stage
+cat <<EOF >>"${work_dir}"/third-stage
 # Do not install firmware-brcm80211, the firmware in upstream causes kernel panics.
 # We use the one that armbian has in their repository at
 # https://github.com/armbian/firmware/
@@ -77,12 +79,11 @@ cp brcm/brcmfmac43456-sdio.clm_blob "${work_dir}"/lib/firmware/brcm/brcmfmac4345
 cd "${repo_dir}/"
 rm -rf "${work_dir}"/firmware
 
-
 # Enable brightness up/down and sleep hotkeys and attempt to improve
 # touchpad performance
 status "Keyboard hotkeys"
 mkdir -p "${work_dir}"/etc/udev/hwdb.d/
-cat << EOF > "${work_dir}"/etc/udev/hwdb.d/10-usb-kbd.hwdb
+cat <<EOF >"${work_dir}"/etc/udev/hwdb.d/10-usb-kbd.hwdb
 evdev:input:b0003v258Ap001E*
 KEYBOARD_KEY_700a5=brightnessdown
 KEYBOARD_KEY_700a6=brightnessup
@@ -103,30 +104,36 @@ parted -s -a minimal "${image_dir}/${image_name}.img" mkpart primary $fstype 32M
 
 # Set the partition variables
 make_loop
+
 # Create file systems
 mkfs_partitions
+
 # Make fstab.
 make_fstab
 
 # Create the dirs for the partitions and mount them
 status "Create the dirs for the partitions and mount them"
 mkdir -p "${base_dir}"/root/
+
 if [[ $fstype == ext4 ]]; then
-mount -t ext4 -o noatime,data=writeback,barrier=0 "${rootp}" "${base_dir}"/root
+    mount -t ext4 -o noatime,data=writeback,barrier=0 "${rootp}" "${base_dir}"/root
+
 else
-mount "${rootp}" "${base_dir}"/root
+    mount "${rootp}" "${base_dir}"/root
+
 fi
 
 # Ensure we don't have root=/dev/sda3 in the extlinux.conf which comes from running u-boot-menu in a cross chroot
 # We do this down here because we don't know the UUID until after the image is created
 status "Edit the extlinux.conf file to set root uuid and proper name"
 sed -i -e "0,/root=.*/s//root=UUID=$root_uuid rootfstype=$fstype console=tty1 ro rootwait/g" "${work_dir}"/boot/extlinux/extlinux.conf
+
 # And we remove the "GNU/Linux because we don't use it
 sed -i -e "s|.*GNU/Linux Rolling|menu label Kali Linux|g" "${work_dir}"/boot/extlinux/extlinux.conf
 
 status "Set the default options in /etc/default/u-boot"
-echo 'U_BOOT_MENU_LABEL="Kali Linux"' >> "${work_dir}"/etc/default/u-boot
-echo 'U_BOOT_PARAMETERS="console=tty1 ro rootwait"' >> "${work_dir}"/etc/default/u-boot
+echo 'U_BOOT_MENU_LABEL="Kali Linux"' >>"${work_dir}"/etc/default/u-boot
+echo 'U_BOOT_PARAMETERS="console=tty1 ro rootwait"' >>"${work_dir}"/etc/default/u-boot
 
 status "Rsyncing rootfs into image file"
 rsync -HPavz -q "${work_dir}"/ "${base_dir}"/root/
