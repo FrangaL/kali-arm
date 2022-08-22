@@ -9,8 +9,10 @@
 
 # Hardware model
 hw_model=${hw_model:-"cubietruck"}
+
 # Architecture (arm64, armhf, armel)
 architecture=${architecture:-"armhf"}
+
 # Desktop manager (xfce, gnome, i3, kde, lxde, mate, e17 or none)
 desktop=${desktop:-"xfce"}
 
@@ -22,7 +24,7 @@ basic_network
 add_interface eth0
 
 # Load the ethernet module since it doesn't load automatically at boot
-echo "sunxi_gmac" >> ${work_dir}/etc/modules
+echo "sunxi_gmac" >>${work_dir}/etc/modules
 
 # Run third stage
 include third_stage
@@ -43,8 +45,8 @@ make fex2bin
 ./fex2bin "${base_dir}"/sunxi-boards/sys_config/a20/cubietruck.fex ${work_dir}/boot/script.bin
 
 cd ${work_dir}/usr/src/kernel
-git rev-parse HEAD > ../kernel-at-commit
-patch -p1 --no-backup-if-mismatch < ${repo_dir}/patches/mac80211.patch
+git rev-parse HEAD >../kernel-at-commit
+patch -p1 --no-backup-if-mismatch <${repo_dir}/patches/mac80211.patch
 touch .scmversion
 export ARCH=arm
 export CROSS_COMPILE=arm-linux-gnueabihf-
@@ -69,7 +71,7 @@ ln -s /usr/src/kernel source
 cd "${base_dir}"
 
 # Create boot.txt file
-cat << EOF > ${work_dir}/boot/boot.cmd
+cat <<EOF >${work_dir}/boot/boot.cmd
 setenv bootm_boot_mode sec
 setenv bootargs console=ttyS0,115200 root=/dev/mmcblk0p2 rootwait panic=10 \${extra} rw rootfstype=$fstype net.ifnames=0
 fatload mmc 0 0x43000000 script.bin
@@ -90,8 +92,10 @@ parted -s -a minimal "${image_dir}/${image_name}.img" mkpart primary $fstype ${b
 
 # Set the partition variables
 make_loop
+
 # Create file systems
 mkfs_partitions
+
 # Make fstab.
 make_fstab
 
@@ -106,6 +110,7 @@ echo "Rsyncing rootfs to image file"
 rsync -HPavz -q ${work_dir}/ ${base_dir}/root/
 
 cd "${base_dir}"/u-boot-sunxi/
+
 # Build u-boot
 make distclean
 make Cubietruck_config
