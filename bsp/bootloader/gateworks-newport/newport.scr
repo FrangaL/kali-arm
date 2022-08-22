@@ -15,18 +15,24 @@ echo "Newport Ubuntu Boot Script"
 
 # generate bootargs for rootfs based on devtype
 setexpr rootpart ${distro_bootpart} # script/kernel/root same partition
+
 if test "${devtype}" = "mmc"; then
-	setenv rootdev /dev/mmcblk${devnum}p${rootpart}
+    setenv rootdev /dev/mmcblk${devnum}p${rootpart}
+
 else
-	# map devnum to a blkdev name (supporting up to 3 devs)
-	if test "${devnum}" = "2"; then
-		setenv rootdev /dev/sdc${rootpart}
-	elif test "${devnum}" = "1"; then
-		setenv rootdev /dev/sdb${rootpart}
-	else
-		setenv rootdev /dev/sda${rootpart}
-	fi
+    # map devnum to a blkdev name (supporting up to 3 devs)
+    if test "${devnum}" = "2"; then
+        setenv rootdev /dev/sdc${rootpart}
+
+    elif test "${devnum}" = "1"; then
+        setenv rootdev /dev/sdb${rootpart}
+
+    else
+        setenv rootdev /dev/sda${rootpart}
+
+    fi
 fi
+
 setenv bootargs ${bootargs} root=${rootdev} rootwait
 
 # disable USB autosuspend (CN81xx errata)
@@ -37,8 +43,10 @@ setenv bootargs ${bootargs} kpti=0
 
 # add console= option to bootargs, if any
 if test -n "${console}"; then
-        setenv bootargs ${bootargs} console=${console}
+    setenv bootargs ${bootargs} console=${console}
+
 fi
+
 echo "bootargs:${bootargs}"
 
 # load and boot kernel
