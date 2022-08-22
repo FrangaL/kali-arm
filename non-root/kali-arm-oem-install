@@ -313,6 +313,7 @@ else
 
     else
         clear
+        
         msg "Configuration aborted. Restarting OEM script..."
         sleep 5 && exec bash /usr/share/kali-arm-oem-install/kali-arm-oem-install
         #exit 1
@@ -324,13 +325,27 @@ response=$?
 
 case $response in
     0)
-        clear; msg "Proceeding....";;
+        clear
+        
+        msg "Proceeding...."
+
+        ;;
 
     1)
-        clear; msg "Configuration aborted. Restarting OEM script..."; sleep 5 && exec bash /usr/share/kali-arm-oem-install/kali-arm-oem-install;;
+        clear
+        
+        msg "Configuration aborted. Restarting OEM script..."
+        sleep 5 && exec bash /usr/share/kali-arm-oem-install/kali-arm-oem-install
+
+        ;;
 
     255)
-        clear; msg "Configuration aborted. Restarting OEM script..."; sleep 5 && exec bash /usr/share/kali-arm-oem-install/kali-arm-oem-install;;
+        clear
+        
+        msg "Configuration aborted. Restarting OEM script..."
+        sleep 5 && exec bash /usr/share/kali-arm-oem-install/kali-arm-oem-install
+
+        ;;
 
 esac
 
