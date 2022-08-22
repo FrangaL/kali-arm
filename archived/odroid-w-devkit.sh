@@ -512,6 +512,7 @@ limit_cpu() {
     tr -cd 'A-Za-z0-9' </dev/urandom | head -c4
     echo
   )                                                # Randowm name group
+
   cgcreate -g cpu:/cpulimit-${rand}                # Name of group cpulimit
   cgset -r cpu.shares=800 cpulimit-${rand}         # Max 1024
   cgset -r cpu.cfs_quota_us=80000 cpulimit-${rand} # Max 100000
@@ -540,7 +541,7 @@ limit_cpu() {
 if [ $compress = xz ]; then
   if [ $(arch) == 'x86_64' ]; then
     echo "Compressing ${imagename}.img"
-    [ $(nproc) \< 3 ] || cpu_cores=3                               # cpu_cores = Number of cores to use
+    [ $(nproc) -lt 3 ] || cpu_cores=3                               # cpu_cores = Number of cores to use
     limit_cpu pixz -p ${cpu_cores:-2} ${repo_dir}/${imagename}.img # -p Nº cpu cores use
     chmod 644 ${repo_dir}/${imagename}.img.xz
 
