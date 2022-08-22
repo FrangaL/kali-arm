@@ -6,13 +6,15 @@
 # This is a community script - you will need to generate your own image to use
 # More information: https://www.kali.org/docs/arm/raspberry-pi-zero-w-p4wnp1-aloa/
 #
-# Due to the nexmon firmware's age, there is a lack of recognizing arm64. 
+# Due to the nexmon firmware's age, there is a lack of recognizing arm64.
 # This script cannot be run on an arm64 host.
 
 # Hardware model
 hw_model=${hw_model:-"raspberry-pi-zero-w-p4wnp1-aloa"}
+
 # Architecture
 architecture=${architecture:-"armel"}
+
 # Desktop manager (xfce, gnome, i3, kde, lxde, mate, e17 or none)
 desktop=${desktop:-"none"}
 
@@ -24,10 +26,10 @@ basic_network
 #add_interface eth0
 
 # move P4wnP1 in (change to release blob when ready)
-git clone  -b 'master' --single-branch --depth 1  https://github.com/rogandawes/P4wnP1_aloa "${work_dir}"/root/P4wnP1
+git clone -b 'master' --single-branch --depth 1 https://github.com/rogandawes/P4wnP1_aloa "${work_dir}"/root/P4wnP1
 
 # Third stage
-cat <<EOF >> "${work_dir}"/third-stage
+cat <<EOF >>"${work_dir}"/third-stage
 status_stage3 'Copy rpi services'
 cp -p /bsp/services/rpi/*.service /etc/systemd/system/
 
@@ -121,7 +123,8 @@ cd "${base_dir}"
 status 'Clone bootloader and firmware'
 git clone -b 1.20181112 --depth 1 https://github.com/raspberrypi/firmware.git "${work_dir}"/rpi-firmware
 cp -rf "${work_dir}"/rpi-firmware/boot/* "${work_dir}"/boot/
-# copy over Pi specific libs (video core) and binaries (dtoverlay,dtparam ...)
+
+# Copy over Pi specific libs (video core) and binaries (dtoverlay,dtparam ...)
 cp -rf "${work_dir}"/rpi-firmware/opt/* "${work_dir}"/opt/
 rm -rf "${work_dir}"/rpi-firmware
 
@@ -131,12 +134,15 @@ git clone https://github.com/mame82/nexmon_wifi_covert_channel.git -b p4wnp1 "${
 
 status 'Clone and build kernel'
 cd "${base_dir}"
+
 # Re4son kernel 4.14.80 with P4wnP1 patches (dwc2 and brcmfmac)
 git clone --depth 1 https://github.com/Re4son/re4son-raspberrypi-linux -b rpi-4.14.80-re4son-p4wnp1 "${work_dir}"/usr/src/kernel
 
 cd "${work_dir}"/usr/src/kernel
+
 # Remove redundant yyloc global declaration
-patch -p1 --no-backup-if-mismatch < "${repo_dir}"/patches/11647f99b4de6bc460e106e876f72fc7af3e54a6.patch
+patch -p1 --no-backup-if-mismatch <"${repo_dir}"/patches/11647f99b4de6bc460e106e876f72fc7af3e54a6.patch
+
 # Note: Compiling the kernel in /usr/src/kernel of the target file system is problematic, as the binaries of the compiling host architecture
 # get deployed to the /usr/src/kernel/scripts subfolder (in this case linux-x64 binaries), which is symlinked to /usr/src/build later on
 # This would f.e. hinder rebuilding single modules, like nexmon's brcmfmac driver, on the Pi itself (online compilation)
@@ -188,13 +194,14 @@ ln -s /usr/src/kernel source
 cd "${base_dir}"
 
 status 'Enable dwc2 dtb overlay'
-cat << EOF >> "${work_dir}"/boot/config.txt
+cat <<EOF >>"${work_dir}"/boot/config.txt
 dtoverlay=dwc2
 EOF
 
 # git clone of nexmon moved in front of kernel compilation, to have poper brcmfmac driver ready
 status 'Build nexmon firmware'
 cd "${base_dir}"/nexmon
+
 # Make sure we're not still using the armel cross compiler
 unset CROSS_COMPILE
 
@@ -209,23 +216,27 @@ make
 sed -i -e 's/all:.*/all: $(RAM_FILE)/g' "${NEXMON_ROOT}"/patches/bcm43430a1/7_45_41_46/nexmon/Makefile
 cd "${NEXMON_ROOT}"/patches/bcm43430a1/7_45_41_46/nexmon
 make clean
+
 # We do this so we don't have to install the ancient isl version into /usr/local/lib on systems
 LD_LIBRARY_PATH="${NEXMON_ROOT}/buildtools/isl-0.10/.libs" make ARCH=arm CC="${NEXMON_ROOT}/buildtools/gcc-arm-none-eabi-5_4-2016q2-linux-x86/bin/arm-none-eabi-"
+
 # RPi0w->3B firmware
 # disable nexmon by default
 mkdir -p "${work_dir}"/lib/firmware/brcm
 cp "${NEXMON_ROOT}/patches/bcm43430a1/7_45_41_46/nexmon/brcmfmac43430-sdio.bin" "${work_dir}"/lib/firmware/brcm/brcmfmac43430-sdio.nexmon.bin
 cp "${NEXMON_ROOT}/patches/bcm43430a1/7_45_41_46/nexmon/brcmfmac43430-sdio.bin" "${work_dir}"/lib/firmware/brcm/brcmfmac43430-sdio.bin
 wget https://raw.githubusercontent.com/RPi-Distro/firmware-nonfree/master/brcm/brcmfmac43430-sdio.txt -O "${work_dir}"/lib/firmware/brcm/brcmfmac43430-sdio.txt
+
 # Make a backup copy of the rpi firmware in case people don't want to use the nexmon firmware
 # The firmware used on the RPi is not the same firmware that is in the firmware-brcm package which is why we do this
 wget https://raw.githubusercontent.com/RPi-Distro/firmware-nonfree/master/brcm/brcmfmac43430-sdio.bin -O "${work_dir}"/lib/firmware/brcm/brcmfmac43430-sdio.rpi.bin
 
 # Set hostname
 status 'Set hostname'
-echo "${hostname}" > "${work_dir}"/etc/hostname
+echo "${hostname}" >"${work_dir}"/etc/hostname
 
 cd "${repo_dir}/"
+
 # Clean system
 include clean_system
 
@@ -240,21 +251,28 @@ parted -s -a minimal "${image_dir}/${image_name}.img" mkpart primary "$fstype" "
 
 # Set the partition variables
 make_loop
+
 # Create file systems
 mkfs_partitions
+
 # Make fstab,
 make_fstab
+
 # Configure Raspberry Pi firmware
 include rpi_firmware
 
 # Create the dirs for the partitions and mount them
 status "Create the dirs for the partitions and mount them"
 mkdir -p "${base_dir}"/root/
+
 if [[ $fstype == ext4 ]]; then
-mount -t ext4 -o noatime,data=writeback,barrier=0 "${rootp}" "${base_dir}"/root
+    mount -t ext4 -o noatime,data=writeback,barrier=0 "${rootp}" "${base_dir}"/root
+
 else
-mount "${rootp}" "${base_dir}"/root
+    mount "${rootp}" "${base_dir}"/root
+
 fi
+
 mkdir -p "${base_dir}"/root/boot
 mount "${bootp}" "${base_dir}"/root/boot
 
