@@ -9,8 +9,10 @@
 
 # Hardware model
 hw_model=${hw_model:-"cubieboard2"}
+
 # Architecture (arm64, armhf, armel)
 architecture=${architecture:-"armhf"}
+
 # Desktop manager (xfce, gnome, i3, kde, lxde, mate, e17 or none)
 desktop=${desktop:-"xfce"}
 
@@ -29,8 +31,9 @@ include clean_system
 
 # Calculate the space to create the image and create
 make_image
+
 # Load the ethernet module since it doesn't load automatically at boot
-echo "sunxi_emac" >> ${work_dir}/etc/modules
+echo "sunxi_emac" >>${work_dir}/etc/modules
 
 # Kernel section.  If you want to us ea custom kernel, or configuration, replace
 # them in this section
@@ -46,8 +49,8 @@ make fex2bin
 ./fex2bin "${base_dir}"/sunxi-boards/sys_config/a20/cubieboard2.fex ${work_dir}/boot/script.bin
 
 cd ${work_dir}/usr/src/kernel
-git rev-parse HEAD > ${work_dir}/usr/src/kernel-at-commit
-patch -p1 --no-backup-if-mismatch < ${repo_dir}/patches/mac80211.patch
+git rev-parse HEAD >${work_dir}/usr/src/kernel-at-commit
+patch -p1 --no-backup-if-mismatch <${repo_dir}/patches/mac80211.patch
 touch .scmversion
 export ARCH=arm
 export CROSS_COMPILE=arm-linux-gnueabihf-
@@ -72,7 +75,7 @@ ln -s /usr/src/kernel source
 cd "${base_dir}"
 
 # Create boot.txt file
-cat << EOF > ${work_dir}/boot/boot.cmd
+cat <<EOF >${work_dir}/boot/boot.cmd
 setenv bootargs console=ttyS0,115200 root=/dev/mmcblk0p2 rootwait panic=10 ${extra} rw rootfstype=$fstype net.ifnames=0
 fatload mmc 0 0x43000000 script.bin
 fatload mmc 0 0x48000000 uImage
@@ -90,8 +93,10 @@ parted -s -a minimal "${image_dir}/${image_name}.img" mkpart primary $fstype ${b
 
 # Set the partition variables
 make_loop
+
 # Create file systems
 mkfs_partitions
+
 # Make fstab.
 make_fstab
 
@@ -105,6 +110,7 @@ echo "Rsyncing rootfs to image file"
 rsync -HPavz -q ${work_dir}/ ${base_dir}/root/
 
 cd "${base_dir}"/u-boot-sunxi/
+
 # Build u-boot
 make distclean
 make Cubieboard2_config
