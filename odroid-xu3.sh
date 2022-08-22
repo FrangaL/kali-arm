@@ -9,8 +9,10 @@
 
 # Hardware model
 hw_model=${hw_model:-"odroid-xu3"}
+
 # Architecture
 architecture=${architecture:-"armhf"}
+
 # Desktop manager (xfce, gnome, i3, kde, lxde, mate, e17 or none)
 desktop=${desktop:-"xfce"}
 
@@ -22,7 +24,7 @@ basic_network
 add_interface eth0
 
 # Third stage
-cat <<EOF >> "${work_dir}"/third-stage
+cat <<EOF >>"${work_dir}"/third-stage
 status_stage3 'Enable ttySAC2 in udev links config'
 cat << __EOF__ >> /etc/udev/links.conf
 M   ttySAC2 c 5 1
@@ -61,9 +63,9 @@ include clean_system
 status "Kernel stuff"
 git clone --depth 1 -b odroidxu4-4.14.y https://github.com/hardkernel/linux.git ${work_dir}/usr/src/kernel
 cd ${work_dir}/usr/src/kernel
-git rev-parse HEAD > ${work_dir}/usr/src/kernel-at-commit
-patch -p1 --no-backup-if-mismatch < ${repo_dir}/patches/kali-wifi-injection-4.14.patch
-patch -p1 --no-backup-if-mismatch < ${repo_dir}/patches/0001-wireless-carl9170-Enable-sniffer-mode-promisc-flag-t.patch
+git rev-parse HEAD >${work_dir}/usr/src/kernel-at-commit
+patch -p1 --no-backup-if-mismatch <${repo_dir}/patches/kali-wifi-injection-4.14.patch
+patch -p1 --no-backup-if-mismatch <${repo_dir}/patches/0001-wireless-carl9170-Enable-sniffer-mode-promisc-flag-t.patch
 touch .scmversion
 export ARCH=arm
 export CROSS_COMPILE=arm-linux-gnueabihf-
@@ -92,7 +94,7 @@ ln -s /usr/src/kernel build
 ln -s /usr/src/kernel source
 
 status "/boot/boot.ini"
-cat << EOF > ${work_dir}/boot/boot.ini
+cat <<EOF >${work_dir}/boot/boot.ini
 ODROIDXU-UBOOT-CONFIG
 
 # U-Boot Parameters
@@ -156,8 +158,10 @@ parted -s -a minimal "${image_dir}/${image_name}.img" mkpart primary $fstype ${b
 
 # Set the partition variables
 make_loop
+
 # Create file systems
 mkfs_partitions
+
 # Make fstab.
 make_fstab
 
