@@ -1,20 +1,20 @@
 case $2 in
-sdcard)
-  format="sdcard"
+  sdcard)
+    format="sdcard"
 
-  ;;
+    ;;
 
-emmc)
-  format="emmc"
+  emmc)
+    format="emmc"
 
-  ;;
+    ;;
 
-*)
-  echo -e "\n[-] Unsupported format: $2" >&2
+  *)
+    echo -e "\n[-] Unsupported format: $2" >&2
 
-  exit 1
+    exit 1
 
-  ;;
+    ;;
 
 esac
 
@@ -134,7 +134,7 @@ sed -i -e "s/root=UUID=.*/root=UUID=$(blkid -s UUID -o value ${rootp})/" ${work_
 sed -i -e "s/LABEL=BOOT/UUID=$(blkid -s UUID -o value ${bootp})/" ${work_dir}/etc/fstab
 
 status "Set the default options in /etc/default/u-boot"
-echo 'U_BOOT_MENU_LABEL="Kali Linux"' >>"${work_dir}"/etc/default/u-boot
+echo 'U_BOOT_MENU_LABEL="Kali Linux"' >>${work_dir}/etc/default/u-boot
 echo 'U_BOOT_PARAMETERS="earlyprintk console=ttyAML0,115200 console=tty1 swiotlb=1 coherent_pool=1m ro rootwait"' >>${work_dir}/etc/default/u-boot
 
 status "Rsyncing rootfs into image file"
