@@ -32,7 +32,8 @@ status_stage3 'Copy rpi services'
 cp -p /bsp/services/rpi/*.service /etc/systemd/system/
 
 status_stage3 'Install the kernel packages'
-eatmydata apt-get install -y dkms linux-headers-arm64 linux-image-arm64 u-boot-menu u-boot-sunxi
+eatmydata apt-get install -y dkms firmware-realtek-rtl8723cs-bt linux-headers-arm64 linux-image-arm64 realtek-rtl8723cs-dkms u-boot-menu u-boot-sunxi
+cat /var/lib/dkms/realtek-rtl8723cs/0.0~git20210902.0fb0c24/build/make.log
 
 # Note: This just creates an empty /boot/extlinux/extlinux.conf for us to use
 # later.
@@ -43,38 +44,15 @@ status_stage3 'Install touchpad config file'
 mkdir -p /etc/X11/xorg.conf.d
 install -m644 /bsp/xorg/50-pine64-pinebook.touchpad.conf /etc/X11/xorg.conf.d/
 
-status_stage3 'Add wifi firmware and driver, and attempt to build'
-# so we don't need to build on first boot, which causes issues if people log in too soon
-# Pull in the wifi and bluetooth firmware from anarsoul's git repository
-git clone https://github.com/anarsoul/rtl8723bt-firmware
-cd rtl8723bt-firmware
-cp -a rtl_bt /lib/firmware/
-cd ..
-rm -rf rtl8723bt-firmware
-
 # Suspend doesn't work properly so only enable s2idle
 status_stage3 'Enable suspend2idle'
 sed -i s/"#SuspendState=mem standby freeze"/"SuspendState=freeze"/g /etc/systemd/sleep.conf
 
-# The wireless driver is iffy coming out of suspend
-# So in order to work properly, we need to remove it before suspend and
-# add it back after.
 status_stage3 'Create script add or remove wifi driver at suspend/resume'
 mkdir -p /usr/lib/systemd/system-sleep/
 echo -e "#!/bin/bash\n[ \"\$1\" = \"post\" ] && exec /usr/sbin/modprobe 8723cs\n[ \"\$1\" = \"pre\" ] && exec /usr/sbin/modprobe -r 8723cs\nexit 0" > /usr/lib/systemd/system-sleep/8723cs.sh
 cat /usr/lib/systemd/system-sleep/8723cs.sh
 chmod +x /usr/lib/systemd/system-sleep/8723cs.sh
-
-status_stage3 'Need to package up the wifi driver'
-# (it's a Realtek 8723cs, with the usual Realtek driver quality) still,
-# so for now, we clone it and then build it inside the chroot
-cd /usr/src/
-git clone https://github.com/steev/rtl8723cs -b new-driver-by-megous rtl8723cs-2020.02.27
-cd /usr/src/rtl8723cs-2020.02.27
-# 5.14+ warns about reproducable builds, so we remove the date and time of the driver build
-# as warnings are also now errors.
-sed -i '50d' core/rtw_debug.c
-dkms install rtl8723cs/2020.02.27 -k \$(ls /lib/modules)
 
 status_stage3 'Enable login over serial (No password)'
 echo "T0:23:respawn:/sbin/agetty -L ttyAMA0 115200 vt100" >> /etc/inittab
