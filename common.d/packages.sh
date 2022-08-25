@@ -102,6 +102,7 @@ git libterm-readline-gnu-perl locales wget"
 re4son_pkgs="bluetooth bluez bluez-firmware kalipi-bootloader kalipi-config \
 kalipi-kernel kalipi-kernel-headers kalipi-re4son-firmware kalipi-tft-config \
 pi-bluetooth"
+
 # PiTail specific packages
 pitail_pkgs="bluelog blueranger bluesnarfer bluez-tools bridge-utils cmake \
 darkstat dnsmasq htop libusb-1.0-0-dev locate mailutils pure-ftpd 
