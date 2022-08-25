@@ -114,20 +114,21 @@ components="main,contrib,non-free"
 
 arm="kali-linux-arm ntpdate"
 
-base="apt-transport-https apt-utils bash-completion console-setup dialog e2fsprogs \
-firmware-samsung ifupdown initramfs-tools inxi iw man-db mlocate net-tools \
-netcat-traditional parted psmisc rfkill screen tmux unrar usbutils vim wget whiptail \
-zerofree"
+base="apt-transport-https apt-utils bash-completion console-setup dialog \
+e2fsprogs firmware-samsung ifupdown initramfs-tools inxi iw man-db mlocate \
+net-tools netcat-traditional parted psmisc rfkill screen tmux unrar usbutils \
+vim wget whiptail zerofree"
 
-desktop="kali-desktop-xfce kali-root-login xfonts-terminus xinput \
-xserver-xorg-input-libinput xserver-xorg-input-synaptics xserver-xorg-video-fbdev"
+desktop="kali-desktop-xfce kali-root-login xfonts-terminus xinput 
+xserver-xorg-input-libinput xserver-xorg-input-synaptics \
+xserver-xorg-video-fbdev"
 
 tools="kali-linux-default"
 
 services="apache2 atftpd"
 
-extras="alsa-utils bc bison bluez bluez-firmware kali-linux-core libnss-systemd \
-libssl-dev triggerhappy"
+extras="alsa-utils bc bison bluez bluez-firmware kali-linux-core \
+libnss-systemd libssl-dev triggerhappy"
 
 packages="${arm} ${base} ${services}"
 

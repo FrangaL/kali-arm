@@ -115,9 +115,10 @@ components="main,contrib,non-free"
 
 arm="kali-linux-arm ntpdate"
 
-base="apt-transport-https apt-utils bash-completion console-setup dialog e2fsprogs \
-ifupdown initramfs-tools inxi iw man-db mlocate net-tools netcat-traditional parted \
-pciutils psmisc rfkill screen tmux unrar usbutils vim wget whiptail zerofree"
+base="apt-transport-https apt-utils bash-completion console-setup dialog \
+e2fsprogs ifupdown initramfs-tools inxi iw man-db mlocate net-tools \
+netcat-traditional parted pciutils psmisc rfkill screen tmux unrar usbutils \
+vim wget whiptail zerofree"
 
 desktop="kali-desktop-xfce kali-root-login xfonts-terminus xinput \
 xserver-xorg-video-fbdev"
@@ -126,8 +127,8 @@ tools="kali-tools-top10 wireshark"
 
 services="apache2 atftpd"
 
-extras="alsa-utils bc bison bluez bluez-firmware kali-linux-core libnss-systemd \
-libssl-dev triggerhappy"
+extras="alsa-utils bc bison bluez bluez-firmware kali-linux-core \
+libnss-systemd libssl-dev triggerhappy"
 
 packages="${arm} ${base} ${services}"
 

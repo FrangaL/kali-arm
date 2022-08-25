@@ -24,10 +24,10 @@ triggerhappy unrar usbutils whiptail wireless-regdb zerofree"
 services="apache2 atftpd openvpn ssh tightvncserver"
 
 # This is the list of minimal cli based tools
-cli_min_tools="aircrack-ng cewl crunch dnsrecon dnsutils ethtool exploitdb hydra \
-john libnfc-bin medusa metasploit-framework mfoc ncrack nmap passing-the-hash \
-proxychains recon-ng sqlmap tcpdump theharvester tor tshark whois windows-binaries \
-winexe wpscan"
+cli_min_tools="aircrack-ng cewl crunch dnsrecon dnsutils ethtool exploitdb \
+hydra john libnfc-bin medusa metasploit-framework mfoc ncrack nmap \
+passing-the-hash proxychains recon-ng sqlmap tcpdump theharvester tor tshark \
+whois windows-binaries winexe wpscan"
 
 # This is the list of most cli based tools
 cli_tools_pkgs="kali-linux-arm"
@@ -35,14 +35,16 @@ cli_tools_pkgs="kali-linux-arm"
 # Desktop packages to install
 case $desktop in
 xfce | gnome | kde | i3 | i3-gaps | lxde | mate | e17)
-  desktop_pkgs="kali-linux-default kali-desktop-$desktop alsa-utils xfonts-terminus \
-    xinput xserver-xorg-video-fbdev xserver-xorg-input-libinput"
+  desktop_pkgs="kali-linux-default kali-desktop-$desktop alsa-utils \
+    xfonts-terminus xinput xserver-xorg-video-fbdev xserver-xorg-input-libinput"
 
   ;;
 
 none | slim | miminal)
   variant="minimal"
+  
   minimal="1"
+  
   desktop_pkgs=""
 
   ;;
@@ -93,14 +95,14 @@ if [ "$minimal" = "1" ]; then
 fi
 
 # Basic packages third stage
-third_stage_pkgs="binutils ca-certificates console-common console-setup curl git \
-libterm-readline-gnu-perl locales wget"
+third_stage_pkgs="binutils ca-certificates console-common console-setup curl \
+git libterm-readline-gnu-perl locales wget"
 
 # Re4son packages
 re4son_pkgs="bluetooth bluez bluez-firmware kalipi-bootloader kalipi-config \
 kalipi-kernel kalipi-kernel-headers kalipi-re4son-firmware kalipi-tft-config \
 pi-bluetooth"
 # PiTail specific packages
-pitail_pkgs="bluelog blueranger bluesnarfer bluez-tools bridge-utils cmake darkstat \
-dnsmasq htop libusb-1.0-0-dev locate mailutils pure-ftpd tigervnc-standalone-server \
-wifiphisher"
+pitail_pkgs="bluelog blueranger bluesnarfer bluez-tools bridge-utils cmake \
+darkstat dnsmasq htop libusb-1.0-0-dev locate mailutils pure-ftpd 
+tigervnc-standalone-server wifiphisher"

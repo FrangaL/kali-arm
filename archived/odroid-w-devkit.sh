@@ -109,12 +109,25 @@ else
 fi
 
 components="main,contrib,non-free"
-arm="abootimg cgpt fake-hwclock ntpdate u-boot-tools vboot-utils vboot-kernel-utils"
-base="apt-utils kali-defaults e2fsprogs ifupdown initramfs-tools kali-defaults kali-menu parted sudo usbutils firmware-linux firmware-atheros firmware-libertas firmware-realtek"
-desktop="kali-menu fonts-croscore fonts-crosextra-caladea fonts-crosextra-carlito kali-desktop-xfce kali-root-login lightdm network-manager network-manager-gnome xfce4 xserver-xorg-video-fbdev"
-tools="aircrack-ng ethtool hydra john libnfc-bin mfoc nmap passing-the-hash sqlmap usbutils winexe wireshark"
+
+arm="abootimg cgpt fake-hwclock ntpdate u-boot-tools vboot-kernel-utils \
+vboot-utils"
+
+base="apt-utils e2fsprogs firmware-atheros firmware-libertas firmware-linux \
+firmware-realtek ifupdown initramfs-tools kali-defaults kali-defaults \
+kali-menu parted sudo usbutils"
+
+desktop="fonts-croscore fonts-crosextra-caladea fonts-crosextra-carlito \
+kali-desktop-xfce kali-menu kali-root-login lightdm network-manager \
+network-manager-gnome xfce4 xserver-xorg-video-fbdev"
+
+tools="aircrack-ng ethtool hydra john libnfc-bin mfoc nmap passing-the-hash \
+sqlmap usbutils winexe wireshark"
+
 services="apache2 openssh-server"
-extras="firefox-esr xfce4-terminal wpasupplicant"
+
+extras="firefox-esr wpasupplicant xfce4-terminal"
+
 size=14000 # Size of image in megabytes
 
 packages="${arm} ${base} ${services}"

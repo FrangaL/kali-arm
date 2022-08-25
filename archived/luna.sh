@@ -109,12 +109,23 @@ else
 fi
 
 components="main,contrib,non-free"
+
 arm="kali-linux-arm ntpdate"
-base="apt-transport-https apt-utils bash-completion console-setup dialog ifupdown initramfs-tools inxi iw man-db mlocate netcat-traditional net-tools parted pciutils psmisc rfkill screen tmux unrar usbutils vim wget whiptail zerofree"
-desktop="kali-desktop-xfce kali-root-login xserver-xorg-video-fbdev xfonts-terminus xinput"
+
+base="apt-transport-https apt-utils bash-completion console-setup dialog \
+ifupdown initramfs-tools inxi iw man-db mlocate net-tools netcat-traditional \
+parted pciutils psmisc rfkill screen tmux unrar usbutils vim wget whiptail \
+zerofree"
+
+desktop="kali-desktop-xfce kali-root-login xserver-xorg-video-fbdev \
+xfonts-terminus xinput"
+
 tools="kali-linux-default"
+
 services="apache2 atftpd"
-extras="alsa-utils bc bison bluez bluez-firmware kali-linux-core libnss-systemd libssl-dev triggerhappy"
+
+extras="alsa-utils bc bison bluez bluez-firmware kali-linux-core \
+libnss-systemd libssl-dev triggerhappy"
 
 packages="${arm} ${base} ${services}"
 

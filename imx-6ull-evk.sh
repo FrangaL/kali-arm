@@ -103,9 +103,10 @@ components="main,contrib,non-free"
 
 arm="kali-linux-arm ntpdate"
 
-base="apt-transport-https apt-utils bash-completion console-setup dialog e2fsprogs \
-ifupdown initramfs-tools inxi iw man-db mlocate net-tools netcat-traditional parted
-pciutils psmisc rfkill screen tmux unrar usbutils wget whiptail zerofree"
+base="apt-transport-https apt-utils bash-completion console-setup dialog \
+e2fsprogs ifupdown initramfs-tools inxi iw man-db mlocate net-tools \
+netcat-traditional parted pciutils psmisc rfkill screen tmux unrar usbutils \
+wget whiptail zerofree"
 
 desktop="kali-desktop-xfce kali-root-login xfonts-terminus xinput \
 xserver-xorg-video-fbdev"
@@ -114,9 +115,9 @@ tools="kali-linux-default"
 
 services="apache2 atftpd"
 
-extras="alsa-utils bc bison bluez bluez-firmware crda i2c-tools kali-linux-core \
-libnss-systemd libssl-dev python3-configobj python3-pip python3-requests \
-python3-rpi.gpio python3-smbus triggerhappy"
+extras="alsa-utils bc bison bluez bluez-firmware crda i2c-tools \
+kali-linux-core libnss-systemd libssl-dev python3-configobj python3-pip \
+python3-requests python3-rpi.gpio python3-smbus triggerhappy"
 
 packages="${arm} ${base} ${services}"
 
