@@ -33,7 +33,6 @@ cp -p /bsp/services/rpi/*.service /etc/systemd/system/
 
 status_stage3 'Install the kernel packages'
 eatmydata apt-get install -y dkms firmware-realtek-rtl8723cs-bt linux-headers-arm64 linux-image-arm64 realtek-rtl8723cs-dkms u-boot-menu u-boot-sunxi
-cat /var/lib/dkms/realtek-rtl8723cs/0.0~git20210902.0fb0c24/build/make.log
 
 # Note: This just creates an empty /boot/extlinux/extlinux.conf for us to use
 # later.
