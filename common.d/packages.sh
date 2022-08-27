@@ -29,6 +29,8 @@ hydra john libnfc-bin medusa metasploit-framework mfoc ncrack nmap \
 passing-the-hash proxychains recon-ng sqlmap tcpdump theharvester tor tshark \
 whois windows-binaries winexe wpscan"
 
+extra_custom_pkgs=""
+
 # This is the list of most cli based tools
 cli_tools_pkgs="kali-linux-arm"
 
