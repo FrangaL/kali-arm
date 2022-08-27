@@ -56,7 +56,7 @@ python3-rpi.gpio python3-smbus"
 
 # Add swap packages
 if [ "$swap" = yes ]; then
-  minimal_pkgs+=" dphys-swapfile"
+    minimal_pkgs+=" dphys-swapfile"
 
 fi
 
@@ -67,24 +67,24 @@ packages="$common_pkgs $cli_tools_pkgs $services $extra_custom_pkgs"
 
 # Do not add re4son_pkgs to this list, as we do not have his repo added when these are installed
 if [[ "$hw_model" == *rpi* ]]; then
-  extra+=" $gpio_pkgs $rpi_pkgs"
+    extra+=" $gpio_pkgs $rpi_pkgs"
 
 fi
 
 if [ "$minimal" = "1" ]; then
-  image_mode="minimal"
+    image_mode="minimal"
 
-  if [ "$slim" = "1" ]; then
-    cli_min_tools=""
-    image_mode="slim"
-    packages="$common_min_pkgs $cli_min_tools ssh"
+    if [ "$slim" = "1" ]; then
+        cli_min_tools=""
+        image_mode="slim"
+        packages="$common_min_pkgs $cli_min_tools ssh"
 
-  else
-    packages="$common_min_pkgs $cli_min_tools $services $extra_custom_pkgs"
+    else
+        packages="$common_min_pkgs $cli_min_tools $services $extra_custom_pkgs"
 
-  fi
+    fi
 
-  log " selecting $image_mode mode ..." gray
+    log " selecting $image_mode mode ..." gray
 
 fi
 
