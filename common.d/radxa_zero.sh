@@ -1,20 +1,12 @@
 case $2 in
-  sdcard)
-    format="sdcard"
+    sdcard)
+        format="sdcard" ;;
 
-    ;;
+    emmc)
+        format="emmc" ;;
 
-  emmc)
-    format="emmc"
-
-    ;;
-
-  *)
-    echo -e "\n[-] Unsupported format: $2" >&2
-
-    exit 1
-
-    ;;
+    *)
+        echo -e "\n[-] Unsupported format: $2" >&2; exit 1 ;;
 
 esac
 
@@ -79,12 +71,12 @@ cd ..
 # Cross building kernel packages produces broken header packages
 # so only install the headers if we're building on arm64
 if [ "$(arch)" == 'aarch64' ]; then
-  # We don't need to install the linux-libc-dev package, we just want kernel and headers
-  rm linux-libc-dev*.deb
-  dpkg --root "${work_dir}" -i linux-*.deb
+    # We don't need to install the linux-libc-dev package, we just want kernel and headers
+    rm linux-libc-dev*.deb
+    dpkg --root "${work_dir}" -i linux-*.deb
 
 else
-  dpkg --root "${work_dir}" -i linux-image-*.deb
+    dpkg --root "${work_dir}" -i linux-image-*.deb
 
 fi
 
@@ -166,11 +158,11 @@ make
 
 # https://wiki.radxa.com/Zero/dev/u-boot
 if [ "$format" == "sdcard" ]; then
-  dd if=u-boot.bin.sd.bin of=${loopdevice} conv=fsync,notrunc bs=1 count=442
-  dd if=u-boot.bin.sd.bin of=${loopdevice} conv=fsync,notrunc bs=512 skip=1 seek=1
+    dd if=u-boot.bin.sd.bin of=${loopdevice} conv=fsync,notrunc bs=1 count=442
+    dd if=u-boot.bin.sd.bin of=${loopdevice} conv=fsync,notrunc bs=512 skip=1 seek=1
 
 else
-  dd if=u-boot.bin of=${loopdevice} conv=fsync,notrunc bs=512 seek=1
+    dd if=u-boot.bin of=${loopdevice} conv=fsync,notrunc bs=512 seek=1
 
 fi
 
