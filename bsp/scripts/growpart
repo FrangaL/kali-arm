@@ -286,20 +286,12 @@ get_sfdisk_version() {
     ver=$4
     case "$ver" in
         [0-9]*.[0-9]*.[0-9] | [0-9].[0-9]*)
-            IFS="."
-            set -- $ver
-            IFS="$oifs"
-            SFDISK_VERSION=$(($1 * 10000 + $2 * 100 + ${3:-0}))
+            IFS="."; set -- $ver; IFS="$oifs"
+            SFDISK_VERSION=$(($1 * 10000 + $2 * 100 + ${3:-0})); return 0 ;;
 
-            return 0
-
-            ;;
         *)
-            error "unexpected output in sfdisk --version [$out]"
+            error "unexpected output in sfdisk --version [$out]"; return 1 ;;
 
-            return 1
-
-            ;;
     esac
 }
 
@@ -333,9 +325,8 @@ get_diskpart_path() {
         case "$disk" in
             # sfdisk for files ending in digit to <disk>p<num>.
             *[0-9])
-                dpart="${disk}p${part}"
+                dpart="${disk}p${part}" ;;
 
-                ;;
         esac
     fi
 
@@ -854,24 +845,18 @@ verify_ptupdate() {
 
     case "$input" in
         on)
-            error "$reason"
-            return 1
-
-            ;;
+            error "$reason"; return 1 ;;
 
         auto)
             _RET="false"
-            debug 1 "partition update disabled: $reason"
-            return 0
-
-            ;;
+            debug 1 "partition update disabled: $reason"; return 0 ;;
 
         force)
             _RET="true"
             error "WARNING: ptupdate forced on even though: $reason"
-            return 0
+            
+            return 0 ;;
 
-            ;;
     esac
 
     error "unknown input '$input'"
@@ -937,12 +922,11 @@ get_table_format() {
         # Found invalid GPT and valid MBR; converting MBR to GPT format
         case "$out" in
             *\ valid\ MBR\ *)
-                _RET="dos"
-                ;;
+                _RET="dos" ;;
 
             *)
-                _RET="gpt"
-                ;;
+                _RET="gpt" ;;
+
         esac
 
         return
@@ -964,14 +948,11 @@ get_table_format() {
 
         case "$out" in
             gpt | dos)
-                _RET="$out"
-
-                ;;
+                _RET="$out" ;;
 
             *)
-                error "WARN: unknown label $out"
+                error "WARN: unknown label $out" ;;
 
-                ;;
         esac
     fi
 }
@@ -981,27 +962,17 @@ get_resizer() {
 
     case "$user" in
         sgdisk)
-            _RET="resize_sgdisk_$format"
-            return
-
-            ;;
+            _RET="resize_sgdisk_$format"; return ;;
 
         sfdisk)
-            _RET="resize_sfdisk_$format"
-            return
-
-            ;;
+            _RET="resize_sfdisk_$format"; return ;;
 
         auto)
-            :
-
-            ;;
+            : ;;
 
         *)
-            error "unexpected value '$user' for growpart resizer"
-            return 1
+            error "unexpected value '$user' for growpart resizer"; return 1 ;;
 
-            ;;
     esac
 
     if [ "$format" = "dos" ]; then
@@ -1055,22 +1026,14 @@ maybe_lvm_resize() {
 
     case "$ret" in
         5)
-            debug 1 "$partpath is not an lvm pv"
-            return 0
-
-            ;;
+            debug 1 "$partpath is not an lvm pv"; return 0 ;;
 
         0)
-            :
-
-            ;;
+            : ;;
 
         *)
-            error "failed to execute [$ret] '$*'"
-            error "$out"
-            return 1
+            error "failed to execute [$ret] '$*'"; error "$out"; return 1 ;;
 
-            ;;
     esac
 
     rq lvm_resize $wouldrun lvm pvresize "$partpath" || {
@@ -1090,21 +1053,13 @@ while [ $# -ne 0 ]; do
 
     case "$cur" in
         -h | --help)
-            Usage
-            exit 0
-
-            ;;
+            Usage; exit 0 ;;
 
         --fudge)
-            FUDGE=${next}
-            shift
-
-            ;;
+            FUDGE=${next}; shift ;;
 
         -N | --dry-run)
-            DRY_RUN=1
-
-            ;;
+            DRY_RUN=1 ;;
 
         -u | --update | --update=*)
             if [ "${cur#--update=}" != "$cur" ]; then
@@ -1116,34 +1071,22 @@ while [ $# -ne 0 ]; do
             fi
 
             case "$next" in
-            off | auto | force | on)
-                pt_update=$next
+                off | auto | force | on)
+                    pt_update=$next ;;
 
-                ;;
+                *)
+                    fail "unknown --update option: $next" ;;
 
-            *)
-                fail "unknown --update option: $next"
-
-                ;;
-            esac
-
-            ;;
+            esac ;;
 
         -v | --verbose)
-            VERBOSITY=$(($VERBOSITY + 1))
-
-            ;;
+            VERBOSITY=$(($VERBOSITY + 1)) ;;
 
         --)
-            shift
-            break
-
-            ;;
+            shift; break ;;
 
         -*)
-            fail "unknown option ${cur}"
-
-            ;;
+            fail "unknown option ${cur}" ;;
 
         *)
             if [ -z "${DISK}" ]; then
@@ -1156,8 +1099,11 @@ while [ $# -ne 0 ]; do
             fi
 
             ;;
+
     esac
+
     shift
+
 done
 
 [ -n "${DISK}" ] || bad_Usage "must supply disk and partition-number"
