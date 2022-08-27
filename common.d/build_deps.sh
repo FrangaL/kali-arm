@@ -16,69 +16,75 @@ apt-wait() {
     sleep $[ $RANDOM % 15 5 ]
   done
 
-  if [ "$1" == "update" ]; then
-    echo -e "\n[i] Updating apt"
-    apt-get update
+    if [ "$1" == "update" ]; then
+        echo -e "\n[i] Updating apt"
+        apt-get update
 
-  elif [ "$1" == "install_deps" ]; then
-    echo -e "\n[i] Installing: $deps"
-    apt-get install -y $deps
+    elif [ "$1" == "install_deps" ]; then
+        echo -e "\n[i] Installing: $deps"
+        apt-get install -y $deps
 
-  # Don't think this is used?
-  elif [ "$1" == "remove" ]; then
-    echo -e "\n[i] Removing: $@"
-    apt-get -y --purge "$@"
+    # Don't think this is used?
+    elif [ "$1" == "remove" ]; then
+        echo -e "\n[i] Removing: $@"
+        apt-get -y --purge "$@"
 
-  else
-    echo "\n[-] Unknown option: $1" >&2
-    exit 1
+    else
+        echo "\n[-] Unknown option: $1" >&2
 
-  fi
+        exit 1
+
+    fi
 }
 
 # Function create script to clean system packages
 clean_build() {
-  mkdir -p ./local/
-  clean_script=${backup_packages/list-pkgs/remove-pkgs}.sh
+    mkdir -p ./local/
+    clean_script=${backup_packages/list-pkgs/remove-pkgs}.sh
 
-  echo -e "\n[i] Creating clean up script: ${clean_script}"
-  cat <<EOF >${clean_script}
+    echo -e "\n[i] Creating clean up script: ${clean_script}"
+    cat <<EOF >${clean_script}
 #!/usr/bin/env bash
 
 set -e
 
 if [[ \$EUID -ne 0 ]]; then
-  echo "[-] This script must be run as root" >&2
-  exit 1
+    echo "[-] This script must be run as root" >&2
+    exit 1
+
 fi
 
 clean_system() {
-  dpkg --clear-selections
-  dpkg --set-selections < ${backup_packages}
-  apt-get -y dselect-upgrade
-  apt-get -y remove --purge \$(dpkg -l | grep "^rc" | awk '{print \$2}')
-  ${del_arch_i386}
+    dpkg --clear-selections
+    dpkg --set-selections < ${backup_packages}
+    apt-get -y dselect-upgrade
+    apt-get -y remove --purge \$(dpkg -l | grep "^rc" | awk '{print \$2}')
+    ${del_arch_i386}
 }
 
 echo "Use this script under your responsibility"
 read -p "Are you sure you want to remove the packages from the build? [y/N]: " yn
 case \$yn in
-  [Yy]* ) clean_system;;
-      * ) exit;;
+    [Yy]* )
+        clean_system ;;
+
+    * )
+        exit ;;
 esac
 EOF
 
-  chmod 0755 ${clean_script}
+    chmod 0755 ${clean_script}
 
-  #rm -f "${backup_packages}"
+    #rm -f "${backup_packages}"
 
-  echo -e "\n[i] Need to manually run: ${clean_script}"
+    echo -e "\n[i] Need to manually run: ${clean_script}"
 }
 
 function check_trap() {
-  echo -e "\n[-] An error has occurred!"
-  clean_build
-  exit 1
+    echo -e "\n[-] An error has occurred!"
+    clean_build
+
+    exit 1
 }
 
 # If there is an issue, run the above function
@@ -88,18 +94,20 @@ trap check_trap INT ERR SIGTERM SIGINT
 
 # Check permissions script
 if [[ $EUID -ne 0 ]]; then
-  echo "[-] This script must be run as root" >&2
-  exit 1
+    echo "[-] This script must be run as root" >&2
+
+    exit 1
 
 else
-  echo -e "\n[i] Kali-ARM build-script machine preparation"
+    echo -e "\n[i] Kali-ARM build-script machine preparation"
 
 fi
 
 # Check compatible systems
 if ! which dpkg >/dev/null; then
-  echo "[-] Script only compatible with Debian-based systems" >&2
-  exit 1
+    echo "[-] Script only compatible with Debian-based systems" >&2
+
+    exit 1
 
 fi
 
@@ -134,51 +142,52 @@ apt-wait install_deps
 debootstrap_ver=$(debootstrap --version | grep -o '[0-9.]\+' | head -1)
 
 if dpkg --compare-versions "$debootstrap_ver" lt "1.0.105"; then
-  echo "[-] Currently your version of debootstrap ($debootstrap_ver) does not support the script" >&2
-  echo "[-] The minimum version of debootstrap is 1.0.105" >&2
-  exit 1
+    echo "[-] Currently your version of debootstrap ($debootstrap_ver) does not support the script" >&2
+    echo "[-] The minimum version of debootstrap is 1.0.105" >&2
+
+    exit 1
 
 fi
 
 # Install kali-archive-keyring
 if [ ! -f /usr/share/keyrings/kali-archive-keyring.gpg ]; then
-  echo -e "\n[i] Installing: kali-archive-keyring"
-  temp_key="$(mktemp -d)"
-  git clone https://gitlab.com/kalilinux/packages/kali-archive-keyring.git $temp_key
-  cd $temp_key/
-  make
-  cp -v kali-archive-keyring.gpg /usr/share/keyrings/ #make install
-  cd $OLDPWD/
-  rm -rf $temp_key
+    echo -e "\n[i] Installing: kali-archive-keyring"
+    temp_key="$(mktemp -d)"
+    git clone https://gitlab.com/kalilinux/packages/kali-archive-keyring.git $temp_key
+    cd $temp_key/
+    make
+    cp -v kali-archive-keyring.gpg /usr/share/keyrings/ #make install
+    cd $OLDPWD/
+    rm -rf $temp_key
 
 else
-  echo -e "\n[i] Already have: kali-archive-keyring"
+    echo -e "\n[i] Already have: kali-archive-keyring"
 
 fi
 
 # Install packages i386
 if [ $(arch) == 'x86_64' ]; then
-  echo -e "\n[i] Detected x64"
+    echo -e "\n[i] Detected x64"
 
-  if [ -z $(dpkg --print-foreign-architectures | grep i386) ]; then
-    echo -e "\n[i] Adding x86 support"
-    dpkg --add-architecture i386
-    apt-wait update
-    deps="-o APT::Immediate-Configure=0 libstdc++6:i386 libc6:i386 libgcc1:i386 zlib1g:i386 libncurses5:i386"
-    apt-wait install_deps
-    del_arch_i386="dpkg --remove-architecture i386"
+    if [ -z $(dpkg --print-foreign-architectures | grep i386) ]; then
+        echo -e "\n[i] Adding x86 support"
+        dpkg --add-architecture i386
+        apt-wait update
+        deps="-o APT::Immediate-Configure=0 libstdc++6:i386 libc6:i386 libgcc1:i386 zlib1g:i386 libncurses5:i386"
+        apt-wait install_deps
+        del_arch_i386="dpkg --remove-architecture i386"
 
-  elif [[ $(dpkg --print-foreign-architectures | grep i386) == 'i386' ]]; then
-    echo -e "\n[i] Already found x86 support"
-    deps="-o APT::Immediate-Configure=0 libstdc++6:i386 libc6:i386 libgcc1:i386 zlib1g:i386 libncurses5:i386"
-    apt-wait install_deps
+    elif [[ $(dpkg --print-foreign-architectures | grep i386) == 'i386' ]]; then
+        echo -e "\n[i] Already found x86 support"
+        deps="-o APT::Immediate-Configure=0 libstdc++6:i386 libc6:i386 libgcc1:i386 zlib1g:i386 libncurses5:i386"
+        apt-wait install_deps
 
-  fi
+    fi
 
 elif [ $(arch) == 'i386' ]; then
-  echo -e "\n[i] Detected x86"
-  deps="libstdc++6 libc6 libgcc1 zlib1g libncurses5"
-  apt-wait install_deps
+    echo -e "\n[i] Detected x86"
+    deps="libstdc++6 libc6 libgcc1 zlib1g libncurses5"
+    apt-wait install_deps
 
 fi
 
