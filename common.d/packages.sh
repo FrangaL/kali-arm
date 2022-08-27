@@ -40,7 +40,8 @@ case $desktop in
         desktop_pkgs="kali-linux-default kali-desktop-$desktop alsa-utils \
         xfonts-terminus xinput xserver-xorg-video-fbdev \xserver-xorg-input-libinput" ;;
 
-    none | slim | miminal) variant="minimal"; minimal="1"; desktop_pkgs="" ;;
+    none | slim | miminal) 
+        variant="minimal"; minimal="1"; desktop_pkgs="" ;;
 
 esac
 
