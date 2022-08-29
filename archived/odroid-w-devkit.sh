@@ -532,7 +532,7 @@ losetup -d ${loopdevice}
 
 # Limite use cpu function
 limit_cpu() {
-    # Randowm name group
+    # Random name group
     rand=$(
         tr -cd 'A-Za-z0-9' </dev/urandom | head -c4
         echo
