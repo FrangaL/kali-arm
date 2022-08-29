@@ -585,8 +585,13 @@ limit_cpu() {
 if [ $compress = xz ]; then
     if [ $(arch) == 'x86_64' ]; then
         echo "Compressing ${image_name}.img"
-        [ $(nproc) -lt 3 ] || cpu_cores=3                                  # cpu_cores = Number of cores to use
-        limit_cpu pixz -p ${cpu_cores:-2} "${image_dir}/${image_name}.img" # -p Nº cpu cores use
+
+        # cpu_cores = Number of cores to use
+        [ $(nproc) -lt 3 ] || cpu_cores=3
+
+        # -p Nº cpu cores use
+        limit_cpu pixz -p ${cpu_cores:-2} "${image_dir}/${image_name}.img"
+
         chmod 0644 ${repo_dir}/${image_name}.img.xz
 
     fi
