@@ -9,8 +9,10 @@
 
 # Hardware model
 hw_model=${hw_model:-"trimslice"}
+
 # Architecture
 architecture=${architecture:-"armhf"}
+
 # Desktop manager (xfce, gnome, i3, kde, lxde, mate, e17 or none)
 desktop=${desktop:-"xfce"}
 
@@ -22,7 +24,7 @@ basic_network
 add_interface eth0
 
 # Third stage
-cat <<EOF >> "${work_dir}"/third-stage
+cat <<EOF >>"${work_dir}"/third-stage
 status_stage3 'Install kernel and u-boot packages'
 eatmydata apt-get install -y linux-image-armmp u-boot-menu
 
@@ -50,8 +52,10 @@ parted -s -a minimal "${image_dir}/${image_name}.img" mkpart primary $fstype ${b
 
 # Set the partition variables
 make_loop
+
 # Create file systems
 mkfs_partitions
+
 # Make fstab.
 make_fstab
 
@@ -63,9 +67,11 @@ mkdir -p "${base_dir}"/root/boot
 mount ${bootp} "${base_dir}"/root/boot
 
 status "Fix root entry in extlinux.conf"
+
 # Ensure we don't have root=/dev/sda3 in the extlinux.conf which comes from running u-boot-menu in a cross chroot
 # We do this down here because we don't know the UUID until after the image is created
 sed -i -e "0,/root=.*/s//root=UUID=$root_uuid rootfstype=$fstype console=ttyS0,115200 console=tty1 consoleblank=0 rw quiet rootwait/g" ${work_dir}/boot/extlinux/extlinux.conf
+
 # And we remove the "Debian GNU/Linux because we're Kali"
 sed -i -e "s/Debian GNU\/Linux/Kali Linux/g" ${work_dir}/boot/extlinux/extlinux.conf
 

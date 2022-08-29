@@ -9,8 +9,10 @@
 
 # Hardware model
 hw_model=${hw_model:-"pinebook"}
+
 # Architecture
 architecture=${architecture:-"arm64"}
+
 # Desktop manager (xfce, gnome, i3, kde, lxde, mate, e17 or none)
 desktop=${desktop:-"xfce"}
 
@@ -27,7 +29,7 @@ basic_network
 #add_interface wlan0
 
 # Third stage
-cat <<EOF >> "${work_dir}"/third-stage
+cat <<EOF >>"${work_dir}"/third-stage
 status_stage3 'Copy rpi services'
 cp -p /bsp/services/rpi/*.service /etc/systemd/system/
 
@@ -89,7 +91,8 @@ include clean_system
 # Set up some defaults for chromium, if the user ever installs it
 status "Set default chromium options"
 mkdir -p ${work_dir}/etc/chromium/
-cat << EOF > ${work_dir}/etc/chromium/default
+
+cat <<EOF >${work_dir}/etc/chromium/default
 #Options to pass to chromium
 CHROMIUM_FLAGS="\
 --disable-smooth-scrolling \
@@ -113,38 +116,45 @@ parted -s -a minimal "${image_dir}/${image_name}.img" mkpart primary $fstype 32M
 
 # Set the partition variables
 make_loop
+
 # Create file systems
 mkfs_partitions
+
 # Make fstab.
 make_fstab
 
 # Create the dirs for the partitions and mount them
 status "Create the dirs for the partitions and mount them"
 mkdir -p "${base_dir}"/root/
-if [[ $fstype == ext4 ]]; then
-mount -t ext4 -o noatime,data=writeback,barrier=0 "${rootp}" "${base_dir}"/root
-else
-mount "${rootp}" "${base_dir}"/root
-fi
 
+if [[ $fstype == ext4 ]]; then
+    mount -t ext4 -o noatime,data=writeback,barrier=0 "${rootp}" "${base_dir}"/root
+
+else
+    mount "${rootp}" "${base_dir}"/root
+
+fi
 
 # Ensure we don't have root=/dev/sda3 in the extlinux.conf which comes from running u-boot-menu in a cross chroot
 # We do this down here because we don't know the UUID until after the image is created
 status "Edit the extlinux.conf file to set root uuid and proper name"
 sed -i -e "0,/root=.*/s//root=UUID=$root_uuid rootfstype=$fstype console=tty1 consoleblank=0 ro rootwait/g" ${work_dir}/boot/extlinux/extlinux.conf
+
 # And we remove the "GNU/Linux because we don't use it
 sed -i -e "s|.*GNU/Linux Rolling|menu label Kali Linux|g" ${work_dir}/boot/extlinux/extlinux.conf
 
 status "Set the default options in /etc/default/u-boot"
-echo 'U_BOOT_MENU_LABEL="Kali Linux"' >> ${work_dir}/etc/default/u-boot
-echo 'U_BOOT_PARAMETERS="console=tty1 consoleblank=0 ro rootwait"' >> ${work_dir}/etc/default/u-boot
+echo 'U_BOOT_MENU_LABEL="Kali Linux"' >>${work_dir}/etc/default/u-boot
+echo 'U_BOOT_PARAMETERS="console=tty1 consoleblank=0 ro rootwait"' >>${work_dir}/etc/default/u-boot
 
 status "Rsyncing rootfs into image file"
 rsync -HPavz -q "${work_dir}"/ "${base_dir}"/root/
 sync
 
 # Adapted from the u-boot-install-sunxi64 script
-status "Write u-boot bootloader to the image file" # Note: do not write to the actual image file, but to the loop device, otherwise you will overwite what is in the image.
+status "Write u-boot bootloader to the image file"
+
+# Note: do not write to the actual image file, but to the loop device, otherwise you will overwite what is in the image.
 dd conv=notrunc if=${work_dir}/usr/lib/u-boot/pinebook/sunxi-spl.bin of=${loopdevice} bs=8k seek=1
 dd conv=notrunc if=${work_dir}/usr/lib/u-boot/pinebook/u-boot-sunxi-with-spl.fit.itb of=${loopdevice} bs=8k seek=5
 sync

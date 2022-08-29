@@ -21,6 +21,7 @@ source ./common.d/variables.sh
 
 # If there is any issues, run check_trap (from ./common.d/functions.sh)
 trap check_trap INT ERR SIGTERM SIGINT
+
 # Always at the end, run clean_build (from ./common.d/functions.sh)
 trap clean_build EXIT
 
@@ -41,14 +42,14 @@ include apt_options
 
 # Disable suspend/resume - speeds up boot massively
 mkdir -p "${work_dir}/etc/initramfs-tools/conf.d/"
-echo "RESUME=none" > "${work_dir}/etc/initramfs-tools/conf.d/resume"
+echo "RESUME=none" >"${work_dir}/etc/initramfs-tools/conf.d/resume"
 
 # Copy directory bsp into build dir
 status "Copy directory bsp into build dir"
 cp -rp bsp "${work_dir}"
 
 # Third stage
-cat <<EOF > "${work_dir}/third-stage"
+cat <<EOF >"${work_dir}/third-stage"
 #!/usr/bin/env bash
 # Stop on error
 set -e
@@ -74,13 +75,14 @@ EOF
 
 if [ "${desktop}" != "none" ]; then
   log "Desktop mode enabled: ${desktop}" green
-  cat <<EOF >> "${work_dir}/third-stage"
+  cat <<EOF >>"${work_dir}/third-stage"
 status_stage3 'Install desktop packages'
 eatmydata apt-get install -y ${desktop_pkgs} ${extra} || eatmydata apt-get install -y --fix-broken
 EOF
+
 fi
 
-cat <<EOF >> "${work_dir}/third-stage"
+cat <<EOF >>"${work_dir}/third-stage"
 status_stage3 'ntp does not always sync the date, but systemd-timesyncd does, so we remove ntp and reinstall it with this'
 eatmydata apt-get install -y systemd-timesyncd --autoremove
 
@@ -134,13 +136,16 @@ status_stage3 'Install powershell 7.1.3'
 if [[ ${architecture} != armel ]]; then
   if [[ ${architecture} == "arm64" ]]; then
     curl -L -o /tmp/powershell.tar.gz https://github.com/PowerShell/PowerShell/releases/download/v7.1.3/powershell-7.1.3-linux-arm64.tar.gz
+
   else
     curl -L -o /tmp/powershell.tar.gz https://github.com/PowerShell/PowerShell/releases/download/v7.1.3/powershell-7.1.3-linux-arm32.tar.gz
+
   fi
     mkdir -p /opt/microsoft/powershell/7
     tar -xf  /tmp/powershell.tar.gz -C /opt/microsoft/powershell/7
     chmod +x /opt/microsoft/powershell/7/pwsh
     ln -s /opt/microsoft/powershell/7/pwsh
+
 fi
 
 status_stage3 'Try and make the console a bit nicer. Set the terminus font for a bit nicer display'

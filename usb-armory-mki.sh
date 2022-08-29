@@ -9,8 +9,10 @@
 
 # Hardware model
 hw_model=${hw_model:-"usb-armory-mki"}
+
 # Architecture
 architecture=${architecture:-"armhf"}
+
 # Desktop manager (xfce, gnome, i3, kde, lxde, mate, e17 or none)
 desktop=${desktop:-"xfce"}
 
@@ -22,7 +24,7 @@ basic_network
 add_interface eth0
 
 # Third stage
-cat <<EOF >> "${work_dir}"/third-stage
+cat <<EOF >>"${work_dir}"/third-stage
 status_stage3 'Install dhcp and vnc servers'
 eatmydata apt-get install -y isc-dhcp-server tightvncserver || eatmydata apt-get install -y --fix-broken
 
@@ -75,9 +77,9 @@ max-lease-time 7200;
 log-facility local7;
 
 subnet 10.0.0.0 netmask 255.255.255.0 {
-  range 10.0.0.2 10.0.0.2;
-  default-lease-time 600;
-  max-lease-time 7200;
+    range 10.0.0.2 10.0.0.2;
+    default-lease-time 600;
+    max-lease-time 7200;
 }
 __EOF__
 
@@ -102,13 +104,13 @@ include clean_system
 status "Kernel stuff"
 git clone -b linux-5.15.y --depth 1 git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git ${work_dir}/usr/src/kernel
 cd ${work_dir}/usr/src/kernel
-git rev-parse HEAD > ${work_dir}/usr/src/kernel-at-commit
+git rev-parse HEAD >${work_dir}/usr/src/kernel-at-commit
 touch .scmversion
 export ARCH=arm
 export CROSS_COMPILE=arm-none-eabi-
 #patch -p1 --no-backup-if-mismatch < ${repo_dir}/patches/ARM-drop-cc-option-fallbacks-for-architecture-select.patch
-patch -p1 --no-backup-if-mismatch < ${repo_dir}/patches/kali-wifi-injection-5.15.patch
-patch -p1 --no-backup-if-mismatch < ${repo_dir}/patches/0001-wireless-carl9170-Enable-sniffer-mode-promisc-flag-t.patch
+patch -p1 --no-backup-if-mismatch <${repo_dir}/patches/kali-wifi-injection-5.15.patch
+patch -p1 --no-backup-if-mismatch <${repo_dir}/patches/0001-wireless-carl9170-Enable-sniffer-mode-promisc-flag-t.patch
 wget $githubraw/f-secure-foundry/usbarmory/master/software/kernel_conf/mark-one/imx53-usbarmory-gpio.dts -O arch/arm/boot/dts/imx53-usbarmory-gpio.dts
 wget $githubraw/f-secure-foundry/usbarmory/master/software/kernel_conf/mark-one/imx53-usbarmory-host.dts -O arch/arm/boot/dts/imx53-usbarmory-host.dts
 wget $githubraw/f-secure-foundry/usbarmory/master/software/kernel_conf/mark-one/imx53-usbarmory-i2c.dts -O arch/arm/boot/dts/imx53-usbarmory-i2c.dts
@@ -122,6 +124,7 @@ make modules_install INSTALL_MOD_PATH=${work_dir}
 cp arch/arm/boot/zImage ${work_dir}/boot/
 cp arch/arm/boot/dts/imx53-usbarmory*.dtb ${work_dir}/boot/
 make mrproper
+
 # Since these aren't integrated into the kernel yet, mrproper removes them
 cp ../usbarmory_linux-5.15_defconfig arch/arm/configs/
 wget $githubraw/f-secure-foundry/usbarmory/master/software/kernel_conf/mark-one/imx53-usbarmory-gpio.dts -O arch/arm/boot/dts/imx53-usbarmory-gpio.dts
@@ -153,9 +156,12 @@ parted -s -a minimal "${image_dir}/${image_name}.img" mkpart primary ext2 5MiB 1
 
 # Set the partition variables
 make_loop
+
 # Create file systems
-rootfstype="ext2" # Force root partition ext2 filesystem
+# Force root partition ext2 filesystem
+rootfstype="ext2"
 mkfs_partitions
+
 # Make fstab.
 make_fstab
 

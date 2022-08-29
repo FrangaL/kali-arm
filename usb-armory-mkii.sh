@@ -9,8 +9,10 @@
 
 # Hardware model
 hw_model=${hw_model:-"usb-armory-mkii"}
+
 # Architecture
 architecture=${architecture:-"armhf"}
+
 # Desktop manager (xfce, gnome, i3, kde, lxde, mate, e17 or none)
 desktop=${desktop:-"xfce"}
 
@@ -22,7 +24,7 @@ basic_network
 add_interface eth0
 
 # Third stage
-cat <<EOF >> "${work_dir}"/third-stage
+cat <<EOF >>"${work_dir}"/third-stage
 status_stage3 'Install dhcp and vnc server'
 eatmydata apt-get install -y isc-dhcp-server tightvncserver || eatmydata apt-get install -y --fix-broken
 
@@ -72,9 +74,9 @@ max-lease-time 7200;
 log-facility local7;
 
 subnet 10.0.0.0 netmask 255.255.255.0 {
-  range 10.0.0.2 10.0.0.2;
-  default-lease-time 600;
-  max-lease-time 7200;
+    range 10.0.0.2 10.0.0.2;
+    default-lease-time 600;
+    max-lease-time 7200;
 }
 __EOF__
 
@@ -99,13 +101,13 @@ include clean_system
 status "Kernel stuff"
 git clone --depth 1 -b linux-5.15.y git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git ${work_dir}/usr/src/kernel
 cd ${work_dir}/usr/src/kernel
-git rev-parse HEAD > ${work_dir}/usr/src/kernel-at-commit
+git rev-parse HEAD >${work_dir}/usr/src/kernel-at-commit
 touch .scmversion
 export ARCH=arm
 export CROSS_COMPILE=arm-linux-gnueabihf-
 #patch -p1 --no-backup-if-mismatch < ${repo_dir}/patches/ARM-drop-cc-option-fallbacks-for-architecture-select.patch
-patch -p1 --no-backup-if-mismatch < ${repo_dir}/patches/kali-wifi-injection-5.15.patch
-patch -p1 --no-backup-if-mismatch < ${repo_dir}/patches/0001-wireless-carl9170-Enable-sniffer-mode-promisc-flag-t.patch
+patch -p1 --no-backup-if-mismatch <${repo_dir}/patches/kali-wifi-injection-5.15.patch
+patch -p1 --no-backup-if-mismatch <${repo_dir}/patches/0001-wireless-carl9170-Enable-sniffer-mode-promisc-flag-t.patch
 wget $githubraw/f-secure-foundry/usbarmory/master/software/kernel_conf/usbarmory_linux-5.15.defconfig -O ../usbarmory_linux-5.15_defconfig
 wget $githubraw/f-secure-foundry/usbarmory/master/software/kernel_conf/mark-two/imx6ul-usbarmory.dts -O arch/arm/boot/dts/imx6ul-usbarmory.dts
 wget $githubraw/f-secure-foundry/usbarmory/master/software/kernel_conf/mark-two/imx6ulz-usbarmory-tzns.dts -O arch/arm/boot/dts/imx6ulz-usbarmory-tzns.dts
@@ -117,12 +119,12 @@ make modules_install INSTALL_MOD_PATH=${work_dir}
 cp arch/arm/boot/zImage ${work_dir}/boot/
 cp arch/arm/boot/dts/imx6*-usbarmory*.dtb ${work_dir}/boot/
 make mrproper
+
 # Since these aren't integrated into the kernel yet, mrproper removes them
 cp ../usbarmory_linux-5.15_defconfig arch/arm/configs/
 wget $githubraw/f-secure-foundry/usbarmory/master/software/kernel_conf/mark-two/imx6ul-usbarmory.dts -O arch/arm/boot/dts/imx6ul-usbarmory.dts
 wget $githubraw/f-secure-foundry/usbarmory/master/software/kernel_conf/mark-two/imx6ulz-usbarmory-tzns.dts -O arch/arm/boot/dts/imx6ulz-usbarmory-tzns.dts
 wget $githubraw/f-secure-foundry/usbarmory/master/software/kernel_conf/mark-two/imx6ulz-usbarmory.dts -O arch/arm/boot/dts/imx6ulz-usbarmory.dts
-
 
 # Fix up the symlink for building external modules
 # kernver is used so we don't need to keep track of what the current compiled
@@ -147,19 +149,25 @@ parted -s -a minimal "${image_dir}/${image_name}.img" mkpart primary ext2 5MiB 1
 
 # Set the partition variables
 make_loop
+
 # Create file systems
-rootfstype="ext2" # Force root partition ext2 filesystem
+# Force root partition ext2 filesystem
+rootfstype="ext2"
 mkfs_partitions
+
 # Make fstab.
 make_fstab
 
 # Create the dirs for the partitions and mount them
 status "Create the dirs for the partitions and mount them"
 mkdir -p "${base_dir}"/root
+
 if [[ $fstype == ext4 ]]; then
-mount -t ext4 -o noatime,data=writeback,barrier=0 "${rootp}" "${base_dir}"/root
+    mount -t ext4 -o noatime,data=writeback,barrier=0 "${rootp}" "${base_dir}"/root
+
 else
-mount "${rootp}" "${base_dir}"/root
+    mount "${rootp}" "${base_dir}"/root
+
 fi
 
 status "Rsyncing rootfs into image file"
@@ -171,7 +179,7 @@ cd "${work_dir}"
 wget ftp://ftp.denx.de/pub/u-boot/u-boot-2022.04.tar.bz2
 tar xvf u-boot-2022.04.tar.bz2 && cd u-boot-2022.04
 wget $githubraw/inversepath/usbarmory/master/software/u-boot/0001-ARM-mx6-add-support-for-USB-armory-Mk-II-board.patch
-patch -p1 --no-backup-if-mismatch < 0001-ARM-mx6-add-support-for-USB-armory-Mk-II-board.patch
+patch -p1 --no-backup-if-mismatch <0001-ARM-mx6-add-support-for-USB-armory-Mk-II-board.patch
 make distclean
 make usbarmory-mark-two_config
 make ARCH=arm

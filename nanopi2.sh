@@ -9,8 +9,10 @@
 
 # Hardware model
 hw_model=${hw_model:-"nanopi2"}
+
 # Architecture
 architecture=${architecture:-"armhf"}
+
 # Desktop manager (xfce, gnome, i3, kde, lxde, mate, e17 or none)
 desktop=${desktop:-"xfce"}
 
@@ -22,7 +24,7 @@ basic_network
 add_interface eth0
 
 # Third stage
-cat <<EOF >> "${work_dir}"/third-stage
+cat <<EOF >>"${work_dir}"/third-stage
 status_stage3 'Enable login over serial'
 echo "T0:23:respawn:/sbin/agetty -L ttyAMA0 115200 vt100" >> /etc/inittab
 EOF
@@ -44,24 +46,27 @@ git clone --depth 1 https://gitlab.com/kalilinux/packages/gcc-arm-linux-gnueabih
 # them in this section
 git clone --depth 1 https://github.com/friendlyarm/linux-3.4.y -b nanopi2-lollipop-mr1 ${work_dir}/usr/src/kernel
 cd ${work_dir}/usr/src/kernel
-git rev-parse HEAD > ${work_dir}/usr/src/kernel-at-commit
+git rev-parse HEAD >${work_dir}/usr/src/kernel-at-commit
 touch .scmversion
 export ARCH=arm
 export CROSS_COMPILE="${base_dir}"/gcc-arm-linux-gnueabihf-4.7/bin/arm-linux-gnueabihf-
-patch -p1 --no-backup-if-mismatch < ${repo_dir}/patches/mac80211.patch
+patch -p1 --no-backup-if-mismatch <${repo_dir}/patches/mac80211.patch
+
 # Ugh, this patch is needed because the ethernet driver uses parts of netdev
 # from a newer kernel?
-patch -p1 --no-backup-if-mismatch < ${repo_dir}/patches/0001-Remove-define.patch
+patch -p1 --no-backup-if-mismatch <${repo_dir}/patches/0001-Remove-define.patch
 cp ${repo_dir}/kernel-configs/nanopi2* ${work_dir}/usr/src/
 cp ../nanopi2-vendor.config .config
 make -j $(grep -c processor /proc/cpuinfo)
 make uImage
 make modules_install INSTALL_MOD_PATH=${work_dir}
+
 # We copy this twice because you can't do symlinks on fat partitions
 # Also, the uImage known as uImage.hdmi is used by uboot if hdmi output is
 # detected
 cp arch/arm/boot/uImage ${work_dir}/boot/uImage-720p
 cp arch/arm/boot/uImage ${work_dir}/boot/uImage.hdmi
+
 # Friendlyarm suggests staying at 720p for now
 #cp ../nanopi2-1080p.config .config
 #make -j $(grep -c processor /proc/cpuinfo)
@@ -93,7 +98,7 @@ cd ${work_dir}/usr/src/
 git clone https://github.com/friendlyarm/wireless
 cd wireless
 cd backports-4.4.2-1
-patch -p1 --no-backup-if-mismatch < ${repo_dir}/patches/kali-wifi-injection-4.4.patch
+patch -p1 --no-backup-if-mismatch <${repo_dir}/patches/kali-wifi-injection-4.4.patch
 cd ..
 #cp ${repo_dir}/kernel-configs/backports.config .config
 #make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- -j $(grep -c processor /proc/cpuinfo) KLIB_BUILD=${work_dir}/usr/src/kernel KLIB=${work_dir}
@@ -133,7 +138,6 @@ ln -s /usr/src/kernel build
 ln -s /usr/src/kernel source
 cd "${base_dir}"
 
-
 # Calculate the space to create the image and create
 make_image
 
@@ -145,8 +149,10 @@ parted -s -a minimal "${image_dir}/${image_name}.img" mkpart primary "$fstype" "
 
 # Set the partition variables
 make_loop
+
 # Create file systems
 mkfs_partitions
+
 # Make fstab.
 make_fstab
 
@@ -182,7 +188,7 @@ dd if=2ndboot.bin of=${loopdevice} bs=512 seek=1
 dd if=boot.TBI of=${loopdevice} bs=512 seek=64 count=1
 dd if=bootloader of=${loopdevice} bs=512 seek=65
 
-cat << EOF > ${base_dir}/bootloader/env.conf
+cat <<EOF >${base_dir}/bootloader/env.conf
 # U-Boot environment for Debian, Ubuntu
 #
 # Copyright (C) Guangzhou FriendlyARM Computer Tech. Co., Ltd

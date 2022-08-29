@@ -11,6 +11,7 @@ state.ROCKCHIPI2S {
             item.1 'High Performance'
         }
     }
+
     control.2 {
         iface MIXER
         name 'DMIC MIC Comp Filter Config'
@@ -22,6 +23,7 @@ state.ROCKCHIPI2S {
             range '0 - 15'
         }
     }
+
     control.3 {
         iface MIXER
         name 'MIC1 Boost Volume'
@@ -36,6 +38,7 @@ state.ROCKCHIPI2S {
             dbvalue.0 0
         }
     }
+
     control.4 {
         iface MIXER
         name 'MIC2 Boost Volume'
@@ -50,6 +53,7 @@ state.ROCKCHIPI2S {
             dbvalue.0 0
         }
     }
+
     control.5 {
         iface MIXER
         name 'MIC1 Volume'
@@ -64,6 +68,7 @@ state.ROCKCHIPI2S {
             dbvalue.0 0
         }
     }
+
     control.6 {
         iface MIXER
         name 'MIC2 Volume'
@@ -78,6 +83,7 @@ state.ROCKCHIPI2S {
             dbvalue.0 0
         }
     }
+
     control.7 {
         iface MIXER
         name 'LINEA Single Ended Volume'
@@ -92,6 +98,7 @@ state.ROCKCHIPI2S {
             dbvalue.0 0
         }
     }
+
     control.8 {
         iface MIXER
         name 'LINEB Single Ended Volume'
@@ -106,6 +113,7 @@ state.ROCKCHIPI2S {
             dbvalue.0 0
         }
     }
+
     control.9 {
         iface MIXER
         name 'LINEA Volume'
@@ -120,6 +128,7 @@ state.ROCKCHIPI2S {
             dbvalue.0 0
         }
     }
+
     control.10 {
         iface MIXER
         name 'LINEB Volume'
@@ -134,6 +143,7 @@ state.ROCKCHIPI2S {
             dbvalue.0 0
         }
     }
+
     control.11 {
         iface MIXER
         name 'LINEA Ext Resistor Gain Mode'
@@ -144,6 +154,7 @@ state.ROCKCHIPI2S {
             count 1
         }
     }
+
     control.12 {
         iface MIXER
         name 'LINEB Ext Resistor Gain Mode'
@@ -154,6 +165,7 @@ state.ROCKCHIPI2S {
             count 1
         }
     }
+
     control.13 {
         iface MIXER
         name 'ADCL Boost Volume'
@@ -168,6 +180,7 @@ state.ROCKCHIPI2S {
             dbvalue.0 0
         }
     }
+
     control.14 {
         iface MIXER
         name 'ADCR Boost Volume'
@@ -182,6 +195,7 @@ state.ROCKCHIPI2S {
             dbvalue.0 0
         }
     }
+
     control.15 {
         iface MIXER
         name 'ADCL Volume'
@@ -196,6 +210,7 @@ state.ROCKCHIPI2S {
             dbvalue.0 0
         }
     }
+
     control.16 {
         iface MIXER
         name 'ADCR Volume'
@@ -210,6 +225,7 @@ state.ROCKCHIPI2S {
             dbvalue.0 0
         }
     }
+
     control.17 {
         iface MIXER
         name 'ADC Oversampling Rate'
@@ -222,6 +238,7 @@ state.ROCKCHIPI2S {
             item.1 '128*fs'
         }
     }
+
     control.18 {
         iface MIXER
         name 'ADC Quantizer Dither'
@@ -232,6 +249,7 @@ state.ROCKCHIPI2S {
             count 1
         }
     }
+
     control.19 {
         iface MIXER
         name 'ADC High Performance Mode'
@@ -244,6 +262,7 @@ state.ROCKCHIPI2S {
             item.1 'High Performance'
         }
     }
+
     control.20 {
         iface MIXER
         name 'DAC Mono Mode'
@@ -254,6 +273,7 @@ state.ROCKCHIPI2S {
             count 1
         }
     }
+
     control.21 {
         iface MIXER
         name 'SDIN Mode'
@@ -264,6 +284,7 @@ state.ROCKCHIPI2S {
             count 1
         }
     }
+
     control.22 {
         iface MIXER
         name 'SDOUT Mode'
@@ -274,6 +295,7 @@ state.ROCKCHIPI2S {
             count 1
         }
     }
+
     control.23 {
         iface MIXER
         name 'SDOUT Hi-Z Mode'
@@ -284,6 +306,7 @@ state.ROCKCHIPI2S {
             count 1
         }
     }
+
     control.24 {
         iface MIXER
         name 'Filter Mode'
@@ -296,6 +319,7 @@ state.ROCKCHIPI2S {
             item.1 Music
         }
     }
+
     control.25 {
         iface MIXER
         name 'Record Path DC Blocking'
@@ -306,6 +330,7 @@ state.ROCKCHIPI2S {
             count 1
         }
     }
+
     control.26 {
         iface MIXER
         name 'Playback Path DC Blocking'
@@ -316,6 +341,7 @@ state.ROCKCHIPI2S {
             count 1
         }
     }
+
     control.27 {
         iface MIXER
         name 'Digital BQ Volume'
@@ -330,6 +356,7 @@ state.ROCKCHIPI2S {
             dbvalue.0 0
         }
     }
+
     control.28 {
         iface MIXER
         name 'Digital Sidetone Volume'
@@ -344,6 +371,7 @@ state.ROCKCHIPI2S {
             dbvalue.0 0
         }
     }
+
     control.29 {
         iface MIXER
         name 'Digital Coarse Volume'
@@ -358,6 +386,7 @@ state.ROCKCHIPI2S {
             dbvalue.0 0
         }
     }
+
     control.30 {
         iface MIXER
         name 'Digital Volume'
@@ -372,6 +401,7 @@ state.ROCKCHIPI2S {
             dbvalue.0 0
         }
     }
+
     control.31 {
         iface MIXER
         name 'EQ Coefficients'
@@ -382,6 +412,7 @@ state.ROCKCHIPI2S {
             count 105
         }
     }
+
     control.32 {
         iface MIXER
         name 'Digital EQ 3 Band Switch'
@@ -392,6 +423,7 @@ state.ROCKCHIPI2S {
             count 1
         }
     }
+
     control.33 {
         iface MIXER
         name 'Digital EQ 5 Band Switch'
@@ -402,6 +434,7 @@ state.ROCKCHIPI2S {
             count 1
         }
     }
+
     control.34 {
         iface MIXER
         name 'Digital EQ 7 Band Switch'
@@ -412,6 +445,7 @@ state.ROCKCHIPI2S {
             count 1
         }
     }
+
     control.35 {
         iface MIXER
         name 'Digital EQ Clipping Detection'
@@ -422,6 +456,7 @@ state.ROCKCHIPI2S {
             count 1
         }
     }
+
     control.36 {
         iface MIXER
         name 'Digital EQ Volume'
@@ -436,6 +471,7 @@ state.ROCKCHIPI2S {
             dbvalue.0 0
         }
     }
+
     control.37 {
         iface MIXER
         name 'ALC Enable'
@@ -446,6 +482,7 @@ state.ROCKCHIPI2S {
             count 1
         }
     }
+
     control.38 {
         iface MIXER
         name 'ALC Attack Time'
@@ -464,6 +501,7 @@ state.ROCKCHIPI2S {
             item.7 '200ms'
         }
     }
+
     control.39 {
         iface MIXER
         name 'ALC Release Time'
@@ -482,6 +520,7 @@ state.ROCKCHIPI2S {
             item.7 '0.0625s'
         }
     }
+
     control.40 {
         iface MIXER
         name 'ALC Make Up Volume'
@@ -496,6 +535,7 @@ state.ROCKCHIPI2S {
             dbvalue.0 0
         }
     }
+
     control.41 {
         iface MIXER
         name 'ALC Compression Ratio'
@@ -511,6 +551,7 @@ state.ROCKCHIPI2S {
             item.4 '1:INF'
         }
     }
+
     control.42 {
         iface MIXER
         name 'ALC Expansion Ratio'
@@ -524,6 +565,7 @@ state.ROCKCHIPI2S {
             item.2 '3:1'
         }
     }
+
     control.43 {
         iface MIXER
         name 'ALC Compression Threshold Volume'
@@ -538,6 +580,7 @@ state.ROCKCHIPI2S {
             dbvalue.0 0
         }
     }
+
     control.44 {
         iface MIXER
         name 'ALC Expansion Threshold Volume'
@@ -552,6 +595,7 @@ state.ROCKCHIPI2S {
             dbvalue.0 -3500
         }
     }
+
     control.45 {
         iface MIXER
         name 'DAC HP Playback Performance Mode'
@@ -564,6 +608,7 @@ state.ROCKCHIPI2S {
             item.1 'Low Power'
         }
     }
+
     control.46 {
         iface MIXER
         name 'DAC High Performance Mode'
@@ -576,6 +621,7 @@ state.ROCKCHIPI2S {
             item.1 'High Performance'
         }
     }
+
     control.47 {
         iface MIXER
         name 'Headphone Left Mixer Volume'
@@ -590,6 +636,7 @@ state.ROCKCHIPI2S {
             dbvalue.0 0
         }
     }
+
     control.48 {
         iface MIXER
         name 'Headphone Right Mixer Volume'
@@ -604,6 +651,7 @@ state.ROCKCHIPI2S {
             dbvalue.0 0
         }
     }
+
     control.49 {
         iface MIXER
         name 'Speaker Left Mixer Volume'
@@ -618,6 +666,7 @@ state.ROCKCHIPI2S {
             dbvalue.0 0
         }
     }
+
     control.50 {
         iface MIXER
         name 'Speaker Right Mixer Volume'
@@ -632,6 +681,7 @@ state.ROCKCHIPI2S {
             dbvalue.0 0
         }
     }
+
     control.51 {
         iface MIXER
         name 'Receiver Left Mixer Volume'
@@ -646,6 +696,7 @@ state.ROCKCHIPI2S {
             dbvalue.0 0
         }
     }
+
     control.52 {
         iface MIXER
         name 'Receiver Right Mixer Volume'
@@ -660,6 +711,7 @@ state.ROCKCHIPI2S {
             dbvalue.0 0
         }
     }
+
     control.53 {
         iface MIXER
         name 'Headphone Volume'
@@ -676,6 +728,7 @@ state.ROCKCHIPI2S {
             dbvalue.1 -6700
         }
     }
+
     control.54 {
         iface MIXER
         name 'Speaker Volume'
@@ -692,6 +745,7 @@ state.ROCKCHIPI2S {
             dbvalue.1 1400
         }
     }
+
     control.55 {
         iface MIXER
         name 'Receiver Volume'
@@ -708,6 +762,7 @@ state.ROCKCHIPI2S {
             dbvalue.1 0
         }
     }
+
     control.56 {
         iface MIXER
         name 'Headphone Left Switch'
@@ -718,6 +773,7 @@ state.ROCKCHIPI2S {
             count 1
         }
     }
+
     control.57 {
         iface MIXER
         name 'Headphone Right Switch'
@@ -728,6 +784,7 @@ state.ROCKCHIPI2S {
             count 1
         }
     }
+
     control.58 {
         iface MIXER
         name 'Speaker Left Switch'
@@ -738,6 +795,7 @@ state.ROCKCHIPI2S {
             count 1
         }
     }
+
     control.59 {
         iface MIXER
         name 'Speaker Right Switch'
@@ -748,6 +806,7 @@ state.ROCKCHIPI2S {
             count 1
         }
     }
+
     control.60 {
         iface MIXER
         name 'Receiver Left Switch'
@@ -758,6 +817,7 @@ state.ROCKCHIPI2S {
             count 1
         }
     }
+
     control.61 {
         iface MIXER
         name 'Receiver Right Switch'
@@ -768,6 +828,7 @@ state.ROCKCHIPI2S {
             count 1
         }
     }
+
     control.62 {
         iface MIXER
         name 'Zero-Crossing Detection'
@@ -778,6 +839,7 @@ state.ROCKCHIPI2S {
             count 1
         }
     }
+
     control.63 {
         iface MIXER
         name 'Enhanced Vol Smoothing'
@@ -788,6 +850,7 @@ state.ROCKCHIPI2S {
             count 1
         }
     }
+
     control.64 {
         iface MIXER
         name 'Volume Adjustment Smoothing'
@@ -798,6 +861,7 @@ state.ROCKCHIPI2S {
             count 1
         }
     }
+
     control.65 {
         iface MIXER
         name 'Biquad Coefficients'
@@ -808,6 +872,7 @@ state.ROCKCHIPI2S {
             count 15
         }
     }
+
     control.66 {
         iface MIXER
         name 'Biquad Switch'
@@ -818,6 +883,7 @@ state.ROCKCHIPI2S {
             count 1
         }
     }
+
     control.67 {
         iface MIXER
         name 'Headphone Switch'
@@ -828,6 +894,7 @@ state.ROCKCHIPI2S {
             count 1
         }
     }
+
     control.68 {
         iface MIXER
         name 'Headset Mic Switch'
@@ -838,6 +905,7 @@ state.ROCKCHIPI2S {
             count 1
         }
     }
+
     control.69 {
         iface MIXER
         name 'Int Mic Switch'
@@ -848,6 +916,7 @@ state.ROCKCHIPI2S {
             count 1
         }
     }
+
     control.70 {
         iface MIXER
         name 'Speaker Switch'
@@ -858,6 +927,7 @@ state.ROCKCHIPI2S {
             count 1
         }
     }
+
     control.71 {
         iface MIXER
         name 'MIXHPRSEL Mux'
@@ -870,6 +940,7 @@ state.ROCKCHIPI2S {
             item.1 'HP Mixer'
         }
     }
+
     control.72 {
         iface MIXER
         name 'MIXHPLSEL Mux'
@@ -882,6 +953,7 @@ state.ROCKCHIPI2S {
             item.1 'HP Mixer'
         }
     }
+
     control.73 {
         iface MIXER
         name 'LINMOD Mux'
@@ -894,6 +966,7 @@ state.ROCKCHIPI2S {
             item.1 'Left and Right'
         }
     }
+
     control.74 {
         iface MIXER
         name 'Right Receiver Mixer Left DAC Switch'
@@ -904,6 +977,7 @@ state.ROCKCHIPI2S {
             count 1
         }
     }
+
     control.75 {
         iface MIXER
         name 'Right Receiver Mixer Right DAC Switch'
@@ -914,6 +988,7 @@ state.ROCKCHIPI2S {
             count 1
         }
     }
+
     control.76 {
         iface MIXER
         name 'Right Receiver Mixer LINEA Switch'
@@ -924,6 +999,7 @@ state.ROCKCHIPI2S {
             count 1
         }
     }
+
     control.77 {
         iface MIXER
         name 'Right Receiver Mixer LINEB Switch'
@@ -934,6 +1010,7 @@ state.ROCKCHIPI2S {
             count 1
         }
     }
+
     control.78 {
         iface MIXER
         name 'Right Receiver Mixer MIC1 Switch'
@@ -944,6 +1021,7 @@ state.ROCKCHIPI2S {
             count 1
         }
     }
+
     control.79 {
         iface MIXER
         name 'Right Receiver Mixer MIC2 Switch'
@@ -954,6 +1032,7 @@ state.ROCKCHIPI2S {
             count 1
         }
     }
+
     control.80 {
         iface MIXER
         name 'Left Receiver Mixer Left DAC Switch'
@@ -964,6 +1043,7 @@ state.ROCKCHIPI2S {
             count 1
         }
     }
+
     control.81 {
         iface MIXER
         name 'Left Receiver Mixer Right DAC Switch'
@@ -974,6 +1054,7 @@ state.ROCKCHIPI2S {
             count 1
         }
     }
+
     control.82 {
         iface MIXER
         name 'Left Receiver Mixer LINEA Switch'
@@ -984,6 +1065,7 @@ state.ROCKCHIPI2S {
             count 1
         }
     }
+
     control.83 {
         iface MIXER
         name 'Left Receiver Mixer LINEB Switch'
@@ -994,6 +1076,7 @@ state.ROCKCHIPI2S {
             count 1
         }
     }
+
     control.84 {
         iface MIXER
         name 'Left Receiver Mixer MIC1 Switch'
@@ -1004,6 +1087,7 @@ state.ROCKCHIPI2S {
             count 1
         }
     }
+
     control.85 {
         iface MIXER
         name 'Left Receiver Mixer MIC2 Switch'
@@ -1014,6 +1098,7 @@ state.ROCKCHIPI2S {
             count 1
         }
     }
+
     control.86 {
         iface MIXER
         name 'Right Speaker Mixer Left DAC Switch'
@@ -1024,6 +1109,7 @@ state.ROCKCHIPI2S {
             count 1
         }
     }
+
     control.87 {
         iface MIXER
         name 'Right Speaker Mixer Right DAC Switch'
@@ -1034,6 +1120,7 @@ state.ROCKCHIPI2S {
             count 1
         }
     }
+
     control.88 {
         iface MIXER
         name 'Right Speaker Mixer LINEA Switch'
@@ -1044,6 +1131,7 @@ state.ROCKCHIPI2S {
             count 1
         }
     }
+
     control.89 {
         iface MIXER
         name 'Right Speaker Mixer LINEB Switch'
@@ -1054,6 +1142,7 @@ state.ROCKCHIPI2S {
             count 1
         }
     }
+
     control.90 {
         iface MIXER
         name 'Right Speaker Mixer MIC1 Switch'
@@ -1064,6 +1153,7 @@ state.ROCKCHIPI2S {
             count 1
         }
     }
+
     control.91 {
         iface MIXER
         name 'Right Speaker Mixer MIC2 Switch'
@@ -1074,6 +1164,7 @@ state.ROCKCHIPI2S {
             count 1
         }
     }
+
     control.92 {
         iface MIXER
         name 'Left Speaker Mixer Left DAC Switch'
@@ -1084,6 +1175,7 @@ state.ROCKCHIPI2S {
             count 1
         }
     }
+
     control.93 {
         iface MIXER
         name 'Left Speaker Mixer Right DAC Switch'
@@ -1094,6 +1186,7 @@ state.ROCKCHIPI2S {
             count 1
         }
     }
+
     control.94 {
         iface MIXER
         name 'Left Speaker Mixer LINEA Switch'
@@ -1104,6 +1197,7 @@ state.ROCKCHIPI2S {
             count 1
         }
     }
+
     control.95 {
         iface MIXER
         name 'Left Speaker Mixer LINEB Switch'
@@ -1114,6 +1208,7 @@ state.ROCKCHIPI2S {
             count 1
         }
     }
+
     control.96 {
         iface MIXER
         name 'Left Speaker Mixer MIC1 Switch'
@@ -1124,6 +1219,7 @@ state.ROCKCHIPI2S {
             count 1
         }
     }
+
     control.97 {
         iface MIXER
         name 'Left Speaker Mixer MIC2 Switch'
@@ -1134,6 +1230,7 @@ state.ROCKCHIPI2S {
             count 1
         }
     }
+
     control.98 {
         iface MIXER
         name 'Right Headphone Mixer Left DAC Switch'
@@ -1144,6 +1241,7 @@ state.ROCKCHIPI2S {
             count 1
         }
     }
+
     control.99 {
         iface MIXER
         name 'Right Headphone Mixer Right DAC Switch'
@@ -1154,6 +1252,7 @@ state.ROCKCHIPI2S {
             count 1
         }
     }
+
     control.100 {
         iface MIXER
         name 'Right Headphone Mixer LINEA Switch'
@@ -1164,6 +1263,7 @@ state.ROCKCHIPI2S {
             count 1
         }
     }
+
     control.101 {
         iface MIXER
         name 'Right Headphone Mixer LINEB Switch'
@@ -1174,6 +1274,7 @@ state.ROCKCHIPI2S {
             count 1
         }
     }
+
     control.102 {
         iface MIXER
         name 'Right Headphone Mixer MIC1 Switch'
@@ -1184,6 +1285,7 @@ state.ROCKCHIPI2S {
             count 1
         }
     }
+
     control.103 {
         iface MIXER
         name 'Right Headphone Mixer MIC2 Switch'
@@ -1194,6 +1296,7 @@ state.ROCKCHIPI2S {
             count 1
         }
     }
+
     control.104 {
         iface MIXER
         name 'Left Headphone Mixer Left DAC Switch'
@@ -1204,6 +1307,7 @@ state.ROCKCHIPI2S {
             count 1
         }
     }
+
     control.105 {
         iface MIXER
         name 'Left Headphone Mixer Right DAC Switch'
@@ -1214,6 +1318,7 @@ state.ROCKCHIPI2S {
             count 1
         }
     }
+
     control.106 {
         iface MIXER
         name 'Left Headphone Mixer LINEA Switch'
@@ -1224,6 +1329,7 @@ state.ROCKCHIPI2S {
             count 1
         }
     }
+
     control.107 {
         iface MIXER
         name 'Left Headphone Mixer LINEB Switch'
@@ -1234,6 +1340,7 @@ state.ROCKCHIPI2S {
             count 1
         }
     }
+
     control.108 {
         iface MIXER
         name 'Left Headphone Mixer MIC1 Switch'
@@ -1244,6 +1351,7 @@ state.ROCKCHIPI2S {
             count 1
         }
     }
+
     control.109 {
         iface MIXER
         name 'Left Headphone Mixer MIC2 Switch'
@@ -1254,6 +1362,7 @@ state.ROCKCHIPI2S {
             count 1
         }
     }
+
     control.110 {
         iface MIXER
         name 'STENR Mux'
@@ -1266,6 +1375,7 @@ state.ROCKCHIPI2S {
             item.1 'Sidetone Right'
         }
     }
+
     control.111 {
         iface MIXER
         name 'STENL Mux'
@@ -1278,6 +1388,7 @@ state.ROCKCHIPI2S {
             item.1 'Sidetone Left'
         }
     }
+
     control.112 {
         iface MIXER
         name 'LTENR Mux'
@@ -1290,6 +1401,7 @@ state.ROCKCHIPI2S {
             item.1 Loopthrough
         }
     }
+
     control.113 {
         iface MIXER
         name 'LTENL Mux'
@@ -1302,6 +1414,7 @@ state.ROCKCHIPI2S {
             item.1 Loopthrough
         }
     }
+
     control.114 {
         iface MIXER
         name 'LBENR Mux'
@@ -1314,6 +1427,7 @@ state.ROCKCHIPI2S {
             item.1 Loopback
         }
     }
+
     control.115 {
         iface MIXER
         name 'LBENL Mux'
@@ -1326,6 +1440,7 @@ state.ROCKCHIPI2S {
             item.1 Loopback
         }
     }
+
     control.116 {
         iface MIXER
         name 'Right ADC Mixer IN12 Switch'
@@ -1336,6 +1451,7 @@ state.ROCKCHIPI2S {
             count 1
         }
     }
+
     control.117 {
         iface MIXER
         name 'Right ADC Mixer IN34 Switch'
@@ -1346,6 +1462,7 @@ state.ROCKCHIPI2S {
             count 1
         }
     }
+
     control.118 {
         iface MIXER
         name 'Right ADC Mixer IN56 Switch'
@@ -1356,6 +1473,7 @@ state.ROCKCHIPI2S {
             count 1
         }
     }
+
     control.119 {
         iface MIXER
         name 'Right ADC Mixer LINEA Switch'
@@ -1366,6 +1484,7 @@ state.ROCKCHIPI2S {
             count 1
         }
     }
+
     control.120 {
         iface MIXER
         name 'Right ADC Mixer LINEB Switch'
@@ -1376,6 +1495,7 @@ state.ROCKCHIPI2S {
             count 1
         }
     }
+
     control.121 {
         iface MIXER
         name 'Right ADC Mixer MIC1 Switch'
@@ -1386,6 +1506,7 @@ state.ROCKCHIPI2S {
             count 1
         }
     }
+
     control.122 {
         iface MIXER
         name 'Right ADC Mixer MIC2 Switch'
@@ -1396,6 +1517,7 @@ state.ROCKCHIPI2S {
             count 1
         }
     }
+
     control.123 {
         iface MIXER
         name 'Left ADC Mixer IN12 Switch'
@@ -1406,6 +1528,7 @@ state.ROCKCHIPI2S {
             count 1
         }
     }
+
     control.124 {
         iface MIXER
         name 'Left ADC Mixer IN34 Switch'
@@ -1416,6 +1539,7 @@ state.ROCKCHIPI2S {
             count 1
         }
     }
+
     control.125 {
         iface MIXER
         name 'Left ADC Mixer IN56 Switch'
@@ -1426,6 +1550,7 @@ state.ROCKCHIPI2S {
             count 1
         }
     }
+
     control.126 {
         iface MIXER
         name 'Left ADC Mixer LINEA Switch'
@@ -1436,6 +1561,7 @@ state.ROCKCHIPI2S {
             count 1
         }
     }
+
     control.127 {
         iface MIXER
         name 'Left ADC Mixer LINEB Switch'
@@ -1446,6 +1572,7 @@ state.ROCKCHIPI2S {
             count 1
         }
     }
+
     control.128 {
         iface MIXER
         name 'Left ADC Mixer MIC1 Switch'
@@ -1456,6 +1583,7 @@ state.ROCKCHIPI2S {
             count 1
         }
     }
+
     control.129 {
         iface MIXER
         name 'Left ADC Mixer MIC2 Switch'
@@ -1466,6 +1594,7 @@ state.ROCKCHIPI2S {
             count 1
         }
     }
+
     control.130 {
         iface MIXER
         name 'LINEB Mixer IN2 Switch'
@@ -1476,6 +1605,7 @@ state.ROCKCHIPI2S {
             count 1
         }
     }
+
     control.131 {
         iface MIXER
         name 'LINEB Mixer IN4 Switch'
@@ -1486,6 +1616,7 @@ state.ROCKCHIPI2S {
             count 1
         }
     }
+
     control.132 {
         iface MIXER
         name 'LINEB Mixer IN6 Switch'
@@ -1496,6 +1627,7 @@ state.ROCKCHIPI2S {
             count 1
         }
     }
+
     control.133 {
         iface MIXER
         name 'LINEB Mixer IN56 Switch'
@@ -1506,6 +1638,7 @@ state.ROCKCHIPI2S {
             count 1
         }
     }
+
     control.134 {
         iface MIXER
         name 'LINEA Mixer IN1 Switch'
@@ -1516,6 +1649,7 @@ state.ROCKCHIPI2S {
             count 1
         }
     }
+
     control.135 {
         iface MIXER
         name 'LINEA Mixer IN3 Switch'
@@ -1526,6 +1660,7 @@ state.ROCKCHIPI2S {
             count 1
         }
     }
+
     control.136 {
         iface MIXER
         name 'LINEA Mixer IN5 Switch'
@@ -1536,6 +1671,7 @@ state.ROCKCHIPI2S {
             count 1
         }
     }
+
     control.137 {
         iface MIXER
         name 'LINEA Mixer IN34 Switch'
@@ -1546,6 +1682,7 @@ state.ROCKCHIPI2S {
             count 1
         }
     }
+
     control.138 {
         iface MIXER
         name 'DMIC Mux'
@@ -1558,6 +1695,7 @@ state.ROCKCHIPI2S {
             item.1 DMIC
         }
     }
+
     control.139 {
         iface MIXER
         name 'MIC2 Mux'
@@ -1570,6 +1708,7 @@ state.ROCKCHIPI2S {
             item.1 IN56
         }
     }
+
     control.140 {
         iface MIXER
         name 'MIC1 Mux'
@@ -1583,6 +1722,7 @@ state.ROCKCHIPI2S {
         }
     }
 }
+
 state.RockchipHDMI {
     control {
     }

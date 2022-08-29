@@ -16,18 +16,23 @@ stages:
 
 linting:
   stage: linting
+  
   allow_failure: yes
+  
   rules:
     - if: $CI_MERGE_REQUEST_ID             # Execute jobs in merge request context
     - if: $CI_COMMIT_BRANCH == 'master'    # Execute jobs when a new commit is pushed to master branch
+  
   script:
     - *install_prerequesites_pip
     - yamllint devices.yml
 
 pages:
   stage: generate_documentation
+  
   rules:
     - if: $CI_COMMIT_BRANCH == 'master'    # Execute jobs when a new commit is pushed to master branch
+  
   script:
     - *install_prerequesites_pip
     - *setup_for_html
@@ -47,7 +52,9 @@ pages:
     - pandoc -s ./image-stats.md    -o ./public/image-stats.html    -c public.css
     - pandoc -s ./images.md         -o ./public/images.html         -c public.css
     - pandoc -s ./kernel-stats.md   -o ./public/kernel-stats.html   -c public.css
+  
   artifacts:
     paths:
       - ./public
+    
     expire_in: 1 week

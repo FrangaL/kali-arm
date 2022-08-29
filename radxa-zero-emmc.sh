@@ -9,8 +9,10 @@
 
 # Hardware model
 hw_model=${hw_model:-"radxa-zero-emmc"}
+
 # Architecture
 architecture=${architecture:-"arm64"}
+
 # Desktop manager (xfce, gnome, i3, kde, lxde, mate, e17 or none)
 desktop=${desktop:-"xfce"}
 

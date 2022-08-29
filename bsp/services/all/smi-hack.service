@@ -1,6 +1,7 @@
 [Unit]
 Description=shared-mime-info update hack
 Before=regenerate-ssh-host-keys.service
+
 [Service]
 Type=oneshot
 Environment=DEBIAN_FRONTEND=noninteractive

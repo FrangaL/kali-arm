@@ -57,6 +57,7 @@ devices:
             kernel: "custom"
             kernel-version: "5.10.103"
             image-notes: ""
+
           - image: "raspberry-pi-arm64.img"
             name: "Raspberry Pi 2 (v1.2), 3, 4 and 400 (64-bit)"
             architecture: "arm64"
@@ -94,6 +95,7 @@ devices:
             kernel: "custom"
             kernel-version: "5.10.103"
             image-notes: ""
+
           - image: "raspberry-pi-arm64.img"
             name: "Raspberry Pi 2 (v1.2), 3, 4 and 400 (64-bit)"
             architecture: "arm64"
@@ -132,6 +134,7 @@ devices:
             kernel: "custom"
             kernel-version: "5.10.103"
             image-notes: ""
+
           - image: "raspberry-pi-arm64.img"
             name: "Raspberry Pi 2 (v1.2), 3, 4 and 400 (64-bit)"
             architecture: "arm64"
@@ -169,6 +172,7 @@ devices:
             kernel: "custom"
             kernel-version: "5.10.103"
             image-notes: ""
+
           - image: "raspberry-pi-arm64.img"
             name: "Raspberry Pi 2 (v1.2), 3, 4 and 400 (64-bit)"
             architecture: "arm64"
@@ -232,6 +236,7 @@ devices:
             kernel: "custom"
             kernel-version: "5.10.103"
             image-notes: ""
+
           - image: "raspberry-pi-zero-2-w-pitail-armhf.img"
             name: "Raspberry Pi Zero 2 W (PiTail)"
             architecture: "armhf"
@@ -268,6 +273,7 @@ devices:
             kernel: "custom"
             kernel-version: "5.10.103"
             image-notes: ""
+
           - image: "raspberry-pi-zero-w-pitail-armel.img"
             name: "Raspberry Pi Zero W (PiTail)"
             architecture: "armel"
@@ -278,6 +284,7 @@ devices:
             kernel: "custom"
             kernel-version: "5.10.103"
             image-notes: ""
+
           - image: "raspberry-pi-zero-w-p4wnp1-aloa-armel.img"
             name: "Raspberry Pi Zero W (P4wnP1 A.L.O.A)"
             architecture: "armel"
@@ -1418,6 +1425,7 @@ devices:
             kernel: "custom"
             kernel-version: "5.10.123"
             image-notes: ""
+
           - image: "radxa-zero-sdcard-arm64.img"
             name: "Radxa Zero (sdcard)"
             architecture: "arm64"

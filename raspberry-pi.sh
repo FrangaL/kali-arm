@@ -9,8 +9,10 @@
 
 # Hardware model
 hw_model=${hw_model:-"raspberry-pi"}
+
 # Architecture
 architecture=${architecture:-"armhf"}
+
 # Desktop manager (xfce, gnome, i3, kde, lxde, mate, e17 or none)
 desktop=${desktop:-"xfce"}
 
@@ -72,21 +74,28 @@ parted -s -a minimal "${image_dir}/${image_name}.img" mkpart primary "$fstype" "
 
 # Set the partition variables
 make_loop
+
 # Create file systems
 mkfs_partitions
+
 # Make fstab
 make_fstab
+
 # Configure Raspberry Pi firmware (before rsync)
 include rpi_firmware
 
 # Create the dirs for the partitions and mount them
 status "Create the dirs for the partitions and mount them"
 mkdir -p "${base_dir}"/root/
+
 if [[ $fstype == ext4 ]]; then
-mount -t ext4 -o noatime,data=writeback,barrier=0 "${rootp}" "${base_dir}"/root
+    mount -t ext4 -o noatime,data=writeback,barrier=0 "${rootp}" "${base_dir}"/root
+
 else
-mount "${rootp}" "${base_dir}"/root
+    mount "${rootp}" "${base_dir}"/root
+
 fi
+
 mkdir -p "${base_dir}"/root/boot
 mount "${bootp}" "${base_dir}"/root/boot
 

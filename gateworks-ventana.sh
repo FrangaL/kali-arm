@@ -9,8 +9,10 @@
 
 # Hardware model
 hw_model=${hw_model:-"gateworks-ventana"}
+
 # Architecture
 architecture=${architecture:-"armhf"}
+
 # Desktop manager (xfce, gnome, i3, kde, lxde, mate, e17 or none)
 desktop=${desktop:-"xfce"}
 
@@ -22,7 +24,7 @@ basic_network
 add_interface eth0
 
 # Third stage
-cat <<EOF >> "${work_dir}"/third-stage
+cat <<EOF >>"${work_dir}"/third-stage
 status_stage3 'Install dhcp server'
 eatmydata apt-get install -y isc-dhcp-server || eatmydata apt-get install -y --fix-broken
 
@@ -47,23 +49,23 @@ include third_stage
 include clean_system
 
 # Set up usb gadget mode
-cat << EOF > ${work_dir}/etc/dhcp/dhcpd.conf
+cat <<EOF >${work_dir}/etc/dhcp/dhcpd.conf
 ddns-update-style none;
 default-lease-time 600;
 max-lease-time 7200;
 log-facility local7;
 
 subnet 10.10.10.0 netmask 255.255.255.0 {
-        range 10.10.10.10 10.10.10.20;
-        option subnet-mask 255.255.255.0;
-        option domain-name-servers 8.8.8.8;
-        option routers 10.10.10.1;
-        default-lease-time 600;
-        max-lease-time 7200;
+    range 10.10.10.10 10.10.10.20;
+    option subnet-mask 255.255.255.0;
+    option domain-name-servers 8.8.8.8;
+    option routers 10.10.10.1;
+    default-lease-time 600;
+    max-lease-time 7200;
 }
 EOF
 
-echo | sed -e '/^#/d ; /^ *$/d' | systemd-nspawn_exec << EOF
+echo | sed -e '/^#/d ; /^ *$/d' | systemd-nspawn_exec <<EOF
 #Setup Serial Port
 #echo 'g_cdc' >> /etc/modules
 #echo '\n# USB Gadget Serial console port\nttyGS0' >> /etc/securetty
@@ -80,14 +82,16 @@ cd "${base_dir}"
 status "Kernel stuff"
 git clone --depth 1 -b gateworks_4.20.7 https://github.com/gateworks/linux-imx6 ${work_dir}/usr/src/kernel
 cd ${work_dir}/usr/src/kernel
+
 # Don't change the version because of our patches
 touch .scmversion
 export ARCH=arm
 export CROSS_COMPILE=arm-linux-gnueabihf- mrproper
-patch -p1 < ${repo_dir}/patches/veyron/4.19/kali-wifi-injection.patch
-patch -p1 < ${repo_dir}/patches/veyron/4.19/wireless-carl9170-Enable-sniffer-mode-promisc-flag-t.patch
+patch -p1 <${repo_dir}/patches/veyron/4.19/kali-wifi-injection.patch
+patch -p1 <${repo_dir}/patches/veyron/4.19/wireless-carl9170-Enable-sniffer-mode-promisc-flag-t.patch
+
 # Remove redundant YYLOC global declaration
-patch -p1 < ${repo_dir}/patches/11647f99b4de6bc460e106e876f72fc7af3e54a6-1.patch
+patch -p1 <${repo_dir}/patches/11647f99b4de6bc460e106e876f72fc7af3e54a6-1.patch
 cp ${repo_dir}/kernel-configs/gateworks-ventana-4.20.7.config .config
 cp ${repo_dir}/kernel-configs/gateworks-ventana-4.20.7.config ${work_dir}/usr/src/gateworks-ventana-4.20.7.config
 make -j $(grep -c processor /proc/cpuinfo)
@@ -95,7 +99,8 @@ make uImage LOADADDR=0x10008000
 make modules_install INSTALL_MOD_PATH=${work_dir}
 cp arch/arm/boot/dts/imx6*-gw*.dtb ${work_dir}/boot/
 cp arch/arm/boot/uImage ${work_dir}/boot/
-# cleanup
+
+# Cleanup
 cd ${work_dir}/usr/src/kernel
 make mrproper
 
@@ -125,18 +130,23 @@ parted -s -a minimal "${image_dir}/${image_name}.img" mkpart primary $fstype 4Mi
 
 # Set the partition variables
 make_loop
+
 # Create file systems
 mkfs_partitions
+
 # Make fsta.
 make_fstab
 
 # Create the dirs for the partitions and mount them
 status "Create the dirs for the partitions and mount them"
 mkdir -p "${base_dir}"/root/
+
 if [[ $fstype == ext4 ]]; then
-mount -t ext4 -o noatime,data=writeback,barrier=0 "${rootp}" "${base_dir}"/root
+    mount -t ext4 -o noatime,data=writeback,barrier=0 "${rootp}" "${base_dir}"/root
+
 else
-mount "${rootp}" "${base_dir}"/root
+    mount "${rootp}" "${base_dir}"/root
+
 fi
 
 status "Rsyncing rootfs into image file"

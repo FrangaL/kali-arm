@@ -1,16 +1,20 @@
 case $2 in
-  sdcard) format="sdcard" ;;
-  emmc)   format="emmc" ;;
-  *)
-    echo -e "\n[-] Unsupported format: $2" >&2;
-   exit 1;;
+    sdcard)
+        format="sdcard" ;;
+
+    emmc)
+        format="emmc" ;;
+
+    *)
+        echo -e "\n[-] Unsupported format: $2" >&2; exit 1 ;;
+
 esac
 
 # Network configs
 basic_network
 
 # Third stage
-cat <<EOF >> "${work_dir}"/third-stage
+cat <<EOF >>"${work_dir}"/third-stage
 status_stage3 'Install u-boot tools'
 eatmydata apt-get install -y u-boot-menu u-boot-tools
 
@@ -19,7 +23,7 @@ eatmydata apt-get install -y u-boot-menu u-boot-tools
 # so install alsa-utils for amixer and alsactl availability.
 eatmydata apt-get install -y file alsa-utils
 
-# Note: This just creates an empty /boot/extlinux/extlinux.conf for us to use 
+# Note: This just creates an empty /boot/extlinux/extlinux.conf for us to use
 # later when we install the kernel, and then fixup further down
 status_stage3 'Run u-boot-update'
 u-boot-update
@@ -54,7 +58,7 @@ include clean_system
 status "Kernel stuff"
 git clone --depth 1 -b radxa-zero-linux-5.10.y https://github.com/steev/linux.git ${work_dir}/usr/src/kernel
 cd ${work_dir}/usr/src/kernel
-git rev-parse HEAD > ${work_dir}/usr/src/kernel-at-commit
+git rev-parse HEAD >${work_dir}/usr/src/kernel-at-commit
 rm -rf .git
 export ARCH=arm64
 export CROSS_COMPILE=aarch64-linux-gnu-
@@ -63,15 +67,19 @@ make -j $(grep -c processor /proc/cpuinfo) LOCALVERSION="" bindeb-pkg
 make mrproper
 make radxa_zero_defconfig
 cd ..
+
 # Cross building kernel packages produces broken header packages
 # so only install the headers if we're building on arm64
 if [ "$(arch)" == 'aarch64' ]; then
-  # We don't need to install the linux-libc-dev package, we just want kernel and headers
-  rm linux-libc-dev*.deb
-  dpkg --root "${work_dir}" -i linux-*.deb
+    # We don't need to install the linux-libc-dev package, we just want kernel and headers
+    rm linux-libc-dev*.deb
+    dpkg --root "${work_dir}" -i linux-*.deb
+
 else
-  dpkg --root "${work_dir}" -i linux-image-*.deb
+    dpkg --root "${work_dir}" -i linux-image-*.deb
+
 fi
+
 rm linux-*_*
 
 cd "${repo_dir}/"
@@ -91,6 +99,7 @@ make_loop
 # Create file systems
 status "Formatting partitions"
 mkfs_partitions
+
 # Make fstab
 make_fstab
 
@@ -117,8 +126,8 @@ sed -i -e "s/root=UUID=.*/root=UUID=$(blkid -s UUID -o value ${rootp})/" ${work_
 sed -i -e "s/LABEL=BOOT/UUID=$(blkid -s UUID -o value ${bootp})/" ${work_dir}/etc/fstab
 
 status "Set the default options in /etc/default/u-boot"
-echo 'U_BOOT_MENU_LABEL="Kali Linux"' >> ${work_dir}/etc/default/u-boot
-echo 'U_BOOT_PARAMETERS="earlyprintk console=ttyAML0,115200 console=tty1 swiotlb=1 coherent_pool=1m ro rootwait"' >> ${work_dir}/etc/default/u-boot
+echo 'U_BOOT_MENU_LABEL="Kali Linux"' >>${work_dir}/etc/default/u-boot
+echo 'U_BOOT_PARAMETERS="earlyprintk console=ttyAML0,115200 console=tty1 swiotlb=1 coherent_pool=1m ro rootwait"' >>${work_dir}/etc/default/u-boot
 
 status "Rsyncing rootfs into image file"
 rsync -HPavz -q --exclude boot "${work_dir}"/ "${base_dir}"/root/
@@ -133,24 +142,30 @@ cd "${work_dir}"
 git clone https://github.com/radxa/fip.git
 git clone https://github.com/u-boot/u-boot.git --depth 1
 cd u-boot
+
 # Remove amlogic from the config, this matches what LibreElec does, as well as the vendor u-boot
-patch -p1 --no-backup-if-mismatch < "${repo_dir}"/patches/u-boot/radxa/0001-HACK-configs-meson64-remove-amlogic.patch
+patch -p1 --no-backup-if-mismatch <"${repo_dir}"/patches/u-boot/radxa/0001-HACK-configs-meson64-remove-amlogic.patch
+
 # Enable USB at preboot, so we can use usb keyboard to interrupt boot sequence, with the nifty side effect
 # that USB boot *should* also work, but untested.
-patch -p1 --no-backup-if-mismatch < "${repo_dir}"/patches/u-boot/radxa/0002-boards-amlogic-enable-usb-preboot.patch
+patch -p1 --no-backup-if-mismatch <"${repo_dir}"/patches/u-boot/radxa/0002-boards-amlogic-enable-usb-preboot.patch
 make distclean
 make radxa-zero_config
 make ARCH=arm -j$(nproc)
 cp u-boot.bin ../fip/radxa-zero/bl33.bin
 cd ../fip/radxa-zero/
 make
+
 # https://wiki.radxa.com/Zero/dev/u-boot
 if [ "$format" == "sdcard" ]; then
-  dd if=u-boot.bin.sd.bin of=${loopdevice} conv=fsync,notrunc bs=1 count=442
-  dd if=u-boot.bin.sd.bin of=${loopdevice} conv=fsync,notrunc bs=512 skip=1 seek=1
+    dd if=u-boot.bin.sd.bin of=${loopdevice} conv=fsync,notrunc bs=1 count=442
+    dd if=u-boot.bin.sd.bin of=${loopdevice} conv=fsync,notrunc bs=512 skip=1 seek=1
+
 else
-  dd if=u-boot.bin of=${loopdevice} conv=fsync,notrunc bs=512 seek=1
+    dd if=u-boot.bin of=${loopdevice} conv=fsync,notrunc bs=512 seek=1
+
 fi
+
 cd "${repo_dir}/"
 rm -rf "${work_dir}"/{fip,u-boot}
 

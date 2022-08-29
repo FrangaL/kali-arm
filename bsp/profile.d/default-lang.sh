@@ -2,4 +2,5 @@
 if [ -z "$LANG" ]; then
     source /etc/locale.conf
     export LANG
+
 fi

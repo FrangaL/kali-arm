@@ -18,13 +18,16 @@ umount_partitions
 
 # Check filesystem
 status "Check filesystem partitions ($rootfstype)"
-if [ -n "${bootp}" ] && [ "${extra}"  = 1 ]; then
- log "Check filesystem boot partition:$(tput sgr0) (${bootfstype})" green
- if [ "$bootfstype" = "vfat" ]; then
-  dosfsck -w -r -a -t "${bootp}"
- else
-  e2fsck -y -f "${bootp}"
- fi
+if [ -n "${bootp}" ] && [ "${extra}" = 1 ]; then
+  log "Check filesystem boot partition:$(tput sgr0) (${bootfstype})" green
+
+  if [ "$bootfstype" = "vfat" ]; then
+    dosfsck -w -r -a -t "${bootp}"
+
+  else
+    e2fsck -y -f "${bootp}"
+
+  fi
 fi
 
 log "Check filesystem root partition:$(tput sgr0) ($rootfstype)" green
@@ -37,7 +40,8 @@ losetup -d "${loopdevice}"
 # Create sha256sum file of the UNCOMPRESSED image file
 log "Generate sha256sum: $(tput sgr0) ($img)" green
 cd "${image_dir}"
-shasum -a 256 "${image_name}.img" > "${image_name}.img.sha256sum"
+
+shasum -a 256 "${image_name}.img" >"${image_name}.img.sha256sum"
 cd "${repo_dir}"
 
 # Compress image compilation
@@ -46,9 +50,11 @@ compress_img
 # Create sha256sum file of the COMPRESSED image file
 if [ -f "${image_dir}/${image_name}.img.$compress" ]; then
   log "Generate sha256sum: $(tput sgr0) ($img.$compress)" green
+
   cd "${image_dir}"
-  shasum -a 256 "${image_name}.img.$compress" > "${image_name}.img.$compress.sha256sum"
+  shasum -a 256 "${image_name}.img.$compress" >"${image_name}.img.$compress.sha256sum"
   cd "${repo_dir}"
+
 fi
 
 # Clean up all the temporary build stuff and remove the directories

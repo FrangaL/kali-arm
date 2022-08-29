@@ -16,91 +16,134 @@ set -e
 # debug=true
 
 if [ "$debug" = true ]; then
-  exec > >(tee -a -i "${0%.*}.log") 2>&1
-  set -x
+    exec > >(tee -a -i "${0%.*}.log") 2>&1
+    set -x
+
 fi
 
 # Architecture
 architecture=${architecture:-"armel"}
+
 # Generate a random machine name to be used.
-machine=$(tr -cd 'A-Za-z0-9' < /dev/urandom | head -c16 ; echo)
+machine=$(
+    tr -cd 'A-Za-z0-9' </dev/urandom | head -c16
+    echo
+)
+
 # Custom hostname variable
 hostname=${2:-kali}
+
 # Custom image file name variable - MUST NOT include .img at the end.
 imagename=${3:-kali-linux-$1-owdk}
+
 # Suite to use, valid options are:
 # kali-rolling, kali-dev, kali-bleeding-edge, kali-dev-only, kali-experimental, kali-last-snapshot
 suite=${suite:-"kali-rolling"}
+
 # Free space rootfs in MiB
 free_space="300"
+
 # /boot partition in MiB
 bootsize="128"
+
 # Select compression, xz or none
 compress="xz"
+
 # Choose filesystem format to format ( ext3 or ext4 )
 fstype="ext3"
+
 # If you have your own preferred mirrors, set them here.
 mirror=${mirror:-"http://http.kali.org/kali"}
-# Gitlab url Kali repository
+
+# Gitlab URL Kali repository
 kaligit="https://gitlab.com/kalilinux"
-# Github raw url
+
+# Github raw URL
 githubraw="https://raw.githubusercontent.com"
 
 # Check EUID=0 you can run any binary as root.
 if [[ $EUID -ne 0 ]]; then
-  echo "This script must be run as root or have super user permissions"
-  echo "Use: sudo $0 ${1:-2.0} ${2:-kali}"
-  exit 1
+    echo "This script must be run as root or have super user permissions"
+    echo "Use: sudo $0 ${1:-2.0} ${2:-kali}"
+
+    exit 1
+
 fi
 
 # Pass version number
-if [[ $# -eq 0 ]] ; then
-  echo "Please pass version number, e.g. $0 2.0, and (if you want) a hostname, default is kali"
-  exit 0
+if [[ $# -eq 0 ]]; then
+    echo "Please pass version number, e.g. $0 2.0, and (if you want) a hostname, default is kali"
+
+    exit 0
+
 fi
 
 # Check exist bsp directory.
 if [ ! -e "bsp" ]; then
-  echo "Error: missing bsp directory structure"
-  echo "Please clone the full repository ${kaligit}/build-scripts/kali-arm"
-  exit 255
+    echo "Error: missing bsp directory structure"
+    echo "Please clone the full repository ${kaligit}/build-scripts/kali-arm"
+
+    exit 255
+
 fi
 
 # Current directory
 repo_dir="$(pwd)"
+
 # Base directory
 basedir=${repo_dir}/owdk-"$1"
+
 # Working directory
 work_dir="${basedir}/kali-${architecture}"
 
 # Check directory build
 if [ -e "${basedir}" ]; then
-  echo "${basedir} directory exists, will not continue"
-  exit 1
+    echo "${basedir} directory exists, will not continue"
+
+    exit 1
+
 elif [[ ${repo_dir} =~ [[:space:]] ]]; then
-  echo "The directory "\"${repo_dir}"\" contains whitespace. Not supported."
-  exit 1
+    echo "The directory "\"${repo_dir}"\" contains whitespace. Not supported."
+
+    exit 1
+
 else
-  echo "The basedir thinks it is: ${basedir}"
-  mkdir -p ${basedir}
+    echo "The basedir thinks it is: ${basedir}"
+    mkdir -p ${basedir}
+
 fi
 
 components="main,contrib,non-free"
-arm="abootimg cgpt fake-hwclock ntpdate u-boot-tools vboot-utils vboot-kernel-utils"
-base="apt-utils kali-defaults e2fsprogs ifupdown initramfs-tools kali-defaults kali-menu parted sudo usbutils firmware-linux firmware-atheros firmware-libertas firmware-realtek"
-desktop="kali-menu fonts-croscore fonts-crosextra-caladea fonts-crosextra-carlito kali-desktop-xfce kali-root-login lightdm network-manager network-manager-gnome xfce4 xserver-xorg-video-fbdev"
-tools="aircrack-ng ethtool hydra john libnfc-bin mfoc nmap passing-the-hash sqlmap usbutils winexe wireshark"
+
+arm="abootimg cgpt fake-hwclock ntpdate u-boot-tools vboot-kernel-utils \
+vboot-utils"
+
+base="apt-utils e2fsprogs firmware-atheros firmware-libertas firmware-linux \
+firmware-realtek ifupdown initramfs-tools kali-defaults kali-defaults \
+kali-menu parted sudo usbutils"
+
+desktop="fonts-croscore fonts-crosextra-caladea fonts-crosextra-carlito \
+kali-desktop-xfce kali-menu kali-root-login lightdm network-manager \
+network-manager-gnome xfce4 xserver-xorg-video-fbdev"
+
+tools="aircrack-ng ethtool hydra john libnfc-bin mfoc nmap passing-the-hash \
+sqlmap usbutils winexe wireshark"
+
 services="apache2 openssh-server"
-extras="firefox-esr xfce4-terminal wpasupplicant"
+
+extras="firefox-esr wpasupplicant xfce4-terminal"
+
 size=14000 # Size of image in megabytes
 
 packages="${arm} ${base} ${services}"
 
 # Check to ensure that the architecture is set to ARMEL since the ODWK is the
 # only board that is armel.
-if [[ ${architecture} != "armel" ]] ; then
+if [[ ${architecture} != "armel" ]]; then
     echo "The ODROID-W cannot run the Debian armhf binaries"
+
     exit 0
+
 fi
 
 # Automatic configuration to use an http proxy, such as apt-cacher-ng.
@@ -108,57 +151,68 @@ fi
 # apt_cacher=off
 # By default the proxy settings are local, but you can define an external proxy.
 # proxy_url="http://external.intranet.local"
-apt_cacher=${apt_cacher:-"$(lsof -i :3142|cut -d ' ' -f3 | uniq | sed '/^\s*$/d')"}
+apt_cacher=${apt_cacher:-"$(lsof -i :3142 | cut -d ' ' -f3 | uniq | sed '/^\s*$/d')"}
+
 if [ -n "$proxy_url" ]; then
-  export http_proxy=$proxy_url
-elif [ "$apt_cacher" = "apt-cacher-ng" ] ; then
-  if [ -z "$proxy_url" ]; then
-    proxy_url=${proxy_url:-"http://127.0.0.1:3142/"}
     export http_proxy=$proxy_url
-  fi
+
+elif [ "$apt_cacher" = "apt-cacher-ng" ]; then
+    if [ -z "$proxy_url" ]; then
+        proxy_url=${proxy_url:-"http://127.0.0.1:3142/"}
+        export http_proxy=$proxy_url
+
+    fi
 fi
 
 # Detect architecture
 if [[ "${architecture}" == "arm64" ]]; then
-        qemu_bin="/usr/bin/qemu-aarch64-static"
-        lib_arch="aarch64-linux-gnu"
+    qemu_bin="/usr/bin/qemu-aarch64-static"
+    lib_arch="aarch64-linux-gnu"
+
 elif [[ "${architecture}" == "armhf" ]]; then
-        qemu_bin="/usr/bin/qemu-arm-static"
-        lib_arch="arm-linux-gnueabihf"
+    qemu_bin="/usr/bin/qemu-arm-static"
+    lib_arch="arm-linux-gnueabihf"
+
 elif [[ "${architecture}" == "armel" ]]; then
-        qemu_bin="/usr/bin/qemu-arm-static"
-        lib_arch="arm-linux-gnueabi"
+    qemu_bin="/usr/bin/qemu-arm-static"
+    lib_arch="arm-linux-gnueabi"
+
 fi
 
 # create the rootfs - not much to modify here, except maybe throw in some more packages if you want.
-eatmydata debootstrap --foreign --keyring=/usr/share/keyrings/kali-archive-keyring.gpg --include=kali-archive-keyring,eatmydata \
-  --components=${components} --arch ${architecture} ${suite} ${work_dir} http://http.kali.org/kali
+eatmydata debootstrap --foreign --keyring=/usr/share/keyrings/kali-archive-keyring.gpg \
+    --include=kali-archive-keyring,eatmydata --components=${components} \--arch ${architecture} ${suite} ${work_dir} http://http.kali.org/kali
 
 # systemd-nspawn enviroment
-systemd-nspawn_exec(){
-  LANG=C systemd-nspawn -q --bind-ro ${qemu_bin} -M ${machine} -D ${work_dir} "$@"
+systemd-nspawn_exec() {
+    LANG=C systemd-nspawn -q --bind-ro ${qemu_bin} -M ${machine} -D ${work_dir} "$@"
 }
 
 # We need to manually extract eatmydata to use it for the second stage.
 for archive in ${work_dir}/var/cache/apt/archives/*eatmydata*.deb; do
-  dpkg-deb --fsys-tarfile "$archive" > ${work_dir}/eatmydata
-  tar -xkf ${work_dir}/eatmydata -C ${work_dir}
-  rm -f ${work_dir}/eatmydata
+    dpkg-deb --fsys-tarfile "$archive" >${work_dir}/eatmydata
+    tar -xkf ${work_dir}/eatmydata -C ${work_dir}
+    rm -f ${work_dir}/eatmydata
+
 done
 
 # Prepare dpkg to use eatmydata
 systemd-nspawn_exec dpkg-divert --divert /usr/bin/dpkg-eatmydata --rename --add /usr/bin/dpkg
 
-cat > ${work_dir}/usr/bin/dpkg << EOF
+cat >${work_dir}/usr/bin/dpkg <<EOF
 #!/bin/sh
 if [ -e /usr/lib/${lib_arch}/libeatmydata.so ]; then
     [ -n "\${LD_PRELOAD}" ] && LD_PRELOAD="\$LD_PRELOAD:"
     LD_PRELOAD="\$LD_PRELOAD\$so"
+
 fi
+
 for so in /usr/lib/${lib_arch}/libeatmydata.so; do
     [ -n "\$LD_PRELOAD" ] && LD_PRELOAD="\$LD_PRELOAD:"
     LD_PRELOAD="\$LD_PRELOAD\$so"
+
 done
+
 export LD_PRELOAD
 exec "\$0-eatmydata" --force-unsafe-io "\$@"
 EOF
@@ -167,16 +221,16 @@ chmod 755 ${work_dir}/usr/bin/dpkg
 # debootstrap second stage
 systemd-nspawn_exec eatmydata /debootstrap/debootstrap --second-stage
 
-cat << EOF > ${work_dir}/etc/apt/sources.list
+cat <<EOF >${work_dir}/etc/apt/sources.list
 deb ${mirror} ${suite} ${components//,/ }
 #deb-src ${mirror} ${suite} ${components//,/ }
 EOF
 
 # Set hostname
-echo "${hostname}" > ${work_dir}/etc/hostname
+echo "${hostname}" >${work_dir}/etc/hostname
 
 # So X doesn't complain, we add kali to hosts
-cat << EOF > ${work_dir}/etc/hosts
+cat <<EOF >${work_dir}/etc/hosts
 127.0.0.1       ${hostname}    localhost
 ::1             localhost ip6-localhost ip6-loopback
 fe00::0         ip6-localnet
@@ -186,12 +240,12 @@ ff02::2         ip6-allrouters
 EOF
 
 # Disable IPv6
-cat << EOF > ${work_dir}/etc/modprobe.d/ipv6.conf
+cat <<EOF >${work_dir}/etc/modprobe.d/ipv6.conf
 # Don't load ipv6 by default
 alias net-pf-10 off
 EOF
 
-cat << EOF > ${work_dir}/etc/network/interfaces
+cat <<EOF >${work_dir}/etc/network/interfaces
 auto lo
 iface lo inet loopback
 
@@ -201,7 +255,7 @@ iface eth0 inet dhcp
 EOF
 
 # DNS server
-echo "nameserver 8.8.8.8" > ${work_dir}/etc/resolv.conf
+echo "nameserver 8.8.8.8" >${work_dir}/etc/resolv.conf
 
 # Copy directory bsp into build dir.
 cp -rp bsp ${work_dir}
@@ -210,11 +264,12 @@ export MALLOC_CHECK_=0 # workaround for LP: #520465
 
 # Enable the use of http proxy in third-stage in case it is enabled.
 if [ -n "$proxy_url" ]; then
-  echo "Acquire::http { Proxy \"$proxy_url\" };" > ${work_dir}/etc/apt/apt.conf.d/66proxy
+    echo "Acquire::http { Proxy \"$proxy_url\" };" >${work_dir}/etc/apt/apt.conf.d/66proxy
+
 fi
 
 # Third stage
-cat << EOF >  ${work_dir}/third-stage
+cat <<EOF >${work_dir}/third-stage
 #!/bin/bash -e
 export DEBIAN_FRONTEND=noninteractive
 
@@ -333,7 +388,7 @@ systemd-nspawn_exec /third-stage
 systemd-nspawn_exec dpkg-divert --remove --rename /usr/bin/dpkg
 
 # Clean system
-systemd-nspawn_exec << 'EOF'
+systemd-nspawn_exec <<'EOF'
 rm -f /0
 rm -rf /bsp
 fc-cache -frs
@@ -354,18 +409,20 @@ EOF
 
 # Disable the use of http proxy in case it is enabled.
 if [ -n "$proxy_url" ]; then
-  unset http_proxy
-  rm -rf ${work_dir}/etc/apt/apt.conf.d/66proxy
+    unset http_proxy
+    rm -rf ${work_dir}/etc/apt/apt.conf.d/66proxy
+
 fi
 
 # Mirror & suite replacement
 if [[ ! -z "${4}" || ! -z "${5}" ]]; then
-  mirror=${4}
-  suite=${5}
+    mirror=${4}
+    suite=${5}
+
 fi
 
 # Define sources.list
-cat << EOF > ${work_dir}/etc/apt/sources.list
+cat <<EOF >${work_dir}/etc/apt/sources.list
 deb ${mirror} ${suite} ${components//,/ }
 #deb-src ${mirror} ${suite} ${components//,/ }
 EOF
@@ -373,32 +430,33 @@ EOF
 # systemd doesn't seem to be generating the fstab properly for some people, so
 # let's create one. Root partition is added below after the image file is created
 # because we add it via UUID.
-cat << EOF > ${work_dir}/etc/fstab
+cat <<EOF >${work_dir}/etc/fstab
 # <file system> <mount point>   <type>  <options>       <dump>  <pass>
 proc            /proc           proc    defaults          0       0
 /dev/mmcblk0p1  /boot           vfat    defaults          0       2
 EOF
 
 # Create cmdline.txt file
-cat << EOF > ${work_dir}/boot/cmdline.txt
+cat <<EOF >${work_dir}/boot/cmdline.txt
 dwc_otg.lpm_enable=0 console=ttyAMA0,115200 kgdboc=ttyAMA0,115200 console=tty1 elevator=deadline root=/dev/mmcblk0p2 rootfstype=$fstype rootwait fbcon=map:10 net.ifnames=0 rw
 EOF
 
 # Copy a default config, with everything commented out so people find it when
 # they go to add something when they are following instructions on a website.
 cp ./bsp/firmware/rpi/config.txt ${work_dir}/boot/config.txt
+
 # Remove repeat conditional filters [all] in config.txt
 sed -i "59,66d" ${work_dir}/boot/config.txt
 
 # Add needed bit for the lcd of the devkit.
-cat << EOF >> ${work_dir}/boot/config.txt
+cat <<EOF >>${work_dir}/boot/config.txt
 
 # Use fbtft_device instead of a DT overlay
 dtparam=spi=on
 EOF
 
 # Create /etc/modules based on ODROID-W
-cat << EOF > ${work_dir}/etc/modules
+cat <<EOF >${work_dir}/etc/modules
 # /etc/modules: kernel modules to load at boot time.
 #
 # This file contains the names of kernel modules that should be loaded
@@ -411,18 +469,19 @@ fbtft_device name=adafruit22a rotate=90
 EOF
 
 mkdir -p ${work_dir}/etc/modprobe.d/
-cat << EOF > ${work_dir}/etc/modprobe.d/fbtft_device.conf
+cat <<EOF >${work_dir}/etc/modprobe.d/fbtft_device.conf
 options fbtft_device name=adafruit22a rotate=90
 EOF
 
 # Calculate the space to create the image.
 root_size=$(du -s -B1 ${work_dir} --exclude=${work_dir}/boot | cut -f1)
-root_extra=$((${root_size}/1024/1000*5*1024/5))
-raw_size=$(($((${free_space}*1024))+${root_extra}+$((${bootsize}*1024))+4096))
+root_extra=$((${root_size} / 1024 / 1000 * 5 * 1024 / 5))
+raw_size=$(($((${free_space} * 1024)) + ${root_extra} + $((${bootsize} * 1024)) + 4096))
 
 # Create the disk and partition it
 echo "Creating image file ${imagename}.img"
 fallocate -l $(echo ${raw_size}Ki | numfmt --from=iec-i --to=si) ${repo_dir}/${imagename}.img
+
 parted -s ${repo_dir}/${imagename}.img mklabel msdos
 parted -s ${repo_dir}/${imagename}.img mkpart primary fat32 1MiB ${bootsize}MiB
 parted -s -a minimal ${repo_dir}/${imagename}.img mkpart primary $fstype ${bootsize}MiB 100%
@@ -434,27 +493,32 @@ rootp="${loopdevice}p2"
 
 # Create file systems
 mkfs.vfat -n BOOT -F 32 -v ${bootp}
+
 if [[ $fstype == ext4 ]]; then
-  features="-O ^64bit,^metadata_csum"
+    features="-O ^64bit,^metadata_csum"
+
 elif [[ $fstype == ext3 ]]; then
-  features="-O ^64bit"
+    features="-O ^64bit"
+
 fi
+
 mkfs $features -t $fstype -L ROOTFS ${rootp}
 
 # Create the dirs for the partitions and mount them
 mkdir -p ${basedir}/root/
 mount ${rootp} ${basedir}/root
+
 mkdir -p ${basedir}/root/boot
 mount ${bootp} ${basedir}/root/boot
 
 # We do this down here to get rid of the build system's resolv.conf after running through the build.
-cat << EOF > ${work_dir}/etc/resolv.conf
+cat <<EOF >${work_dir}/etc/resolv.conf
 nameserver 8.8.8.8
 EOF
 
 # Create an fstab so that we don't mount / read-only.
 UUID=$(blkid -s UUID -o value ${rootp})
-echo "UUID=$UUID /               $fstype    errors=remount-ro 0       1" >> ${work_dir}/etc/fstab
+echo "UUID=$UUID /               $fstype    errors=remount-ro 0       1" >>${work_dir}/etc/fstab
 
 echo "Rsyncing rootfs into image file"
 rsync -HPavz -q ${work_dir}/ ${basedir}/root/
@@ -467,36 +531,55 @@ kpartx -dv ${loopdevice}
 losetup -d ${loopdevice}
 
 # Limite use cpu function
-limit_cpu (){
-  rand=$(tr -cd 'A-Za-z0-9' < /dev/urandom | head -c4 ; echo) # Randowm name group
-  cgcreate -g cpu:/cpulimit-${rand} # Name of group cpulimit
-  cgset -r cpu.shares=800 cpulimit-${rand} # Max 1024
-  cgset -r cpu.cfs_quota_us=80000 cpulimit-${rand} # Max 100000
-  # Retry command
-  local n=1; local max=5; local delay=2
-  while true; do
-    cgexec -g cpu:cpulimit-${rand} "$@" && break || {
-      if [[ $n -lt $max ]]; then
-        ((n++))
-        echo -e "\e[31m Command failed. Attempt $n/$max \033[0m"
-        sleep $delay;
-      else
-        echo "The command has failed after $n attempts."
-        break
-      fi
-    }
-  done
+limit_cpu() {
+    # Random name group
+    rand=$(
+        tr -cd 'A-Za-z0-9' </dev/urandom | head -c4
+        echo
+    )
+
+    cgcreate -g cpu:/cpulimit-${rand}                # Name of group cpulimit
+    cgset -r cpu.shares=800 cpulimit-${rand}         # Max 1024
+    cgset -r cpu.cfs_quota_us=80000 cpulimit-${rand} # Max 100000
+
+    # Retry command
+    local n=1
+    local max=5
+    local delay=2
+
+    while true; do
+        cgexec -g cpu:cpulimit-${rand} "$@" && break || {
+            if [[ $n -lt $max ]]; then
+                ((n++))
+                echo -e "\e[31m Command failed. Attempt $n/$max \033[0m"
+                sleep $delay
+
+            else
+                echo "The command has failed after $n attempts."
+                break
+
+            fi
+        }
+    done
 }
 
 if [ $compress = xz ]; then
-  if [ $(arch) == 'x86_64' ]; then
-    echo "Compressing ${imagename}.img"
-    [ $(nproc) \< 3 ] || cpu_cores=3 # cpu_cores = Number of cores to use
-    limit_cpu pixz -p ${cpu_cores:-2} ${repo_dir}/${imagename}.img # -p Nº cpu cores use
-    chmod 644 ${repo_dir}/${imagename}.img.xz
-  fi
+    if [ $(arch) == 'x86_64' ]; then
+        echo "Compressing ${imagename}.img"
+
+        # cpu_cores = Number of cores to use
+        [ $(nproc) -lt 3 ] || cpu_cores=3
+
+        # -p Nº cpu cores use
+        limit_cpu pixz -p ${cpu_cores:-2} ${repo_dir}/${imagename}.img
+
+        chmod 644 ${repo_dir}/${imagename}.img.xz
+
+    fi
+
 else
-  chmod 644 ${repo_dir}/${imagename}.img
+    chmod 644 ${repo_dir}/${imagename}.img
+
 fi
 
 # Clean up all the temporary build stuff and remove the directories.

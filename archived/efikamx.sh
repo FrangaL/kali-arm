@@ -9,26 +9,31 @@
 
 echo "This script is now deprecated" >&2
 echo "The kernel is too old to run systemd" >&2
+
 sleep 5s
 
 set -e
 
 if [[ $EUID -ne 0 ]]; then
-   echo "This script must be run as root"
-   exit 1
+    echo "This script must be run as root"
+    exit 1
+
 fi
 
-if [[ $# -eq 0 ]] ; then
+if [[ $# -eq 0 ]]; then
     echo "Please pass version number, e.g. $0 1.0.1"
     exit 0
+
 fi
 
-basedir=`pwd`/efikamx-$1
+basedir=$(pwd)/efikamx-$1
 
 # Custom hostname variable
 hostname=${2:-kali}
+
 # Custom image file name variable - MUST NOT include .img at the end.
 imagename=${3:-kali-linux-$1-efikamx}
+
 # Size of image in megabytes (Default is 7000=7GB)
 size=7000
 
@@ -38,10 +43,12 @@ machine=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 16 | head -n 1)
 # Make sure that the cross compiler can be found in the path before we do
 # anything else, that way the builds don't fail half way through.
 export CROSS_COMPILE=arm-linux-gnueabihf-
-if [ $(compgen -c $CROSS_COMPILE | wc -l) -eq 0 ] ; then
+if [ $(compgen -c $CROSS_COMPILE | wc -l) -eq 0 ]; then
     echo "Missing cross compiler. Set up PATH according to the README"
     exit 1
+
 fi
+
 # Unset CROSS_COMPILE so that if there is any native compiling needed it doesn't
 # get cross compiled.
 unset CROSS_COMPILE
@@ -64,6 +71,7 @@ extras="iceweasel wpasupplicant"
 
 export packages="${arm} ${base} ${services} ${extras}"
 export architecture="armhf"
+
 # If you have your own preferred mirrors, set them here.
 # You may want to leave security.kali.org alone, but if you trust your local
 # mirror, feel free to change this as well.
@@ -86,15 +94,15 @@ cp /usr/bin/qemu-arm-static kali-${architecture}/usr/bin/
 LANG=C systemd-nspawn -M ${machine} -D kali-${architecture} /debootstrap/debootstrap --second-stage
 
 mkdir -p kali-${architecture}/etc/apt/
-cat << EOF > kali-${architecture}/etc/apt/sources.list
+
+cat <<EOF >kali-${architecture}/etc/apt/sources.list
 deb http://${mirror}/kali moto main contrib non-free
 EOF
 
-
-echo "${hostname}" > kali-${architecture}/etc/hostname
+echo "${hostname}" >kali-${architecture}/etc/hostname
 
 # So X doesn't complain, we add kali to hosts
-cat << EOF > kali-${architecture}/etc/hosts
+cat <<EOF >kali-${architecture}/etc/hosts
 127.0.0.1       ${hostname}    localhost
 ::1             localhost ip6-localhost ip6-loopback
 fe00::0         ip6-localnet
@@ -104,7 +112,8 @@ ff02::2         ip6-allrouters
 EOF
 
 mkdir -p kali-${architecture}/etc/network/
-cat << EOF > kali-${architecture}/etc/network/interfaces
+
+cat <<EOF >kali-${architecture}/etc/network/interfaces
 auto lo
 iface lo inet loopback
 
@@ -112,7 +121,7 @@ auto eth0
 iface eth0 inet dhcp
 EOF
 
-cat << EOF > kali-${architecture}/etc/resolv.conf
+cat <<EOF >kali-${architecture}/etc/resolv.conf
 nameserver 8.8.8.8
 EOF
 
@@ -124,12 +133,12 @@ export DEBIAN_FRONTEND=noninteractive
 #mount -o bind /dev/ kali-${architecture}/dev/
 #mount -o bind /dev/pts kali-${architecture}/dev/pts
 
-cat << EOF > kali-${architecture}/debconf.set
+cat <<EOF >kali-${architecture}/debconf.set
 console-common console-data/keymap/policy select Select keymap from full list
 console-common console-data/keymap/full select en-latin1-nodeadkeys
 EOF
 
-cat << EOF > kali-${architecture}/third-stage
+cat <<EOF >kali-${architecture}/third-stage
 #!/bin/bash
 set -e
 dpkg-divert --add --local --divert /usr/sbin/invoke-rc.d.chroot --rename /usr/sbin/invoke-rc.d
@@ -167,9 +176,10 @@ rm -f /third-stage
 EOF
 
 chmod 755 kali-${architecture}/third-stage
+
 LANG=C systemd-nspawn -M ${machine} -D kali-${architecture} /third-stage
 
-cat << EOF > kali-${architecture}/cleanup
+cat <<EOF >kali-${architecture}/cleanup
 #!/bin/bash
 rm -rf /root/.bash_history
 apt-get update
@@ -183,6 +193,7 @@ rm -f /usr/bin/qemu*
 EOF
 
 chmod 755 kali-${architecture}/cleanup
+
 LANG=C systemd-nspawn -M ${machine} -D kali-${architecture} /cleanup
 
 #umount kali-${architecture}/proc/sys/fs/binfmt_misc
@@ -198,11 +209,11 @@ LANG=C systemd-nspawn -M ${machine} -D kali-${architecture} /cleanup
 echo 'T1:12345:respawn:/sbin/agetty 115200 ttymxc0 vt100' >> \
     "${basedir}"/kali-${architecture}/etc/inittab
 
-cat << EOF >> "${basedir}"/kali-${architecture}/etc/udev/links.conf
+cat <<EOF >>"${basedir}"/kali-${architecture}/etc/udev/links.conf
 M   ttymxc0 c 5 1
 EOF
 
-cat << EOF >> "${basedir}"/kali-${architecture}/etc/securetty
+cat <<EOF >>"${basedir}"/kali-${architecture}/etc/securetty
 ttymxc0
 EOF
 
@@ -211,7 +222,7 @@ EOF
 # udev won't start and we have no devices, including keyboard/usb support.
 sed -i -e "s/2.6.3\[0-1\]/2.6.30/g" "${basedir}"/kali-${architecture}/etc/init.d/udev
 
-cat << EOF > "${basedir}"/kali-${architecture}/etc/apt/sources.list
+cat <<EOF >"${basedir}"/kali-${architecture}/etc/apt/sources.list
 deb http://old.kali.org/kali moto main non-free contrib
 deb-src http://old.kali.org/kali moto main non-free contrib
 EOF
@@ -222,19 +233,26 @@ EOF
 # Kernel section. If you want to use a custom kernel, or configuration, replace
 # them in this section.
 git clone --depth 1 https://github.com/genesi/linux-legacy "${basedir}"/kali-${architecture}/usr/src/kernel
+
 cd "${basedir}"/kali-${architecture}/usr/src/kernel
+
 touch .scmversion
+
 export ARCH=arm
 export CROSS_COMPILE=arm-linux-gnueabihf-
-patch -p1 --no-backup-if-mismatch < "${basedir}"/../patches/mac80211.patch
+
+patch -p1 --no-backup-if-mismatch <"${basedir}"/../patches/mac80211.patch
+
 make mx51_efikamx_defconfig
 make -j $(grep -c processor /proc/cpuinfo) uImage modules
 make modules_install INSTALL_MOD_PATH="${basedir}"/kali-${architecture}
+
 cp arch/arm/boot/uImage "${basedir}"/kali-${architecture}/boot
+
 cd "${basedir}"
 
 # Create boot.txt file
-cat << EOF > "${basedir}"/kali-${architecture}/boot/boot.script
+cat <<EOF >"${basedir}"/kali-${architecture}/boot/boot.script
 setenv ramdisk uInitrd;
 setenv kernel uImage;
 setenv bootargs console=tty1 root=/dev/mmcblk0p2 rootwait rootfstype=ext3 rw quiet;
@@ -256,16 +274,21 @@ cd "${basedir}"
 
 # Create the disk and partition it
 echo "Creating image file for ${imagename}.img"
+
 dd if=/dev/zero of="${basedir}"/${imagename}.img bs=1M count=${size}
+
 parted ${imagename}.img --script -- mklabel msdos
 parted ${imagename}.img --script -- mkpart primary ext2 4096s 266239s
 parted ${imagename}.img --script -- mkpart primary ext3 266240s 100%
 
 # Set the partition variables
-loopdevice=`losetup -f --show "${basedir}"/${imagename}.img`
-device=`kpartx -va ${loopdevice} | sed 's/.*\(loop[0-9]\+\)p.*/\1/g' | head -1`
+loopdevice=$(losetup -f --show "${basedir}"/${imagename}.img)
+
+device=$(kpartx -va ${loopdevice} | sed 's/.*\(loop[0-9]\+\)p.*/\1/g' | head -1)
 device="/dev/mapper/${device}"
+
 bootp=${device}p1
+
 rootp=${device}p2
 
 # Create file systems
@@ -274,13 +297,15 @@ mkfs.ext3 ${rootp}
 
 # Create the dirs for the partitions and mount them
 mkdir -p "${basedir}"/root
+
 mount ${rootp} "${basedir}"/root
+
 mkdir -p "${basedir}"/root/boot
+
 mount ${bootp} "${basedir}"/root/boot
 
-
 # We do this down here to get rid of the build system's resolv.conf after running through the build.
-cat << EOF > kali-${architecture}/etc/resolv.conf
+cat <<EOF >kali-${architecture}/etc/resolv.conf
 nameserver 8.8.8.8
 EOF
 
@@ -295,11 +320,12 @@ kpartx -dv ${loopdevice}
 losetup -d ${loopdevice}
 
 # Don't pixz on 32bit, there isn't enough memory to compress the images.
-MACHINE_TYPE=`uname -m`
+MACHINE_TYPE=$(uname -m)
 if [ ${MACHINE_TYPE} == 'x86_64' ]; then
-echo "Compressing ${imagename}.img"
-pixz "${basedir}"/${imagename}.img "${basedir}"/../${imagename}.img.xz
-rm "${basedir}"/${imagename}.img
+    echo "Compressing ${imagename}.img"
+    pixz "${basedir}"/${imagename}.img "${basedir}"/../${imagename}.img.xz
+    rm "${basedir}"/${imagename}.img
+
 fi
 
 # Clean up all the temporary build stuff and remove the directories.

@@ -3,7 +3,9 @@
 
 if [ "${debug}" = 1 ]; then
   log "Skipping due to debug mode ($0 -d) being enabled" yellow
-	return
+
+  return
+
 fi
 
 status "clean system"
