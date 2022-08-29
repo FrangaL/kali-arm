@@ -54,8 +54,9 @@ systemctl enable enable-ssh
 status_stage3 'Fixup wireless-regdb signature'
 update-alternatives --set regulatory.db /lib/firmware/regulatory.db-upstream
 
-status_stage3 'Enable hciuart for bluetooth'
+status_stage3 'Enable hciuart and bluetooth'
 systemctl enable hciuart
+systemctl enable bluetooth
 
 status_stage3 'Set root password to toor'
 echo "root:toor" | chpasswd
