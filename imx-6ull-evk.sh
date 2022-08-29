@@ -471,7 +471,7 @@ losetup -d ${loopdevice}
 
 # Limite use cpu function
 limit_cpu() {
-    # Randowm name group
+    # Random name group
     rand=$(
         tr -cd 'A-Za-z0-9' </dev/urandom | head -c4
         echo
@@ -510,8 +510,13 @@ limit_cpu() {
 if [ $compress = xz ]; then
     if [ $(arch) == 'x86_64' ]; then
         echo "Compressing ${imagename}.img"
-        [ $(nproc) -lt 3 ] || cpu_cores=3                                 # cpu_cores = Number of cores to use
-        limit_cpu pixz -p ${cpu_cores:-2} ${current_dir}/${imagename}.img # -p Nº cpu cores use
+
+        # cpu_cores = Number of cores to use
+        [ $(nproc) -lt 3 ] || cpu_cores=3
+
+        # -p Nº cpu cores use
+        limit_cpu pixz -p ${cpu_cores:-2} ${current_dir}/${imagename}.img
+
         chmod 644 ${current_dir}/${imagename}.img.xz
 
     fi
