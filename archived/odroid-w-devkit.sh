@@ -16,8 +16,8 @@ set -e
 # debug=true
 
 if [ "$debug" = true ]; then
-  exec > >(tee -a -i "${0%.*}.log") 2>&1
-  set -x
+    exec > >(tee -a -i "${0%.*}.log") 2>&1
+    set -x
 
 fi
 
@@ -26,8 +26,8 @@ architecture=${architecture:-"armel"}
 
 # Generate a random machine name to be used.
 machine=$(
-  tr -cd 'A-Za-z0-9' </dev/urandom | head -c16
-  echo
+    tr -cd 'A-Za-z0-9' </dev/urandom | head -c16
+    echo
 )
 
 # Custom hostname variable
@@ -63,24 +63,27 @@ githubraw="https://raw.githubusercontent.com"
 
 # Check EUID=0 you can run any binary as root.
 if [[ $EUID -ne 0 ]]; then
-  echo "This script must be run as root or have super user permissions"
-  echo "Use: sudo $0 ${1:-2.0} ${2:-kali}"
-  exit 1
+    echo "This script must be run as root or have super user permissions"
+    echo "Use: sudo $0 ${1:-2.0} ${2:-kali}"
+
+    exit 1
 
 fi
 
 # Pass version number
 if [[ $# -eq 0 ]]; then
-  echo "Please pass version number, e.g. $0 2.0, and (if you want) a hostname, default is kali"
-  exit 0
+    echo "Please pass version number, e.g. $0 2.0, and (if you want) a hostname, default is kali"
+
+    exit 0
 
 fi
 
 # Check exist bsp directory.
 if [ ! -e "bsp" ]; then
-  echo "Error: missing bsp directory structure"
-  echo "Please clone the full repository ${kaligit}/build-scripts/kali-arm"
-  exit 255
+    echo "Error: missing bsp directory structure"
+    echo "Please clone the full repository ${kaligit}/build-scripts/kali-arm"
+
+    exit 255
 
 fi
 
@@ -95,16 +98,18 @@ work_dir="${basedir}/kali-${architecture}"
 
 # Check directory build
 if [ -e "${basedir}" ]; then
-  echo "${basedir} directory exists, will not continue"
-  exit 1
+    echo "${basedir} directory exists, will not continue"
+
+    exit 1
 
 elif [[ ${repo_dir} =~ [[:space:]] ]]; then
-  echo "The directory "\"${repo_dir}"\" contains whitespace. Not supported."
-  exit 1
+    echo "The directory "\"${repo_dir}"\" contains whitespace. Not supported."
+
+    exit 1
 
 else
-  echo "The basedir thinks it is: ${basedir}"
-  mkdir -p ${basedir}
+    echo "The basedir thinks it is: ${basedir}"
+    mkdir -p ${basedir}
 
 fi
 
@@ -135,8 +140,9 @@ packages="${arm} ${base} ${services}"
 # Check to ensure that the architecture is set to ARMEL since the ODWK is the
 # only board that is armel.
 if [[ ${architecture} != "armel" ]]; then
-  echo "The ODROID-W cannot run the Debian armhf binaries"
-  exit 0
+    echo "The ODROID-W cannot run the Debian armhf binaries"
+
+    exit 0
 
 fi
 
@@ -148,45 +154,45 @@ fi
 apt_cacher=${apt_cacher:-"$(lsof -i :3142 | cut -d ' ' -f3 | uniq | sed '/^\s*$/d')"}
 
 if [ -n "$proxy_url" ]; then
-  export http_proxy=$proxy_url
-
-elif [ "$apt_cacher" = "apt-cacher-ng" ]; then
-  if [ -z "$proxy_url" ]; then
-    proxy_url=${proxy_url:-"http://127.0.0.1:3142/"}
     export http_proxy=$proxy_url
 
-  fi
+elif [ "$apt_cacher" = "apt-cacher-ng" ]; then
+    if [ -z "$proxy_url" ]; then
+        proxy_url=${proxy_url:-"http://127.0.0.1:3142/"}
+        export http_proxy=$proxy_url
+
+    fi
 fi
 
 # Detect architecture
 if [[ "${architecture}" == "arm64" ]]; then
-  qemu_bin="/usr/bin/qemu-aarch64-static"
-  lib_arch="aarch64-linux-gnu"
+    qemu_bin="/usr/bin/qemu-aarch64-static"
+    lib_arch="aarch64-linux-gnu"
 
 elif [[ "${architecture}" == "armhf" ]]; then
-  qemu_bin="/usr/bin/qemu-arm-static"
-  lib_arch="arm-linux-gnueabihf"
+    qemu_bin="/usr/bin/qemu-arm-static"
+    lib_arch="arm-linux-gnueabihf"
 
 elif [[ "${architecture}" == "armel" ]]; then
-  qemu_bin="/usr/bin/qemu-arm-static"
-  lib_arch="arm-linux-gnueabi"
+    qemu_bin="/usr/bin/qemu-arm-static"
+    lib_arch="arm-linux-gnueabi"
 
 fi
 
 # create the rootfs - not much to modify here, except maybe throw in some more packages if you want.
 eatmydata debootstrap --foreign --keyring=/usr/share/keyrings/kali-archive-keyring.gpg \
-  --include=kali-archive-keyring,eatmydata --components=${components} \--arch ${architecture} ${suite} ${work_dir} http://http.kali.org/kali
+    --include=kali-archive-keyring,eatmydata --components=${components} \--arch ${architecture} ${suite} ${work_dir} http://http.kali.org/kali
 
 # systemd-nspawn enviroment
 systemd-nspawn_exec() {
-  LANG=C systemd-nspawn -q --bind-ro ${qemu_bin} -M ${machine} -D ${work_dir} "$@"
+    LANG=C systemd-nspawn -q --bind-ro ${qemu_bin} -M ${machine} -D ${work_dir} "$@"
 }
 
 # We need to manually extract eatmydata to use it for the second stage.
 for archive in ${work_dir}/var/cache/apt/archives/*eatmydata*.deb; do
-  dpkg-deb --fsys-tarfile "$archive" >${work_dir}/eatmydata
-  tar -xkf ${work_dir}/eatmydata -C ${work_dir}
-  rm -f ${work_dir}/eatmydata
+    dpkg-deb --fsys-tarfile "$archive" >${work_dir}/eatmydata
+    tar -xkf ${work_dir}/eatmydata -C ${work_dir}
+    rm -f ${work_dir}/eatmydata
 
 done
 
@@ -198,11 +204,15 @@ cat >${work_dir}/usr/bin/dpkg <<EOF
 if [ -e /usr/lib/${lib_arch}/libeatmydata.so ]; then
     [ -n "\${LD_PRELOAD}" ] && LD_PRELOAD="\$LD_PRELOAD:"
     LD_PRELOAD="\$LD_PRELOAD\$so"
+
 fi
+
 for so in /usr/lib/${lib_arch}/libeatmydata.so; do
     [ -n "\$LD_PRELOAD" ] && LD_PRELOAD="\$LD_PRELOAD:"
     LD_PRELOAD="\$LD_PRELOAD\$so"
+
 done
+
 export LD_PRELOAD
 exec "\$0-eatmydata" --force-unsafe-io "\$@"
 EOF
@@ -254,7 +264,7 @@ export MALLOC_CHECK_=0 # workaround for LP: #520465
 
 # Enable the use of http proxy in third-stage in case it is enabled.
 if [ -n "$proxy_url" ]; then
-  echo "Acquire::http { Proxy \"$proxy_url\" };" >${work_dir}/etc/apt/apt.conf.d/66proxy
+    echo "Acquire::http { Proxy \"$proxy_url\" };" >${work_dir}/etc/apt/apt.conf.d/66proxy
 
 fi
 
@@ -399,15 +409,15 @@ EOF
 
 # Disable the use of http proxy in case it is enabled.
 if [ -n "$proxy_url" ]; then
-  unset http_proxy
-  rm -rf ${work_dir}/etc/apt/apt.conf.d/66proxy
+    unset http_proxy
+    rm -rf ${work_dir}/etc/apt/apt.conf.d/66proxy
 
 fi
 
 # Mirror & suite replacement
 if [[ ! -z "${4}" || ! -z "${5}" ]]; then
-  mirror=${4}
-  suite=${5}
+    mirror=${4}
+    suite=${5}
 
 fi
 
@@ -483,11 +493,12 @@ rootp="${loopdevice}p2"
 
 # Create file systems
 mkfs.vfat -n BOOT -F 32 -v ${bootp}
+
 if [[ $fstype == ext4 ]]; then
-  features="-O ^64bit,^metadata_csum"
+    features="-O ^64bit,^metadata_csum"
 
 elif [[ $fstype == ext3 ]]; then
-  features="-O ^64bit"
+    features="-O ^64bit"
 
 fi
 
@@ -521,47 +532,53 @@ losetup -d ${loopdevice}
 
 # Limite use cpu function
 limit_cpu() {
-  rand=$(
-    tr -cd 'A-Za-z0-9' </dev/urandom | head -c4
-    echo
-  )                                                # Randowm name group
+    # Randowm name group
+    rand=$(
+        tr -cd 'A-Za-z0-9' </dev/urandom | head -c4
+        echo
+    )
 
-  cgcreate -g cpu:/cpulimit-${rand}                # Name of group cpulimit
-  cgset -r cpu.shares=800 cpulimit-${rand}         # Max 1024
-  cgset -r cpu.cfs_quota_us=80000 cpulimit-${rand} # Max 100000
+    cgcreate -g cpu:/cpulimit-${rand}                # Name of group cpulimit
+    cgset -r cpu.shares=800 cpulimit-${rand}         # Max 1024
+    cgset -r cpu.cfs_quota_us=80000 cpulimit-${rand} # Max 100000
 
-  # Retry command
-  local n=1
-  local max=5
-  local delay=2
+    # Retry command
+    local n=1
+    local max=5
+    local delay=2
 
-  while true; do
-    cgexec -g cpu:cpulimit-${rand} "$@" && break || {
-      if [[ $n -lt $max ]]; then
-        ((n++))
-        echo -e "\e[31m Command failed. Attempt $n/$max \033[0m"
-        sleep $delay
+    while true; do
+        cgexec -g cpu:cpulimit-${rand} "$@" && break || {
+            if [[ $n -lt $max ]]; then
+                ((n++))
+                echo -e "\e[31m Command failed. Attempt $n/$max \033[0m"
+                sleep $delay
 
-      else
-        echo "The command has failed after $n attempts."
-        break
+            else
+                echo "The command has failed after $n attempts."
+                break
 
-      fi
-    }
-  done
+            fi
+        }
+    done
 }
 
 if [ $compress = xz ]; then
-  if [ $(arch) == 'x86_64' ]; then
-    echo "Compressing ${imagename}.img"
-    [ $(nproc) -lt 3 ] || cpu_cores=3                               # cpu_cores = Number of cores to use
-    limit_cpu pixz -p ${cpu_cores:-2} ${repo_dir}/${imagename}.img # -p Nº cpu cores use
-    chmod 644 ${repo_dir}/${imagename}.img.xz
+    if [ $(arch) == 'x86_64' ]; then
+        echo "Compressing ${imagename}.img"
 
-  fi
+        # cpu_cores = Number of cores to use
+        [ $(nproc) -lt 3 ] || cpu_cores=3
+
+        # -p Nº cpu cores use
+        limit_cpu pixz -p ${cpu_cores:-2} ${repo_dir}/${imagename}.img
+
+        chmod 644 ${repo_dir}/${imagename}.img.xz
+
+    fi
 
 else
-  chmod 644 ${repo_dir}/${imagename}.img
+    chmod 644 ${repo_dir}/${imagename}.img
 
 fi
 
