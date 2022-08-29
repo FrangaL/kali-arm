@@ -674,7 +674,7 @@ case \$mode in
         common_display_setup ;;
 
     1600x900p60*)
-        fbset -fb /dev/fb0 -g 1600 900 1600 1800 \$bpp; 
+        fbset -fb /dev/fb0 -g 1600 900 1600 1800 \$bpp;
         common_display_setup ;;
 
     1680x1050p60*)
@@ -830,8 +830,13 @@ limit_cpu() {
 if [ $compress = xz ]; then
     if [ $(arch) == 'x86_64' ]; then
         echo "Compressing ${image_name}.img"
-        [ $(nproc) -lt 3 ] || cpu_cores=3                                  # cpu_cores = Number of cores to use
-        limit_cpu pixz -p ${cpu_cores:-2} "${image_dir}/${image_name}.img" # -p Nº cpu cores use
+
+        # cpu_cores = Number of cores to use
+        [ $(nproc) -lt 3 ] || cpu_cores=3
+
+        # -p Nº cpu cores use
+        limit_cpu pixz -p ${cpu_cores:-2} "${image_dir}/${image_name}.img"
+
         chmod 0644 ${repo_dir}/${image_name}.img.xz
 
     fi
