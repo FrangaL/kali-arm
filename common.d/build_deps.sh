@@ -13,8 +13,8 @@ set -e
 
 apt-wait() {
   while fuser /var/{lib/{dpkg,apt/lists},cache/apt/archives}/lock >/dev/null 2>&1; do
-    sleep $[ $RANDOM % 15 5 ]
-  
+      sleep $[ ( $RANDOM % 15) + 5 ]
+ 
   done
 
     if [ "$1" == "update" ]; then
