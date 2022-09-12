@@ -132,7 +132,7 @@ libnss-systemd libssl-dev triggerhappy"
 
 packages="${arm} ${base} ${services}"
 
-kernel_release="R71-11151.B-# This is a community script - you will need to generate your own image to useos-3.10"
+kernel_release="R71-11151.B-chromeos-3.10"
 
 # Automatic configuration to use an http proxy, such as apt-cacher-ng
 # You can turn off automatic settings by uncommenting apt_cacher=off
@@ -380,7 +380,7 @@ deb ${mirror} ${suite} ${components//,/ }
 EOF
 
 # Pull in the gcc 5.3 cross compiler to build the kernel
-# Debian uses a newer compiler and the # This is a community script - you will need to generate your own image to usebook kernel doesn't support
+# Debian uses a newer compiler and the chromebook kernel doesn't support
 # that
 cd "${base_dir}"
 git clone --depth 1 https://gitlab.com/kalilinux/packages/gcc-arm-linux-gnueabihf-4-7.git gcc-arm-linux-gnueabihf-4.7
@@ -392,8 +392,8 @@ git clone --depth 1 https://chromium.googlesource.com/chromiumos/third_party/ker
 cd ${work_dir}/usr/src/kernel
 mkdir -p ${work_dir}/usr/src/kernel/firmware/nvidia/tegra124/
 cp ${work_dir}/lib/firmware/nvidia/tegra124/xusb.bin firmware/nvidia/tegra124/
-cp ${repo_dir}/kernel-configs/# This is a community script - you will need to generate your own image to usebook-3.10.config .config
-cp ${repo_dir}/kernel-configs/# This is a community script - you will need to generate your own image to usebook-3.10.config ${work_dir}/usr/src/nyan.config
+cp ${repo_dir}/kernel-configs/chromebook-3.10.config .config
+cp ${repo_dir}/kernel-configs/chromebook-3.10.config ${work_dir}/usr/src/nyan.config
 git rev-parse HEAD >${work_dir}/usr/src/kernel-at-commit
 export ARCH=arm
 
@@ -411,7 +411,7 @@ cat <<__EOF__ >${work_dir}/usr/src/kernel/arch/arm/boot/kernel-nyan.its
 /dts-v1/;
 
 / {
-    description = "# This is a community script - you will need to generate your own image to use OS kernel image with one or more FDT blobs";
+    description = "ChromeOS kernel image with one or more FDT blobs";
     #address-cells = <1>;
     images {
         kernel@1{
@@ -566,8 +566,8 @@ mkimage -f kernel-nyan.its nyan-big-kernel
 # BEHOLD THE POWER OF PARTUUID/PARTNROFF
 echo "noinitrd console=tty1 quiet root=PARTUUID=%U/PARTNROFF=1 rootwait rw lsm.module_locking=0 net.ifnames=0 rootfstype=$fstype" >cmdline
 
-# Pulled from # This is a community script - you will need to generate your own image to useOS, this is exactly what they do because there's no
-# # bootloader in the kernel partition on ARM
+# Pulled from ChromeOS, this is exactly what they do because there's no
+# bootloader in the kernel partition on ARM
 dd if=/dev/zero of=bootloader.bin bs=512 count=1
 
 vbutil_kernel --arch arm --pack "${base_dir}"/kernel.bin --keyblock /usr/share/vboot/devkeys/kernel.keyblock --signprivate /usr/share/vboot/devkeys/kernel_data_key.vbprivk --version 1 --config cmdline --bootloader bootloader.bin --vmlinuz nyan-big-kernel
@@ -628,7 +628,7 @@ EOF
 
 # Touchpad configuration
 mkdir -p ${work_dir}/etc/X11/xorg.conf.d
-cp ${repo_dir}/bsp/xorg/10-synaptics-# This is a community script - you will need to generate your own image to usebook.conf ${work_dir}/etc/X11/xorg.conf.d/
+cp ${repo_dir}/bsp/xorg/10-synaptics-chromebook.conf ${work_dir}/etc/X11/xorg.conf.d/
 
 # lp0 resume firmware..
 # Check https://chromium.googlesource.com/chromiumos/overlays/chromiumos-overlay/+/master/sys-kernel/tegra_lp0_resume/
