@@ -773,7 +773,7 @@ devices:
   - gateworks:
       - board: "gateworks-newport"
         name: "Gateworks Newport"
-        cpu: "Cavium OcteanTX"
+        cpu: "Cavium OcteonTX"
         cpu-cores: "2"
         # gpu: "gpu name"
         ram: "DDR4"
@@ -789,7 +789,7 @@ devices:
                 Two Half card Mini PCIe sockets, one provides USB 2.0 support.
                 U-blox ZOE-MQ8 GNSS GPS receiver"
         images:
-          - image: "gateworks-newport-armhf.img"
+          - image: "gateworks-newport-arm64.img"
             name: "Gateworks Newport"
             architecture: "arm64"
             preferred-image: "false"
