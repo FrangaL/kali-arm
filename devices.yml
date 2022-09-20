@@ -29,6 +29,7 @@
 #         image-notes: "anything to mention about the image"
 
 ---
+
 devices:
   - raspberrypi:
       - board: "raspberry-pi-2"

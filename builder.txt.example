@@ -16,13 +16,13 @@
 # Select compression, xz or none
 #compress="xz"
 
-# Choose filesystem format to format ( ext3 or ext4 )
+# Choose filesystem format to format (ext3 or ext4)
 #fstype="ext3"
 
-# Disable IPV6 ( yes or no)
+# Disable IPV6 (yes or no)
 #disable_ipv6="yes"
 
-# Make SWAP ( yes or no)
+# Make SWAP (yes or no)
 #swap="no"
 
 # DNS server
