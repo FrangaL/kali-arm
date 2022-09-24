@@ -113,7 +113,7 @@ mount "${bootp}" "${base_dir}"/root/boot
 status "Edit the extlinux.conf file to set root uuid and proper name"
 # Ensure we don't have root=/dev/sda3 in the extlinux.conf which comes from running u-boot-menu in a cross chroot
 # We do this down here because we don't know the UUID until after the image is created
-sed -i -e "0,/append.*/s//append root=UUID=$(blkid -s UUID -o value ${rootp}) rootfstype=$fstype earlyprintk console=ttyAML0,115200 console=tty1 swiotlb=1 coherent_pool=1m ro rootwait/g" ${work_dir}/boot/extlinux/extlinux.conf
+sed -i -e "0,/append.*/s//append root=UUID=$(blkid -s UUID -o value ${rootp}) rootfstype=$fstype earlyprintk console=ttyAML0,115200 console=tty1 console=both swiotlb=1 coherent_pool=1m ro rootwait/g" ${work_dir}/boot/extlinux/extlinux.conf
 # And we remove the "GNU/Linux because we don't use it
 sed -i -e "s|.*GNU/Linux Rolling|menu label Kali Linux|g" ${work_dir}/boot/extlinux/extlinux.conf
 
@@ -127,7 +127,7 @@ sed -i -e "s/LABEL=BOOT/UUID=$(blkid -s UUID -o value ${bootp})/" ${work_dir}/et
 
 status "Set the default options in /etc/default/u-boot"
 echo 'U_BOOT_MENU_LABEL="Kali Linux"' >>${work_dir}/etc/default/u-boot
-echo 'U_BOOT_PARAMETERS="earlyprintk console=ttyAML0,115200 console=tty1 swiotlb=1 coherent_pool=1m ro rootwait"' >>${work_dir}/etc/default/u-boot
+echo 'U_BOOT_PARAMETERS="earlyprintk console=ttyAML0,115200 console=tty1 console=both swiotlb=1 coherent_pool=1m ro rootwait"' >>${work_dir}/etc/default/u-boot
 
 status "Rsyncing rootfs into image file"
 rsync -HPavz -q --exclude boot "${work_dir}"/ "${base_dir}"/root/
