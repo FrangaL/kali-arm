@@ -34,7 +34,7 @@ status_stage3 'Copy rpi services'
 cp -p /bsp/services/rpi/*.service /etc/systemd/system/
 
 status_stage3 'Install the kernel packages'
-eatmydata apt-get install -y dkms linux-headers-arm64 linux-image-arm64 u-boot-menu u-boot-sunxi
+eatmydata apt-get install -y dkms kali-sbc-allwinner linux-headers-arm64 linux-image-arm64
 
 # Note: This just creates an empty /boot/extlinux/extlinux.conf for us to use
 # later.
