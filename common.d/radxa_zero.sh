@@ -15,8 +15,8 @@ basic_network
 
 # Third stage
 cat <<EOF >>"${work_dir}"/third-stage
-status_stage3 'Install u-boot tools'
-eatmydata apt-get install -y u-boot-menu u-boot-tools
+status_stage3 'Install kali-sbc package'
+eatmydata apt-get install -y kali-sbc-amlogic
 
 # We need "file" for the kernel scripts we run, and it won't be installed if you pass --slim
 # So we always make sure it's installed. Also, for hdmi audio, we need to run commands

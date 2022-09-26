@@ -30,10 +30,7 @@ cat <<EOF >>"${work_dir}"/third-stage
 # We use the one that armbian has in their repository at
 # https://github.com/armbian/firmware/
 # It uses the 43456 files.
-eatmydata apt-get install -y dkms linux-image-arm64 u-boot-menu u-boot-rockchip
-
-status_stage3 'Install bluez for bluetooth'
-eatmydata apt-get install -y bluez bluez-firmware
+eatmydata apt-get install -y dkms kali-sbc-rockchip linux-image-arm64
 
 status_stage3 'Touchpad settings'
 mkdir -p /etc/X11/xorg.conf.d/
