@@ -26,7 +26,7 @@ add_interface eth0
 # Third stage
 cat <<EOF >>"${work_dir}"/third-stage
 status_stage3 'Install kernel and bootloader packages'
-eatmydata apt-get install -y linux-image-arm64 u-boot-menu u-boot-sunxi firmware-brcm80211
+eatmydata apt-get install -y kali-sbc-allwinner linux-image-arm64 firmware-brcm80211
 
 # Note: This just creates an empty /boot/extlinux/extlinux.conf for us to use
 # later.

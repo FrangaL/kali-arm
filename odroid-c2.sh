@@ -34,7 +34,7 @@ mkdir -p /etc/X11/xorg.conf.d
 cp -p /bsp/xorg/20-meson.conf /etc/X11/xorg.conf.d/
 
 status_stage3 'Install the kernel packages'>
-eatmydata apt-get install -y dkms linux-image-arm64 u-boot-menu
+eatmydata apt-get install -y dkms kali-sbc-amlogic linux-image-arm64
 
 # We will replace this later, via sed, to point to the correct root partition (hopefully?)
 status_stage3 'Run u-boot-update to generate the extlinux.conf file'
