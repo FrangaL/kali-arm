@@ -144,7 +144,7 @@ if [[ ${architecture} != armel ]]; then
     mkdir -p /opt/microsoft/powershell/7
     tar -xf  /tmp/powershell.tar.gz -C /opt/microsoft/powershell/7
     chmod +x /opt/microsoft/powershell/7/pwsh
-    ln -s /opt/microsoft/powershell/7/pwsh
+    ln -s /opt/microsoft/powershell/7/pwsh /usr/bin/pwsh
 
 fi
 
