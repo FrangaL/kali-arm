@@ -20,23 +20,18 @@ variables:
 
 linting:
   stage: linting
-  
   allow_failure: yes
-  
   rules:
     - if: $CI_MERGE_REQUEST_ID             # Execute jobs in merge request context
     - if: $CI_COMMIT_BRANCH == 'master'    # Execute jobs when a new commit is pushed to master branch
-  
   script:
     - *install_prerequesites_pip
     - yamllint devices.yml
 
 pages:
   stage: generate_documentation
-  
   rules:
     - if: $CI_COMMIT_BRANCH == 'master'    # Execute jobs when a new commit is pushed to master branch
-  
   script:
     - *install_prerequesites_pip
     - *setup_for_html
@@ -57,9 +52,7 @@ pages:
     - pandoc --standalone ./images.md         --css=public.css --include-in-header=./.gitlab/header.html --output=./public/images.html
     - pandoc --standalone ./kernel-stats.md   --css=public.css --include-in-header=./.gitlab/header.html --output=./public/kernel-stats.html
     - find public/ -type f -name '*.html' -exec sed -i 's_<table>_<table id="pretty">_' {} +
-  
   artifacts:
     paths:
       - ./public
-    
     expire_in: 1 week
