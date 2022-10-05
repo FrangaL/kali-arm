@@ -1010,8 +1010,8 @@ devices:
             slug: "nanopi-neo-plus2"
             build-script: "nanopi-neo-plus2.sh"
             kernel: "kali"
-            kernel-version: "$(uname -r)"
-            image-notes: "5.18.0-kali1-arm64"
+            kernel-version: "5.18.0-kali1-arm64"
+            image-notes: ""
 
       - board: "nanopi2"
         name: "NanoPi2"
