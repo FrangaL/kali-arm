@@ -73,10 +73,16 @@ cd ..
 if [ "$(arch)" == 'aarch64' ]; then
     # We don't need to install the linux-libc-dev package, we just want kernel and headers
     rm linux-libc-dev*.deb
+    # Temporary hack to work around dpkg statoverride user errors
+    mv "${work_dir}"/var/lib/dpkg/statoverride "${work_dir}"/var/lib/dpkg/statoverride.bak
     dpkg --root "${work_dir}" -i linux-*.deb
+    mv "${work_dir}"/var/lib/dpkg/statoverride.bak "${work_dir}"/var/lib/dpkg/statoverride
 
 else
+    # Temporary hack to work around dpkg statoverride user errors
+    mv "${work_dir}"/var/lib/dpkg/statoverride "${work_dir}"/var/lib/dpkg/statoverride.bak
     dpkg --root "${work_dir}" -i linux-image-*.deb
+    mv "${work_dir}"/var/lib/dpkg/statoverride.bak "${work_dir}"/var/lib/dpkg/statoverride
 
 fi
 
