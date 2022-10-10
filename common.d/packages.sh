@@ -82,7 +82,7 @@ git libterm-readline-gnu-perl locales wget"
 
 # Re4son packages
 re4son_pkgs="kalipi-bootloader kalipi-kernel kalipi-kernel-headers \
-kalipi-re4son-firmware"
+kalipi-re4son-firmware pi-bluetooth"
 
 # PiTail specific packages
 pitail_pkgs="bluelog blueranger bluesnarfer bluez-tools bridge-utils cmake \
