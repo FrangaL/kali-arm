@@ -33,7 +33,7 @@ status_stage3 'Using the fbdev driver is not ideal but it is far less frustratin
 mkdir -p /etc/X11/xorg.conf.d
 cp -p /bsp/xorg/20-meson.conf /etc/X11/xorg.conf.d/
 
-status_stage3 'Install the kernel packages'>
+status_stage3 'Install the kernel packages'
 eatmydata apt-get install -y dkms kali-sbc-amlogic linux-image-arm64
 
 # We will replace this later, via sed, to point to the correct root partition (hopefully?)
