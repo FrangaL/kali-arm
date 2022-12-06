@@ -142,7 +142,7 @@ def jsonarray(devices, vendor, name, url, extract_size, extract_sha256, image_do
         "name": name,
         "description": f"Kali Linux ARM image for the {name}",
         "url": url,
-        "icon": "https://www.kali.org/images/favicon.svg",
+        "icon": "https://www.kali.org/images/kali-linux-logo.svg",
         "website": "https://www.kali.org/",
         "release_date": datetime.datetime.today().strftime("%Y-%m-%d"),
         "extract_size": extract_size,
