@@ -2,10 +2,10 @@
 
 log " selecting packages ..." gray
 
-debootstrap_base="kali-archive-keyring,eatmydata"
+debootstrap_base="kali-archive-keyring,eatmydata,usrmerge"
 
 # This is the bare minimum if you want to start from very scratch
-minimal_pkgs="ca-certificates iw network-manager parted sudo wpasupplicant"
+minimal_pkgs="ca-certificates haveged iw network-manager parted sudo wpasupplicant"
 
 # This is the list of minimal common packages
 common_min_pkgs="$minimal_pkgs apt-transport-https command-not-found \

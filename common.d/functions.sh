@@ -150,7 +150,7 @@ function arguments() {
 
             *)
                 log "Unknown option: ${opt}" red; exit 1 ;;
-            
+
         esac
     done
 }
@@ -189,7 +189,7 @@ function systemd-nspawn_exec() {
 function debootstrap_exec() {
     status " debootstrap ${suite} $*"
 
-    eatmydata debootstrap --merged-usr --keyring=/usr/share/keyrings/kali-archive-keyring.gpg --components="${components}" \
+    eatmydata mmdebstrap --keyring=/usr/share/keyrings/kali-archive-keyring.gpg --components="${components}" \
         --include="${debootstrap_base}" --arch "${architecture}" "${suite}" "${work_dir}" "$@"
 }
 
