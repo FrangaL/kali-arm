@@ -182,7 +182,11 @@ function systemd-nspawn_exec() {
     log "systemd-nspawn $*" gray
     ENV="RUNLEVEL=1,LANG=C,DEBIAN_FRONTEND=noninteractive,DEBCONF_NOWARNINGS=yes"
 
-    systemd-nspawn --bind-ro "$qemu_bin" $extra_args --capability=cap_setfcap -E $ENV -M "$machine" -D "$work_dir" "$@"
+    if [ "$(arch)" != "aarch64" ]; then
+        systemd-nspawn --bind-ro "$qemu_bin" $extra_args --capability=cap_setfcap -E $ENV -M "$machine" -D "$work_dir" "$@"
+    else
+        systemd-nspawn $extra_args --capability=cap_setfcap -E $ENV -M "$machine" -D "$work_dir" "$@"
+    fi
 }
 
 # Create the rootfs - not much to modify here, except maybe throw in some more packages if you want.
