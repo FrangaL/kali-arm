@@ -35,6 +35,7 @@ cp /bsp/firmware/radxa-zero/* /lib/firmware/brcm/
 status_stage3 'Add needed extlinux and uenv scripts'
 cp /bsp/scripts/radxa/update_extlinux.sh /usr/local/sbin/
 cp /bsp/scripts/radxa/update_uenv.sh /usr/local/sbin/
+cp /bsp/scripts/radxa/config.txt /boot/
 mkdir -p /etc/kernel/postinst.d
 # Be sure to update the cmdline with the correct UUID after creating the img.
 cp /bsp/scripts/radxa/cmdline /etc/kernel
