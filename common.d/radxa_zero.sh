@@ -147,7 +147,7 @@ sync
 status "u-Boot"
 cd "${work_dir}"
 git clone https://github.com/radxa/fip.git
-git clone https://github.com/u-boot/u-boot.git --depth 1
+git clone https://github.com/u-boot/u-boot.git -b v2022.10 --depth 1
 cd u-boot
 
 # Remove amlogic from the config, this matches what LibreElec does, as well as the vendor u-boot
@@ -157,7 +157,7 @@ patch -p1 --no-backup-if-mismatch <"${repo_dir}"/patches/u-boot/radxa/0001-HACK-
 # that USB boot *should* also work, but untested.
 patch -p1 --no-backup-if-mismatch <"${repo_dir}"/patches/u-boot/radxa/0002-boards-amlogic-enable-usb-preboot.patch
 make distclean
-make radxa-zero_config
+make radxa-zero_defconfig
 make ARCH=arm -j$(nproc)
 cp u-boot.bin ../fip/radxa-zero/bl33.bin
 cd ../fip/radxa-zero/
