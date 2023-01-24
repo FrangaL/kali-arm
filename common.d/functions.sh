@@ -193,8 +193,13 @@ function systemd-nspawn_exec() {
 function debootstrap_exec() {
     status " debootstrap ${suite} $*"
 
+    if [ "$(lsb_release -sc)" == "bullseye" ]; then
+    eatmydata debootstrap --merged-usr --keyring=/usr/share/keyrings/kali-archive-keyring.gpg --components="${components}" \
+        --include="${debootstrap_base}" --arch "${architecture}" "${suite}" "${work_dir}" "$@"
+    else
     eatmydata mmdebstrap --keyring=/usr/share/keyrings/kali-archive-keyring.gpg --components="${components}" \
         --include="${debootstrap_base}" --arch "${architecture}" "${suite}" "${work_dir}" "$@"
+    fi
 }
 
 # Disable the use of http proxy in case it is enabled.

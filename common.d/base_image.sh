@@ -157,4 +157,7 @@ sed -i 's/^TimeoutStartSec=5min/TimeoutStartSec=15/g' "/usr/lib/systemd/system/n
 
 status_stage3 'Mask smartmontools service'
 systemctl mask smartmontools
+
+status_stage3 'Add arch to /var/lib/dpkg/arch file'
+arch | tee /var/lib/dpkg/arch
 EOF
