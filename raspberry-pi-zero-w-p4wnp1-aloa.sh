@@ -92,6 +92,8 @@ cp /bsp/firmware/rpi/config.txt /boot/config.txt
 
 status_stage3 'Run P4wnP1 A.L.O.A installer'
 cd /root/P4wnP1
+# This is one case where we actually want the pip install to be system wide.
+sed -i -e 's/pip install/pip install --break-system-packages/' Makefile
 make installkali
 
 status_stage3 'Enable dwc2 module'
