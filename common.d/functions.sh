@@ -230,10 +230,10 @@ function restore_mirror() {
     # For now, restore_mirror will put the default kali mirror in, fix after 2021.3
     cat <<EOF >"${work_dir}"/etc/apt/sources.list
 # See https://www.kali.org/docs/general-use/kali-linux-sources-list-repositories/
-deb http://http.kali.org/kali kali-rolling main contrib non-free
+deb http://http.kali.org/kali kali-rolling main contrib non-free non-free-firmware
 
 # Additional line for source packages
-# deb-src http://http.kali.org/kali kali-rolling main contrib non-free
+# deb-src http://http.kali.org/kali kali-rolling main contrib non-free non-free-firmware
 EOF
 }
 
