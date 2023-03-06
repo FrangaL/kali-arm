@@ -51,7 +51,7 @@ pages:
     - pandoc --standalone ./image-stats.md    --css=public.css --include-in-header=./.gitlab/header.html --output=./public/image-stats.html
     - pandoc --standalone ./images.md         --css=public.css --include-in-header=./.gitlab/header.html --output=./public/images.html
     - pandoc --standalone ./kernel-stats.md   --css=public.css --include-in-header=./.gitlab/header.html --output=./public/kernel-stats.html
-    - find public/ -type f -name '*.html' -exec sed -i 's_<table>_<table id="pretty">_' {} +
+    - find public/ -type f -name '*.html' | sort | while read -r x; do sed 's_<table>_<table id="pretty">_' "${x}" > /tmp/out; mv /tmp/out "${x}"; done
   artifacts:
     paths:
       - ./public
