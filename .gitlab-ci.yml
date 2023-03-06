@@ -24,17 +24,19 @@ linting:
   rules:
     - if: $CI_MERGE_REQUEST_ID             # Execute jobs in merge request context
     - if: $CI_COMMIT_BRANCH == 'master'    # Execute jobs when a new commit is pushed to master branch
-  script:
+  before_script:
     - *install_prerequesites_pip
+  script:
     - yamllint devices.yml
 
 pages:
   stage: generate_documentation
   rules:
     - if: $CI_COMMIT_BRANCH == 'master'    # Execute jobs when a new commit is pushed to master branch
-  script:
+  before_script:
     - *install_prerequesites_pip
     - *setup_for_html
+  script:
     - ./bin/generate_devices_stats.py
     - ./bin/generate_devices_table.py
     - ./bin/generate_images_overview.py
