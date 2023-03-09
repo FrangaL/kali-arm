@@ -53,7 +53,7 @@ function usage() {
     # Architectures (arm64, armel, armhf)
     $0 --arch arm64 or $0 -a armhf
 
-    # Desktop manager (xfce, gnome, kde, i3, i3-gaps, lxde, mate, e17 or none)
+    # Desktop manager (xfce, gnome, kde, i3, lxde, mate, e17 or none)
     $0 --desktop kde or $0 --desktop=kde
 
     # Minimal image - no desktop manager (alias to --desktop=none)
@@ -95,7 +95,7 @@ function debug_enable() {
 # Validate desktop
 function validate_desktop() {
     case $1 in
-        xfce | gnome | kde | i3 | i3-gaps | lxde | mate | e17)
+        xfce | gnome | kde | i3 | lxde | mate | e17)
             true ;;
 
         none)
