@@ -29,7 +29,7 @@ cli_tools_pkgs="kali-linux-headless"
 
 # Desktop packages to install
 case $desktop in
-    xfce | gnome | kde | i3 | i3-gaps | lxde | mate | e17)
+    xfce | gnome | kde | i3 | lxde | mate | e17)
         desktop_pkgs="kali-linux-default kali-desktop-$desktop alsa-utils \
         xfonts-terminus xinput xserver-xorg-video-fbdev \xserver-xorg-input-libinput" ;;
 
