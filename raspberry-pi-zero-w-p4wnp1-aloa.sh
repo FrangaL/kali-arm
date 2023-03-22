@@ -115,6 +115,9 @@ chmod +x /etc/rc.local
 # which we want to enable on this image.
 status_stage3 'Remove ssh key check'
 rm /etc/runonce.d/03-check-ssh-keys
+
+# Copy in bluetooth overrides
+cp -a /bsp/overrides/* /etc/systemd/system/
 EOF
 
 # Run third stage
