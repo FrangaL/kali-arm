@@ -117,6 +117,7 @@ status_stage3 'Remove ssh key check'
 rm /etc/runonce.d/03-check-ssh-keys
 
 # Copy in bluetooth overrides
+status_stage3 'Add systemd service overrides for bluetooth'
 cp -a /bsp/overrides/* /etc/systemd/system/
 EOF
 
