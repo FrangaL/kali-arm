@@ -11,13 +11,20 @@ for pkg in $rebuild; do
 done
 
 # Clear and regenerate the font cache
-fc-cache -f
+if command -v fc-cache >/dev/null 2>&1; then
+  fc-cache -f
+fi
 
 # Update shared MIME info database
-update-mime-database /usr/share/mime
+if command -v update-mime-database >/dev/null 2>&1; then
+  /usr/bin/update-mime-database /usr/share/mime
+fi
 
 # Update certificates
-update-ca-certificates
-
+if command -v update-ca-certificates >/dev/null 2>&1; then
+  /usr/sbin/update-ca-certificates
+fi
 # Regenerate the default snakeoil cert
+if command -v make-ssl-cert >/dev/null 2>&1; then
 make-ssl-cert generate-default-snakeoil --force-overwrite
+fi
