@@ -124,6 +124,10 @@ cp -a /bsp/overrides/* /etc/systemd/system/
 status_stage3 'Add spi and gpio groups'
 groupadd -f -r spi
 groupadd -f -r gpio
+
+# We don't care about console font on this image.
+status_stage3 'Disable console-setup service'
+systemctl disable console-setup
 EOF
 
 # Run third stage
