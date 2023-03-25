@@ -208,11 +208,6 @@ ln -s /usr/src/kernel build
 ln -s /usr/src/kernel source
 cd "${base_dir}"
 
-status 'Enable dwc2 dtb overlay'
-cat <<EOF >>"${work_dir}"/boot/config.txt
-dtoverlay=dwc2
-EOF
-
 # git clone of nexmon moved in front of kernel compilation, to have poper brcmfmac driver ready
 status 'Build nexmon firmware'
 cd "${base_dir}"/nexmon
@@ -276,11 +271,6 @@ make_fstab
 # Configure Raspberry Pi firmware
 include rpi_firmware
 
-# Now enable dwc2 once the defaults are in place
-status 'Enable dwc2'
-echo "dtoverlay=dwc2" >>"${work_dir}"/boot/config.txt
-echo " modules-load=dwc2" >>"${work_dir}"/boot/cmdline.txt
-
 # Create the dirs for the partitions and mount them
 status "Create the dirs for the partitions and mount them"
 mkdir -p "${base_dir}"/root/
@@ -303,6 +293,11 @@ sync
 status "Rsyncing rootfs into image file (/boot)"
 rsync -rtx -q "${work_dir}"/boot "${base_dir}"/root
 sync
+
+# Finally, enable dwc2 for udc gadgets
+status 'Enable dwc2'
+echo "dtoverlay=dwc2" >>"${base_dir}"/root/boot/config.txt
+echo " modules-load=dwc2" >>"${base_dir}"/root/boot/cmdline.txt
 
 # Load default finish_image configs
 include finish_image
