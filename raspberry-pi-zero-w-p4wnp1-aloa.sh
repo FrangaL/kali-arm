@@ -119,6 +119,11 @@ rm /etc/runonce.d/03-check-ssh-keys
 # Copy in bluetooth overrides
 status_stage3 'Add systemd service overrides for bluetooth'
 cp -a /bsp/overrides/* /etc/systemd/system/
+
+# Create spi and gpio groups
+status_stage3 'Add spi and gpio groups'
+groupadd -f -r spi
+groupadd -f -r gpio
 EOF
 
 # Run third stage
