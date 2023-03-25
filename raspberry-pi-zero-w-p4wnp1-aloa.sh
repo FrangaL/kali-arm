@@ -246,6 +246,10 @@ wget https://raw.githubusercontent.com/RPi-Distro/firmware-nonfree/master/brcm/b
 status 'Set hostname'
 echo "${hostname}" >"${work_dir}"/etc/hostname
 
+status 'Enable dwc2'
+echo "dtoverlay=dwc2" >>"${work_dir}"/boot/config.txt
+echo " modules-load=dwc2" >>"${work_dir}"/boot/cmdline.txt
+
 cd "${repo_dir}/"
 
 # Clean system
