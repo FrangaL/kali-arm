@@ -37,16 +37,6 @@ else
 
 fi
 
-# Add spi and gpio groups on raspberrypi devices.
-if [[ "$(cat /sys/firmware/devicetree/base/model)" == Raspberry* ]]; then
- if ! getent group 'spi'; then
-   groupadd -r spi || true
- fi
- if ! getent group 'gpio'; then
-   groupadd -r gpio || true
- fi
-fi
-
 # Default groups.
 kali_groups="adm,audio,cdrom,dialout,dip,games,input,netdev,plugdev,render,\
 staff,sudo,systemd-journal,users,video,scanner,kali"
