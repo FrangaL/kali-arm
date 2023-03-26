@@ -297,7 +297,7 @@ sync
 # Finally, enable dwc2 for udc gadgets
 status 'Enable dwc2'
 echo "dtoverlay=dwc2" >>"${base_dir}"/root/boot/config.txt
-echo " modules-load=dwc2" >>"${base_dir}"/root/boot/cmdline.txt
+sed -i -e 's/net.ifnames=0/net.ifnames=0 modules-load=dwc2/' "${base_dir}"/root/boot/cmdline.txt
 
 # Load default finish_image configs
 include finish_image
