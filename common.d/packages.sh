@@ -16,7 +16,7 @@ zsh-syntax-highlighting"
 
 # This is the list of common packages
 common_pkgs="$minimal_pkgs apt-transport-https dialog \
-ifupdown inxi kali-linux-core libnss-systemd man-db mlocate net-tools \
+ifupdown inxi kali-linux-core kali-linux-firmware libnss-systemd man-db mlocate net-tools \
 network-manager pciutils psmisc rfkill screen snmp snmpd tftp \
 triggerhappy usbutils whiptail zerofree"
 
