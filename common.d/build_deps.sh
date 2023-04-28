@@ -193,5 +193,8 @@ elif [ $(arch) == 'i386' ]; then
 
 fi
 
+if [ -z "$(ls /proc/sys/fs/binfmt_misc/qemu-* 2>/dev/null)" ]; then
+    echo "You need to reboot the system before you can build any images."
+fi
 # Create the script to clean the system
 #clean_build

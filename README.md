@@ -11,7 +11,7 @@ For more information, please see: <https://www.kali.org/docs/arm/>
 
 ### Building
 - These scripts are tested on Kali Linux `arm64`, `x64`, and `x86` installations only _(We **recommend x64**)_
-- Make sure you run the `./common.d/build_deps.sh` script before trying to build an image, as this installs all required dependencies
+- Make sure you run the `./common.d/build_deps.sh` script before trying to build an image, as this installs all required dependencies.  You may need to reboot after installing the build dependencies, if you do, the script will mention it at the end.
 - You will need at **least 8GB of RAM or use SWAP file**
 
 An example workflow to build a _[Raspberry Pi 4](https://www.kali.org/docs/arm/raspberry-pi-4/) Kali Linux image_ would look like:
