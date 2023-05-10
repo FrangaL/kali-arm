@@ -1,6 +1,13 @@
 #!/bin/bash
 set -e
 
+# Enable extended debugging and set a trap to run `check_command_exists` before each command
+shopt -s extdebug
+trap '[[ "${BASH_COMMAND}" =~ ^\s*([^=\(]|$) ]] || check_command_exists "${BASH_COMMAND}"' DEBUG
+
+# Check if a command exists and run it with its arguments if it does
+check_command_exists() { command -v "${1%% *}" &>/dev/null && { shift; "$@"; } || true; }
+
 # Rebuild xfonts-base, ca-certificates and shared-mime-info database
 rebuild="shared-mime-info xfonts-base ca-certificates"
 for pkg in $rebuild; do
@@ -11,20 +18,13 @@ for pkg in $rebuild; do
 done
 
 # Clear and regenerate the font cache
-if command -v fc-cache >/dev/null 2>&1; then
-  fc-cache -f
-fi
+fc-cache -f
 
 # Update shared MIME info database
-if command -v update-mime-database >/dev/null 2>&1; then
-  /usr/bin/update-mime-database /usr/share/mime
-fi
+update-mime-database /usr/share/mime
 
 # Update certificates
-if command -v update-ca-certificates >/dev/null 2>&1; then
-  /usr/sbin/update-ca-certificates
-fi
+update-ca-certificates
+
 # Regenerate the default snakeoil cert
-if command -v make-ssl-cert >/dev/null 2>&1; then
 make-ssl-cert generate-default-snakeoil --force-overwrite
-fi
