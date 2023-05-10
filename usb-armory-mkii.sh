@@ -109,9 +109,9 @@ export CROSS_COMPILE=arm-linux-gnueabihf-
 patch -p1 --no-backup-if-mismatch <${repo_dir}/patches/kali-wifi-injection-5.15.patch
 patch -p1 --no-backup-if-mismatch <${repo_dir}/patches/0001-wireless-carl9170-Enable-sniffer-mode-promisc-flag-t.patch
 wget $githubraw/usbarmory/usbarmory/master/software/kernel_conf/usbarmory_linux-5.15.defconfig -O ../usbarmory_linux-5.15_defconfig
-wget $githubraw/usbarmory/usbarmory/master/software/kernel_conf/mark-two/imx6ul-usbarmory.dts -O arch/arm/boot/dts/imx6ul-usbarmory.dts
-wget $githubraw/usbarmory/usbarmory/master/software/kernel_conf/mark-two/imx6ulz-usbarmory-tzns.dts -O arch/arm/boot/dts/imx6ulz-usbarmory-tzns.dts
-wget $githubraw/usbarmory/usbarmory/master/software/kernel_conf/mark-two/imx6ulz-usbarmory.dts -O arch/arm/boot/dts/imx6ulz-usbarmory.dts
+wget $githubraw/usbarmory/usbarmory/master/software/kernel_conf/mark-two/imx6ul-512M-usbarmory.dts -O arch/arm/boot/dts/imx6ul-usbarmory.dts
+wget $githubraw/usbarmory/usbarmory/master/software/kernel_conf/mark-two/imx6ulz-512M-usbarmory-tzns.dts -O arch/arm/boot/dts/imx6ulz-usbarmory-tzns.dts
+wget $githubraw/usbarmory/usbarmory/master/software/kernel_conf/mark-two/imx6ulz-512M-usbarmory.dts -O arch/arm/boot/dts/imx6ulz-usbarmory.dts
 cp ../usbarmory_linux-5.15_defconfig arch/arm/configs/
 make usbarmory_linux-5.15_defconfig
 make LOADADDR=0x80000000 -j $(grep -c processor /proc/cpuinfo) uImage modules imx6ul-usbarmory.dtb imx6ulz-usbarmory-tzns.dtb imx6ulz-usbarmory.dtb
@@ -122,10 +122,9 @@ make mrproper
 
 # Since these aren't integrated into the kernel yet, mrproper removes them
 cp ../usbarmory_linux-5.15_defconfig arch/arm/configs/
-wget $githubraw/usbarmory/usbarmory/master/software/kernel_conf/mark-two/imx6ul-usbarmory.dts -O arch/arm/boot/dts/imx6ul-usbarmory.dts
-wget $githubraw/usbarmory/usbarmory/master/software/kernel_conf/mark-two/imx6ulz-usbarmory-tzns.dts -O arch/arm/boot/dts/imx6ulz-usbarmory-tzns.dts
-wget $githubraw/usbarmory/usbarmory/master/software/kernel_conf/mark-two/imx6ulz-usbarmory.dts -O arch/arm/boot/dts/imx6ulz-usbarmory.dts
-
+wget $githubraw/usbarmory/usbarmory/master/software/kernel_conf/mark-two/imx6ul-512M-usbarmory.dts -O arch/arm/boot/dts/imx6ul-usbarmory.dts
+wget $githubraw/usbarmory/usbarmory/master/software/kernel_conf/mark-two/imx6ulz-512M-usbarmory-tzns.dts -O arch/arm/boot/dts/imx6ulz-usbarmory-tzns.dts
+wget $githubraw/usbarmory/usbarmory/master/software/kernel_conf/mark-two/imx6ulz-512M-usbarmory.dts -O arch/arm/boot/dts/imx6ulz-usbarmory.dts
 # Fix up the symlink for building external modules
 # kernver is used so we don't need to keep track of what the current compiled
 # version is
