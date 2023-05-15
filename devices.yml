@@ -290,7 +290,7 @@ devices:
             name: "Raspberry Pi Zero W (P4wnP1 A.L.O.A)"
             architecture: "armel"
             preferred-image: "false"
-            support: "kali"
+            support: "community"
             slug: "raspberry-pi-zer-w-p4wnp1-aloa"
             build-script: "raspberry-pi-zero-w-p4wnp1-aloa.sh"
             kernel: "custom"
