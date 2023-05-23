@@ -561,19 +561,21 @@ function compress_img() {
 }
 
 # Calculate total time compilation.
-total_time() {
-    local T=$1
-    local H=$((T / 60 / 60 % 24))
-    local M=$((T / 60 % 60))
-    local S=$((T % 60))
+function fmt_plural() {
+  [[ $1 -gt 1 ]] && printf "%d %s" $1 "${3}" || printf "%d %s" $1 "${2}"
+}
 
-    printf '\nFinal time: '
+function total_time() {
+  local t=$(( $1 ))
+  local h=$(( t / 3600 ))
+  local m=$(( t % 3600 / 60 ))
+  local s=$(( t % 60 ))
 
-    [[ $H -gt 0 ]] && printf '%d hours ' $H
-    [[ $M -gt 0 ]] && printf '%d minutes ' $M
-    [[ $D -gt 0 || $H -gt 0 || $M -gt 0 ]] && printf 'and '
-
-    printf '%d seconds\n' $S
+  printf "\nFinal time: "
+  [[ $h -gt 0 ]] && { fmt_plural $h "hour" "hours"; printf " "; }
+  [[ $m -gt 0 ]] && { fmt_plural $m "minute" "minutes"; printf " "; }
+  [[ $s -gt 0 ]] && fmt_plural $s "second" "seconds"
+  printf "\n"
 }
 
 function umount_partitions() {
